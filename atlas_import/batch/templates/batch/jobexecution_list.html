@@ -1,0 +1,28 @@
+{% extends "batch/base.html" %}
+
+{% block container %}
+    <h1>Jobs</h1>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Started</th>
+            <th>Finished</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for obj in object_list %}
+            <tr>
+                <td><a href="{% url 'job-detail' obj.id %}">{{ obj.name }}</a></td>
+                <td>{{ obj.date_started }}</td>
+                <td>{{ obj.date_finished }}</td>
+                <td>{{ obj.get_status_display }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
