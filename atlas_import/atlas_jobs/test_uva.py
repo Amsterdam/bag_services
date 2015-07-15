@@ -16,6 +16,7 @@ class UvaHelperTest(TestCase):
         self.assertTrue(uva2.uva_indicatie('J'))
 
     def test_uva_geldig(self):
+        self.assertTrue(uva2.uva_geldig("", ""))
         self.assertTrue(uva2.uva_geldig("19000101", ""))
         self.assertTrue(uva2.uva_geldig("19000101", "20251201"))
         self.assertFalse(uva2.uva_geldig("19000101", "19801101"))

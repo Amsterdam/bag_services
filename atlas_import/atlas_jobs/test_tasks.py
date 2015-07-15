@@ -101,3 +101,28 @@ class ImportBrtTest(TestCase):
         self.assertEquals(b.naam, 'Westlandgracht (870)')
         self.assertEquals(b.vervallen, True)
         self.assertEquals(b.stadsdeel.id, '3630001910418')
+
+
+class ImportLigTest(TestCase):
+    def test_import(self):
+        jobs.ImportBrnTask('atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportStsTask('atlas_jobs/fixtures/examplebag/STS_20071001_J_20000101_20050101.UVA2').execute()
+
+        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportSdlTask('atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportBrtTask('atlas_jobs/fixtures/examplebag/BRT_20071001_J_20000101_20050101.UVA2').execute()
+
+        source = 'atlas_jobs/fixtures/examplebag/LIG_20071001_J_20000101_20050101.UVA2'
+        task = jobs.ImportLigTask(source)
+        task.execute()
+
+        imported = models.Ligplaats.objects.all()
+        self.assertEqual(len(imported), 62)
+
+        l = models.Ligplaats.objects.get(pk='3630000956442')
+        self.assertEquals(l.identificatie, 3630000956442)
+        self.assertEquals(l.ligplaats_nummer, 462020)
+        self.assertEquals(l.vervallen, False)
+        self.assertEquals(l.bron.code, '4')
+        self.assertEquals(l.status, None)
+        # self.assertEquals(l.buurt.id, '3630001910926')

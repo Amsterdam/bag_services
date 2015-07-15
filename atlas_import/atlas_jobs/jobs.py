@@ -104,6 +104,39 @@ class ImportBrtTask(RowBasedUvaTask):
         ))
 
 
+class ImportLigTask(RowBasedUvaTask):
+    name = "import LIG"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['LIGBRN/TijdvakRelatie/begindatumRelatie'],
+                               r['LIGBRN/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['LIGSTS/TijdvakRelatie/begindatumRelatie'],
+                               r['LIGSTS/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['LIGBRT/TijdvakRelatie/begindatumRelatie'],
+                               r['LIGBRT/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        bron = r['LIGBRN/BRN/Code']
+        status = r['LIGSTS/STS/Code']
+        buurt = r['LIGBRT/BRT/Buurtcode']
+        merge(models.Ligplaats, r['sleutelverzendend'], dict(
+            identificatie=int(r['Ligplaatsidentificatie']),
+            ligplaats_nummer=int(r['LigplaatsnummerGemeente']),
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            bron=models.Bron.objects.get(pk=bron) if bron else None,
+            status=models.Status.objects.get(pk=status) if status else None,
+            # buurt=models.Buurt.objects.get(pk=buurt) if buurt else None,
+        ))
+
+
 class ImportJob(object):
     name = "atlas-import"
 
@@ -117,4 +150,7 @@ class ImportJob(object):
             ImportGmeTask(os.path.join(self.base_dir, 'GME_20071001_J_20000101_20050101.UVA2')),
             ImportSdlTask(os.path.join(self.base_dir, 'SDL_20071001_J_20000101_20050101.UVA2')),
             ImportBrtTask(os.path.join(self.base_dir, 'BRT_20071001_J_20000101_20050101.UVA2')),
+            ImportLigTask(os.path.join(self.base_dir, 'LIG_20071001_J_20000101_20050101.UVA2'))
         ]
+
+

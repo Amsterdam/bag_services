@@ -47,3 +47,14 @@ class Buurt(ImportStatusMixin, models.Model):
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
     stadsdeel = models.ForeignKey(Stadsdeel)
+
+
+class Ligplaats(ImportStatusMixin, models.Model):
+
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.DecimalField(max_digits=14, decimal_places=0, unique=True)
+    ligplaats_nummer = models.DecimalField(max_digits=10, decimal_places=0, unique=True)
+    vervallen = models.BooleanField(default=False)
+    bron = models.ForeignKey(Bron, null=True)
+    status = models.ForeignKey(Status, null=True)
+    buurt = models.ForeignKey(Buurt, null=True)
