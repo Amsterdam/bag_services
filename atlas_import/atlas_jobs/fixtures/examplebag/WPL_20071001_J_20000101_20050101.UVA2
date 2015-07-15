@@ -1,0 +1,6 @@
+VAN;20000101
+TM;20050101
+HISTORISCHE_CYCLI;J
+sleutelverzendend;Woonplaatsidentificatie;Woonplaatsnaam;DocumentdatumMutatieWoonplaats;DocumentnummerMutatieWoonplaats;WoonplaatsPTTSchrijfwijze;Mutatie-gebruiker;Indicatie-vervallen;TijdvakGeldigheid/begindatumTijdvakGeldigheid;TijdvakGeldigheid/einddatumTijdvakGeldigheid;WPLGME/GME/sleutelVerzendend;WPLGME/GME/Gemeentecode;WPLGME/TijdvakRelatie/begindatumRelatie;WPLGME/TijdvakRelatie/einddatumRelatie
+3630000000867;2847;AMSTERDAM ZUIDOOST;;;AMSTERDAM ZUIDOOST;GVI;N;19000101;;3630000000000;0363;19000101;
+3630000000868;2846;AMSTERDAM;;;AMSTERDAM;GVI;N;19000101;;3630000000000;0363;19000101;

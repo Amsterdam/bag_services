@@ -1,0 +1,23 @@
+VAN;20000101
+TM;20050101
+HISTORISCHE_CYCLI;J
+Code;Omschrijving
+10;In onderzoek (bestemmingswijziging)
+11;In Onderzoek (samenvoeging)
+12;In onderzoek (splitsing)
+13;In onderzoek (administratieve leegstand)
+14;In onderzoek (adressen project)
+08;Buiten gebruik i.v.m. verbouw
+0;Actueel
+2;Vervallen 1
+3;Vervallen 2
+4;Vervallen 3
+5;Vervallen 4
+6;Geconstateerd
+7;In Onderzoek
+01;Buitengebruik i.v.m. renovatie
+TMP;Tijdelijk punt
+DEF;Definitief punt
+1;Vervallen 5
+ONB;ONB
+09;Bouwvergunning verleend

@@ -1,0 +1,100 @@
+VAN;20000101
+TM;20050101
+HISTORISCHE_CYCLI;J
+Code;Omschrijving
+PST;Postcode verwerking
+1;Stadsdeel Amsterdam-Noord (1)
+2;Stadsdeel Amsterdam Oud Zuid (2)
+3;Stadsdeel De Baarsjes (3)
+4;Stadsdeel Amsterdam-Centrum (4)
+5;Stadsdeel Bos en Lommer (5)
+6;Stadsdeel Geuzenveld/Slotermeer (6)
+7;Stadsdeel Oost/Watergraafsmeer (7)
+8;Stadsdeel Osdorp (8)
+9;Stadsdeel Oud-West (9)
+10;Stadsdeel Slotervaart (10)
+11;Stadsdeel Westerpark (11)
+12;Stadsdeel Zeeburg (12)
+13;Stadsdeel Zuideramstel (13)
+14;Stadsdeel Zuidoost (14)
+15;Stadsdeel Westpoort (15)
+20;Dienst Accountancy & Consultancy Amsterdam (20)
+21;Dienst Amsterdam Beheer (21)
+22;Dienst Amsterdams Historisch Museum (22)
+23;Dienst Gemeente Belastingen Amsterdam (23)
+24;Dienst Bestuursdienst Gem. Amsterdam (24)
+25;Dienst Binnenwaterbeheer Amsterdam
+26;Dienst Brandweer Amsterdam
+27;Dienst Bureau Informatiemanagement Amsterdam
+28;Dienst Economische Zaken
+29;Dienst Gemeentearchief Amsterdam
+30;Dienst Gemeentelijke Ombudsman
+31;Dienst Geneeskundige en Gezondheidsdienst
+32;Dienst Infrastructuur, Verkeer en Vervoer
+33;Dienst Ingenieursbureau Amsterdam
+34;Dienst Maatschappelijke Ontwikkeling
+35;Dienst Maatwerk Amsterdam, centraal bu
+36;Dienst Marktwezen Foodcenter, Amsterdam
+37;Dienst Milieu en Bouwtoezicht
+38;Dienst NV Werk Amsterdam
+39;Dienst OMEGAM
+40;Dienst Onderzoek en Statistiek
+41;Dienst Pedologisch Instituut, Gemeente
+42;Dienst Project Management Bureau
+43;Dienst Register Amsterdam
+44;Dienst Rokin Groep, De
+45;Dienst Ruimtelijke Ordening
+46;Dienst Sociale Dienst Amsterdam
+47;Dienst Stadsschouwburg
+48;Dienst Stadstoezicht
+49;Dienst Stedelijk Museum
+50;Dienst VGA Verzekeringen
+51;Dienst Waterbeheer en Riolering
+52;Dienst Wonen
+60;Gemeentebedrijf GEAM, Adviesbureau voor
+61;Gemeentebedrijf Gemeentelijk Reclame(b
+62;Gemeentebedrijf Gemeentevervoerbedrijf
+63;Gemeentebedrijf Waterleidingbedrijf
+64;Gemeentebedrijf Ontwikkelingsbedrijf G
+65;Gemeentebedrijf Havenbedrijf Amsterdam
+66;Gemeentebedrijf Inservice
+67;Gemeentebedrijf Stadsbank van Lening
+68;Gemeentebedrijf Stadsdrukkerij Amsterdam
+69;Gemeentebedrijf Afval Energie Bedrijf
+70;Westpoortbeheer
+71;Amsterdamse Bos
+72;Sporthallen Zuid
+73;Bureau Monumenten en Archeologie
+74;Materiaaldienst
+75;ICT-Beheergroep
+76;GVI
+77;Parkeergebouwen
+78;Projectbureau Zuidas
+79;Projectbureau Parkstad
+80;Projectbureau Noordwaarts
+81;Projectbureau IJburg
+82;Projectbureau IJtram
+83;Projectbureau Noord-Zuidlijn
+84;Niet-winst beogende instelling
+85;Winst beogende instelling
+86;Overig niet-natuurlijk persoon
+87;Particulier
+88;Rijk en Provincie
+89;Overige gemeentedienst
+91;Stadsdeel
+92;Stadsdeel, afd. vergunningen
+93;Kadaster
+94;Ymere (voormalige Woningbedrijven)
+95;Woningbouwvereniging
+98;Conversie
+99;Onbekend
+101;WBV De Alliantie
+102;WBV Eigen Haard Olympus wonen
+103;WBV De Key
+104;WBV Het Oosten
+105;WS Rochdale
+106;Protestantse Woningbouwvereninging
+107;Ymere
+108;WBV De Goede Woning
+109;WC Nieuw Amsterdam
+110;Alg. Woningbouw Vereniging

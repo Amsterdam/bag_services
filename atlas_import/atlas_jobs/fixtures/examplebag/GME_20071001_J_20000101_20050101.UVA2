@@ -1,0 +1,5 @@
+VAN;20000101
+TM;20050101
+HISTORISCHE_CYCLI;J
+sleutelVerzendend;Gemeentecode;Gemeentenaam;GemeenteWaarinOvergegaan;IndicatieVerzorgingsgebied;Geometrie;Mutatie-gebruiker;Indicatie-vervallen;TijdvakGeldigheid/begindatumTijdvakGeldigheid;TijdvakGeldigheid/einddatumTijdvakGeldigheid
+3630000000000;0363;Amsterdam;;J;;GVI;N;19000101;
