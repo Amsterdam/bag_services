@@ -57,5 +57,3 @@ class ImportGmtTest(TestCase):
         self.assertTrue(g.indicatie_verzorgingsgebied)
         self.assertEquals(g.mutatie_gebruiker, 'GVI')
         self.assertFalse(g.indicatie_vervallen)
-        self.assertEquals(g.geldigheid_begin, datetime.date(1900, 1, 1))
-        self.assertIsNone(g.geldigheid_eind)

@@ -31,5 +31,3 @@ class Gemeente(ImportStatusMixin, models.Model):
     indicatie_verzorgingsgebied = models.BooleanField(default=False)
     mutatie_gebruiker = models.CharField(max_length=30, null=True)
     indicatie_vervallen = models.BooleanField(default=False)
-    geldigheid_begin = models.DateField()
-    geldigheid_eind = models.DateField(null=True)

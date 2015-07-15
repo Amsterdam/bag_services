@@ -1,8 +1,9 @@
 from contextlib import contextmanager
 import csv
 import os
-import datetime
+
 from atlas import models
+from . import uva2
 
 
 @contextmanager
@@ -13,20 +14,6 @@ def uva_reader(source):
             next(rows)
 
         yield rows
-
-
-def uva_indicatie(s):
-    """
-    Translates an indicatie (J/N) to True/False
-    """
-    return {'J': True, 'N': False}.get(s, False)
-
-
-def uva_datum(s):
-    if not s:
-        return None
-
-    return datetime.datetime.strptime(s, "%Y%m%d")
 
 
 class RowBasedUvaTask(object):
@@ -69,21 +56,21 @@ class ImportGmeTask(RowBasedUvaTask):
     name = "import GMT"
 
     def process_row(self, r):
+        if not uva2.uva_geldig(r[8], r[9]):
+            return
+
         id = r[0]
         code = r[1]
         naam = r[2]
         overgegaan = r[3]
-        verzorgingsgebied = uva_indicatie(r[4])
+        verzorgingsgebied = uva2.uva_indicatie(r[4])
         geometrie = r[5]
         mutatie = r[6]
-        vervallen = uva_indicatie(r[7])
-        geldigheid_begin = uva_datum(r[8])
-        geldigheid_eind = uva_datum(r[9])
+        vervallen = uva2.uva_indicatie(r[7])
 
         g, _ = models.Gemeente.objects.get_or_create(pk=id, defaults=dict(
             code=code,
             naam=naam,
-            geldigheid_begin=geldigheid_begin,
         ))
         g.code = code
         g.naam = naam
@@ -91,8 +78,6 @@ class ImportGmeTask(RowBasedUvaTask):
         g.indicatie_verzorgingsgebied = verzorgingsgebied
         g.mutatie_gebruiker = mutatie
         g.indicatie_vervallen = vervallen
-        g.geldigheid_begin = geldigheid_begin
-        g.geldigheid_eind = geldigheid_eind
         g.save()
 
 
