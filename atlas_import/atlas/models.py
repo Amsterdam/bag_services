@@ -20,3 +20,16 @@ class Status(ImportStatusMixin, models.Model):
 
     code = models.CharField(max_length=4, primary_key=True)
     omschrijving = models.CharField(max_length=150, null=True)
+
+
+class Gemeente(ImportStatusMixin, models.Model):
+
+    id = models.CharField(max_length=14, primary_key=True)
+    code = models.CharField(max_length=4, unique=True)
+    naam = models.CharField(max_length=40)
+    gemeente_waarin_overgegaan = models.CharField(max_length=4, null=True)
+    indicatie_verzorgingsgebied = models.BooleanField(default=False)
+    mutatie_gebruiker = models.CharField(max_length=30, null=True)
+    indicatie_vervallen = models.BooleanField(default=False)
+    geldigheid_begin = models.DateField()
+    geldigheid_eind = models.DateField(null=True)
