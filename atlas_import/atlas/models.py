@@ -38,3 +38,12 @@ class Stadsdeel(ImportStatusMixin, models.Model):
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
     gemeente = models.ForeignKey(Gemeente)
+
+
+class Buurt(ImportStatusMixin, models.Model):
+
+    id = models.CharField(max_length=14, primary_key=True)
+    code = models.CharField(max_length=3, unique=True)
+    naam = models.CharField(max_length=40)
+    vervallen = models.BooleanField(default=False)
+    stadsdeel = models.ForeignKey(Stadsdeel)

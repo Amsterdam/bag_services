@@ -71,3 +71,24 @@ class ImportSdlTest(TestCase):
         self.assertEquals(s.naam, 'Oud-Zuid (V)')
         self.assertEquals(s.vervallen, False)
         self.assertEquals(s.gemeente.id, '3630000000000')
+
+
+class ImportBrtTest(TestCase):
+    def test_import(self):
+        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportSdlTask('atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2').execute()
+
+        source = 'atlas_jobs/fixtures/examplebag/BRT_20071001_J_20000101_20050101.UVA2'
+        task = jobs.ImportBrtTask(source)
+        task.execute()
+
+        imported = models.Buurt.objects.all()
+        self.assertEqual(len(imported), 64)
+
+        b = models.Buurt.objects.get(pk='3630001910451')
+
+        self.assertEquals(b.id, '3630001910451')
+        self.assertEquals(b.code, '870')
+        self.assertEquals(b.naam, 'Westlandgracht (870)')
+        self.assertEquals(b.vervallen, True)
+        self.assertEquals(b.stadsdeel.id, '3630001910418')

@@ -112,8 +112,39 @@ class ImportSdlTask(RowBasedUvaTask):
         ))
         s.code = code
         s.naam = naam
+        s.vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
         s.gemeente = gemeente
         s.save()
+
+
+class ImportBrtTask(RowBasedUvaTask):
+
+    name = "import BRT"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['BRTSDL/TijdvakRelatie/begindatumRelatie'],
+                               r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        id = r['sleutelVerzendend']
+        code = r['Buurtcode']
+        naam = r['Buurtnaam']
+        stadsdeel = models.Stadsdeel.objects.get(pk=r['BRTSDL/SDL/sleutelVerzendend'])
+
+        b, _ = models.Buurt.objects.get_or_create(pk=id, defaults=dict(
+            code=code,
+            naam=naam,
+            stadsdeel=stadsdeel,
+        ))
+        b.code = code
+        b.naam = naam
+        b.stadsdeel = stadsdeel
+        b.vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
+        b.save()
 
 
 class ImportJob(object):
@@ -129,6 +160,7 @@ class ImportJob(object):
             ImportStsTask(os.path.join(self.base_dir, 'STS_20071001_J_20000101_20050101.UVA2')),
             ImportGmeTask(os.path.join(self.base_dir, 'GME_20071001_J_20000101_20050101.UVA2')),
             ImportSdlTask(os.path.join(self.base_dir, 'SDL_20071001_J_20000101_20050101.UVA2')),
+            ImportBrtTask(os.path.join(self.base_dir, 'BRT_20071001_J_20000101_20050101.UVA2')),
         ]
 
 
