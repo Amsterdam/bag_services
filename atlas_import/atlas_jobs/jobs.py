@@ -6,14 +6,24 @@ from atlas import models
 from . import uva2
 
 
+def _wrap_uva_row(r, headers):
+    return dict(zip(headers, r))
+
+
 @contextmanager
 def uva_reader(source):
     with open(source) as f:
         rows = csv.reader(f, delimiter=';')
-        for _ in range(4):
-            next(rows)
+        # skip VAN
+        next(rows)
+        # skip TM
+        next(rows)
+        # skip Historie
+        next(rows)
 
-        yield rows
+        headers = next(rows)
+
+        yield (_wrap_uva_row(r, headers) for r in rows)
 
 
 class RowBasedUvaTask(object):
@@ -36,8 +46,8 @@ class ImportBrnTask(RowBasedUvaTask):
     name = "import BRN"
 
     def process_row(self, r):
-        b, _ = models.Bron.objects.get_or_create(code=r[0])
-        b.omschrijving = r[1]
+        b, _ = models.Bron.objects.get_or_create(code=r['Code'])
+        b.omschrijving = r['Omschrijving']
         b.save()
 
 
@@ -46,8 +56,8 @@ class ImportStsTask(RowBasedUvaTask):
     name = "import STS"
 
     def process_row(self, r):
-        s, _ = models.Status.objects.get_or_create(code=r[0])
-        s.omschrijving = r[1]
+        s, _ = models.Status.objects.get_or_create(code=r['Code'])
+        s.omschrijving = r['Omschrijving']
         s.save()
 
 
@@ -56,14 +66,15 @@ class ImportGmeTask(RowBasedUvaTask):
     name = "import GMT"
 
     def process_row(self, r):
-        if not uva2.uva_geldig(r[8], r[9]):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return
 
-        id = r[0]
-        code = r[1]
-        naam = r[2]
-        verzorgingsgebied = uva2.uva_indicatie(r[4])
-        vervallen = uva2.uva_indicatie(r[7])
+        id = r['sleutelVerzendend']
+        code = r['Gemeentecode']
+        naam = r['Gemeentenaam']
+        verzorgingsgebied = uva2.uva_indicatie(r['IndicatieVerzorgingsgebied'])
+        vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
 
         g, _ = models.Gemeente.objects.get_or_create(pk=id, defaults=dict(
             code=code,
@@ -81,16 +92,18 @@ class ImportSdlTask(RowBasedUvaTask):
     name = "import SDL"
 
     def process_row(self, r):
-        if not uva2.uva_geldig(r[8], r[9]):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return
 
-        if not uva2.uva_geldig(r[12], r[13]):
+        if not uva2.uva_geldig(r['SDLGME/TijdvakRelatie/begindatumRelatie'],
+                               r['SDLGME/TijdvakRelatie/einddatumRelatie']):
             return
 
-        id = r[0]
-        code = r[1]
-        naam = r[2]
-        gemeente = models.Gemeente.objects.get(pk=r[10])
+        id = r['sleutelVerzendend']
+        code = r['Stadsdeelcode']
+        naam = r['Stadsdeelnaam']
+        gemeente = models.Gemeente.objects.get(pk=r['SDLGME/GME/sleutelVerzendend'])
 
         s, _ = models.Stadsdeel.objects.get_or_create(pk=id, defaults=dict(
             code=code,

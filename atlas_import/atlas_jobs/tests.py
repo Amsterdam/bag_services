@@ -1,4 +1,3 @@
-import datetime
 from django.test import TestCase
 
 # Create your tests here.
@@ -7,7 +6,6 @@ from atlas import models
 
 
 class ImportBrnTest(TestCase):
-
     def test_import(self):
         source = 'atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2'
         task = jobs.ImportBrnTask(source)
@@ -23,7 +21,6 @@ class ImportBrnTest(TestCase):
 
 
 class ImportStsTest(TestCase):
-
     def test_import(self):
         source = 'atlas_jobs/fixtures/examplebag/STS_20071001_J_20000101_20050101.UVA2'
         task = jobs.ImportStsTask(source)
@@ -39,7 +36,6 @@ class ImportStsTest(TestCase):
 
 
 class ImportGmtTest(TestCase):
-
     def test_import(self):
         source = 'atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2'
         task = jobs.ImportGmeTask(source)
@@ -58,9 +54,8 @@ class ImportGmtTest(TestCase):
 
 
 class ImportSdlTest(TestCase):
-
     def test_import(self):
-        g = models.Gemeente.objects.create(pk='3630000000000', naam='Amsterdam', code='0363')
+        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
 
         source = 'atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2'
         task = jobs.ImportSdlTask(source)
@@ -75,4 +70,4 @@ class ImportSdlTest(TestCase):
         self.assertEquals(s.code, 'V')
         self.assertEquals(s.naam, 'Oud-Zuid (V)')
         self.assertEquals(s.vervallen, False)
-        self.assertEquals(s.gemeente, g)
+        self.assertEquals(s.gemeente.id, '3630000000000')
