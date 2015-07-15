@@ -7,6 +7,7 @@
         <thead>
         <tr>
             <th>Name</th>
+            <th>Execution</th>
             <th>Started</th>
             <th>Finished</th>
             <th>Status</th>
@@ -17,6 +18,7 @@
         {% for obj in object_list %}
             <tr>
                 <td><a href="{% url 'job-detail' obj.id %}">{{ obj.name }}</a></td>
+                <td><a href="{% url 'job-detail' obj.id %}">{{ obj.id }}</a></td>
                 <td>{{ obj.date_started }}</td>
                 <td>{{ obj.date_finished }}</td>
                 <td>{{ obj.get_status_display }}</td>
