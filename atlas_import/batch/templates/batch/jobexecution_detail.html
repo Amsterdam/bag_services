@@ -15,7 +15,7 @@
 
         <tbody>
         {% for obj in object.task_executions.all %}
-            <tr>
+            <tr class="{% if obj.status == 2 %}danger{% elif obj.status == 0 %}info{% endif %}">
                 <td>{{ obj.name }}</td>
                 <td>{{ obj.date_started }}</td>
                 <td>{{ obj.date_finished }}</td>

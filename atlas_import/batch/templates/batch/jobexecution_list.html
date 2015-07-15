@@ -16,7 +16,7 @@
 
         <tbody>
         {% for obj in object_list %}
-            <tr>
+            <tr class="{% if obj.status == 2 %}danger{% elif obj.status == 0 %}info{% endif %}">
                 <td><a href="{% url 'job-detail' obj.id %}">{{ obj.name }}</a></td>
                 <td><a href="{% url 'job-detail' obj.id %}">{{ obj.id }}</a></td>
                 <td>{{ obj.date_started }}</td>
