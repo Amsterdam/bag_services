@@ -62,10 +62,7 @@ class ImportGmeTask(RowBasedUvaTask):
         id = r[0]
         code = r[1]
         naam = r[2]
-        overgegaan = r[3]
         verzorgingsgebied = uva2.uva_indicatie(r[4])
-        geometrie = r[5]
-        mutatie = r[6]
         vervallen = uva2.uva_indicatie(r[7])
 
         g, _ = models.Gemeente.objects.get_or_create(pk=id, defaults=dict(
@@ -74,11 +71,36 @@ class ImportGmeTask(RowBasedUvaTask):
         ))
         g.code = code
         g.naam = naam
-        g.gemeente_waarin_overgegaan = overgegaan
-        g.indicatie_verzorgingsgebied = verzorgingsgebied
-        g.mutatie_gebruiker = mutatie
-        g.indicatie_vervallen = vervallen
+        g.verzorgingsgebied = verzorgingsgebied
+        g.vervallen = vervallen
         g.save()
+
+
+class ImportSdlTask(RowBasedUvaTask):
+
+    name = "import SDL"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r[8], r[9]):
+            return
+
+        if not uva2.uva_geldig(r[12], r[13]):
+            return
+
+        id = r[0]
+        code = r[1]
+        naam = r[2]
+        gemeente = models.Gemeente.objects.get(pk=r[10])
+
+        s, _ = models.Stadsdeel.objects.get_or_create(pk=id, defaults=dict(
+            code=code,
+            naam=naam,
+            gemeente=gemeente,
+        ))
+        s.code = code
+        s.naam = naam
+        s.gemeente = gemeente
+        s.save()
 
 
 class ImportJob(object):
@@ -93,4 +115,7 @@ class ImportJob(object):
             ImportBrnTask(os.path.join(self.base_dir, 'BRN_20071001_J_20000101_20050101.UVA2')),
             ImportStsTask(os.path.join(self.base_dir, 'STS_20071001_J_20000101_20050101.UVA2')),
             ImportGmeTask(os.path.join(self.base_dir, 'GME_20071001_J_20000101_20050101.UVA2')),
+            ImportSdlTask(os.path.join(self.base_dir, 'SDL_20071001_J_20000101_20050101.UVA2')),
         ]
+
+

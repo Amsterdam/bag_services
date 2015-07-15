@@ -27,7 +27,14 @@ class Gemeente(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
-    gemeente_waarin_overgegaan = models.CharField(max_length=4, null=True)
-    indicatie_verzorgingsgebied = models.BooleanField(default=False)
-    mutatie_gebruiker = models.CharField(max_length=30, null=True)
-    indicatie_vervallen = models.BooleanField(default=False)
+    verzorgingsgebied = models.BooleanField(default=False)
+    vervallen = models.BooleanField(default=False)
+
+
+class Stadsdeel(ImportStatusMixin, models.Model):
+
+    id = models.CharField(max_length=14, primary_key=True)
+    code = models.CharField(max_length=3, unique=True)
+    naam = models.CharField(max_length=40)
+    vervallen = models.BooleanField(default=False)
+    gemeente = models.ForeignKey(Gemeente)
