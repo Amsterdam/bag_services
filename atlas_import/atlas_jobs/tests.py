@@ -8,7 +8,6 @@ from atlas import models
 class ImportBrnTest(TestCase):
 
     def test_import(self):
-
         source = 'atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2'
         task = jobs.ImportBrnTask(source)
         task.execute()
@@ -20,3 +19,19 @@ class ImportBrnTest(TestCase):
 
         b = models.Bron.objects.get(pk='13')
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
+
+
+class ImportStsTest(TestCase):
+
+    def test_import(self):
+        source = 'atlas_jobs/fixtures/examplebag/STS_20071001_J_20000101_20050101.UVA2'
+        task = jobs.ImportStsTask(source)
+        task.execute()
+
+        imported = models.Status.objects.all()
+        self.assertEqual(len(imported), 19)
+
+        self.assertIsNotNone(models.Status.objects.get(pk='10'))
+
+        s = models.Status.objects.get(pk='01')
+        self.assertEqual(s.omschrijving, 'Buitengebruik i.v.m. renovatie')
