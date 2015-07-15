@@ -42,6 +42,9 @@ class TaskExecution(models.Model):
     status = models.IntegerField(default=STATUS_STARTED, choices=STATUS_CHOICES)
     job = models.ForeignKey(JobExecution, related_name="task_executions")
 
+    class Meta:
+        ordering = ("date_started", )
+
 
 def execute(job):
     log.info("Creating job")
