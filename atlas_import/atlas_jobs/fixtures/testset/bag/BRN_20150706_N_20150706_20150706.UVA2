@@ -1,12 +1,11 @@
-VAN;20000101
-TM;20050101
-HISTORISCHE_CYCLI;J
+VAN;20150706
+TM;20150706
+HISTORISCHE_CYCLI;N
 Code;Omschrijving
-PST;Postcode verwerking
-1;Stadsdeel Amsterdam-Noord (1)
+1;Stadsdeel Noord (N)
 2;Stadsdeel Amsterdam Oud Zuid (2)
 3;Stadsdeel De Baarsjes (3)
-4;Stadsdeel Amsterdam-Centrum (4)
+4;Stadsdeel Centrum (A)
 5;Stadsdeel Bos en Lommer (5)
 6;Stadsdeel Geuzenveld/Slotermeer (6)
 7;Stadsdeel Oost/Watergraafsmeer (7)
@@ -16,8 +15,8 @@ PST;Postcode verwerking
 11;Stadsdeel Westerpark (11)
 12;Stadsdeel Zeeburg (12)
 13;Stadsdeel Zuideramstel (13)
-14;Stadsdeel Zuidoost (14)
-15;Stadsdeel Westpoort (15)
+14;Stadsdeel Zuidoost (T)
+15;Stadsdeel Westpoort (B)
 20;Dienst Accountancy & Consultancy Amsterdam (20)
 21;Dienst Amsterdam Beheer (21)
 22;Dienst Amsterdams Historisch Museum (22)
@@ -98,3 +97,8 @@ PST;Postcode verwerking
 108;WBV De Goede Woning
 109;WC Nieuw Amsterdam
 110;Alg. Woningbouw Vereniging
+PST;Postcode verwerking
+201;Stadsdeel West (E)
+202;Stadsdeel Nieuw-West (F)
+203;Stadsdeel Zuid (K)
+204;Stadsdeel Oost (M)

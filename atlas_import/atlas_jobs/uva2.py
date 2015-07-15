@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import csv
 import datetime
+import os
 
 __author__ = 'yigalduppen'
 
@@ -34,7 +35,7 @@ def _wrap_uva_row(r, headers):
 
 @contextmanager
 def uva_reader(source):
-    with open(source) as f:
+    with open(source, encoding='cp1252') as f:
         rows = csv.reader(f, delimiter=';')
         # skip VAN
         next(rows)
@@ -46,3 +47,10 @@ def uva_reader(source):
         headers = next(rows)
 
         yield (_wrap_uva_row(r, headers) for r in rows)
+
+
+def resolve_file(path, code):
+    prefix = code + '_'
+    matches = [f for f in os.listdir(path) if f.startswith(prefix)]
+    assert len(matches) == 1
+    return os.path.join(path, matches[0])

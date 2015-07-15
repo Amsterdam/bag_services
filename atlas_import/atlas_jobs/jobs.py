@@ -1,7 +1,9 @@
-import os
+import logging
 
 from atlas import models
 from . import uva2
+
+log = logging.getLogger(__name__)
 
 
 def merge(model, pk, values):
@@ -17,9 +19,22 @@ def merge(model, pk, values):
     obj.save()
 
 
+def foreign_key(model, key):
+    if not key:
+        return None
+
+    try:
+        return model.objects.get(pk=key)
+    except model.DoesNotExist:
+        log.warning("Could not load object of type %s with key %s", model, key)
+        return None
+
+
 class RowBasedUvaTask(object):
+    code = None
+
     def __init__(self, source):
-        self.source = source
+        self.source = uva2.resolve_file(source, self.code)
 
     def execute(self):
         with uva2.uva_reader(self.source) as rows:
@@ -32,6 +47,7 @@ class RowBasedUvaTask(object):
 
 class ImportBrnTask(RowBasedUvaTask):
     name = "import BRN"
+    code = "BRN"
 
     def process_row(self, r):
         merge(models.Bron, r['Code'], dict(
@@ -41,6 +57,7 @@ class ImportBrnTask(RowBasedUvaTask):
 
 class ImportStsTask(RowBasedUvaTask):
     name = "import STS"
+    code = "STS"
 
     def process_row(self, r):
         merge(models.Status, r['Code'], dict(
@@ -49,7 +66,8 @@ class ImportStsTask(RowBasedUvaTask):
 
 
 class ImportGmeTask(RowBasedUvaTask):
-    name = "import GMT"
+    name = "import GME"
+    code = "GME"
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -66,6 +84,7 @@ class ImportGmeTask(RowBasedUvaTask):
 
 class ImportSdlTask(RowBasedUvaTask):
     name = "import SDL"
+    code = "SDL"
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -86,6 +105,7 @@ class ImportSdlTask(RowBasedUvaTask):
 
 class ImportBrtTask(RowBasedUvaTask):
     name = "import BRT"
+    code = "BRT"
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -106,6 +126,7 @@ class ImportBrtTask(RowBasedUvaTask):
 
 class ImportLigTask(RowBasedUvaTask):
     name = "import LIG"
+    code = "LIG"
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -124,16 +145,12 @@ class ImportLigTask(RowBasedUvaTask):
                                r['LIGBRT/TijdvakRelatie/einddatumRelatie']):
             return
 
-        bron = r['LIGBRN/BRN/Code']
-        status = r['LIGSTS/STS/Code']
-        buurt = r['LIGBRT/BRT/Buurtcode']
         merge(models.Ligplaats, r['sleutelverzendend'], dict(
-            identificatie=int(r['Ligplaatsidentificatie']),
-            ligplaats_nummer=int(r['LigplaatsnummerGemeente']),
+            identificatie=r['Ligplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            bron=models.Bron.objects.get(pk=bron) if bron else None,
-            status=models.Status.objects.get(pk=status) if status else None,
-            # buurt=models.Buurt.objects.get(pk=buurt) if buurt else None,
+            bron=foreign_key(models.Bron, r['LIGBRN/BRN/Code']),
+            status=foreign_key(models.Status, r['LIGSTS/STS/Code']),
+            buurt=foreign_key(models.Buurt, r['LIGBRT/BRT/sleutelVerzendend'])
         ))
 
 
@@ -141,16 +158,15 @@ class ImportJob(object):
     name = "atlas-import"
 
     def __init__(self):
-        self.base_dir = 'atlas_jobs/fixtures/examplebag'
+        self.bag = 'atlas_jobs/fixtures/testset/bag'
+        self.gebieden = 'atlas_jobs/fixtures/testset/gebieden'
 
     def tasks(self):
         return [
-            ImportBrnTask(os.path.join(self.base_dir, 'BRN_20071001_J_20000101_20050101.UVA2')),
-            ImportStsTask(os.path.join(self.base_dir, 'STS_20071001_J_20000101_20050101.UVA2')),
-            ImportGmeTask(os.path.join(self.base_dir, 'GME_20071001_J_20000101_20050101.UVA2')),
-            ImportSdlTask(os.path.join(self.base_dir, 'SDL_20071001_J_20000101_20050101.UVA2')),
-            ImportBrtTask(os.path.join(self.base_dir, 'BRT_20071001_J_20000101_20050101.UVA2')),
-            ImportLigTask(os.path.join(self.base_dir, 'LIG_20071001_J_20000101_20050101.UVA2'))
+            ImportBrnTask(self.bag),
+            ImportStsTask(self.bag),
+            ImportGmeTask(self.gebieden),
+            ImportSdlTask(self.gebieden),
+            ImportBrtTask(self.gebieden),
+            ImportLigTask(self.bag),
         ]
-
-

@@ -5,14 +5,17 @@ from atlas_jobs import jobs
 from atlas import models
 
 
+BAG = 'atlas_jobs/fixtures/testset/bag'
+GEBIEDEN = 'atlas_jobs/fixtures/testset/gebieden'
+
+
 class ImportBrnTest(TestCase):
     def test_import(self):
-        source = 'atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportBrnTask(source)
+        task = jobs.ImportBrnTask(BAG)
         task.execute()
 
         imported = models.Bron.objects.all()
-        self.assertEqual(len(imported), 96)
+        self.assertEqual(len(imported), 100)
 
         self.assertIsNotNone(models.Bron.objects.get(pk='PST'))
 
@@ -20,23 +23,21 @@ class ImportBrnTest(TestCase):
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
 
     def test_import_twice(self):
-        source = 'atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportBrnTask(source)
+        task = jobs.ImportBrnTask(BAG)
         task.execute()
         task.execute()
 
         imported = models.Bron.objects.all()
-        self.assertEqual(len(imported), 96)
+        self.assertEqual(len(imported), 100)
 
 
 class ImportStsTest(TestCase):
     def test_import(self):
-        source = 'atlas_jobs/fixtures/examplebag/STS_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportStsTask(source)
+        task = jobs.ImportStsTask(BAG)
         task.execute()
 
         imported = models.Status.objects.all()
-        self.assertEqual(len(imported), 19)
+        self.assertEqual(len(imported), 43)
 
         self.assertIsNotNone(models.Status.objects.get(pk='10'))
 
@@ -44,18 +45,17 @@ class ImportStsTest(TestCase):
         self.assertEqual(s.omschrijving, 'Buitengebruik i.v.m. renovatie')
 
 
-class ImportGmtTest(TestCase):
+class ImportGmeTest(TestCase):
     def test_import(self):
-        source = 'atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportGmeTask(source)
+        task = jobs.ImportGmeTask(GEBIEDEN)
         task.execute()
 
         imported = models.Gemeente.objects.all()
         self.assertEqual(len(imported), 1)
 
-        g = models.Gemeente.objects.get(pk='3630000000000')
+        g = models.Gemeente.objects.get(pk='03630000000000')
 
-        self.assertEquals(g.id, '3630000000000')
+        self.assertEquals(g.id, '03630000000000')
         self.assertEquals(g.code, '0363')
         self.assertEquals(g.naam, 'Amsterdam')
         self.assertTrue(g.verzorgingsgebied)
@@ -64,65 +64,61 @@ class ImportGmtTest(TestCase):
 
 class ImportSdlTest(TestCase):
     def test_import(self):
-        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
 
-        source = 'atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportSdlTask(source)
+        task = jobs.ImportSdlTask(GEBIEDEN)
         task.execute()
 
         imported = models.Stadsdeel.objects.all()
-        self.assertEqual(len(imported), 15)
+        self.assertEqual(len(imported), 8)
 
-        s = models.Stadsdeel.objects.get(pk='3630001910428')
+        s = models.Stadsdeel.objects.get(pk='03630011872037')
 
-        self.assertEquals(s.id, '3630001910428')
-        self.assertEquals(s.code, 'V')
-        self.assertEquals(s.naam, 'Oud-Zuid (V)')
+        self.assertEquals(s.id, '03630011872037')
+        self.assertEquals(s.code, 'F')
+        self.assertEquals(s.naam, 'Nieuw-West')
         self.assertEquals(s.vervallen, False)
-        self.assertEquals(s.gemeente.id, '3630000000000')
+        self.assertEquals(s.gemeente.id, '03630000000000')
 
 
 class ImportBrtTest(TestCase):
     def test_import(self):
-        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
-        jobs.ImportSdlTask('atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportSdlTask(GEBIEDEN).execute()
 
-        source = 'atlas_jobs/fixtures/examplebag/BRT_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportBrtTask(source)
+        task = jobs.ImportBrtTask(GEBIEDEN)
         task.execute()
 
         imported = models.Buurt.objects.all()
-        self.assertEqual(len(imported), 64)
+        self.assertEqual(len(imported), 481)
 
-        b = models.Buurt.objects.get(pk='3630001910451')
+        b = models.Buurt.objects.get(pk='03630000000796')
 
-        self.assertEquals(b.id, '3630001910451')
-        self.assertEquals(b.code, '870')
-        self.assertEquals(b.naam, 'Westlandgracht (870)')
-        self.assertEquals(b.vervallen, True)
-        self.assertEquals(b.stadsdeel.id, '3630001910418')
+        self.assertEquals(b.id, '03630000000796')
+        self.assertEquals(b.code, '44b')
+        self.assertEquals(b.naam, 'Westlandgrachtbuurt')
+        self.assertEquals(b.vervallen, False)
+        self.assertEquals(b.stadsdeel.id, '03630011872038')
 
 
 class ImportLigTest(TestCase):
     def test_import(self):
-        jobs.ImportBrnTask('atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2').execute()
-        jobs.ImportStsTask('atlas_jobs/fixtures/examplebag/STS_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportBrnTask(BAG).execute()
+        jobs.ImportStsTask(BAG).execute()
 
-        jobs.ImportGmeTask('atlas_jobs/fixtures/examplebag/GME_20071001_J_20000101_20050101.UVA2').execute()
-        jobs.ImportSdlTask('atlas_jobs/fixtures/examplebag/SDL_20071001_J_20000101_20050101.UVA2').execute()
-        jobs.ImportBrtTask('atlas_jobs/fixtures/examplebag/BRT_20071001_J_20000101_20050101.UVA2').execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportSdlTask(GEBIEDEN).execute()
+        jobs.ImportBrtTask(GEBIEDEN).execute()
 
-        source = 'atlas_jobs/fixtures/examplebag/LIG_20071001_J_20000101_20050101.UVA2'
-        task = jobs.ImportLigTask(source)
+        task = jobs.ImportLigTask(BAG)
         task.execute()
 
         imported = models.Ligplaats.objects.all()
-        self.assertEqual(len(imported), 62)
+        self.assertEqual(len(imported), 96)
 
-        l = models.Ligplaats.objects.get(pk='3630000956442')
-        self.assertEquals(l.identificatie, 3630000956442)
-        self.assertEquals(l.ligplaats_nummer, 462020)
+        l = models.Ligplaats.objects.get(pk='03630001024868')
+        self.assertEquals(l.identificatie, '03630001024868')
         self.assertEquals(l.vervallen, False)
-        self.assertEquals(l.bron.code, '4')
-        self.assertEquals(l.status, None)
-        # self.assertEquals(l.buurt.id, '3630001910926')
+        self.assertIsNone(l.bron)
+        self.assertEquals(l.status.code, '33')
+        self.assertEquals(l.buurt.id, '03630000000100')

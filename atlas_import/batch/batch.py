@@ -19,7 +19,7 @@ def execute(job):
 
         try:
             _execute_task(job_execution, task_name, task_function)
-        except Exception:
+        except BaseException:
             log.exception("Job failed: %s", task_name)
             job_execution.date_finished = timezone.now()
             job_execution.status = JobExecution.STATUS_FAILED
@@ -40,7 +40,7 @@ def _execute_task(job_execution, task_name, task_function):
 
     try:
         task_function()
-    except Exception as e:
+    except BaseException as e:
         log.exception("Task failed: %s", task_name)
         task_execution.date_finished = timezone.now()
         task_execution.status = TaskExecution.STATUS_FAILED
