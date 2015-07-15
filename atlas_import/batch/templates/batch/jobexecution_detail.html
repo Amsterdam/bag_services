@@ -16,7 +16,7 @@
         <tbody>
         {% for obj in object.task_executions.all %}
             <tr>
-                <td><a href="{% url 'job-detail' obj.id %}">{{ obj.name }}</a></td>
+                <td>{{ obj.name }}</td>
                 <td>{{ obj.date_started }}</td>
                 <td>{{ obj.date_finished }}</td>
                 <td>{{ obj.get_status_display }}</td>
