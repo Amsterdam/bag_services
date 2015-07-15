@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     # 'django.contrib.staticfiles',
 
     'batch',
+    'atlas_jobs',
 )
 
 MIDDLEWARE_CLASSES = (

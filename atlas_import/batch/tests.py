@@ -1,5 +1,6 @@
 from django.test import TestCase
 from . import models
+import batch.batch
 
 
 class EmptyJob(object):
@@ -39,20 +40,20 @@ class SimpleJob(object):
 class JobTest(TestCase):
 
     def test_job_results_in_execution(self):
-        e = models.execute(EmptyJob())
+        e = batch.batch.execute(EmptyJob())
 
         self.assertIsNotNone(e)
         self.assertIsNotNone(e.date_started)
         self.assertEqual(e.name, "empty")
 
     def test_successful_job_results_in_successful_execution(self):
-        e = models.execute(EmptyJob())
+        e = batch.batch.execute(EmptyJob())
 
         self.assertIsNotNone(e.date_finished)
         self.assertEqual(e.status, models.JobExecution.STATUS_FINISHED)
 
     def test_failed_job_results_in_failed_execution(self):
-        e = models.execute(FailedJob())
+        e = batch.batch.execute(FailedJob())
 
         self.assertIsNotNone(e.date_finished)
         self.assertEqual(e.status, models.JobExecution.STATUS_FAILED)
@@ -64,7 +65,7 @@ class JobTest(TestCase):
             nonlocal done
             done = True
 
-        e = models.execute(SimpleJob("simple", update_done))
+        e = batch.batch.execute(SimpleJob("simple", update_done))
         self.assertEqual(e.status, models.JobExecution.STATUS_FINISHED)
         self.assertEqual(done, True)
 
@@ -72,7 +73,7 @@ class JobTest(TestCase):
         def noop():
             pass
 
-        e = models.execute(SimpleJob("simple", noop, noop))
+        e = batch.batch.execute(SimpleJob("simple", noop, noop))
         self.assertEqual(e.status, models.JobExecution.STATUS_FINISHED)
         self.assertIsNotNone(e.task_executions)
 
