@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+import csv
 import datetime
 
 __author__ = 'yigalduppen'
@@ -24,3 +26,23 @@ def uva_geldig(start, eind):
     now = datetime.date.today()
 
     return e is None or (s <= now < e)
+
+
+def _wrap_uva_row(r, headers):
+    return dict(zip(headers, r))
+
+
+@contextmanager
+def uva_reader(source):
+    with open(source) as f:
+        rows = csv.reader(f, delimiter=';')
+        # skip VAN
+        next(rows)
+        # skip TM
+        next(rows)
+        # skip Historie
+        next(rows)
+
+        headers = next(rows)
+
+        yield (_wrap_uva_row(r, headers) for r in rows)

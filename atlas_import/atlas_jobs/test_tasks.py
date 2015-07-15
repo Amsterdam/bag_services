@@ -19,6 +19,15 @@ class ImportBrnTest(TestCase):
         b = models.Bron.objects.get(pk='13')
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
 
+    def test_import_twice(self):
+        source = 'atlas_jobs/fixtures/examplebag/BRN_20071001_J_20000101_20050101.UVA2'
+        task = jobs.ImportBrnTask(source)
+        task.execute()
+        task.execute()
+
+        imported = models.Bron.objects.all()
+        self.assertEqual(len(imported), 96)
+
 
 class ImportStsTest(TestCase):
     def test_import(self):

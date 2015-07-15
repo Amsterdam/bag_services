@@ -1,38 +1,28 @@
-from contextlib import contextmanager
-import csv
 import os
 
 from atlas import models
 from . import uva2
 
 
-def _wrap_uva_row(r, headers):
-    return dict(zip(headers, r))
+def merge(model, pk, values):
+    obj, created = model.objects.get_or_create(pk=pk, defaults=values)
+    if created:
+        return
 
+    for attr, value in values.items():
+        stored = getattr(obj, attr)
+        if stored != value:
+            setattr(obj, attr, value)
 
-@contextmanager
-def uva_reader(source):
-    with open(source) as f:
-        rows = csv.reader(f, delimiter=';')
-        # skip VAN
-        next(rows)
-        # skip TM
-        next(rows)
-        # skip Historie
-        next(rows)
-
-        headers = next(rows)
-
-        yield (_wrap_uva_row(r, headers) for r in rows)
+    obj.save()
 
 
 class RowBasedUvaTask(object):
-
     def __init__(self, source):
         self.source = source
 
     def execute(self):
-        with uva_reader(self.source) as rows:
+        with uva2.uva_reader(self.source) as rows:
             for r in rows:
                 self.process_row(r)
 
@@ -40,29 +30,25 @@ class RowBasedUvaTask(object):
         raise NotImplementedError()
 
 
-
 class ImportBrnTask(RowBasedUvaTask):
-
     name = "import BRN"
 
     def process_row(self, r):
-        b, _ = models.Bron.objects.get_or_create(code=r['Code'])
-        b.omschrijving = r['Omschrijving']
-        b.save()
+        merge(models.Bron, r['Code'], dict(
+            omschrijving=r['Omschrijving']
+        ))
 
 
 class ImportStsTask(RowBasedUvaTask):
-
     name = "import STS"
 
     def process_row(self, r):
-        s, _ = models.Status.objects.get_or_create(code=r['Code'])
-        s.omschrijving = r['Omschrijving']
-        s.save()
+        merge(models.Status, r['Code'], dict(
+            omschrijving=r['Omschrijving']
+        ))
 
 
 class ImportGmeTask(RowBasedUvaTask):
-
     name = "import GMT"
 
     def process_row(self, r):
@@ -70,25 +56,15 @@ class ImportGmeTask(RowBasedUvaTask):
                                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return
 
-        id = r['sleutelVerzendend']
-        code = r['Gemeentecode']
-        naam = r['Gemeentenaam']
-        verzorgingsgebied = uva2.uva_indicatie(r['IndicatieVerzorgingsgebied'])
-        vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
-
-        g, _ = models.Gemeente.objects.get_or_create(pk=id, defaults=dict(
-            code=code,
-            naam=naam,
+        merge(models.Gemeente, r['sleutelVerzendend'], dict(
+            code=r['Gemeentecode'],
+            naam=r['Gemeentenaam'],
+            verzorgingsgebied=uva2.uva_indicatie(r['IndicatieVerzorgingsgebied']),
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
         ))
-        g.code = code
-        g.naam = naam
-        g.verzorgingsgebied = verzorgingsgebied
-        g.vervallen = vervallen
-        g.save()
 
 
 class ImportSdlTask(RowBasedUvaTask):
-
     name = "import SDL"
 
     def process_row(self, r):
@@ -100,25 +76,15 @@ class ImportSdlTask(RowBasedUvaTask):
                                r['SDLGME/TijdvakRelatie/einddatumRelatie']):
             return
 
-        id = r['sleutelVerzendend']
-        code = r['Stadsdeelcode']
-        naam = r['Stadsdeelnaam']
-        gemeente = models.Gemeente.objects.get(pk=r['SDLGME/GME/sleutelVerzendend'])
-
-        s, _ = models.Stadsdeel.objects.get_or_create(pk=id, defaults=dict(
-            code=code,
-            naam=naam,
-            gemeente=gemeente,
+        merge(models.Stadsdeel, r['sleutelVerzendend'], dict(
+            code=r['Stadsdeelcode'],
+            naam=r['Stadsdeelnaam'],
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            gemeente=models.Gemeente.objects.get(pk=r['SDLGME/GME/sleutelVerzendend']),
         ))
-        s.code = code
-        s.naam = naam
-        s.vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
-        s.gemeente = gemeente
-        s.save()
 
 
 class ImportBrtTask(RowBasedUvaTask):
-
     name = "import BRT"
 
     def process_row(self, r):
@@ -130,25 +96,15 @@ class ImportBrtTask(RowBasedUvaTask):
                                r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
             return
 
-        id = r['sleutelVerzendend']
-        code = r['Buurtcode']
-        naam = r['Buurtnaam']
-        stadsdeel = models.Stadsdeel.objects.get(pk=r['BRTSDL/SDL/sleutelVerzendend'])
-
-        b, _ = models.Buurt.objects.get_or_create(pk=id, defaults=dict(
-            code=code,
-            naam=naam,
-            stadsdeel=stadsdeel,
+        merge(models.Buurt, r['sleutelVerzendend'], dict(
+            code=r['Buurtcode'],
+            naam=r['Buurtnaam'],
+            stadsdeel=models.Stadsdeel.objects.get(pk=r['BRTSDL/SDL/sleutelVerzendend']),
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
         ))
-        b.code = code
-        b.naam = naam
-        b.stadsdeel = stadsdeel
-        b.vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
-        b.save()
 
 
 class ImportJob(object):
-
     name = "atlas-import"
 
     def __init__(self):
@@ -162,5 +118,3 @@ class ImportJob(object):
             ImportSdlTask(os.path.join(self.base_dir, 'SDL_20071001_J_20000101_20050101.UVA2')),
             ImportBrtTask(os.path.join(self.base_dir, 'BRT_20071001_J_20000101_20050101.UVA2')),
         ]
-
-
