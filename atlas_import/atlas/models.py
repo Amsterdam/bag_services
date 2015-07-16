@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.gis.db import models as geo
 
 class ImportStatusMixin(models.Model):
 
@@ -57,3 +57,6 @@ class Ligplaats(ImportStatusMixin, models.Model):
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
+    geometrie = geo.PolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()

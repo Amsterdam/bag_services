@@ -6,6 +6,7 @@ from atlas import models
 
 
 BAG = 'atlas_jobs/fixtures/testset/bag'
+BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
 GEBIEDEN = 'atlas_jobs/fixtures/testset/gebieden'
 
 
@@ -122,3 +123,42 @@ class ImportLigTest(TestCase):
         self.assertIsNone(l.bron)
         self.assertEquals(l.status.code, '33')
         self.assertEquals(l.buurt.id, '03630000000100')
+
+
+class ImportLigGeoTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportLigTask(BAG).execute()
+
+        task = jobs.ImportLigGeoTask(BAG_WKT)
+        task.execute()
+
+        imported = models.Ligplaats.objects.exclude(geometrie__isnull=True)
+        self.assertEqual(len(imported), 60)
+
+        l = models.Ligplaats.objects.get(pk='03630001024868')
+        self.assertIsNotNone(l.geometrie)
+
+
+
+
+
+# class Fix(TestCase):
+#     def test_fix(self):
+#         jobs.ImportStsTask(BAG).execute()
+#         jobs.ImportLigTask(BAG).execute()
+#
+#         import os
+#         import csv
+#
+#         with open(os.path.join(BAG_WKT, 'BAG_LIGPLAATS_GEOMETRIE.out'), mode='w') as out:
+#             w = csv.writer(out, delimiter='|')
+#             with open(os.path.join(BAG_WKT, 'BAG_LIGPLAATS_GEOMETRIE.dat')) as f:
+#                 for r in csv.reader(f, delimiter='|'):
+#                     id = r[0]
+#                     try:
+#                         models.Ligplaats.objects.get(pk='0' + id)
+#                         w.writerow([id, r[1]])
+#                         print("Fixed", id)
+#                     except models.Ligplaats.DoesNotExist:
+#                         print("Skipped", id)

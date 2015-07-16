@@ -1,4 +1,7 @@
+import csv
 import logging
+import os
+from django.contrib.gis.geos import GEOSGeometry
 
 from atlas import models
 from . import uva2
@@ -7,16 +10,7 @@ log = logging.getLogger(__name__)
 
 
 def merge(model, pk, values):
-    obj, created = model.objects.get_or_create(pk=pk, defaults=values)
-    if created:
-        return
-
-    for attr, value in values.items():
-        stored = getattr(obj, attr)
-        if stored != value:
-            setattr(obj, attr, value)
-
-    obj.save()
+    model.objects.update_or_create(pk=pk, defaults=values)
 
 
 def foreign_key(model, key):
@@ -154,11 +148,40 @@ class ImportLigTask(RowBasedUvaTask):
         ))
 
 
+class ImportLigGeoTask(object):
+    name = "import LIG WKT"
+    source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter='|')
+            for row in rows:
+                self.process_row(row)
+
+    def process_row(self, row):
+        ligplaats_id = '0' + row[0]
+        wkt = row[1]
+
+        try:
+            l = models.Ligplaats.objects.get(pk=ligplaats_id)
+            poly = GEOSGeometry(wkt)
+
+            l.geometrie = poly
+            l.save()
+        except models.Ligplaats.DoesNotExist:
+            log.warn("Could not load Ligplaats with key %s", ligplaats_id)
+
+
+
 class ImportJob(object):
     name = "atlas-import"
 
     def __init__(self):
         self.bag = 'atlas_jobs/fixtures/testset/bag'
+        self.bag_wkt = 'atlas_jobs/fixtures/testset/bag_wkt'
         self.gebieden = 'atlas_jobs/fixtures/testset/gebieden'
 
     def tasks(self):
@@ -169,4 +192,7 @@ class ImportJob(object):
             ImportSdlTask(self.gebieden),
             ImportBrtTask(self.gebieden),
             ImportLigTask(self.bag),
+            ImportLigGeoTask(self.bag_wkt),
         ]
+
+
