@@ -114,7 +114,7 @@ class ImportLigTest(TestCase):
         task.execute()
 
         imported = models.Ligplaats.objects.all()
-        self.assertEqual(len(imported), 96)
+        self.assertEqual(len(imported), 60)
 
         l = models.Ligplaats.objects.get(pk='03630001024868')
         self.assertEquals(l.identificatie, '03630001024868')
