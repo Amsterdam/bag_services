@@ -56,6 +56,18 @@ class ImportEgmTest(TestCase):
         self.assertEqual(a.omschrijving, 'Huur')
 
 
+class ImportFngTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportFngTask(BAG)
+        task.execute()
+
+        imported = models.Financieringswijze.objects.all()
+        self.assertEqual(len(imported), 19)
+
+        a = models.Financieringswijze.objects.get(pk='200')
+        self.assertEqual(a.omschrijving, 'Premiehuur Profit (200)')
+
+
 class ImportStsTest(TestCase):
     def test_import(self):
         task = jobs.ImportStsTask(BAG)

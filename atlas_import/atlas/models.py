@@ -46,6 +46,11 @@ class Eigendomsverhouding(ImportStatusMixin, CodeOmschrijvingMixin, models.Model
         return "Eigendomsverhouding({})".format(self.code)
 
 
+class Financieringswijze(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+    def __str__(self):
+        return "Financieringswijze({})".format(self.code)
+
+
 class Gemeente(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)

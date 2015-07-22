@@ -73,6 +73,12 @@ class ImportEgmTask(CodeOmschrijvingUvaTask):
     model = models.Eigendomsverhouding
 
 
+class ImportFngTask(CodeOmschrijvingUvaTask):
+    name = "import FNG"
+    code = "FNG"
+    model = models.Financieringswijze
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"
