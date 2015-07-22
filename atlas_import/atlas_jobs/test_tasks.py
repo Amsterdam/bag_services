@@ -104,6 +104,17 @@ class ImportLocTest(TestCase):
         self.assertEqual(a.omschrijving, 'L-zijde')
 
 
+class ImportTggTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportTggTask(BAG)
+        task.execute()
+
+        imported = models.Toegang.objects.all()
+        self.assertEqual(len(imported), 9)
+
+        a = models.Toegang.objects.get(pk='08')
+        self.assertEqual(a.omschrijving, 'Begane grond (08)')
+
 
 class ImportStsTest(TestCase):
     def test_import(self):
@@ -365,9 +376,6 @@ class ImportNumStaHfdTest(TestCase):
         self.assertEquals([l.id for l in n.standplaatsen.all()], [s.id])
         self.assertEquals(s.hoofdadres.id, n.id)
 
-
-
-
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
@@ -475,5 +483,3 @@ class ImportNumStaHfdTest(TestCase):
 #                         print("Fixed", id)
 #                     else:
 #                         print("Skipped", id)
-
-

@@ -97,6 +97,12 @@ class ImportLocTask(CodeOmschrijvingUvaTask):
     model = models.LocatieIngang
 
 
+class ImportTggTask(CodeOmschrijvingUvaTask):
+    name = "import TGG"
+    code = "TGG"
+    model = models.Toegang
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"
@@ -426,16 +432,20 @@ class ImportJob(object):
             ImportGbkTask(self.bag),
             ImportLggTask(self.bag),
             ImportLocTask(self.bag),
+            ImportTggTask(self.bag),
             ImportStsTask(self.bag),
+
             ImportGmeTask(self.gebieden),
             ImportWplTask(self.bag),
             ImportSdlTask(self.gebieden),
             ImportBrtTask(self.gebieden),
             ImportOprTask(self.bag),
             ImportNumTask(self.bag),
+
             ImportLigTask(self.bag),
             ImportLigGeoTask(self.bag_wkt),
             ImportNumLigHfdTask(self.bag),
+            
             ImportStaTask(self.bag),
             ImportStaGeoTask(self.bag_wkt),
             ImportNumStaHfdTask(self.bag),

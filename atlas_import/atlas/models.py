@@ -66,6 +66,11 @@ class LocatieIngang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
         return "LocatieIngang({})".format(self.code)
 
 
+class Toegang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+    def __str__(self):
+        return "Toegang({})".format(self.code)
+
+
 class Gemeente(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
