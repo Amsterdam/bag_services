@@ -327,6 +327,33 @@ class ImportStaTask(RowBasedUvaTask):
         ))
 
 
+class ImportStaGeoTask(object):
+    name = "import STA WKT"
+    source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter='|')
+            for row in rows:
+                self.process_row(row)
+
+    def process_row(self, row):
+        standplaats_id = '0' + row[0]
+        wkt = row[1]
+
+        try:
+            l = models.Standplaats.objects.get(pk=standplaats_id)
+            poly = GEOSGeometry(wkt)
+
+            l.geometrie = poly
+            l.save()
+        except models.Standplaats.DoesNotExist:
+            log.warn("Could not load Ligplaats with key %s", standplaats_id)
+
+
 class ImportJob(object):
     name = "atlas-import"
 

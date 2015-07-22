@@ -241,7 +241,6 @@ class ImportNumLigHfdTest(TestCase):
 
 class ImportStaTest(TestCase):
     def test_import(self):
-        jobs.ImportBrnTask(BAG).execute()
         jobs.ImportStsTask(BAG).execute()
 
         task = jobs.ImportStaTask(BAG)
@@ -260,25 +259,44 @@ class ImportStaTest(TestCase):
         self.assertEquals(l.document_nummer, 'GV00000407')
 
 
+class ImportStaGeoTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportStaTask(BAG).execute()
+
+        task = jobs.ImportStaGeoTask(BAG_WKT)
+        task.execute()
+
+        imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
+        self.assertEqual(len(imported), 51)
+
+        l = models.Standplaats.objects.get(pk='03630001002936')
+        self.assertIsNotNone(l.geometrie)
+
+
+
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportLigTask(BAG).execute()
+#         jobs.ImportStaTask(BAG).execute()
 #
 #         import os
 #         import csv
 #
-#         with open(os.path.join(BAG_WKT, 'BAG_LIGPLAATS_GEOMETRIE.out'), mode='w') as out:
+#         with open(os.path.join(BAG_WKT, 'BAG_STANDPLAATS_GEOMETRIE.dat'), mode='w') as out:
 #             w = csv.writer(out, delimiter='|')
-#             with open(os.path.join(BAG_WKT, 'BAG_LIGPLAATS_GEOMETRIE.dat')) as f:
+#             with open(os.path.join(BAG_WKT, 'BAG_STANDPLAATS_GEOMETRIE.in')) as f:
 #                 for r in csv.reader(f, delimiter='|'):
 #                     id = r[0]
 #                     try:
-#                         models.Ligplaats.objects.get(pk='0' + id)
+#                         models.Standplaats.objects.get(pk='0' + id)
 #                         w.writerow([id, r[1]])
 #                         print("Fixed", id)
-#                     except models.Ligplaats.DoesNotExist:
+#                     except models.Standplaats.DoesNotExist:
 #                         print("Skipped", id)
+#
+#
 # class FixBAG(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
