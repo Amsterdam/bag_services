@@ -34,6 +34,14 @@ class Status(ImportStatusMixin, models.Model):
         return "Status({})".format(self.code)
 
 
+class RedenAfvoer(ImportStatusMixin, models.Model):
+    code = models.CharField(max_length=4, primary_key=True)
+    omschrijving = models.CharField(max_length=150, null=True)
+
+    def __str__(self):
+        return "Afvoer({})".format(self.code)
+
+
 class Gemeente(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)

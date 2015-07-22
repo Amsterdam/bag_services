@@ -50,6 +50,16 @@ class ImportBrnTask(RowBasedUvaTask):
         ))
 
 
+class ImportAvrTask(RowBasedUvaTask):
+    name = "import AVR"
+    code = "AVR"
+
+    def process_row(self, r):
+        merge(models.RedenAfvoer, r['Code'], dict(
+            omschrijving=r['Omschrijving']
+        ))
+
+
 class ImportStsTask(RowBasedUvaTask):
     name = "import STS"
     code = "STS"

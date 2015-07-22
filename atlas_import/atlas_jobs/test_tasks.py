@@ -32,6 +32,18 @@ class ImportBrnTest(TestCase):
         self.assertEqual(len(imported), 100)
 
 
+class ImportAvrTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportAvrTask(BAG)
+        task.execute()
+
+        imported = models.RedenAfvoer.objects.all()
+        self.assertEqual(len(imported), 44)
+
+        a = models.RedenAfvoer.objects.get(pk='20')
+        self.assertEqual(a.omschrijving, 'Geconstateerd adres')
+
+
 class ImportStsTest(TestCase):
     def test_import(self):
         task = jobs.ImportStsTask(BAG)
