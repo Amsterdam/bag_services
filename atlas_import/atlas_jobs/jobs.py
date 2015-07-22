@@ -295,6 +295,38 @@ class ImportLigGeoTask(object):
             log.warn("Could not load Ligplaats with key %s", ligplaats_id)
 
 
+class ImportStaTask(RowBasedUvaTask):
+    name = "import STA"
+    code = "STA"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['STABRN/TijdvakRelatie/begindatumRelatie'],
+                               r['STABRN/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['STASTS/TijdvakRelatie/begindatumRelatie'],
+                               r['STASTS/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['STABRT/TijdvakRelatie/begindatumRelatie'],
+                               r['STABRT/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.Standplaats, r['sleutelverzendend'], dict(
+            identificatie=r['Standplaatsidentificatie'],
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            document_nummer=r['DocumentnummerMutatieStandplaats'],
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieStandplaats']),
+            bron=foreign_key(models.Bron, r['STABRN/BRN/Code']),
+            status=foreign_key(models.Status, r['STASTS/STS/Code']),
+            buurt=foreign_key(models.Buurt, r['STABRT/BRT/sleutelVerzendend'])
+        ))
+
+
 class ImportJob(object):
     name = "atlas-import"
 
@@ -316,4 +348,6 @@ class ImportJob(object):
             ImportLigTask(self.bag),
             ImportLigGeoTask(self.bag_wkt),
             ImportNumLigHfdTask(self.bag),
+            ImportStaTask(self.bag),
+
         ]

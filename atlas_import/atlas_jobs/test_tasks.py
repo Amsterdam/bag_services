@@ -239,6 +239,27 @@ class ImportNumLigHfdTest(TestCase):
         self.assertEquals(l.hoofdadres.id, n.id)
 
 
+class ImportStaTest(TestCase):
+    def test_import(self):
+        jobs.ImportBrnTask(BAG).execute()
+        jobs.ImportStsTask(BAG).execute()
+
+        task = jobs.ImportStaTask(BAG)
+        task.execute()
+
+        imported = models.Standplaats.objects.all()
+        self.assertEqual(len(imported), 51)
+
+        l = models.Standplaats.objects.get(pk='03630001002936')
+        self.assertEquals(l.identificatie, '03630001002936')
+        self.assertEquals(l.vervallen, False)
+        self.assertIsNone(l.bron)
+        self.assertEquals(l.status.code, '37')
+        self.assertIsNone(l.buurt)
+        self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEquals(l.document_nummer, 'GV00000407')
+
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()

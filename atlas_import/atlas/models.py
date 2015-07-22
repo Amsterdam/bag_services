@@ -194,6 +194,27 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Ligplaats({}, {})".format(self.id, self.identificatie)
 
 
+class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
+    """
+    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
+    dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
+    woon-, bedrijfsmatige, of recreatieve doeleinden geschikte ruimte.
 
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/
+    """
+
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.CharField(max_length=14, unique=True)
+    vervallen = models.BooleanField(default=False)
+    bron = models.ForeignKey(Bron, null=True)
+    status = models.ForeignKey(Status, null=True)
+    buurt = models.ForeignKey(Buurt, null=True)
+    geometrie = geo.PolygonField(null=True, srid=28992)
+    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="standplaatsen")
+
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "Standplaats({}, {})".format(self.id, self.identificatie)
 
 
