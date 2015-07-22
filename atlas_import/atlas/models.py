@@ -186,8 +186,14 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
     geometrie = geo.PolygonField(null=True, srid=28992)
+    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="ligplaatsen")
 
     objects = geo.GeoManager()
 
     def __str__(self):
         return "Ligplaats({}, {})".format(self.id, self.identificatie)
+
+
+
+
+

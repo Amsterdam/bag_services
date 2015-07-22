@@ -220,6 +220,23 @@ class ImportNumTest(TestCase):
         self.assertEquals(n.openbare_ruimte.id, '03630000003910')
 
 
+class ImportNumLigHfdTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportWplTask(BAG).execute()
+        jobs.ImportOprTask(BAG).execute()
+        jobs.ImportNumTask(BAG).execute()
+        jobs.ImportLigTask(BAG).execute()
+
+        task = jobs.ImportNumLigHfdTask(BAG)
+        task.execute()
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000520671')
+        l = models.Ligplaats.objects.get(pk='03630001035885')
+
+        self.assertEquals([l.id for l in n.ligplaatsen.all()], [l.id])
+        self.assertEquals(l.hoofdadres.id, n.id)
 
 
 # class FixWKT(TestCase):

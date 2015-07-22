@@ -250,6 +250,24 @@ class ImportLigTask(RowBasedUvaTask):
         ))
 
 
+class ImportNumLigHfdTask(RowBasedUvaTask):
+    name = "import NUMLIGHFD"
+    code = "NUMLIGHFD"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['NUMLIGHFD/TijdvakRelatie/begindatumRelatie'],
+                               r['NUMLIGHFD/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'], dict(
+            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        ))
+
+
 class ImportLigGeoTask(object):
     name = "import LIG WKT"
     source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
@@ -297,4 +315,5 @@ class ImportJob(object):
             ImportNumTask(self.bag),
             ImportLigTask(self.bag),
             ImportLigGeoTask(self.bag_wkt),
+            ImportNumLigHfdTask(self.bag),
         ]
