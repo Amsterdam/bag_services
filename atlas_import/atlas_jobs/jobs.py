@@ -79,6 +79,12 @@ class ImportFngTask(CodeOmschrijvingUvaTask):
     model = models.Financieringswijze
 
 
+class ImportLggTask(CodeOmschrijvingUvaTask):
+    name = "import LGG"
+    code = "LGG"
+    model = models.Ligging
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"

@@ -68,6 +68,19 @@ class ImportFngTest(TestCase):
         self.assertEqual(a.omschrijving, 'Premiehuur Profit (200)')
 
 
+class ImportLggTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportLggTask(BAG)
+        task.execute()
+
+        imported = models.Ligging.objects.all()
+        self.assertEqual(len(imported), 6)
+
+        a = models.Ligging.objects.get(pk='03')
+        self.assertEqual(a.omschrijving, 'Tussengebouw')
+
+
+
 class ImportStsTest(TestCase):
     def test_import(self):
         task = jobs.ImportStsTask(BAG)
