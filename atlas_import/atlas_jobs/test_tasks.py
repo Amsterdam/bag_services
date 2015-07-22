@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase
 
 # Create your tests here.
@@ -123,6 +124,8 @@ class ImportLigTest(TestCase):
         self.assertIsNone(l.bron)
         self.assertEquals(l.status.code, '33')
         self.assertEquals(l.buurt.id, '03630000000100')
+        self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEquals(l.document_nummer, 'GV00000407')
 
 
 class ImportLigGeoTest(TestCase):

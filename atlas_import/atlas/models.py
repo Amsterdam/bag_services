@@ -10,6 +10,14 @@ class ImportStatusMixin(models.Model):
         abstract = True
 
 
+class DocumentStatusMixin(models.Model):
+    document_mutatie = models.DateField(null=True)
+    document_nummer = models.CharField(max_length=20, null=True)
+
+    class Meta:
+        abstract = True
+
+
 class Bron(ImportStatusMixin, models.Model):
     code = models.CharField(max_length=4, primary_key=True)
     omschrijving = models.CharField(max_length=150, null=True)
@@ -55,7 +63,7 @@ class Buurt(ImportStatusMixin, models.Model):
     stadsdeel = models.ForeignKey(Stadsdeel)
 
 
-class Ligplaats(ImportStatusMixin, models.Model):
+class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,

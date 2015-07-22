@@ -142,6 +142,8 @@ class ImportLigTask(RowBasedUvaTask):
         merge(models.Ligplaats, r['sleutelverzendend'], dict(
             identificatie=r['Ligplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            document_nummer=r['DocumentnummerMutatieLigplaats'],
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieLigplaats']),
             bron=foreign_key(models.Bron, r['LIGBRN/BRN/Code']),
             status=foreign_key(models.Status, r['LIGSTS/STS/Code']),
             buurt=foreign_key(models.Buurt, r['LIGBRT/BRT/sleutelVerzendend'])
