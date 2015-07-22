@@ -354,6 +354,24 @@ class ImportStaGeoTask(object):
             log.warn("Could not load Ligplaats with key %s", standplaats_id)
 
 
+class ImportNumStaHfdTask(RowBasedUvaTask):
+    name = "import NUMSTAHFD"
+    code = "NUMSTAHFD"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['NUMSTAHFD/TijdvakRelatie/begindatumRelatie'],
+                               r['NUMSTAHFD/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'], dict(
+            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        ))
+
+
 class ImportJob(object):
     name = "atlas-import"
 

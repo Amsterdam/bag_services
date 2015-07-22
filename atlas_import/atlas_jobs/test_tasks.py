@@ -174,7 +174,7 @@ class ImportOprTest(TestCase):
         task.execute()
 
         imported = models.OpenbareRuimte.objects.all()
-        self.assertEqual(len(imported), 20)
+        self.assertEqual(len(imported), 44)
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
         self.assertEquals(o.id, '03630000002701')
@@ -203,7 +203,7 @@ class ImportNumTest(TestCase):
         task.execute()
 
         imported = models.Nummeraanduiding.objects.all()
-        self.assertEqual(len(imported), 60)
+        self.assertEqual(len(imported), 111)
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
         self.assertEquals(n.id, '03630000512845')
@@ -274,6 +274,25 @@ class ImportStaGeoTest(TestCase):
         self.assertIsNotNone(l.geometrie)
 
 
+class ImportNumStaHfdTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportWplTask(BAG).execute()
+        jobs.ImportOprTask(BAG).execute()
+        jobs.ImportNumTask(BAG).execute()
+        jobs.ImportStaTask(BAG).execute()
+
+        task = jobs.ImportNumStaHfdTask(BAG)
+        task.execute()
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000398621')
+        s = models.Standplaats.objects.get(pk='03630000717733')
+
+        self.assertEquals([l.id for l in n.standplaatsen.all()], [s.id])
+        self.assertEquals(s.hoofdadres.id, n.id)
+
+
 
 
 # class FixWKT(TestCase):
@@ -300,14 +319,14 @@ class ImportStaGeoTest(TestCase):
 # class FixBAG(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportLigTask(BAG).execute()
+#         jobs.ImportStaTask(BAG).execute()
 #
 #         import os
 #         import csv
 #
-#         with open(os.path.join(BAG, 'NUMLIGHFD_20150706_N_20150706_20150706.UVA2.out'), mode='w') as out:
+#         with open(os.path.join(BAG, 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
 #             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'NUMLIGHFD_20150706_N_20150706_20150706.UVA2')) as f:
+#             with open(os.path.join(BAG, 'NUMSTAHFD_20150706_N_20150706_20150706.in.UVA2')) as f:
 #                 reader = csv.reader(f, delimiter=';')
 #                 w.writerow(next(reader))
 #                 w.writerow(next(reader))
@@ -317,12 +336,12 @@ class ImportStaGeoTest(TestCase):
 #                 for r in reader:
 #                     id = r[4]
 #                     try:
-#                         models.Ligplaats.objects.get(pk=id)
+#                         models.Standplaats.objects.get(pk=id)
 #                         w.writerow(r)
 #                         print("Fixed", id)
-#                     except models.Ligplaats.DoesNotExist:
+#                     except models.Standplaats.DoesNotExist:
 #                         print("Skipped", id)
-
+#
 # class FixNUM(TestCase):
 #     def test_fix(self):
 #         import os
@@ -331,7 +350,7 @@ class ImportStaGeoTest(TestCase):
 #
 #         nums = set()
 #
-#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2']:
+#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2', 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2']:
 #             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
 #                 for r in rows:
 #                     nums.add(r['IdentificatiecodeNummeraanduiding'])
@@ -369,7 +388,7 @@ class ImportStaGeoTest(TestCase):
 #
 #         with open(os.path.join(BAG, 'OPR_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
 #             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'OPR_in.UVA2'), encoding='cp1252') as f:
+#             with open(os.path.join(BAG, 'OPR.in.UVA2'), encoding='cp1252') as f:
 #                 reader = csv.reader(f, delimiter=';')
 #                 w.writerow(next(reader))
 #                 w.writerow(next(reader))
@@ -383,5 +402,5 @@ class ImportStaGeoTest(TestCase):
 #                         print("Fixed", id)
 #                     else:
 #                         print("Skipped", id)
-#
-#
+
+
