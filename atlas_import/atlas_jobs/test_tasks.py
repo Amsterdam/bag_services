@@ -44,6 +44,18 @@ class ImportAvrTest(TestCase):
         self.assertEqual(a.omschrijving, 'Geconstateerd adres')
 
 
+class ImportEgmTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportEgmTask(BAG)
+        task.execute()
+
+        imported = models.Eigendomsverhouding.objects.all()
+        self.assertEqual(len(imported), 2)
+
+        a = models.Eigendomsverhouding.objects.get(pk='01')
+        self.assertEqual(a.omschrijving, 'Huur')
+
+
 class ImportStsTest(TestCase):
     def test_import(self):
         task = jobs.ImportStsTask(BAG)

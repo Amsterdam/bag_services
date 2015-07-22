@@ -67,6 +67,12 @@ class ImportStsTask(CodeOmschrijvingUvaTask):
     model = models.Status
 
 
+class ImportEgmTask(CodeOmschrijvingUvaTask):
+    name = "import EGM"
+    code = "EGM"
+    model = models.Eigendomsverhouding
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"
