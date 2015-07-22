@@ -1,9 +1,9 @@
 import datetime
+
 from django.test import TestCase
 
 from atlas_jobs import jobs
 from atlas import models
-
 
 BAG = 'atlas_jobs/fixtures/testset/bag'
 BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
@@ -78,6 +78,18 @@ class ImportLggTest(TestCase):
 
         a = models.Ligging.objects.get(pk='03')
         self.assertEqual(a.omschrijving, 'Tussengebouw')
+
+
+class ImportGbkTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportGbkTask(BAG)
+        task.execute()
+
+        imported = models.Gebruik.objects.all()
+        self.assertEqual(len(imported), 320)
+
+        a = models.Gebruik.objects.get(pk='0006')
+        self.assertEqual(a.omschrijving, 'ZZ-BEDRIJF EN WONING')
 
 
 

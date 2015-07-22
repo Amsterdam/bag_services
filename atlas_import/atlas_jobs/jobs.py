@@ -85,6 +85,12 @@ class ImportLggTask(CodeOmschrijvingUvaTask):
     model = models.Ligging
 
 
+class ImportGbkTask(CodeOmschrijvingUvaTask):
+    name = "import GBK"
+    code = "GBK"
+    model = models.Gebruik
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"
