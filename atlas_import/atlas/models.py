@@ -18,26 +18,25 @@ class DocumentStatusMixin(models.Model):
         abstract = True
 
 
-class Bron(ImportStatusMixin, models.Model):
+class CodeOmschrijvingMixin(models.Model):
     code = models.CharField(max_length=4, primary_key=True)
     omschrijving = models.CharField(max_length=150, null=True)
 
+    class Meta:
+        abstract = True
+
+
+class Bron(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
     def __str__(self):
         return "Bron({})".format(self.code)
 
 
-class Status(ImportStatusMixin, models.Model):
-    code = models.CharField(max_length=4, primary_key=True)
-    omschrijving = models.CharField(max_length=150, null=True)
-
+class Status(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
     def __str__(self):
         return "Status({})".format(self.code)
 
 
-class RedenAfvoer(ImportStatusMixin, models.Model):
-    code = models.CharField(max_length=4, primary_key=True)
-    omschrijving = models.CharField(max_length=150, null=True)
-
+class RedenAfvoer(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
     def __str__(self):
         return "Afvoer({})".format(self.code)
 

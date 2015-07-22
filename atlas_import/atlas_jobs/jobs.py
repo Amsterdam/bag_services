@@ -40,34 +40,31 @@ class RowBasedUvaTask(object):
         raise NotImplementedError()
 
 
-class ImportBrnTask(RowBasedUvaTask):
+class CodeOmschrijvingUvaTask(RowBasedUvaTask):
+    model = None
+
+    def process_row(self, r):
+        merge(self.model, r['Code'], dict(
+            omschrijving=r['Omschrijving']
+        ))
+
+
+class ImportBrnTask(CodeOmschrijvingUvaTask):
     name = "import BRN"
     code = "BRN"
-
-    def process_row(self, r):
-        merge(models.Bron, r['Code'], dict(
-            omschrijving=r['Omschrijving']
-        ))
+    model = models.Bron
 
 
-class ImportAvrTask(RowBasedUvaTask):
+class ImportAvrTask(CodeOmschrijvingUvaTask):
     name = "import AVR"
     code = "AVR"
-
-    def process_row(self, r):
-        merge(models.RedenAfvoer, r['Code'], dict(
-            omschrijving=r['Omschrijving']
-        ))
+    model = models.RedenAfvoer
 
 
-class ImportStsTask(RowBasedUvaTask):
+class ImportStsTask(CodeOmschrijvingUvaTask):
     name = "import STS"
     code = "STS"
-
-    def process_row(self, r):
-        merge(models.Status, r['Code'], dict(
-            omschrijving=r['Omschrijving']
-        ))
+    model = models.Status
 
 
 class ImportGmeTask(RowBasedUvaTask):
@@ -223,7 +220,7 @@ class ImportNumTask(RowBasedUvaTask):
             adres_nummer=r['Adresnummer'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             bron=foreign_key(models.Bron, r['NUMBRN/BRN/Code']),
-            status=foreign_key(models.Status ,r['NUMSTS/STS/Code']),
+            status=foreign_key(models.Status, r['NUMSTS/STS/Code']),
             openbare_ruimte=foreign_key(models.OpenbareRuimte, r['NUMOPR/OPR/sleutelVerzendend']),
         ))
 
