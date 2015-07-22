@@ -13,6 +13,13 @@ def uva_datum(s):
     return datetime.datetime.strptime(s, "%Y%m%d").date()
 
 
+def uva_nummer(s):
+    if not s:
+        return None
+
+    return int(s, 10)
+
+
 def uva_indicatie(s):
     """
     Translates an indicatie (J/N) to True/False
@@ -59,3 +66,19 @@ def resolve_file(path, code):
         raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
 
     return os.path.join(path, matches[0])
+
+
+def geldig_tijdvak(r):
+    return uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                      r['TijdvakGeldigheid/einddatumTijdvakGeldigheid'])
+
+
+def geldige_relatie(row, relatie):
+    return uva_geldig(row['{}/TijdvakRelatie/begindatumRelatie'.format(relatie)],
+                      row['{}/TijdvakRelatie/einddatumRelatie'.format(relatie)])
+
+def geldige_relaties(row, *relaties):
+    for relatie in relaties:
+        if not geldige_relatie(row, relatie):
+            return False
+    return True

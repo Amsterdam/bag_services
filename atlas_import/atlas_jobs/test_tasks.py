@@ -1,4 +1,5 @@
 import datetime
+from django.contrib.gis.geos import Point
 
 from django.test import TestCase
 
@@ -375,6 +376,53 @@ class ImportNumStaHfdTest(TestCase):
 
         self.assertEquals([l.id for l in n.standplaatsen.all()], [s.id])
         self.assertEquals(s.hoofdadres.id, n.id)
+
+
+class ImportVboTest(TestCase):
+    def test_import(self):
+        jobs.ImportEgmTask(BAG).execute()
+        jobs.ImportFngTask(BAG).execute()
+        jobs.ImportGbkTask(BAG).execute()
+        jobs.ImportLocTask(BAG).execute()
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportLggTask(BAG).execute()
+        jobs.ImportTggTask(BAG).execute()
+
+        task = jobs.ImportVboTask(BAG)
+        task.execute()
+
+        imported = models.Verblijfsobject.objects.all()
+        self.assertEqual(len(imported), 96)
+
+        v = models.Verblijfsobject.objects.get(pk='03630000648915')
+        self.assertEqual(v.geometrie, Point(121466, 493032))
+        self.assertEqual(v.gebruiksdoel_code, '1010')
+        self.assertEqual(v.gebruiksdoel_omschrijving, 'BEST-woning')
+        self.assertEqual(v.oppervlakte, 95)
+        self.assertEqual(v.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEqual(v.document_nummer, 'GV00000406')
+        self.assertEqual(v.bouwlaag_toegang, 0)
+        self.assertEqual(v.status_coordinaat_code, 'DEF')
+        self.assertEqual(v.status_coordinaat_omschrijving, 'Definitief punt')
+        self.assertEqual(v.bouwlagen, 3)
+        self.assertEqual(v.type_woonobject_code, 'E')
+        self.assertEqual(v.type_woonobject_omschrijving, 'Eengezinswoning')
+        self.assertEqual(v.woningvoorraad, True)
+        self.assertEqual(v.aantal_kamers, 4)
+        self.assertEqual(v.vervallen, False)
+        self.assertIsNone(v.reden_afvoer)
+        self.assertIsNone(v.bron)
+        self.assertEqual(v.eigendomsverhouding.code, '02')
+        self.assertEqual(v.financieringswijze.code, '274')
+        self.assertEqual(v.gebruik.code, '1800')
+        self.assertIsNone(v.locatie_ingang)
+        self.assertEqual(v.ligging.code, '03')
+        # todo: monument
+        # todo: toegang
+        # todo: opvoer
+        self.assertEqual(v.status.code, '21')
+        self.assertIsNone(v.buurt)
+
 
 # class FixWKT(TestCase):
 #     def test_fix(self):

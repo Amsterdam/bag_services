@@ -255,3 +255,41 @@ class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Standplaats({}, {})".format(self.id, self.identificatie)
 
 
+class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
+    """
+    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
+    doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
+    openbare weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van goederenrechtelijke rechtshandelingen
+    en in functioneel opzicht zelfstandig is.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/
+    """
+
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.CharField(max_length=14, unique=True)
+    gebruiksdoel_code = models.CharField(max_length=4, null=True)
+    gebruiksdoel_omschrijving = models.CharField(max_length=150, null=True)
+    oppervlakte = models.PositiveIntegerField(null=True)
+    bouwlaag_toegang = models.PositiveIntegerField(null=True)
+    status_coordinaat_code = models.CharField(max_length=3, null=True)
+    status_coordinaat_omschrijving = models.CharField(max_length=150, null=True)
+    bouwlagen = models.PositiveIntegerField(null=True)
+    type_woonobject_code = models.CharField(max_length=2, null=True)
+    type_woonobject_omschrijving = models.CharField(max_length=150, null=True)
+    woningvoorraad = models.BooleanField(default=False)
+    aantal_kamers = models.PositiveIntegerField(null=True)
+    vervallen = models.PositiveIntegerField(default=False)
+    reden_afvoer = models.ForeignKey(RedenAfvoer, null=True)
+    bron = models.ForeignKey(Bron, null=True)
+    eigendomsverhouding = models.ForeignKey(Eigendomsverhouding, null=True)
+    financieringswijze = models.ForeignKey(Financieringswijze, null=True)
+    gebruik = models.ForeignKey(Gebruik, null=True)
+    locatie_ingang = models.ForeignKey(LocatieIngang, null=True)
+    ligging = models.ForeignKey(Ligging, null=True)
+    toegang = models.ForeignKey(Toegang, null=True)
+    status = models.ForeignKey(Status, null=True)
+    buurt = models.ForeignKey(Buurt, null=True)
+
+    geometrie = geo.PointField(null=True, srid=28992)
+
+
