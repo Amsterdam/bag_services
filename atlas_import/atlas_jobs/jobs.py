@@ -395,4 +395,5 @@ class ImportJob(object):
             ImportNumLigHfdTask(self.bag),
             ImportStaTask(self.bag),
             ImportStaGeoTask(self.bag_wkt),
+            ImportNumStaHfdTask(self.bag),
         ]
