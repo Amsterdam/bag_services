@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+
 from django.contrib.gis.geos import GEOSGeometry
 
 from atlas import models
@@ -118,6 +119,105 @@ class ImportBrtTask(RowBasedUvaTask):
         ))
 
 
+class ImportWplTask(RowBasedUvaTask):
+    name = "import WPL"
+    code = "WPL"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['WPLGME/TijdvakRelatie/begindatumRelatie'],
+                               r['WPLGME/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.Woonplaats, r['sleutelverzendend'], dict(
+            code=r['Woonplaatsidentificatie'],
+            naam=r['Woonplaatsnaam'],
+            document_nummer=r['DocumentnummerMutatieWoonplaats'],
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieWoonplaats']),
+            naam_ptt=r['WoonplaatsPTTSchrijfwijze'],
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            gemeente=foreign_key(models.Gemeente, r['WPLGME/GME/sleutelVerzendend']),
+        ))
+
+
+class ImportOprTask(RowBasedUvaTask):
+    name = "import OPR"
+    code = "OPR"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['OPRBRN/TijdvakRelatie/begindatumRelatie'],
+                               r['OPRBRN/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['OPRSTS/TijdvakRelatie/begindatumRelatie'],
+                               r['OPRSTS/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['OPRWPL/TijdvakRelatie/begindatumRelatie'],
+                               r['OPRWPL/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.OpenbareRuimte, r['sleutelVerzendend'], dict(
+            type=r['TypeOpenbareRuimteDomein'],
+            naam=r['NaamOpenbareRuimte'],
+            code=r['Straatcode'],
+            document_nummer=r['DocumentnummerMutatieOpenbareRuimte'],
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieOpenbareRuimte']),
+            straat_nummer=r['Straatnummer'],
+            naam_nen=r['StraatnaamNENSchrijfwijze'],
+            naam_ptt=r['StraatnaamPTTSchrijfwijze'],
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            bron=foreign_key(models.Bron, r['OPRBRN/BRN/Code']),
+            status=foreign_key(models.Status, r['OPRSTS/STS/Code']),
+            woonplaats=foreign_key(models.Woonplaats, r['OPRWPL/WPL/sleutelVerzendend']),
+        ))
+
+
+class ImportNumTask(RowBasedUvaTask):
+    name = "import NUM"
+    code = "NUM"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['NUMBRN/TijdvakRelatie/begindatumRelatie'],
+                               r['NUMBRN/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['NUMSTS/TijdvakRelatie/begindatumRelatie'],
+                               r['NUMSTS/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        if not uva2.uva_geldig(r['NUMOPR/TijdvakRelatie/begindatumRelatie'],
+                               r['NUMOPR/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        merge(models.Nummeraanduiding, r['sleutelVerzendend'], dict(
+            code=r['IdentificatiecodeNummeraanduiding'],
+            huisnummer=r['Huisnummer'],
+            huisletter=r['Huisletter'],
+            huisnummer_toevoeging=r['Huisnummertoevoeging'],
+            postcode=r['Postcode'],
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieNummeraanduiding']),
+            document_nummer=r['DocumentnummerMutatieNummeraanduiding'],
+            type=r['TypeAdresseerbaarObjectDomein'],
+            adres_nummer=r['Adresnummer'],
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            bron=foreign_key(models.Bron, r['NUMBRN/BRN/Code']),
+            status=foreign_key(models.Status ,r['NUMSTS/STS/Code']),
+            openbare_ruimte=foreign_key(models.OpenbareRuimte, r['NUMOPR/OPR/sleutelVerzendend']),
+        ))
+
+
 class ImportLigTask(RowBasedUvaTask):
     name = "import LIG"
     code = "LIG"
@@ -177,7 +277,6 @@ class ImportLigGeoTask(object):
             log.warn("Could not load Ligplaats with key %s", ligplaats_id)
 
 
-
 class ImportJob(object):
     name = "atlas-import"
 
@@ -191,10 +290,11 @@ class ImportJob(object):
             ImportBrnTask(self.bag),
             ImportStsTask(self.bag),
             ImportGmeTask(self.gebieden),
+            ImportWplTask(self.bag),
             ImportSdlTask(self.gebieden),
             ImportBrtTask(self.gebieden),
+            ImportOprTask(self.bag),
+            ImportNumTask(self.bag),
             ImportLigTask(self.bag),
             ImportLigGeoTask(self.bag_wkt),
         ]
-
-

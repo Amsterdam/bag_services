@@ -35,6 +35,9 @@ def _wrap_uva_row(r, headers):
 
 @contextmanager
 def uva_reader(source):
+    if not os.path.exists(source):
+        raise ValueError("File not found: {}".format(source))
+
     with open(source, encoding='cp1252') as f:
         rows = csv.reader(f, delimiter=';')
         # skip VAN
@@ -52,5 +55,7 @@ def uva_reader(source):
 def resolve_file(path, code):
     prefix = code + '_'
     matches = [f for f in os.listdir(path) if f.startswith(prefix)]
-    assert len(matches) == 1
+    if len(matches) != 1:
+        raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
+
     return os.path.join(path, matches[0])

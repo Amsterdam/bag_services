@@ -1,7 +1,6 @@
 import datetime
 from django.test import TestCase
 
-# Create your tests here.
 from atlas_jobs import jobs
 from atlas import models
 
@@ -143,10 +142,87 @@ class ImportLigGeoTest(TestCase):
         self.assertIsNotNone(l.geometrie)
 
 
+class ImportWplTest(TestCase):
+    def test_import(self):
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+
+        task = jobs.ImportWplTask(BAG)
+        task.execute()
+
+        imported = models.Woonplaats.objects.all()
+        self.assertEqual(len(imported), 1)
+
+        w = models.Woonplaats.objects.get(pk='03630022796658')
+        self.assertEquals(w.id, '03630022796658')
+        self.assertEquals(w.code, '3594')
+        self.assertEquals(w.naam, 'Amsterdam')
+        self.assertEquals(w.document_mutatie, datetime.date(2014, 1, 10))
+        self.assertEquals(w.document_nummer, 'GV00001729_AC00AC')
+        self.assertEquals(w.naam_ptt, 'AMSTERDAM')
+        self.assertEquals(w.vervallen, False)
+        self.assertEquals(w.gemeente.id, '03630000000000')
+
+
+class ImportOprTest(TestCase):
+    def test_import(self):
+        jobs.ImportBrnTask(BAG).execute()
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportWplTask(BAG).execute()
+
+        task = jobs.ImportOprTask(BAG)
+        task.execute()
+
+        imported = models.OpenbareRuimte.objects.all()
+        self.assertEqual(len(imported), 20)
+
+        o = models.OpenbareRuimte.objects.get(pk='03630000002701')
+        self.assertEquals(o.id, '03630000002701')
+        self.assertEquals(o.type, models.OpenbareRuimte.TYPE_WEG)
+        self.assertEquals(o.naam, 'Amstel')
+        self.assertEquals(o.code, '02186')
+        self.assertEquals(o.document_mutatie, datetime.date(2014, 1, 10))
+        self.assertEquals(o.document_nummer, 'GV00001729_AC00AC')
+        self.assertEquals(o.straat_nummer, '')
+        self.assertEquals(o.naam_nen, 'Amstel')
+        self.assertEquals(o.naam_ptt, 'AMSTEL')
+        self.assertEquals(o.vervallen, False)
+        self.assertIsNone(o.bron)
+        self.assertEquals(o.status.code, '35')
+        self.assertEquals(o.woonplaats.id, '03630022796658')
+
+
+class ImportNumTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportWplTask(BAG).execute()
+        jobs.ImportOprTask(BAG).execute()
+
+        task = jobs.ImportNumTask(BAG)
+        task.execute()
+
+        imported = models.Nummeraanduiding.objects.all()
+        self.assertEqual(len(imported), 60)
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000512845')
+        self.assertEquals(n.id, '03630000512845')
+        self.assertEquals(n.huisnummer, '26')
+        self.assertEquals(n.huisletter, 'G')
+        self.assertEquals(n.huisnummer_toevoeging, '')
+        self.assertEquals(n.postcode, '1018DS')
+        self.assertEquals(n.document_mutatie, datetime.date(2005, 5, 25))
+        self.assertEquals(n.document_nummer, 'GV00000403')
+        self.assertEquals(n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
+        self.assertEquals(n.vervallen, False)
+        self.assertIsNone(n.bron)
+        self.assertEquals(n.status.code, '16')
+        self.assertEquals(n.openbare_ruimte.id, '03630000003910')
 
 
 
-# class Fix(TestCase):
+
+# class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
 #         jobs.ImportLigTask(BAG).execute()
@@ -165,3 +241,91 @@ class ImportLigGeoTest(TestCase):
 #                         print("Fixed", id)
 #                     except models.Ligplaats.DoesNotExist:
 #                         print("Skipped", id)
+# class FixBAG(TestCase):
+#     def test_fix(self):
+#         jobs.ImportStsTask(BAG).execute()
+#         jobs.ImportLigTask(BAG).execute()
+#
+#         import os
+#         import csv
+#
+#         with open(os.path.join(BAG, 'NUMLIGHFD_20150706_N_20150706_20150706.UVA2.out'), mode='w') as out:
+#             w = csv.writer(out, delimiter=';')
+#             with open(os.path.join(BAG, 'NUMLIGHFD_20150706_N_20150706_20150706.UVA2')) as f:
+#                 reader = csv.reader(f, delimiter=';')
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#
+#                 for r in reader:
+#                     id = r[4]
+#                     try:
+#                         models.Ligplaats.objects.get(pk=id)
+#                         w.writerow(r)
+#                         print("Fixed", id)
+#                     except models.Ligplaats.DoesNotExist:
+#                         print("Skipped", id)
+
+# class FixNUM(TestCase):
+#     def test_fix(self):
+#         import os
+#         import csv
+#         from atlas_jobs import uva2
+#
+#         nums = set()
+#
+#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2']:
+#             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
+#                 for r in rows:
+#                     nums.add(r['IdentificatiecodeNummeraanduiding'])
+#
+#         with open(os.path.join(BAG, 'NUM_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
+#             w = csv.writer(out, delimiter=';')
+#             with open(os.path.join(BAG, 'NUM.in.UVA2')) as f:
+#                 reader = csv.reader(f, delimiter=';')
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#
+#                 for r in reader:
+#                     id = r[0]
+#                     if id in nums:
+#                         w.writerow(r)
+#                         print("Fixed", id)
+#                     else:
+#                         print("Skipped", id)
+#
+#
+# class FixOPT(TestCase):
+#     def test_fix(self):
+#         import os
+#         import csv
+#         from atlas_jobs import uva2
+#
+#         nums = set()
+#
+#         for name in ['NUM_20150706_N_20150706_20150706.UVA2']:
+#             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
+#                 for r in rows:
+#                     nums.add(r['NUMOPR/OPR/sleutelVerzendend'])
+#
+#         with open(os.path.join(BAG, 'OPR_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
+#             w = csv.writer(out, delimiter=';')
+#             with open(os.path.join(BAG, 'OPR_in.UVA2'), encoding='cp1252') as f:
+#                 reader = csv.reader(f, delimiter=';')
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#                 w.writerow(next(reader))
+#
+#                 for r in reader:
+#                     id = r[0]
+#                     if id in nums:
+#                         w.writerow(r)
+#                         print("Fixed", id)
+#                     else:
+#                         print("Skipped", id)
+#
+#
