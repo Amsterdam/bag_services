@@ -61,6 +61,11 @@ class Gebruik(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
         return "Gebruik({})".format(self.code)
 
 
+class LocatieIngang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+    def __str__(self):
+        return "LocatieIngang({})".format(self.code)
+
+
 class Gemeente(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)

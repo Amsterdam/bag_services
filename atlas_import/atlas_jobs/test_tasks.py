@@ -92,6 +92,18 @@ class ImportGbkTest(TestCase):
         self.assertEqual(a.omschrijving, 'ZZ-BEDRIJF EN WONING')
 
 
+class ImportLocTest(TestCase):
+    def test_import(self):
+        task = jobs.ImportLocTask(BAG)
+        task.execute()
+
+        imported = models.LocatieIngang.objects.all()
+        self.assertEqual(len(imported), 5)
+
+        a = models.LocatieIngang.objects.get(pk='04')
+        self.assertEqual(a.omschrijving, 'L-zijde')
+
+
 
 class ImportStsTest(TestCase):
     def test_import(self):

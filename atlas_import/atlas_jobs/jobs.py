@@ -91,6 +91,12 @@ class ImportGbkTask(CodeOmschrijvingUvaTask):
     model = models.Gebruik
 
 
+class ImportLocTask(CodeOmschrijvingUvaTask):
+    name = "import LOC"
+    code = "LOC"
+    model = models.LocatieIngang
+
+
 class ImportGmeTask(RowBasedUvaTask):
     name = "import GME"
     code = "GME"
@@ -413,7 +419,13 @@ class ImportJob(object):
 
     def tasks(self):
         return [
+            ImportAvrTask(self.bag),
             ImportBrnTask(self.bag),
+            ImportEgmTask(self.bag),
+            ImportFngTask(self.bag),
+            ImportGbkTask(self.bag),
+            ImportLggTask(self.bag),
+            ImportLocTask(self.bag),
             ImportStsTask(self.bag),
             ImportGmeTask(self.gebieden),
             ImportWplTask(self.bag),
