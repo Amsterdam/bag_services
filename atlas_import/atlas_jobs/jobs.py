@@ -376,5 +376,5 @@ class ImportJob(object):
             ImportLigGeoTask(self.bag_wkt),
             ImportNumLigHfdTask(self.bag),
             ImportStaTask(self.bag),
-
+            ImportStaGeoTask(self.bag_wkt),
         ]
