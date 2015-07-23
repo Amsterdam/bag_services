@@ -442,6 +442,29 @@ class ImportNumVboHfdTest(TestCase):
         self.assertEquals([v.id for v in n.verblijfsobjecten.all()], [v.id])
         self.assertEquals(v.hoofdadres.id, n.id)
 
+
+class ImportPndTest(TestCase):
+
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+
+        task = jobs.ImportPndTask(BAG)
+        task.execute()
+
+        imported = models.Pand.objects.all()
+        self.assertEquals(len(imported), 79)
+
+        p = models.Pand.objects.get(pk='03630013002931')
+        self.assertEqual(p.identificatie, '03630013002931')
+        self.assertEqual(p.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEqual(p.document_nummer, 'GV00000406')
+        self.assertEqual(p.bouwjaar, 1993)
+        self.assertIsNone(p.laagste_bouwlaag)
+        self.assertIsNone(p.hoogste_bouwlaag)
+        self.assertEqual(p.pandnummer, '')
+        self.assertEqual(p.vervallen, False)
+        self.assertEqual(p.status.code, '31')
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
@@ -473,9 +496,9 @@ class ImportNumVboHfdTest(TestCase):
 #
 #         ids = set([v.id for v in models.Verblijfsobject.objects.all()])
 #
-#         with open(os.path.join(BAG, 'NUMVBONVN_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
+#         with open(os.path.join(BAG, 'PNDVBO_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
 #             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'NUMVBONVN_20150706_N_20150706_20150706.in.UVA2')) as f:
+#             with open(os.path.join(BAG, 'PNDVBO_20150706_N_20150706_20150706.in.UVA2')) as f:
 #                 reader = csv.reader(f, delimiter=';')
 #                 w.writerow(next(reader))
 #                 w.writerow(next(reader))
@@ -489,7 +512,6 @@ class ImportNumVboHfdTest(TestCase):
 #                         print("Fixed", id)
 #                     else:
 #                         print("Skipped", id)
-
 # class FixNUM(TestCase):
 #     def test_fix(self):
 #         import os

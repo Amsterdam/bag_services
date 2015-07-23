@@ -302,4 +302,26 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Verblijfsobject({}, {})".format(self.id, self.identificatie)
 
 
+class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
+    """
+    Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die direct
+    en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
 
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/
+    """
+
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.CharField(max_length=14, unique=True)
+    bouwjaar = models.PositiveIntegerField(null=True)
+    laagste_bouwlaag = models.PositiveIntegerField(null=True)
+    hoogste_bouwlaag = models.PositiveIntegerField(null=True)
+    pandnummer = models.CharField(max_length=10, null=True)
+    vervallen = models.BooleanField(default=False)
+    status = models.ForeignKey(Status, null=True)
+
+    geometrie = geo.PolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "Pand({})".format(self.id)

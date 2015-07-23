@@ -435,6 +435,31 @@ class ImportNumVboHfdTask(RowBasedUvaTask):
         ))
 
 
+class ImportPndTask(RowBasedUvaTask):
+    name = "import PND"
+    code = "PND"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, 'PNDSTS', 'PNDBBK'):
+            return
+
+        merge(models.Pand, r['sleutelverzendend'], dict(
+            identificatie=(r['Pandidentificatie']),
+            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatiePand']),
+            document_nummer=(r['DocumentnummerMutatiePand']),
+            bouwjaar=uva2.uva_nummer(r['OorspronkelijkBouwjaarPand']),
+            laagste_bouwlaag=uva2.uva_nummer(r['LaagsteBouwlaag']),
+            hoogste_bouwlaag=uva2.uva_nummer(r['HoogsteBouwlaag']),
+            pandnummer=(r['Pandnummer']),
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            status=foreign_key(models.Status, r['PNDSTS/STS/Code']),
+            # x=(r['PNDBBK/BBK/Bouwbloknummer']),
+        ))
+
+
 class ImportJob(object):
     name = "atlas-import"
 
@@ -472,4 +497,6 @@ class ImportJob(object):
 
             ImportVboTask(self.bag),
             ImportNumVboHfdTask(self.bag),
+
+            ImportPndTask(self.bag),
         ]
