@@ -419,6 +419,22 @@ class ImportVboTask(RowBasedUvaTask):
         ))
 
 
+class ImportNumVboHfdTask(RowBasedUvaTask):
+    name = "import NUMVBOHFD"
+    code = "NUMVBOHFD"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, 'NUMVBOHFD'):
+            return
+
+        merge(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'], dict(
+            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        ))
+
+
 class ImportJob(object):
     name = "atlas-import"
 
@@ -455,4 +471,5 @@ class ImportJob(object):
             ImportNumStaHfdTask(self.bag),
 
             ImportVboTask(self.bag),
+            ImportNumVboHfdTask(self.bag),
         ]

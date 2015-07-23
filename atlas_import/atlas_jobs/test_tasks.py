@@ -259,7 +259,7 @@ class ImportOprTest(TestCase):
         task.execute()
 
         imported = models.OpenbareRuimte.objects.all()
-        self.assertEqual(len(imported), 44)
+        self.assertEqual(len(imported), 97)
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
         self.assertEquals(o.id, '03630000002701')
@@ -288,7 +288,7 @@ class ImportNumTest(TestCase):
         task.execute()
 
         imported = models.Nummeraanduiding.objects.all()
-        self.assertEqual(len(imported), 111)
+        self.assertEqual(len(imported), 207)
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
         self.assertEquals(n.id, '03630000512845')
@@ -424,6 +424,24 @@ class ImportVboTest(TestCase):
         self.assertIsNone(v.buurt)
 
 
+class ImportNumVboHfdTest(TestCase):
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportGmeTask(GEBIEDEN).execute()
+        jobs.ImportWplTask(BAG).execute()
+        jobs.ImportOprTask(BAG).execute()
+        jobs.ImportNumTask(BAG).execute()
+        jobs.ImportVboTask(BAG).execute()
+
+        task = jobs.ImportNumVboHfdTask(BAG)
+        task.execute()
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000181936')
+        v = models.Verblijfsobject.objects.get(pk='03630000721053')
+
+        self.assertEquals([v.id for v in n.verblijfsobjecten.all()], [v.id])
+        self.assertEquals(v.hoofdadres.id, n.id)
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
@@ -448,14 +466,16 @@ class ImportVboTest(TestCase):
 # class FixBAG(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportStaTask(BAG).execute()
+#         jobs.ImportVboTask(BAG).execute()
 #
 #         import os
 #         import csv
 #
-#         with open(os.path.join(BAG, 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
+#         ids = set([v.id for v in models.Verblijfsobject.objects.all()])
+#
+#         with open(os.path.join(BAG, 'NUMVBONVN_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
 #             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'NUMSTAHFD_20150706_N_20150706_20150706.in.UVA2')) as f:
+#             with open(os.path.join(BAG, 'NUMVBONVN_20150706_N_20150706_20150706.in.UVA2')) as f:
 #                 reader = csv.reader(f, delimiter=';')
 #                 w.writerow(next(reader))
 #                 w.writerow(next(reader))
@@ -464,13 +484,12 @@ class ImportVboTest(TestCase):
 #
 #                 for r in reader:
 #                     id = r[4]
-#                     try:
-#                         models.Standplaats.objects.get(pk=id)
+#                     if id in ids:
 #                         w.writerow(r)
 #                         print("Fixed", id)
-#                     except models.Standplaats.DoesNotExist:
+#                     else:
 #                         print("Skipped", id)
-#
+
 # class FixNUM(TestCase):
 #     def test_fix(self):
 #         import os
@@ -479,7 +498,8 @@ class ImportVboTest(TestCase):
 #
 #         nums = set()
 #
-#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2', 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2']:
+#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2', 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2',
+#                      'NUMVBOHFD_20150706_N_20150706_20150706.UVA2']:
 #             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
 #                 for r in rows:
 #                     nums.add(r['IdentificatiecodeNummeraanduiding'])
@@ -500,7 +520,7 @@ class ImportVboTest(TestCase):
 #                         print("Fixed", id)
 #                     else:
 #                         print("Skipped", id)
-#
+
 #
 # class FixOPT(TestCase):
 #     def test_fix(self):

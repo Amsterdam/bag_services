@@ -205,6 +205,9 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     openbare_ruimte = models.ForeignKey(OpenbareRuimte)
 
+    def __str__(self):
+        return "Nummeraanduiding({}, {})".format(self.id, self.code)
+
 
 class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     """
@@ -289,7 +292,14 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
     toegang = models.ForeignKey(Toegang, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
+    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="verblijfsobjecten")
 
     geometrie = geo.PointField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "Verblijfsobject({}, {})".format(self.id, self.identificatie)
+
 
 
