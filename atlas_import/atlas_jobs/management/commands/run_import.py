@@ -5,5 +5,25 @@ from atlas_jobs import jobs
 
 
 class Command(BaseCommand):
+
+    def __init__(self, stdout=None, stderr=None, no_color=False):
+        super().__init__(stdout, stderr, no_color)
+
+    def add_arguments(self, parser):
+        parser.add_argument('--no-import',
+                            action='store_false',
+                            dest='run-import',
+                            default=True,
+                            help='Skip database import')
+        parser.add_argument('--no-index',
+                            action='store_false',
+                            dest='run-index',
+                            default=True,
+                            help='Skip elastic search indexing')
+
     def handle(self, *args, **options):
-        batch.execute(jobs.ImportJob())
+        if options['run-import']:
+            batch.execute(jobs.ImportJob())
+
+        if options['run-index']:
+            batch.execute(jobs.IndexJob())

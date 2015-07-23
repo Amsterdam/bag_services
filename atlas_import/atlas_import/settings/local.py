@@ -51,3 +51,4 @@ LOGGING = {
     },
 }
 
+ELASTIC_SEARCH_HOSTS = [_get_docker_host()]

@@ -1,10 +1,13 @@
 import csv
 import logging
 import os
+from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry, Point
+import elasticsearch_dsl
+from elasticsearch_dsl.connections import connections
 
-from atlas import models
+from atlas import models, documents
 from . import uva2
 
 log = logging.getLogger(__name__)
@@ -471,6 +474,45 @@ class ImportPndGeoTask(AbstractGeoTask):
         ))
 
 
+class ImportELLigplaatsTask(object):
+    name = "EL: import ligplaatsen"
+
+    def __init__(self):
+        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        documents.AdresseerbaarObject.init()
+
+    def execute(self):
+        for l in models.Ligplaats.objects.all():
+            doc = documents.from_ligplaats(l)
+            doc.save()
+
+
+class ImportELStandplaatsTask(object):
+    name = "EL: import standplaatsen"
+
+    def __init__(self):
+        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        documents.AdresseerbaarObject.init()
+
+    def execute(self):
+        for s in models.Standplaats.objects.all():
+            doc = documents.from_standplaats(s)
+            doc.save()
+
+
+class ImportELVerblijfsobjectTask(object):
+    name = "EL: import verblijfsobjecten"
+
+    def __init__(self):
+        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        documents.AdresseerbaarObject.init()
+
+    def execute(self):
+        for v in models.Verblijfsobject.objects.all():
+            doc = documents.from_verblijfsobject(v)
+            doc.save()
+
+
 class ImportJob(object):
     name = "atlas-import"
 
@@ -512,4 +554,15 @@ class ImportJob(object):
             ImportPndTask(self.bag),
             ImportPndGeoTask(self.bag_wkt),
             ImportPndVboTask(self.bag),
+        ]
+
+
+class IndexJob(object):
+    name = "atlas-index"
+
+    def tasks(self):
+        return [
+            ImportELLigplaatsTask(),
+            ImportELStandplaatsTask(),
+            ImportELVerblijfsobjectTask(),
         ]

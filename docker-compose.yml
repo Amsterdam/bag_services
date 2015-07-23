@@ -5,3 +5,8 @@ postgres:
   environment:
     POSTGRES_PASSWORD: insecure
   
+elasticsearch:
+  image: elasticsearch:1.7
+  ports:
+    - "9200:9200"
+    - "9300:9300"
