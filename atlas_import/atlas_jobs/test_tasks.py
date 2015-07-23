@@ -478,6 +478,24 @@ class ImportPndWktTest(TestCase):
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
         self.assertEquals(len(imported), 79)
 
+class ImportVboPndTask(TestCase):
+
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportVboTask(BAG).execute()
+        jobs.ImportPndTask(BAG).execute()
+
+        task = jobs.ImportPndVboTask(BAG)
+        task.execute()
+
+        p = models.Pand.objects.get(pk='03630013113460')
+        v1 = models.Verblijfsobject.objects.get(pk='03630000716108')
+        v2 = models.Verblijfsobject.objects.get(pk='03630000716112')
+        v3 = models.Verblijfsobject.objects.get(pk='03630000716086')
+
+        self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()], [v1.id, v2.id, v3.id])
+        self.assertEqual([p.id for p in v1.panden.all()], [p.id])
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()

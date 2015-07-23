@@ -422,6 +422,25 @@ class ImportPndTask(AbstractUvaTask):
         ))
 
 
+class ImportPndVboTask(AbstractUvaTask):
+    name = "import PNDVBO"
+    code = "PNDVBO"
+
+    def process_row(self, r):
+        # todo: verwijderen panden die niet langer relevant zijn
+
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, 'PNDVBO'):
+            return
+
+        pand_id = r['sleutelverzendend']
+        vbo_id = r['PNDVBO/VBO/sleutelVerzendend']
+
+        models.Verblijfsobject.objects.get(pk=vbo_id).panden.add(models.Pand.objects.get(pk=pand_id))
+
+
 class ImportStaGeoTask(AbstractGeoTask):
     name = "import STA WKT"
     source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
@@ -492,4 +511,5 @@ class ImportJob(object):
 
             ImportPndTask(self.bag),
             ImportPndGeoTask(self.bag_wkt),
+            ImportPndVboTask(self.bag),
         ]

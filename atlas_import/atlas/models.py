@@ -293,6 +293,7 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
     hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="verblijfsobjecten")
+    panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten')
 
     geometrie = geo.PointField(null=True, srid=28992)
 
