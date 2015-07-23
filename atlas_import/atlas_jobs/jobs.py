@@ -25,7 +25,7 @@ def foreign_key(model, key):
         return None
 
 
-class RowBasedUvaTask(object):
+class AbstractUvaTask(object):
     code = None
 
     def __init__(self, source):
@@ -40,13 +40,29 @@ class RowBasedUvaTask(object):
         raise NotImplementedError()
 
 
-class CodeOmschrijvingUvaTask(RowBasedUvaTask):
+class CodeOmschrijvingUvaTask(AbstractUvaTask):
     model = None
 
     def process_row(self, r):
         merge(self.model, r['Code'], dict(
             omschrijving=r['Omschrijving']
         ))
+
+
+class AbstractGeoTask(object):
+    source_file = None
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter='|')
+            for row in rows:
+                self.process_row(row[0], GEOSGeometry(row[1]))
+
+    def process_row(self, row_id, geom):
+        raise NotImplementedError()
 
 
 class ImportBrnTask(CodeOmschrijvingUvaTask):
@@ -103,7 +119,7 @@ class ImportTggTask(CodeOmschrijvingUvaTask):
     model = models.Toegang
 
 
-class ImportGmeTask(RowBasedUvaTask):
+class ImportGmeTask(AbstractUvaTask):
     name = "import GME"
     code = "GME"
 
@@ -119,7 +135,7 @@ class ImportGmeTask(RowBasedUvaTask):
         ))
 
 
-class ImportSdlTask(RowBasedUvaTask):
+class ImportSdlTask(AbstractUvaTask):
     name = "import SDL"
     code = "SDL"
 
@@ -140,7 +156,7 @@ class ImportSdlTask(RowBasedUvaTask):
         ))
 
 
-class ImportBrtTask(RowBasedUvaTask):
+class ImportBrtTask(AbstractUvaTask):
     name = "import BRT"
     code = "BRT"
 
@@ -161,7 +177,7 @@ class ImportBrtTask(RowBasedUvaTask):
         ))
 
 
-class ImportWplTask(RowBasedUvaTask):
+class ImportWplTask(AbstractUvaTask):
     name = "import WPL"
     code = "WPL"
 
@@ -183,7 +199,7 @@ class ImportWplTask(RowBasedUvaTask):
         ))
 
 
-class ImportOprTask(RowBasedUvaTask):
+class ImportOprTask(AbstractUvaTask):
     name = "import OPR"
     code = "OPR"
 
@@ -210,7 +226,7 @@ class ImportOprTask(RowBasedUvaTask):
         ))
 
 
-class ImportNumTask(RowBasedUvaTask):
+class ImportNumTask(AbstractUvaTask):
     name = "import NUM"
     code = "NUM"
 
@@ -238,7 +254,7 @@ class ImportNumTask(RowBasedUvaTask):
         ))
 
 
-class ImportLigTask(RowBasedUvaTask):
+class ImportLigTask(AbstractUvaTask):
     name = "import LIG"
     code = "LIG"
 
@@ -260,7 +276,7 @@ class ImportLigTask(RowBasedUvaTask):
         ))
 
 
-class ImportNumLigHfdTask(RowBasedUvaTask):
+class ImportNumLigHfdTask(AbstractUvaTask):
     name = "import NUMLIGHFD"
     code = "NUMLIGHFD"
 
@@ -276,34 +292,7 @@ class ImportNumLigHfdTask(RowBasedUvaTask):
         ))
 
 
-class ImportLigGeoTask(object):
-    name = "import LIG WKT"
-    source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
-
-    def __init__(self, source_path):
-        self.source = os.path.join(source_path, self.source_file)
-
-    def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter='|')
-            for row in rows:
-                self.process_row(row)
-
-    def process_row(self, row):
-        ligplaats_id = '0' + row[0]
-        wkt = row[1]
-
-        try:
-            l = models.Ligplaats.objects.get(pk=ligplaats_id)
-            poly = GEOSGeometry(wkt)
-
-            l.geometrie = poly
-            l.save()
-        except models.Ligplaats.DoesNotExist:
-            log.warn("Could not load Ligplaats with key %s", ligplaats_id)
-
-
-class ImportStaTask(RowBasedUvaTask):
+class ImportStaTask(AbstractUvaTask):
     name = "import STA"
     code = "STA"
 
@@ -325,34 +314,7 @@ class ImportStaTask(RowBasedUvaTask):
         ))
 
 
-class ImportStaGeoTask(object):
-    name = "import STA WKT"
-    source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
-
-    def __init__(self, source_path):
-        self.source = os.path.join(source_path, self.source_file)
-
-    def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter='|')
-            for row in rows:
-                self.process_row(row)
-
-    def process_row(self, row):
-        standplaats_id = '0' + row[0]
-        wkt = row[1]
-
-        try:
-            l = models.Standplaats.objects.get(pk=standplaats_id)
-            poly = GEOSGeometry(wkt)
-
-            l.geometrie = poly
-            l.save()
-        except models.Standplaats.DoesNotExist:
-            log.warn("Could not load Ligplaats with key %s", standplaats_id)
-
-
-class ImportNumStaHfdTask(RowBasedUvaTask):
+class ImportNumStaHfdTask(AbstractUvaTask):
     name = "import NUMSTAHFD"
     code = "NUMSTAHFD"
 
@@ -368,7 +330,7 @@ class ImportNumStaHfdTask(RowBasedUvaTask):
         ))
 
 
-class ImportVboTask(RowBasedUvaTask):
+class ImportVboTask(AbstractUvaTask):
     name = "import VBO"
     code = "VBO"
 
@@ -419,7 +381,7 @@ class ImportVboTask(RowBasedUvaTask):
         ))
 
 
-class ImportNumVboHfdTask(RowBasedUvaTask):
+class ImportNumVboHfdTask(AbstractUvaTask):
     name = "import NUMVBOHFD"
     code = "NUMVBOHFD"
 
@@ -435,7 +397,7 @@ class ImportNumVboHfdTask(RowBasedUvaTask):
         ))
 
 
-class ImportPndTask(RowBasedUvaTask):
+class ImportPndTask(AbstractUvaTask):
     name = "import PND"
     code = "PND"
 
@@ -457,6 +419,36 @@ class ImportPndTask(RowBasedUvaTask):
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             status=foreign_key(models.Status, r['PNDSTS/STS/Code']),
             # x=(r['PNDBBK/BBK/Bouwbloknummer']),
+        ))
+
+
+class ImportStaGeoTask(AbstractGeoTask):
+    name = "import STA WKT"
+    source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
+
+    def process_row(self, row_id, geom):
+        merge(models.Standplaats, '0' + row_id, dict(
+            geometrie=geom,
+        ))
+
+
+class ImportLigGeoTask(AbstractGeoTask):
+    name = "import LIG WKT"
+    source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
+
+    def process_row(self, row_id, geom):
+        merge(models.Ligplaats, '0' + row_id, dict(
+            geometrie=geom
+        ))
+
+
+class ImportPndGeoTask(AbstractGeoTask):
+    name = "import PND WKT"
+    source_file = "BAG_PAND_GEOMETRIE.dat"
+
+    def process_row(self, row_id, geom):
+        merge(models.Pand, '0' + row_id, dict(
+            geometrie=geom
         ))
 
 
@@ -499,4 +491,5 @@ class ImportJob(object):
             ImportNumVboHfdTask(self.bag),
 
             ImportPndTask(self.bag),
+            ImportPndGeoTask(self.bag_wkt),
         ]

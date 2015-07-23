@@ -465,24 +465,38 @@ class ImportPndTest(TestCase):
         self.assertEqual(p.vervallen, False)
         self.assertEqual(p.status.code, '31')
 
+
+class ImportPndWktTest(TestCase):
+
+    def test_import(self):
+        jobs.ImportStsTask(BAG).execute()
+        jobs.ImportPndTask(BAG).execute()
+
+        task = jobs.ImportPndGeoTask(BAG_WKT)
+        task.execute()
+
+        imported = models.Pand.objects.exclude(geometrie__isnull=True)
+        self.assertEquals(len(imported), 79)
+
 # class FixWKT(TestCase):
 #     def test_fix(self):
 #         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportStaTask(BAG).execute()
+#         jobs.ImportPndTask(BAG).execute()
 #
 #         import os
 #         import csv
 #
-#         with open(os.path.join(BAG_WKT, 'BAG_STANDPLAATS_GEOMETRIE.dat'), mode='w') as out:
+#         ids = set(p.id for p in models.Pand.objects.only('id'))
+#
+#         with open(os.path.join(BAG_WKT, 'BAG_PAND_GEOMETRIE.dat'), mode='w') as out:
 #             w = csv.writer(out, delimiter='|')
-#             with open(os.path.join(BAG_WKT, 'BAG_STANDPLAATS_GEOMETRIE.in')) as f:
+#             with open(os.path.join(BAG_WKT, 'BAG_PAND_GEOMETRIE.in')) as f:
 #                 for r in csv.reader(f, delimiter='|'):
 #                     id = r[0]
-#                     try:
-#                         models.Standplaats.objects.get(pk='0' + id)
+#                     if ('0' + id) in ids:
 #                         w.writerow([id, r[1]])
 #                         print("Fixed", id)
-#                     except models.Standplaats.DoesNotExist:
+#                     else:
 #                         print("Skipped", id)
 #
 #
