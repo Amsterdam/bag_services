@@ -527,31 +527,31 @@ class ImportJob(object):
 
     def tasks(self):
         return [
-            ImportAvrTask(self.bag),
-            ImportBrnTask(self.bag),
-            ImportEgmTask(self.bag),
-            ImportFngTask(self.bag),
-            ImportGbkTask(self.bag),
-            ImportLggTask(self.bag),
-            ImportLocTask(self.bag),
-            ImportTggTask(self.bag),
-            ImportStsTask(self.bag),
-
-            ImportGmeTask(self.gebieden),
-            ImportWplTask(self.bag),
-            ImportSdlTask(self.gebieden),
-            ImportBrtTask(self.gebieden),
-            ImportOprTask(self.bag),
-            ImportNumTask(self.bag),
-
-            ImportLigTask(self.bag),
-            ImportLigGeoTask(self.bag_wkt),
-            ImportNumLigHfdTask(self.bag),
-
-            ImportStaTask(self.bag),
-            ImportStaGeoTask(self.bag_wkt),
-            ImportNumStaHfdTask(self.bag),
-
+            # ImportAvrTask(self.bag),
+            # ImportBrnTask(self.bag),
+            # ImportEgmTask(self.bag),
+            # ImportFngTask(self.bag),
+            # ImportGbkTask(self.bag),
+            # ImportLggTask(self.bag),
+            # ImportLocTask(self.bag),
+            # ImportTggTask(self.bag),
+            # ImportStsTask(self.bag),
+            #
+            # ImportGmeTask(self.gebieden),
+            # ImportWplTask(self.bag),
+            # ImportSdlTask(self.gebieden),
+            # ImportBrtTask(self.gebieden),
+            # ImportOprTask(self.bag),
+            # ImportNumTask(self.bag),
+            #
+            # ImportLigTask(self.bag),
+            # ImportLigGeoTask(self.bag_wkt),
+            # ImportNumLigHfdTask(self.bag),
+            #
+            # ImportStaTask(self.bag),
+            # ImportStaGeoTask(self.bag_wkt),
+            # ImportNumStaHfdTask(self.bag),
+            #
             ImportVboTask(self.bag),
             ImportNumVboHfdTask(self.bag),
 

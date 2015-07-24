@@ -33,20 +33,23 @@ class AdresseerbaarObject(es.DocType):
 
 def from_ligplaats(l: models.Ligplaats):
     d = AdresseerbaarObject(_id=l.id, type="ligplaats")
-    d.adres = from_nummeraanduiding(l.hoofdadres)
+    if l.hoofdadres:
+        d.adres = from_nummeraanduiding(l.hoofdadres)
 
     return d
 
 
 def from_standplaats(s: models.Standplaats):
     d = AdresseerbaarObject(_id=s.id, type="standplaats")
-    d.adres = from_nummeraanduiding(s.hoofdadres)
+    if s.hoofdadres:
+        d.adres = from_nummeraanduiding(s.hoofdadres)
 
     return d
 
 
 def from_verblijfsobject(v: models.Verblijfsobject):
     d = AdresseerbaarObject(_id=v.id, type="verblijfsobject")
-    d.adres = from_nummeraanduiding(v.hoofdadres)
+    if v.hoofdadres:
+        d.adres = from_nummeraanduiding(v.hoofdadres)
 
     return d
