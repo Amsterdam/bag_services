@@ -1,5 +1,6 @@
 import logging
 from django.utils import timezone
+import sys
 from batch.models import JobExecution, TaskExecution
 
 log = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ def execute(job):
 
         try:
             _execute_task(job_execution, task_name, task_function)
-        except BaseException:
+        except:
             log.exception("Job failed: %s", task_name)
             job_execution.date_finished = timezone.now()
             job_execution.status = JobExecution.STATUS_FAILED
@@ -40,7 +41,8 @@ def _execute_task(job_execution, task_name, task_function):
 
     try:
         task_function()
-    except BaseException as e:
+    except:
+        e = sys.exc_info()[0]
         log.exception("Task failed: %s", task_name)
         task_execution.date_finished = timezone.now()
         task_execution.status = TaskExecution.STATUS_FAILED

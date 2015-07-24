@@ -517,9 +517,13 @@ class ImportJob(object):
     name = "atlas-import"
 
     def __init__(self):
-        self.bag = 'atlas_jobs/fixtures/testset/bag'
-        self.bag_wkt = 'atlas_jobs/fixtures/testset/bag_wkt'
-        self.gebieden = 'atlas_jobs/fixtures/testset/gebieden'
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.bag = os.path.join(diva, 'bag')
+        self.bag_wkt = os.path.join(diva, 'bag_wkt')
+        self.gebieden = os.path.join(diva, 'gebieden')
 
     def tasks(self):
         return [
