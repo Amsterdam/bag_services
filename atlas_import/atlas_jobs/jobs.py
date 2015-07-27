@@ -445,7 +445,10 @@ class ImportPndVboTask(AbstractUvaTask):
         pand_id = r['sleutelverzendend']
         vbo_id = r['PNDVBO/VBO/sleutelVerzendend']
 
-        models.Verblijfsobject.objects.get(pk=vbo_id).panden.add(models.Pand.objects.get(pk=pand_id))
+        try:
+            models.Verblijfsobject.objects.get(pk=vbo_id).panden.add(models.Pand.objects.get(pk=pand_id))
+        except models.Verblijfsobject.DoesNotExist:
+            log.warn("Non-existng verblijfsobject: {}", vbo_id)
 
 
 class ImportStaGeoTask(AbstractGeoTask):
