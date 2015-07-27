@@ -208,6 +208,14 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
     def __str__(self):
         return "Nummeraanduiding({}, {})".format(self.id, self.code)
 
+    def adres(self):
+        return (self.openbare_ruimte.naam
+                + ' ' + self.huisnummer
+                + (self.huisletter if self.huisletter else '')
+                + ('-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else '')
+                )
+
+
 
 class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     """

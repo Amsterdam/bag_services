@@ -37,6 +37,7 @@ INSTALLED_APPS = (
 
     'django.contrib.gis',
     'rest_framework',
+    'corsheaders',
 
     'batch',
     'atlas',
@@ -46,6 +47,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     # 'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -115,3 +117,4 @@ ALLOWED_HOSTS = [
 REST_FRAMEWORK = dict(
     PAGE_SIZE=10,
 )
+

@@ -4,7 +4,6 @@ import os
 from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry, Point
-import elasticsearch_dsl
 from elasticsearch_dsl.connections import connections
 
 from atlas import models, documents

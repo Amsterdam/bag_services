@@ -57,3 +57,7 @@ PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, '..', 'diva'))
 
 DEBUG = True
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:9000',
+)

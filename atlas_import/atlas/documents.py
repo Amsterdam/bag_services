@@ -25,7 +25,8 @@ def from_nummeraanduiding(nummeraanduiding):
 
 class AdresseerbaarObject(es.DocType):
     type = es.String()
-    adres = Adres
+    adres = es.String()
+    nummeraanduiding = Adres
 
     class Meta:
         index = 'atlas'
@@ -34,7 +35,8 @@ class AdresseerbaarObject(es.DocType):
 def from_ligplaats(l: models.Ligplaats):
     d = AdresseerbaarObject(_id=l.id, type="ligplaats")
     if l.hoofdadres:
-        d.adres = from_nummeraanduiding(l.hoofdadres)
+        d.adres = l.hoofdadres.adres()
+        d.nummeraanduiding = from_nummeraanduiding(l.hoofdadres)
 
     return d
 
@@ -42,7 +44,8 @@ def from_ligplaats(l: models.Ligplaats):
 def from_standplaats(s: models.Standplaats):
     d = AdresseerbaarObject(_id=s.id, type="standplaats")
     if s.hoofdadres:
-        d.adres = from_nummeraanduiding(s.hoofdadres)
+        d.adres = s.hoofdadres.adres()
+        d.nummeraanduiding = from_nummeraanduiding(s.hoofdadres)
 
     return d
 
@@ -50,6 +53,7 @@ def from_standplaats(s: models.Standplaats):
 def from_verblijfsobject(v: models.Verblijfsobject):
     d = AdresseerbaarObject(_id=v.id, type="verblijfsobject")
     if v.hoofdadres:
-        d.adres = from_nummeraanduiding(v.hoofdadres)
+        d.adres = v.hoofdadres.adres()
+        d.nummeraanduiding = from_nummeraanduiding(v.hoofdadres)
 
     return d

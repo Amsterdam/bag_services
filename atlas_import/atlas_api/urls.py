@@ -9,4 +9,7 @@ router.register(r'verblijfsobjecten', views.VerblijfsobjectViewSet)
 router.register(r'nummeraanduidingen', views.NummeraanduidingViewSet)
 router.register(r'panden', views.PandViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    url(r'^search$', views.search),
+    url(r'^', include(router.urls)),
+]

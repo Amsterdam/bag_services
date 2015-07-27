@@ -3,6 +3,19 @@ from rest_framework import serializers
 from atlas import models
 
 
+class Autocomplete(serializers.Serializer):
+
+    query = serializers.CharField()
+    items = serializers.ListField(child=serializers.CharField())
+
+    def update(self, instance, validated_data):
+        raise ValueError("readonly")
+
+    def create(self, validated_data):
+        raise ValueError("readonly")
+
+
+
 class Status(serializers.ModelSerializer):
     class Meta:
         model = models.Status
@@ -143,7 +156,6 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
     status = Status()
     openbare_ruimte = OpenbareRuimte()
     type = serializers.CharField(source='get_type_display')
-    adres = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -171,14 +183,6 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'standplaatsen',
             'verblijfsobjecten',
         )
-
-    def get_adres(self, obj):
-        return (obj.openbare_ruimte.naam
-                + ' ' + obj.huisnummer
-                + (obj.huisletter if obj.huisletter else '')
-                + ('-' + obj.huisnummer_toevoeging if obj.huisnummer_toevoeging else '')
-                )
-
 
 class Ligplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
