@@ -448,7 +448,7 @@ class ImportPndVboTask(AbstractUvaTask):
         try:
             models.Verblijfsobject.objects.get(pk=vbo_id).panden.add(models.Pand.objects.get(pk=pand_id))
         except models.Verblijfsobject.DoesNotExist:
-            log.warn("Non-existng verblijfsobject: {}", vbo_id)
+            log.warn("Non-existing verblijfsobject: %s", vbo_id)
 
 
 class ImportStaGeoTask(AbstractGeoTask):
