@@ -18,6 +18,6 @@ from django.conf.urls import url
 import batch.views as b_views
 
 urlpatterns = [
-    url(r'^jobs$', b_views.JobListView.as_view(), name='job-list'),
+    url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
     url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),
 ]
