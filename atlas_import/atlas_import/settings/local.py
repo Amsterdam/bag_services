@@ -55,3 +55,5 @@ ELASTIC_SEARCH_HOSTS = [_get_docker_host()]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, '..', 'diva'))
+
+DEBUG = True

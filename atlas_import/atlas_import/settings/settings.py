@@ -32,13 +32,16 @@ INSTALLED_APPS = (
     # 'django.contrib.contenttypes',
     # 'django.contrib.sessions',
     # 'django.contrib.messages',
-    # 'django.contrib.staticfiles',
+
+    'django.contrib.staticfiles',
 
     'django.contrib.gis',
+    'rest_framework',
 
     'batch',
     'atlas',
     'atlas_jobs',
+    'atlas_api',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -108,3 +111,7 @@ ALLOWED_HOSTS = [
     '.localdomain',
     '.datalabamsterdam.nl',
 ]
+
+REST_FRAMEWORK = dict(
+    PAGE_SIZE=10,
+)

@@ -13,11 +13,13 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
+import atlas_api.urls
 
 import batch.views as b_views
 
 urlpatterns = [
+    url(r'^api/', include('atlas_api.urls')),
     url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
     url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),
 ]
