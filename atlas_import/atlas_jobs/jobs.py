@@ -294,7 +294,7 @@ class ImportNumLigHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMLIGHFD'):
             return
 
-        merge(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'], dict(
+        merge_existing(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'], dict(
             hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
         ))
 
@@ -332,7 +332,7 @@ class ImportNumStaHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMSTAHFD'):
             return
 
-        merge(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'], dict(
+        merge_existing(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'], dict(
             hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
         ))
 
@@ -453,7 +453,7 @@ class ImportStaGeoTask(AbstractGeoTask):
     source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
 
     def process_row(self, row_id, geom):
-        merge(models.Standplaats, '0' + row_id, dict(
+        merge_existing(models.Standplaats, '0' + row_id, dict(
             geometrie=geom,
         ))
 
@@ -463,7 +463,7 @@ class ImportLigGeoTask(AbstractGeoTask):
     source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
 
     def process_row(self, row_id, geom):
-        merge(models.Ligplaats, '0' + row_id, dict(
+        merge_existing(models.Ligplaats, '0' + row_id, dict(
             geometrie=geom
         ))
 
@@ -473,7 +473,7 @@ class ImportPndGeoTask(AbstractGeoTask):
     source_file = "BAG_PAND_GEOMETRIE.dat"
 
     def process_row(self, row_id, geom):
-        merge(models.Pand, '0' + row_id, dict(
+        merge_existing(models.Pand, '0' + row_id, dict(
             geometrie=geom
         ))
 
