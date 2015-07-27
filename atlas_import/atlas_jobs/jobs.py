@@ -17,6 +17,10 @@ def merge(model, pk, values):
     model.objects.update_or_create(pk=pk, defaults=values)
 
 
+def merge_existing(model, pk, values):
+    model.objects.filter(pk=pk).update(**values)
+
+
 def foreign_key(model, key):
     if not key:
         return None
@@ -395,7 +399,7 @@ class ImportNumVboHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMVBOHFD'):
             return
 
-        merge(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'], dict(
+        merge_existing(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'], dict(
             hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
         ))
 
