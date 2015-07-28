@@ -58,6 +58,7 @@ def typeahead(request):
         oppervlakte=h.get('oppervlakte'),
         kamers=h.get('kamers'),
         bestemming=h.get('bestemming'),
+        centroid=h.get('centroid'),
     ) for h in result]
     autocomplete = Autocomplete(data=data)
     return Response(autocomplete.initial_data)
