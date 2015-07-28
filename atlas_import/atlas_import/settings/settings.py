@@ -118,3 +118,8 @@ REST_FRAMEWORK = dict(
     PAGE_SIZE=10,
 )
 
+CORS_ORIGIN_REGEX_WHITELIST = (
+    '^(https?://)?localhost(:\d+)?$',
+    '^(https?://)?.*\.datalabamsterdam\.nl$',
+)
+
