@@ -485,7 +485,7 @@ class ImportELLigplaatsTask(object):
 
     def __init__(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.AdresseerbaarObject.init()
+        documents.Ligplaats.init()
 
     def execute(self):
         for l in models.Ligplaats.objects.all():
@@ -498,7 +498,7 @@ class ImportELStandplaatsTask(object):
 
     def __init__(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.AdresseerbaarObject.init()
+        documents.Standplaats.init()
 
     def execute(self):
         for s in models.Standplaats.objects.all():
@@ -511,7 +511,7 @@ class ImportELVerblijfsobjectTask(object):
 
     def __init__(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.AdresseerbaarObject.init()
+        documents.Verblijfsobject.init()
 
     def execute(self):
         for v in models.Verblijfsobject.objects.all():

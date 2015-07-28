@@ -1,7 +1,7 @@
 # Create your views here.
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 
@@ -38,7 +38,7 @@ class PandViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @api_view(['GET'])
-def search(request):
+def typeahead(request):
     query = request.GET['q']
 
     client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
@@ -47,6 +47,17 @@ def search(request):
         s = s.query("match_phrase_prefix", _all=part)
 
     result = s.execute()
-    data = [dict(id=h.meta.id, value=h.adres) for h in result]
+
+    print([h for h in result])
+
+    data = [dict(
+        id=h.meta.id,
+        type=h.meta.doc_type,
+        adres=h.adres,
+        postcode=h.postcode,
+        oppervlakte=h.get('oppervlakte'),
+        kamers=h.get('kamers'),
+        bestemming=h.get('bestemming'),
+    ) for h in result]
     autocomplete = Autocomplete(data=data)
     return Response(autocomplete.initial_data)

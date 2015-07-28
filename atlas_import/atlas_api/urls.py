@@ -10,6 +10,6 @@ router.register(r'nummeraanduidingen', views.NummeraanduidingViewSet)
 router.register(r'panden', views.PandViewSet)
 
 urlpatterns = [
-    url(r'^search$', views.search),
+    url(r'^typeahead$', views.typeahead),
     url(r'^', include(router.urls)),
 ]
