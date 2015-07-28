@@ -53,8 +53,8 @@ def typeahead(request):
     data = [dict(
         id=h.meta.id,
         type=h.meta.doc_type,
-        adres=h.adres,
-        postcode=h.postcode,
+        adres=h.get('adres'),
+        postcode=h.get('postcode'),
         oppervlakte=h.get('oppervlakte'),
         kamers=h.get('kamers'),
         bestemming=h.get('bestemming'),
