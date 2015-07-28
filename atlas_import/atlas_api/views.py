@@ -43,11 +43,10 @@ def search(request):
 
     client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
     s = Search(client)
-    result = s.query("match_phrase_prefix", _all=dict(
-        query=query.split(),
-        max_expansions=5,
-        slop=3,
-    )).execute()
+    for part in query.split():
+        s = s.query("match_phrase_prefix", _all=part)
+
+    result = s.execute()
     data = [dict(id=h.meta.id, value=h.adres) for h in result]
     autocomplete = Autocomplete(data=data)
     return Response(autocomplete.initial_data)
