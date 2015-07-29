@@ -128,5 +128,13 @@ CORS_ORIGIN_REGEX_WHITELIST = (
     '^(https?://)?.*\.datalabamsterdam\.nl$',
 )
 
+# Security
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = 'DENY'
+
 from .checks import *       # used for ./manage.py check
 
