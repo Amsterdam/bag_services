@@ -1,11 +1,11 @@
 # Create your views here.
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q
+from elasticsearch_dsl import Search
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 from atlas import models
 from atlas_api import serializers
@@ -37,6 +37,19 @@ class PandViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.Pand
 
 
+def _get_url(request, doc_type, id):
+    if doc_type == "ligplaats":
+        return reverse('ligplaats-detail', args=(id,), request=request)
+
+    if doc_type == "standplaats":
+        return reverse('standplaats-detail', args=(id,), request=request)
+
+    if doc_type == "verblijfsobject":
+        return reverse('verblijfsobject-detail', args=(id,), request=request)
+
+    return None
+
+
 @api_view(['GET'])
 def typeahead(request):
     query = request.GET['q']
@@ -45,13 +58,11 @@ def typeahead(request):
     s = Search(client)
     for part in query.split():
         s = s.query("match_phrase_prefix", _all=part)
-
     result = s.execute()
-
-    print([h for h in result])
 
     data = [dict(
         id=h.meta.id,
+        url=_get_url(request, h.meta.doc_type, h.meta.id),
         type=h.meta.doc_type,
         adres=h.get('adres'),
         postcode=h.get('postcode'),
@@ -60,5 +71,6 @@ def typeahead(request):
         bestemming=h.get('bestemming'),
         centroid=h.get('centroid'),
     ) for h in result]
+
     autocomplete = Autocomplete(data=data)
     return Response(autocomplete.initial_data)
