@@ -4,7 +4,6 @@ from atlas import models
 
 
 class Autocomplete(serializers.Serializer):
-
     query = serializers.CharField()
     items = serializers.ListField(child=serializers.CharField())
 
@@ -13,7 +12,6 @@ class Autocomplete(serializers.Serializer):
 
     def create(self, validated_data):
         raise ValueError("readonly")
-
 
 
 class Status(serializers.ModelSerializer):
@@ -184,6 +182,7 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'verblijfsobjecten',
         )
 
+
 class Ligplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
@@ -205,6 +204,13 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
             'hoofdadres',
             'buurt',
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        expand = 'full' in self.context['request'].QUERY_PARAMS
+
+        if expand:
+            self.fields['hoofdadres'] = Nummeraanduiding()
 
 
 class Standplaats(serializers.HyperlinkedModelSerializer):
@@ -228,6 +234,13 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
             'hoofdadres',
             'buurt',
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        expand = 'full' in self.context['request'].QUERY_PARAMS
+
+        if expand:
+            self.fields['hoofdadres'] = Nummeraanduiding()
 
 
 class Verblijfsobject(serializers.HyperlinkedModelSerializer):
@@ -277,6 +290,14 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'panden',
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        expand = 'full' in self.context['request'].QUERY_PARAMS
+
+        if expand:
+            self.fields['hoofdadres'] = Nummeraanduiding()
+            self.fields['panden'] = serializers.ManyRelatedField(child_relation=Pand())
+
     def get_gebruiksdoel(self, obj):
         return dict(
             code=obj.gebruiksdoel_code,
@@ -295,8 +316,8 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             omschrijving=obj.type_woonobject_omschrijving,
         )
 
-class Pand(serializers.HyperlinkedModelSerializer):
 
+class Pand(serializers.HyperlinkedModelSerializer):
     status = Status()
 
     class Meta:
