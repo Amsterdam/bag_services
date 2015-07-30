@@ -201,6 +201,7 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
             'bron',
             'vervallen',
 
+            'geometrie',
             'hoofdadres',
             'buurt',
         )
@@ -231,6 +232,7 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
             'bron',
             'vervallen',
 
+            'geometrie',
             'hoofdadres',
             'buurt',
         )
@@ -270,6 +272,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'bron',
             'vervallen',
 
+            'geometrie',
             'gebruiksdoel',
             'oppervlakte',
             'bouwlaag_toegang',
@@ -332,6 +335,8 @@ class Pand(serializers.HyperlinkedModelSerializer):
             'document_nummer',
             'status',
             'vervallen',
+
+            'geometrie',
 
             'bouwjaar',
             'hoogste_bouwlaag',
