@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     # 'django.contrib.messages',
 
     'django.contrib.staticfiles',
+    'django_jenkins',
 
     'django.contrib.gis',
     'rest_framework',
