@@ -55,5 +55,8 @@ ELASTIC_SEARCH_HOSTS = [_get_docker_host()]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, '..', 'diva'))
+if not os.path.exists(DIVA_DIR):
+    DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'atlas_jobs', 'fixtures', 'testset'))
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
 
 DEBUG = True
