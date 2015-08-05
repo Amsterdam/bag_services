@@ -336,7 +336,7 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Pand({})".format(self.id)
     
 '''    
-class Belemmering(ImportStatusMixin, models.Model):
+class Beperking(ImportStatusMixin, models.Model):
     """
     Beperking van de eigendom, zoals door een publiekrechtelijke beperking als beschermd monument of een aanschrijving op
     grond van de Woningwet.
@@ -352,7 +352,7 @@ class Belemmering(ImportStatusMixin, models.Model):
     datum_einde = models.DateField(null=True)
 
     def __str__(self):
-        return "Belemmering({})".format(self.id)
+        return "Beperking({})".format(self.id)
 
 '''
 
@@ -360,6 +360,11 @@ class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
 
     def __str__(self):
         return "Beperkingcode({})".format(self.code)
+
+class WkpbBroncode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+
+    def __str__(self):
+        return "WkpbBroncode({})".format(self.code)
     
 
 

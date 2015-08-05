@@ -480,6 +480,7 @@ class ImportBelemmeringTask(object):
 '''
 
 class ImportBeperkingcodeTask(object):
+    name = "import Beperkingcode"
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
@@ -494,6 +495,25 @@ class ImportBeperkingcodeTask(object):
         merge(models.Beperkingcode, r[0], dict(
             omschrijving = r[1],
         ))
+
+class ImportWkpbBroncodeTask(object):
+    name = "import Wkpb Broncode"
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_broncode.dat')
+        
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def process_row(self, r):
+        merge(models.WkpbBroncode, r[0], dict(
+            omschrijving = r[1],
+        ))
+
+
 
 
 class ImportStaGeoTask(AbstractGeoTask):
@@ -579,6 +599,7 @@ class ImportJob(object):
         self.bag = os.path.join(diva, 'bag')
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
+        self.beperkingen = os.path.join(diva, 'beperkingen')
 
     def tasks(self):
         return [
@@ -614,7 +635,8 @@ class ImportJob(object):
             ImportPndGeoTask(self.bag_wkt),
             ImportPndVboTask(self.bag),
             
-            ImportBelemmeringTask(self.wpb),
+            ImportBeperkingcodeTask(self.beperkingen),
+            ImportWkpbBroncodeTask(self.beperkingen),
         ]
 
 

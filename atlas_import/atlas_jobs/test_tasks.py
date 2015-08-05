@@ -508,4 +508,17 @@ class ImportBeperkingcode(TestCase):
         a = models.Beperkingcode.objects.get(pk='VI')
         self.assertEqual(a.omschrijving, 'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
 
+class ImportWkpbBroncode(TestCase):
+
+    def test_import(self):
+        task = jobs.ImportWkpbBroncodeTask(BEPERKINGEN)
+        task.execute()
+
+        imported = models.WkpbBroncode.objects.all()
+        self.assertEqual(len(imported), 6)
+
+        a = models.WkpbBroncode.objects.get(pk='5')
+        self.assertEqual(a.omschrijving, 'Dagelijks Bestuur')
+
+
 
