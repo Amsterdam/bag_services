@@ -366,5 +366,18 @@ class WkpbBroncode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
     def __str__(self):
         return "WkpbBroncode({})".format(self.code)
     
+class WkpbBrondocument(ImportStatusMixin, models.Model):
+
+    id = models.IntegerField(null=False, primary_key=True)
+    documentnummer = models.IntegerField(null=False)
+    bron = models.ForeignKey(WkpbBroncode, null=True)
+    documentnaam = models.CharField(max_length=21, null=False)
+    persoonsgegeven_afschermen = models.BooleanField(null=False)
+    soort_besluit = models.CharField(max_length=60, null=True)
+
+    def __str__(self):
+        return "WkpbBrondocument({})".format(self.code)
+   
+
 
 

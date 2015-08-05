@@ -513,6 +513,32 @@ class ImportWkpbBroncodeTask(object):
             omschrijving = r[1],
         ))
 
+class ImportWkpbBrondocumentTask(object):
+    name = "import Wkpb Brondocument"
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_brondocument.dat')
+        
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def process_row(self, r):
+        if r[4] == '0':
+            pers_afsch = False
+        else:
+            pers_afsch = True
+        merge(models.WkpbBrondocument, r[0], dict(
+            documentnummer = r[0],
+            bron = foreign_key(models.WkpbBroncode, r[2]),
+            documentnaam = r[3],
+            persoonsgegeven_afschermen = pers_afsch,
+            soort_besluit = r[5],
+        ))
+
+
 
 
 
@@ -524,6 +550,7 @@ class ImportStaGeoTask(AbstractGeoTask):
         merge_existing(models.Standplaats, '0' + row_id, dict(
             geometrie=geom,
         ))
+
 
 
 class ImportLigGeoTask(AbstractGeoTask):
@@ -637,6 +664,7 @@ class ImportJob(object):
             
             ImportBeperkingcodeTask(self.beperkingen),
             ImportWkpbBroncodeTask(self.beperkingen),
+            ImportWkpbBrondocumentTask(self.beperkingen),
         ]
 
 

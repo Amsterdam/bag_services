@@ -80,7 +80,7 @@ class ImportBeperkingcode(TestCase):
 
 # importeren
 
-./atlas_import/manage.py migrate
+./manage.py migrate
 
 # import toevoegen aan atlas_jobs/jobs.py
 # function tasks in class ImportJobs()

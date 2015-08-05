@@ -520,5 +520,23 @@ class ImportWkpbBroncode(TestCase):
         a = models.WkpbBroncode.objects.get(pk='5')
         self.assertEqual(a.omschrijving, 'Dagelijks Bestuur')
 
+class ImportWkpbBrondocument(TestCase):
+
+    def test_import(self):
+
+        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+
+        task = jobs.ImportWkpbBrondocumentTask(BEPERKINGEN)
+        task.execute()
+
+        imported = models.WkpbBrondocument.objects.all()
+        self.assertEqual(len(imported), 48)
+
+        a = models.WkpbBrondocument.objects.get(pk=6641)
+        self.assertEqual(a.documentnummer, 6641)
+        self.assertEqual(a.documentnaam, 'BD00000149_WK00WK.pdf')
+        self.assertEqual(a.bron.omschrijving, 'Burgemeester')
+        self.assertEqual(a.persoonsgegeven_afschermen, False)
+
 
 
