@@ -485,7 +485,15 @@ class ImportBeperkingcodeTask(object):
         self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
         
     def execute(self):
-        pass
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def process_row(self, r):
+        merge(models.Beperkingcode, r[0], dict(
+            omschrijving = r[1],
+        ))
 
 
 class ImportStaGeoTask(AbstractGeoTask):
