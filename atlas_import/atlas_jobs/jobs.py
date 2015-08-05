@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import datetime
 from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry, Point
@@ -449,35 +450,8 @@ class ImportPndVboTask(AbstractUvaTask):
         except models.Verblijfsobject.DoesNotExist:
             log.warn("Non-existing verblijfsobject: %s", vbo_id)
 
-'''
-class ImportBelemmeringTask(object):
-    name = "Import belemmering"
-    code = "belemmering"
-    
-    col_identificatie = 0
-    col_inschrijfnummer = 1
-    col_beperkingcode = 2
-    col_datum_in_werking = 3
-    col_datum_einde = 4
 
-    def __init__(self, source_path):
-        self.source = os.path.join(source_path, self.source_file)
 
-    def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            for row in rows:
-                self.process_row(row)
-    
-    def process_row(self, r):
-        merge(models.Pand, r['sleutelverzendend'], dict(
-            identificatie = r[col_identificatie],
-            inschrijfnummer = r[col_inschrijfnummer],
-            beperkingcode = r[col_beperkingcode],
-            datum_in_werking = r[col_in_werking],
-            datum_einde = r[col_datum_einde],
-        ))
-'''
 
 class ImportBeperkingcodeTask(object):
     name = "import Beperkingcode"
@@ -536,6 +510,33 @@ class ImportWkpbBrondocumentTask(object):
             documentnaam = r[3],
             persoonsgegeven_afschermen = pers_afsch,
             soort_besluit = r[5],
+        ))
+
+class ImportBeperkingTask(object):
+    name = "import Beperking"
+    
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_belemmering.dat')
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def get_date(self, s):
+        if s:
+            return datetime.datetime.strptime(s, "%Y%m%d").date()
+        else:
+            return None
+        
+    def process_row(self, r):
+        
+        merge(models.Beperking, r[0], dict(
+            inschrijfnummer = r[1],
+            beperkingtype = foreign_key(models.Beperkingcode, r[2]),
+            datum_in_werking = self.get_date(r[3]),
+            datum_einde = self.get_date(r[4]),
         ))
 
 
@@ -665,6 +666,7 @@ class ImportJob(object):
             ImportBeperkingcodeTask(self.beperkingen),
             ImportWkpbBroncodeTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
+            ImportBeperkingTask(self.beperkingen),
         ]
 
 

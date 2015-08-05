@@ -539,4 +539,25 @@ class ImportWkpbBrondocument(TestCase):
         self.assertEqual(a.persoonsgegeven_afschermen, False)
 
 
+class ImportBeperking(TestCase):
+
+    def test_import(self):
+
+        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        jobs.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        jobs.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+
+        task = jobs.ImportBeperkingTask(BEPERKINGEN)
+        task.execute()
+
+        imported = models.Beperking.objects.all()
+        self.assertEqual(len(imported), 50)
+
+        b = models.Beperking.objects.get(pk=1001730)
+        self.assertEqual(b.inschrijfnummer, 1156)
+        self.assertEqual(b.beperkingtype.omschrijving, 'Melding, bevel, beschikking of vordering Wet bodembescherming')
+        self.assertEqual(b.datum_in_werking, datetime.date(2008, 12, 17))
+        self.assertEqual(b.datum_einde, None)
+
+
 
