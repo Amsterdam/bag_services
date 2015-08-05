@@ -1,0 +1,100 @@
+# dataset toevoegen:
+
+# (deel van) bestand in testset directory plaatsen:
+
+../atlas_import/atlas_import/atlas_jobs/fixtures/testset/beperkingen/
+    wpb_belemmering.dat
+    wpb_belemmeringcode.dat
+    wpb_belemmering_perceel.dat
+    wpb_broncode.dat
+    wpb_brondocument.dat
+
+# Voor toevoegen van tabel, eerst de "leaves" nemen zodat andere tabellen daar later aan gelinkt kunnen
+# worden. Hier is "wpb_belemmeringcode.dat" uitgewerkt.
+
+# class maken in atlas/models.py
+
+class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+
+    def __str__(self):
+        return "Beperkingcode({})".format(self.code)
+
+# ImportStatusMixin: altijd toevoegen, houdt moment van importeren bij
+# CodeOmschrijvingMixin: bevat velden 'code' en 'omschrijving' voor simpele lookup tabellen
+
+
+#migrations maken:
+./manage.py makemigrations 
+# of eerst als check: ./manage.py makemigrations --dry-run 
+
+
+
+# task maken in atlas_jobs/jobs.py
+
+class ImportBeperkingcodeTask(object):
+    name = "import Beperkingcode"
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
+        
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def process_row(self, r):
+        merge(models.Beperkingcode, r[0], dict(
+            omschrijving = r[1],
+        ))
+
+
+
+
+# test maken in atlas_jobs/test_tasks.py
+
+# bovenin dir met testbestanden toevoegen:
+BEPERKINGEN = 'atlas_jobs/fixtures/testset/beperkingen'
+
+# onderaan testcase toevoegen:
+class ImportBeperkingcode(TestCase):
+
+    def test_import(self):
+        task = jobs.ImportBeperkingcodeTask(BEPERKINGEN)
+        task.execute()
+
+        imported = models.Beperkingcode.objects.all()
+        self.assertEqual(len(imported), 20)
+
+        a = models.Beperkingcode.objects.get(pk='VI')
+        self.assertEqual(a.omschrijving, 'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
+
+
+# testen 
+# (test maakt zelf een test database aan dus migrate is nog niet nodig)
+
+./manage.py test
+# of
+./manage.py test atlas_jobs.test_tasks.ImportBeperkingcode
+
+
+# importeren
+
+./atlas_import/manage.py migrate
+
+# import toevoegen aan atlas_jobs/jobs.py
+# function tasks in class ImportJobs()
+ 
+            ImportBeperkingcodeTask(self.beperkingen),
+
+# import runnen:
+./manage.py run_import
+
+
+# committen!!
+
+
+
+
+
+
