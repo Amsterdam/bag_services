@@ -16,7 +16,7 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'insecure',
         'HOST': _get_docker_host(),
-        'PORT': 5432,
+        'PORT': 5434,
         'CONN_MAX_AGE': 60,
     }
 }

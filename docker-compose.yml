@@ -1,7 +1,7 @@
 postgres:
   build: docker-compose/postgres
   ports:
-    - "5432:5432"
+    - "5434:5432"
   environment:
     POSTGRES_PASSWORD: insecure
   
