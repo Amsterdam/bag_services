@@ -9,7 +9,7 @@ from atlas import models
 BAG = 'atlas_jobs/fixtures/testset/bag'
 BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
 GEBIEDEN = 'atlas_jobs/fixtures/testset/gebieden'
-
+BEPERKINGEN = 'atlas_jobs/fixtures/testset/beperkingen'
 
 class ImportBrnTest(TestCase):
     def test_import(self):
@@ -496,112 +496,16 @@ class ImportVboPndTask(TestCase):
         self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()], [v1.id, v2.id, v3.id])
         self.assertEqual([p.id for p in v1.panden.all()], [p.id])
 
-# class FixWKT(TestCase):
-#     def test_fix(self):
-#         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportPndTask(BAG).execute()
-#
-#         import os
-#         import csv
-#
-#         ids = set(p.id for p in models.Pand.objects.only('id'))
-#
-#         with open(os.path.join(BAG_WKT, 'BAG_PAND_GEOMETRIE.dat'), mode='w') as out:
-#             w = csv.writer(out, delimiter='|')
-#             with open(os.path.join(BAG_WKT, 'BAG_PAND_GEOMETRIE.in')) as f:
-#                 for r in csv.reader(f, delimiter='|'):
-#                     id = r[0]
-#                     if ('0' + id) in ids:
-#                         w.writerow([id, r[1]])
-#                         print("Fixed", id)
-#                     else:
-#                         print("Skipped", id)
-#
-#
-# class FixBAG(TestCase):
-#     def test_fix(self):
-#         jobs.ImportStsTask(BAG).execute()
-#         jobs.ImportVboTask(BAG).execute()
-#
-#         import os
-#         import csv
-#
-#         ids = set([v.id for v in models.Verblijfsobject.objects.all()])
-#
-#         with open(os.path.join(BAG, 'PNDVBO_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
-#             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'PNDVBO_20150706_N_20150706_20150706.in.UVA2')) as f:
-#                 reader = csv.reader(f, delimiter=';')
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#
-#                 for r in reader:
-#                     id = r[4]
-#                     if id in ids:
-#                         w.writerow(r)
-#                         print("Fixed", id)
-#                     else:
-#                         print("Skipped", id)
-# class FixNUM(TestCase):
-#     def test_fix(self):
-#         import os
-#         import csv
-#         from atlas_jobs import uva2
-#
-#         nums = set()
-#
-#         for name in ['NUMLIGHFD_20150706_N_20150706_20150706.UVA2', 'NUMSTAHFD_20150706_N_20150706_20150706.UVA2',
-#                      'NUMVBOHFD_20150706_N_20150706_20150706.UVA2']:
-#             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
-#                 for r in rows:
-#                     nums.add(r['IdentificatiecodeNummeraanduiding'])
-#
-#         with open(os.path.join(BAG, 'NUM_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
-#             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'NUM.in.UVA2')) as f:
-#                 reader = csv.reader(f, delimiter=';')
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#
-#                 for r in reader:
-#                     id = r[0]
-#                     if id in nums:
-#                         w.writerow(r)
-#                         print("Fixed", id)
-#                     else:
-#                         print("Skipped", id)
+class ImportBeperkingcode(TestCase):
 
-#
-# class FixOPT(TestCase):
-#     def test_fix(self):
-#         import os
-#         import csv
-#         from atlas_jobs import uva2
-#
-#         nums = set()
-#
-#         for name in ['NUM_20150706_N_20150706_20150706.UVA2']:
-#             with uva2.uva_reader(os.path.join(BAG, name)) as rows:
-#                 for r in rows:
-#                     nums.add(r['NUMOPR/OPR/sleutelVerzendend'])
-#
-#         with open(os.path.join(BAG, 'OPR_20150706_N_20150706_20150706.UVA2'), mode='w') as out:
-#             w = csv.writer(out, delimiter=';')
-#             with open(os.path.join(BAG, 'OPR.in.UVA2'), encoding='cp1252') as f:
-#                 reader = csv.reader(f, delimiter=';')
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#                 w.writerow(next(reader))
-#
-#                 for r in reader:
-#                     id = r[0]
-#                     if id in nums:
-#                         w.writerow(r)
-#                         print("Fixed", id)
-#                     else:
-#                         print("Skipped", id)
+    def test_import(self):
+        task = jobs.ImportBeperkingcodeTask(BEPERKINGEN)
+        task.execute()
+
+        imported = models.Beperkingcode.objects.all()
+        self.assertEqual(len(imported), 20)
+
+        a = models.Beperkingcode.objects.get(pk='VI')
+        self.assertEqual(a.omschrijving, 'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
+
+

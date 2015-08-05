@@ -334,3 +334,32 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
 
     def __str__(self):
         return "Pand({})".format(self.id)
+    
+'''    
+class Belemmering(ImportStatusMixin, models.Model):
+    """
+    Beperking van de eigendom, zoals door een publiekrechtelijke beperking als beschermd monument of een aanschrijving op
+    grond van de Woningwet.
+    
+    http://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/beperking/
+    """
+    
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.CharField(max_length=14, unique=True)
+    inschrijfnummer = models.IntegerField(null=False)
+    beperkingcode = models.CharField(max_length=2, null=False)
+    datum_in_werking = models.DateField(null=False)
+    datum_einde = models.DateField(null=True)
+
+    def __str__(self):
+        return "Belemmering({})".format(self.id)
+
+'''
+
+class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+
+    def __str__(self):
+        return "Beperkingcode({})".format(self.code)
+    
+
+

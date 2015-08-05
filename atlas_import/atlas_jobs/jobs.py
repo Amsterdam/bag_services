@@ -449,6 +449,44 @@ class ImportPndVboTask(AbstractUvaTask):
         except models.Verblijfsobject.DoesNotExist:
             log.warn("Non-existing verblijfsobject: %s", vbo_id)
 
+'''
+class ImportBelemmeringTask(object):
+    name = "Import belemmering"
+    code = "belemmering"
+    
+    col_identificatie = 0
+    col_inschrijfnummer = 1
+    col_beperkingcode = 2
+    col_datum_in_werking = 3
+    col_datum_einde = 4
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def process_row(self, r):
+        merge(models.Pand, r['sleutelverzendend'], dict(
+            identificatie = r[col_identificatie],
+            inschrijfnummer = r[col_inschrijfnummer],
+            beperkingcode = r[col_beperkingcode],
+            datum_in_werking = r[col_in_werking],
+            datum_einde = r[col_datum_einde],
+        ))
+'''
+
+class ImportBeperkingcodeTask(object):
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
+        
+    def execute(self):
+        pass
+
 
 class ImportStaGeoTask(AbstractGeoTask):
     name = "import STA WKT"
@@ -478,6 +516,9 @@ class ImportPndGeoTask(AbstractGeoTask):
         merge_existing(models.Pand, '0' + row_id, dict(
             geometrie=geom
         ))
+
+
+
 
 
 class ImportELLigplaatsTask(object):
@@ -564,6 +605,8 @@ class ImportJob(object):
             ImportPndTask(self.bag),
             ImportPndGeoTask(self.bag_wkt),
             ImportPndVboTask(self.bag),
+            
+            ImportBelemmeringTask(self.wpb),
         ]
 
 

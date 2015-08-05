@@ -6,9 +6,6 @@ from atlas_jobs import jobs
 
 class Command(BaseCommand):
 
-    def __init__(self, stdout=None, stderr=None, no_color=False):
-        super().__init__(stdout, stderr, no_color)
-
     def add_arguments(self, parser):
         parser.add_argument('--no-import',
                             action='store_false',
