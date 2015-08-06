@@ -58,7 +58,7 @@ def typeahead(request):
     s = Search(client)
     for part in query.split():
         s = s.query("match_phrase_prefix", _all=part)
-    result = s.execute()
+    result = s.index("atlas").execute()
 
     data = [dict(
         id=h.meta.id,
