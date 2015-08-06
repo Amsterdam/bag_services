@@ -24,7 +24,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'k56a9)qv*%swsapf2)w4tjgjsjbs+fc83qq8!^13&usmlk3!5^'
 
 DEBUG = False
@@ -41,15 +40,15 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_jenkins',
 
-    'django.contrib.gis',
-    'rest_framework',
-    'rest_framework_gis',
-    'corsheaders',
-
     'batch',
     'atlas',
     'atlas_jobs',
     'atlas_api',
+
+    'django.contrib.gis',
+    'rest_framework',
+    'rest_framework_gis',
+    'corsheaders',
 )
 
 MIDDLEWARE_CLASSES = (
