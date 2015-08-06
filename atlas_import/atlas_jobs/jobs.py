@@ -539,6 +539,33 @@ class ImportBeperkingTask(object):
             datum_einde = self.get_date(r[4]),
         ))
 
+class ImportWkpbBepKadTask(object):
+    name = "import Beperking-Percelen"
+    
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            for row in rows:
+                self.process_row(row)
+    
+    def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
+        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index) 
+        
+    def process_row(self, r):
+        
+        try:
+            b = models.Beperking.objects.get(pk=r[5])
+        except models.Beperking.DoesNotExist:
+            log.warning("Could not load object of type Beperking with key %s", r[5])
+            b = None
+        if b:
+            k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
+            b.kadastrale_aanduidingen.append(k)
+            b.save()            
+
 
 
 
@@ -667,6 +694,7 @@ class ImportJob(object):
             ImportWkpbBroncodeTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportBeperkingTask(self.beperkingen),
+            ImportWkpbBepKadTask(self.beperkingen),
         ]
 
 

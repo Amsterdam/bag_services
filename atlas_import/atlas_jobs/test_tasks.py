@@ -558,6 +558,25 @@ class ImportBeperking(TestCase):
         self.assertEqual(b.beperkingtype.omschrijving, 'Melding, bevel, beschikking of vordering Wet bodembescherming')
         self.assertEqual(b.datum_in_werking, datetime.date(2008, 12, 17))
         self.assertEqual(b.datum_einde, None)
+        self.assertEqual(b.kadastrale_aanduidingen, [])
 
+
+class ImportWkpbBepKad(TestCase):
+
+    def test_import(self):
+
+        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        jobs.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        jobs.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+        jobs.ImportBeperkingTask(BEPERKINGEN).execute()
+
+        task = jobs.ImportWkpbBepKadTask(BEPERKINGEN)
+        task.execute()
+
+        b = models.Beperking.objects.get(pk=1001730)
+        self.assertEqual(len(b.kadastrale_aanduidingen), 117)
+        self.assertEqual('ASD12P03580A0061' in b.kadastrale_aanduidingen, True)
+        self.assertEqual('ASD18V03148G0000' in b.kadastrale_aanduidingen, False)
+        
 
 
