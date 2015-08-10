@@ -10,6 +10,8 @@ BAG = 'atlas_jobs/fixtures/testset/bag'
 BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
 GEBIEDEN = 'atlas_jobs/fixtures/testset/gebieden'
 BEPERKINGEN = 'atlas_jobs/fixtures/testset/beperkingen'
+KAD_LKI = 'atlas_jobs/fixtures/testset/kadaster/lki'
+KAD_AKR = 'atlas_jobs/fixtures/testset/kadaster/akr'
 
 class ImportBrnTest(TestCase):
     def test_import(self):
@@ -577,6 +579,21 @@ class ImportWkpbBepKad(TestCase):
         self.assertEqual(len(b.kadastrale_aanduidingen), 117)
         self.assertEqual('ASD12P03580A0061' in b.kadastrale_aanduidingen, True)
         self.assertEqual('ASD18V03148G0000' in b.kadastrale_aanduidingen, False)
+
+# Kadaster
+
+class ImportLkiGemeente(TestCase):
+
+    def test_import(self):
+
+        task = jobs.ImportLkiGemeenteTask(KAD_LKI)
+        task.execute()
+
+        g = models.LkiGemeente.objects.get(pk=3630010602635)
+        self.assertEqual(g.gemeentenaam, 'AMSTERDAM')
+        self.assertEqual(g.gemeentecode, 363)
+        self.assertEqual(g.geometrie.area, 219486252.36264545)
+
         
 
 

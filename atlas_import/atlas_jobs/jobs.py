@@ -5,6 +5,9 @@ import datetime
 from django.conf import settings
 
 from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.gis.gdal import DataSource
+#from django.contrib.gis.db import models
+from django.contrib.gis.utils import LayerMapping
 from elasticsearch_dsl.connections import connections
 
 from atlas import models, documents
@@ -451,7 +454,7 @@ class ImportPndVboTask(AbstractUvaTask):
             log.warn("Non-existing verblijfsobject: %s", vbo_id)
 
 
-
+# Wkpb
 
 class ImportBeperkingcodeTask(object):
     name = "import Beperkingcode"
@@ -566,9 +569,29 @@ class ImportWkpbBepKadTask(object):
             b.kadastrale_aanduidingen.append(k)
             b.save()            
 
+# Kadaster - LKI
+
+class ImportLkiGemeenteTask(object):
+    name = "import LKI Gemeente"
+    
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'LKI_Gemeente.shp')
+
+    def execute(self):
+        mapping = {'id': 'DIVA_ID',
+            'gemeentecode': 'GEM_CODE',
+            'gemeentenaam': 'GEM_NAAM',
+            'geometrie': 'POLYGON'}
+        lm = LayerMapping(models.LkiGemeente, self.source, mapping)
+        lm.save(verbose=True)
+        
 
 
 
+
+
+
+# Geo
 
 class ImportStaGeoTask(AbstractGeoTask):
     name = "import STA WKT"
@@ -578,7 +601,6 @@ class ImportStaGeoTask(AbstractGeoTask):
         merge_existing(models.Standplaats, '0' + row_id, dict(
             geometrie=geom,
         ))
-
 
 
 class ImportLigGeoTask(AbstractGeoTask):
@@ -602,7 +624,7 @@ class ImportPndGeoTask(AbstractGeoTask):
 
 
 
-
+# Elasticsearch
 
 class ImportELLigplaatsTask(object):
     name = "EL: import ligplaatsen"
@@ -655,6 +677,7 @@ class ImportJob(object):
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
         self.beperkingen = os.path.join(diva, 'beperkingen')
+        self.kadaster_lki = os.path.join(diva, 'kadaster/lki')
 
     def tasks(self):
         return [
@@ -695,6 +718,8 @@ class ImportJob(object):
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportBeperkingTask(self.beperkingen),
             ImportWkpbBepKadTask(self.beperkingen),
+            
+            ImportLkiGemeenteTask(self.kadaster_lki),
         ]
 
 

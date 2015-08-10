@@ -336,6 +336,7 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Pand({})".format(self.id)
     
 
+# Wkpb
 
 class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
     """
@@ -388,6 +389,32 @@ class Beperking(ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "Beperking({})".format(self.id)
+
+
+
+# Kadaster
+
+class LkiGemeente(ImportStatusMixin, models.Model):
+    """
+    Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van de Grondwet. 
+    
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    from django.contrib.gis.geos import GEOSGeometry
+    
+    id = models.BigIntegerField(null=False, primary_key=True)
+    gemeentecode = models.IntegerField(null=False)
+    gemeentenaam = models.CharField(max_length=9)
+    geometrie = geo.MultiPolygonField(srid=28992, null=True)
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "LkiGemeente({})".format(self.id)
+
+
+
+
+
 
 
 
