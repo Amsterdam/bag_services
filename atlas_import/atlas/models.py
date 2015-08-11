@@ -447,6 +447,29 @@ class LkiSectie(ImportStatusMixin, models.Model):
         return "LkiSectie({})".format(self.id)
 
 
+class LkiKadastraalObject(ImportStatusMixin, models.Model):
+    """
+    Een kadastraal object een onroerende zaak of een appartementsrecht waarvoor bij overdracht
+    of vestiging van rechten inschrijving in de openbare registers van het Kadaster is vereist.   
+    
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    
+    id = models.BigIntegerField(null=False, primary_key=True)
+    kadastrale_gemeente_code = models.CharField(max_length=5, null=False)
+    sectie_code = models.CharField(max_length=2, null=False)
+    perceelnummer = models.IntegerField(null=False)
+    indexletter = models.CharField(max_length=1, null=False)
+    indexnummer = models.IntegerField(null=False)
+    oppervlakte = models.IntegerField(null=False)
+    ingang_cyclus = models.DateField(null=False)
+    geometrie = geo.MultiPolygonField(srid=28992, null=False)
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "LkiKadastraalObject({})".format(self.id)
+
+
 
 
 

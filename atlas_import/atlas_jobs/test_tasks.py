@@ -622,5 +622,22 @@ class ImportLkiSectie(TestCase):
         self.assertEqual(s.geometrie.area, 869579.8324124987)
 
         
+class ImportLkiKadastraalObject(TestCase):
+    
+    def test_import(self):
+        
+        task = jobs.ImportLkiKadastraalObjectTask(KAD_LKI)
+        task.execute()
+
+        o = models.LkiKadastraalObject.objects.get(pk=3630010603206)
+        self.assertEqual(o.kadastrale_gemeente_code, 'STN02')
+        self.assertEqual(o.sectie_code, 'G')
+        self.assertEqual(o.perceelnummer, 1478)
+        self.assertEqual(o.indexletter, 'G')
+        self.assertEqual(o.indexnummer, 0)
+        self.assertEqual(o.oppervlakte, 76)
+        self.assertEqual(o.ingang_cyclus, datetime.date(2015, 2, 10))
+        self.assertEqual(o.geometrie.area, 78.42037450020632)
+        
 
 
