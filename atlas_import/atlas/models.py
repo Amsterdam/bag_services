@@ -428,6 +428,25 @@ class LkiKadastraleGemeente(ImportStatusMixin, models.Model):
         return "LkiKadastraleGemeente({})".format(self.id)
 
 
+class LkiSectie(ImportStatusMixin, models.Model):
+    """
+    Een sectie is een onderdeel van een kadastrale gemeente en als zodanig een onderdeel van de
+    kadastrale aanduiding waarbinnen uniek genummerde percelen zijn gelegen.  
+    
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    
+    id = models.BigIntegerField(null=False, primary_key=True)
+    kadastrale_gemeente_code = models.CharField(max_length=5, null=False)
+    code = models.CharField(max_length=2, null=False)
+    ingang_cyclus = models.DateField(null=False)
+    geometrie = geo.MultiPolygonField(srid=28992, null=True)
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "LkiSectie({})".format(self.id)
+
+
 
 
 

@@ -624,6 +624,36 @@ class ImportLkiKadastraleGemeenteTask(object):
         merge(models.LkiKadastraleGemeente, diva_id, values)
 
 
+class ImportLkiSectieTask(object):
+    name = "import LKI Sectie"
+    
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'LKI_Sectie.shp')
+
+    def execute(self):
+        ds = DataSource(self.source)
+        lyr = ds[0]
+        for feat in lyr:
+            self.process_feature(feat)
+        
+    def process_feature(self, feat):
+        wkt = feat.geom.wkt
+        
+        # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
+        if not 'MULTIPOLYGON' in wkt:
+            wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
+            wkt += ')'
+        values = dict(
+            kadastrale_gemeente_code = feat.get('KAD_GEM'),
+            code = feat.get('SECTIE'),
+            ingang_cyclus = feat.get('INGANG_CYC'),
+            geometrie = fromstr(wkt) # TODO: kan dit mooier???
+        )
+        diva_id = feat.get('DIVA_ID')
+        
+        merge(models.LkiSectie, diva_id, values)
+
+
 
 # Geo
 
@@ -755,6 +785,7 @@ class ImportJob(object):
             
             ImportLkiGemeenteTask(self.kadaster_lki),
             ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
+            ImportLkiSectieTask(self.kadaster_lki),
         ]
 
 
