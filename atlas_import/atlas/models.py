@@ -400,7 +400,6 @@ class LkiGemeente(ImportStatusMixin, models.Model):
     
     http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
     """
-    from django.contrib.gis.geos import GEOSGeometry
     
     id = models.BigIntegerField(null=False, primary_key=True)
     gemeentecode = models.IntegerField(null=False)
@@ -410,6 +409,23 @@ class LkiGemeente(ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "LkiGemeente({})".format(self.id)
+
+
+class LkiKadastraleGemeente(ImportStatusMixin, models.Model):
+    """
+    De kadastrale gemeente is het eerste gedeelte van de aanduiding van een kadastraal perceel.  
+    
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    
+    id = models.BigIntegerField(null=False, primary_key=True)
+    code = models.CharField(max_length=5, null=False)
+    ingang_cyclus = models.DateField(null=False)
+    geometrie = geo.MultiPolygonField(srid=28992, null=True)
+    objects = geo.GeoManager()
+
+    def __str__(self):
+        return "LkiKadastraleGemeente({})".format(self.id)
 
 
 

@@ -592,7 +592,20 @@ class ImportLkiGemeente(TestCase):
         g = models.LkiGemeente.objects.get(pk=3630010602635)
         self.assertEqual(g.gemeentenaam, 'AMSTERDAM')
         self.assertEqual(g.gemeentecode, 363)
-        self.assertEqual(g.geometrie.area, 219486252.36264545)
+        self.assertEqual(g.geometrie.area, 219491741.99025947)
+
+        
+class ImportLkiKadastraleGemeente(TestCase):
+
+    def test_import(self):
+
+        task = jobs.ImportLkiKadastraleGemeenteTask(KAD_LKI)
+        task.execute()
+
+        g = models.LkiKadastraleGemeente.objects.get(pk=3630010602590)
+        self.assertEqual(g.code, 'ASD06')
+        self.assertEqual(g.ingang_cyclus, datetime.date(2008, 12, 2))
+        self.assertEqual(g.geometrie.area, 1278700.9685260097)
 
         
 

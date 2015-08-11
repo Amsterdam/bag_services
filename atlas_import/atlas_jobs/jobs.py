@@ -4,7 +4,7 @@ import os
 import datetime
 from django.conf import settings
 
-from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon, fromstr
 from django.contrib.gis.gdal import DataSource
 #from django.contrib.gis.db import models
 from django.contrib.gis.utils import LayerMapping
@@ -489,6 +489,7 @@ class ImportWkpbBroncodeTask(object):
         merge(models.WkpbBroncode, r[0], dict(
             omschrijving = r[1],
         ))
+        
 
 class ImportWkpbBrondocumentTask(object):
     name = "import Wkpb Brondocument"
@@ -578,16 +579,49 @@ class ImportLkiGemeenteTask(object):
         self.source = os.path.join(source_path, 'LKI_Gemeente.shp')
 
     def execute(self):
-        mapping = {'id': 'DIVA_ID',
-            'gemeentecode': 'GEM_CODE',
-            'gemeentenaam': 'GEM_NAAM',
-            'geometrie': 'POLYGON'}
-        lm = LayerMapping(models.LkiGemeente, self.source, mapping)
-        lm.save(verbose=True)
+        ds = DataSource(self.source)
+        lyr = ds[0]
+        for feat in lyr:
+            self.process_feature(feat)
         
+    def process_feature(self, feat):
+        values = dict(
+            gemeentecode = feat.get('GEM_CODE'),
+            gemeentenaam = feat.get('GEM_NAAM'),
+            geometrie = fromstr(feat.geom.wkt) # TODO: kan dit mooier???
+        )
+        diva_id = feat.get('DIVA_ID')
+        
+        merge(models.LkiGemeente, diva_id, values)
 
+        
+class ImportLkiKadastraleGemeenteTask(object):
+    name = "import LKI Kadastrale gemeente"
+    
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, 'LKI_Kadastrale_gemeente.shp')
 
-
+    def execute(self):
+        ds = DataSource(self.source)
+        lyr = ds[0]
+        for feat in lyr:
+            self.process_feature(feat)
+        
+    def process_feature(self, feat):
+        wkt = feat.geom.wkt
+        
+        # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
+        if not 'MULTIPOLYGON' in wkt:
+            wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
+            wkt += ')'
+        values = dict(
+            code = feat.get('KAD_GEM'),
+            ingang_cyclus = feat.get('INGANG_CYC'),
+            geometrie = fromstr(wkt) # TODO: kan dit mooier???
+        )
+        diva_id = feat.get('DIVA_ID')
+        
+        merge(models.LkiKadastraleGemeente, diva_id, values)
 
 
 
@@ -720,6 +754,7 @@ class ImportJob(object):
             ImportWkpbBepKadTask(self.beperkingen),
             
             ImportLkiGemeenteTask(self.kadaster_lki),
+            ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
         ]
 
 
