@@ -567,8 +567,10 @@ class ImportWkpbBepKadTask(object):
             b = None
         if b:
             k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
-            b.kadastrale_aanduidingen.append(k)
-            b.save()            
+            if k not in b.kadastrale_aanduidingen:
+                b.kadastrale_aanduidingen.append(k)
+                b.save()
+          
 
 # Kadaster - LKI
 
@@ -659,7 +661,10 @@ class ImportLkiKadastraalObjectTask(object):
     
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'LKI_Perceel.shp')
-
+        
+    def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
+        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
+        
     def execute(self):
         ds = DataSource(self.source)
         lyr = ds[0]
@@ -682,6 +687,7 @@ class ImportLkiKadastraalObjectTask(object):
             indexnummer = feat.get('IDX_NUMMER'),
             oppervlakte = feat.get('OPP_VLAKTE'),
             ingang_cyclus = feat.get('INGANG_CYC'),
+            aanduiding = self.get_kadastrale_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'),feat.get('PERCEELNR'),feat.get('IDX_LETTER'),feat.get('IDX_NUMMER')),
             geometrie = fromstr(wkt) # TODO: kan dit mooier???
         )
         diva_id = feat.get('DIVA_ID')
