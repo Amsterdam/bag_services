@@ -504,6 +504,8 @@ class ImportWkpbBrondocumentTask(object):
                 self.process_row(row)
     
     def process_row(self, r):
+        if len(r[3]) > 21:
+            print('te lang!!')
         if r[4] == '0':
             pers_afsch = False
         else:
@@ -511,7 +513,7 @@ class ImportWkpbBrondocumentTask(object):
         merge(models.WkpbBrondocument, r[0], dict(
             documentnummer = r[0],
             bron = foreign_key(models.WkpbBroncode, r[2]),
-            documentnaam = r[3],
+            documentnaam = r[3][:21], # afknippen, omdat data corrupt is (zie brondocument: 5820)
             persoonsgegeven_afschermen = pers_afsch,
             soort_besluit = r[5],
         ))
