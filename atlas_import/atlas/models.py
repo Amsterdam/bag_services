@@ -463,7 +463,7 @@ class LkiKadastraalObject(ImportStatusMixin, models.Model):
     indexnummer = models.IntegerField(null=False)
     oppervlakte = models.IntegerField(null=False)
     ingang_cyclus = models.DateField(null=False)
-    aanduiding = models.CharField(max_length=17, null=False)
+    aanduiding = models.CharField(max_length=17, null=False, db_index=True)
     geometrie = geo.MultiPolygonField(srid=28992, null=False)
     objects = geo.GeoManager()
 
