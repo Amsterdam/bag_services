@@ -504,8 +504,6 @@ class ImportWkpbBrondocumentTask(object):
                 self.process_row(row)
     
     def process_row(self, r):
-        if len(r[3]) > 21:
-            print('te lang!!')
         if r[4] == '0':
             pers_afsch = False
         else:
@@ -561,18 +559,28 @@ class ImportWkpbBepKadTask(object):
         return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index) 
         
     def process_row(self, r):
+        k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
+        uid = '{0}_{1}'.format(r[5], k)
         
+        bp = None
         try:
-            b = models.Beperking.objects.get(pk=r[5])
-        except models.Beperking.DoesNotExist:
-            log.warning("Could not load object of type Beperking with key %s", r[5])
-            b = None
-        if b:
-            k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
-            if k not in b.kadastrale_aanduidingen:
-                b.kadastrale_aanduidingen.append(k)
-                b.save()
-          
+            bp = models.Beperking.objects.get(pk=r[5])
+        except:
+            bp = None
+            log.warning('Non-existing Beperking: {0}'.format(r[5]))
+
+        ko = None
+        try:
+            ko = models.LkiKadastraalObject.objects.get(aanduiding=k)
+        except:
+            ko = None
+            log.warning('Non-existing LkiKadastraalObject: {0}'.format(k))
+        
+        if bp is not None and ko is not None:
+            merge(models.BeperkingKadastraalObject, uid, dict(
+                beperking = bp,
+                kadastraal_object = ko
+            ))
 
 # Kadaster - LKI
 
@@ -824,12 +832,14 @@ class ImportJob(object):
             ImportWkpbBroncodeTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportBeperkingTask(self.beperkingen),
-            ImportWkpbBepKadTask(self.beperkingen),
             
             ImportLkiGemeenteTask(self.kadaster_lki),
             ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
             ImportLkiSectieTask(self.kadaster_lki),
             ImportLkiKadastraalObjectTask(self.kadaster_lki),
+
+            ImportWkpbBepKadTask(self.beperkingen),
+
         ]
 
 

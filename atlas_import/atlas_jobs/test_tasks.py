@@ -560,7 +560,6 @@ class ImportBeperking(TestCase):
         self.assertEqual(b.beperkingtype.omschrijving, 'Melding, bevel, beschikking of vordering Wet bodembescherming')
         self.assertEqual(b.datum_in_werking, datetime.date(2008, 12, 17))
         self.assertEqual(b.datum_einde, None)
-        self.assertEqual(b.kadastrale_aanduidingen, [])
 
 
 class ImportWkpbBepKad(TestCase):
@@ -571,14 +570,15 @@ class ImportWkpbBepKad(TestCase):
         jobs.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
         jobs.ImportBeperkingcodeTask(BEPERKINGEN).execute()
         jobs.ImportBeperkingTask(BEPERKINGEN).execute()
+        jobs.ImportLkiKadastraalObjectTask(KAD_LKI).execute()
 
         task = jobs.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
 
-        b = models.Beperking.objects.get(pk=1001730)
-        self.assertEqual(len(b.kadastrale_aanduidingen), 117)
-        self.assertEqual('ASD12P03580A0061' in b.kadastrale_aanduidingen, True)
-        self.assertEqual('ASD18V03148G0000' in b.kadastrale_aanduidingen, False)
+        bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
+        self.assertEqual(bk.beperking.id, 1001730)
+        self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')
+
 
 # Kadaster
 
@@ -637,7 +637,9 @@ class ImportLkiKadastraalObject(TestCase):
         self.assertEqual(o.indexnummer, 0)
         self.assertEqual(o.oppervlakte, 76)
         self.assertEqual(o.ingang_cyclus, datetime.date(2015, 2, 10))
+        self.assertEqual(o.aanduiding, 'STN02G01478G0000')
         self.assertEqual(o.geometrie.area, 78.42037450020632)
+        
         
 
 

@@ -382,13 +382,21 @@ class Beperking(ImportStatusMixin, models.Model):
     beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
-    kadastrale_aanduidingen = ArrayField(
-        models.CharField(max_length=17),
-        default=[]
-    )
 
     def __str__(self):
         return "Beperking({})".format(self.id)
+
+class BeperkingKadastraalObject(ImportStatusMixin, models.Model):
+    """
+    n:n-relaties: Beperking <> LkiKadastraalObject
+    """
+    
+    id = models.CharField(max_length=33, null=False, primary_key=True)
+    beperking = models.ForeignKey('Beperking', null=False)
+    kadastraal_object = models.ForeignKey('LkiKadastraalObject', null=False)
+    
+    def __str__(self):
+        return "BeperkingKadastraalObject({})".format(self.id)
 
 
 
