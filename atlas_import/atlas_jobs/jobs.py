@@ -23,15 +23,25 @@ def merge_existing(model, pk, values):
     model.objects.filter(pk=pk).update(**values)
 
 
-def foreign_key(model, key):
-    if not key:
+def foreign_key_id(model, model_id, cache):
+    """
+    Returns `model_id` if `model_id` identifies a valid instance of `model`; returns None otherwise.
+    """
+    if not model_id:
         return None
 
-    try:
-        return model.objects.get(pk=key)
-    except model.DoesNotExist:
-        log.warning("Could not load object of type %s with key %s", model, key)
+    key = str(model)
+    id_set = cache.get(key, None)
+
+    if id_set is None:
+        id_set = set(model.objects.values_list('pk', flat=True))
+        cache[key] = id_set
+
+    if model_id not in id_set:
+        log.warning("Reference to non-existing object of type %s with key %s", model, model_id)
         return None
+
+    return model_id
 
 
 class AbstractUvaTask(object):
@@ -39,11 +49,15 @@ class AbstractUvaTask(object):
 
     def __init__(self, source):
         self.source = uva2.resolve_file(source, self.code)
+        self.cache = dict()
 
     def execute(self):
-        with uva2.uva_reader(self.source) as rows:
-            for r in rows:
-                self.process_row(r)
+        try:
+            with uva2.uva_reader(self.source) as rows:
+                for r in rows:
+                    self.process_row(r)
+        finally:
+            self.cache.clear()
 
     def process_row(self, r):
         raise NotImplementedError()
@@ -205,7 +219,7 @@ class ImportWplTask(AbstractUvaTask):
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieWoonplaats']),
             naam_ptt=r['WoonplaatsPTTSchrijfwijze'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            gemeente=foreign_key(models.Gemeente, r['WPLGME/GME/sleutelVerzendend']),
+            gemeente_id=foreign_key_id(models.Gemeente, r['WPLGME/GME/sleutelVerzendend'], self.cache),
         ))
 
 
@@ -230,9 +244,9 @@ class ImportOprTask(AbstractUvaTask):
             naam_nen=r['StraatnaamNENSchrijfwijze'],
             naam_ptt=r['StraatnaamPTTSchrijfwijze'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            bron=foreign_key(models.Bron, r['OPRBRN/BRN/Code']),
-            status=foreign_key(models.Status, r['OPRSTS/STS/Code']),
-            woonplaats=foreign_key(models.Woonplaats, r['OPRWPL/WPL/sleutelVerzendend']),
+            bron_id=foreign_key_id(models.Bron, r['OPRBRN/BRN/Code'], self.cache),
+            status_id=foreign_key_id(models.Status, r['OPRSTS/STS/Code'], self.cache),
+            woonplaats_id=foreign_key_id(models.Woonplaats, r['OPRWPL/WPL/sleutelVerzendend'], self.cache),
         ))
 
 
@@ -258,9 +272,9 @@ class ImportNumTask(AbstractUvaTask):
             type=r['TypeAdresseerbaarObjectDomein'],
             adres_nummer=r['Adresnummer'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            bron=foreign_key(models.Bron, r['NUMBRN/BRN/Code']),
-            status=foreign_key(models.Status, r['NUMSTS/STS/Code']),
-            openbare_ruimte=foreign_key(models.OpenbareRuimte, r['NUMOPR/OPR/sleutelVerzendend']),
+            bron_id=foreign_key_id(models.Bron, r['NUMBRN/BRN/Code'], self.cache),
+            status_id=foreign_key_id(models.Status, r['NUMSTS/STS/Code'], self.cache),
+            openbare_ruimte_id=foreign_key_id(models.OpenbareRuimte, r['NUMOPR/OPR/sleutelVerzendend'], self.cache),
         ))
 
 
@@ -280,9 +294,9 @@ class ImportLigTask(AbstractUvaTask):
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieLigplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieLigplaats']),
-            bron=foreign_key(models.Bron, r['LIGBRN/BRN/Code']),
-            status=foreign_key(models.Status, r['LIGSTS/STS/Code']),
-            buurt=foreign_key(models.Buurt, r['LIGBRT/BRT/sleutelVerzendend'])
+            bron_id=foreign_key_id(models.Bron, r['LIGBRN/BRN/Code'], self.cache),
+            status_id=foreign_key_id(models.Status, r['LIGSTS/STS/Code'], self.cache),
+            buurt_id=foreign_key_id(models.Buurt, r['LIGBRT/BRT/sleutelVerzendend'], self.cache)
         ))
 
 
@@ -298,7 +312,7 @@ class ImportNumLigHfdTask(AbstractUvaTask):
             return
 
         merge_existing(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'], dict(
-            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+            hoofdadres_id=foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], self.cache)
         ))
 
 
@@ -318,9 +332,9 @@ class ImportStaTask(AbstractUvaTask):
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieStandplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieStandplaats']),
-            bron=foreign_key(models.Bron, r['STABRN/BRN/Code']),
-            status=foreign_key(models.Status, r['STASTS/STS/Code']),
-            buurt=foreign_key(models.Buurt, r['STABRT/BRT/sleutelVerzendend'])
+            bron_id=foreign_key_id(models.Bron, r['STABRN/BRN/Code'], self.cache),
+            status_id=foreign_key_id(models.Status, r['STASTS/STS/Code'], self.cache),
+            buurt_id=foreign_key_id(models.Buurt, r['STABRT/BRT/sleutelVerzendend'], self.cache)
         ))
 
 
@@ -336,7 +350,7 @@ class ImportNumStaHfdTask(AbstractUvaTask):
             return
 
         merge_existing(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'], dict(
-            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+            hoofdadres_id=foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], self.cache)
         ))
 
 
@@ -376,18 +390,18 @@ class ImportVboTask(AbstractUvaTask):
             woningvoorraad=uva2.uva_indicatie(r['IndicatieWoningvoorraad']),
             aantal_kamers=uva2.uva_nummer(r['AantalKamers']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            reden_afvoer=foreign_key(models.RedenAfvoer, r['VBOAVR/AVR/Code']),
-            bron=foreign_key(models.Bron, r['VBOBRN/BRN/Code']),
-            eigendomsverhouding=foreign_key(models.Eigendomsverhouding, r['VBOEGM/EGM/Code']),
-            financieringswijze=foreign_key(models.Financieringswijze, r['VBOFNG/FNG/Code']),
-            gebruik=foreign_key(models.Gebruik, r['VBOGBK/GBK/Code']),
-            locatie_ingang=foreign_key(models.LocatieIngang, r['VBOLOC/LOC/Code']),
-            ligging=foreign_key(models.Ligging, r['VBOLGG/LGG/Code']),
+            reden_afvoer_id=foreign_key_id(models.RedenAfvoer, r['VBOAVR/AVR/Code'], self.cache),
+            bron_id=foreign_key_id(models.Bron, r['VBOBRN/BRN/Code'], self.cache),
+            eigendomsverhouding_id=foreign_key_id(models.Eigendomsverhouding, r['VBOEGM/EGM/Code'], self.cache),
+            financieringswijze_id=foreign_key_id(models.Financieringswijze, r['VBOFNG/FNG/Code'], self.cache),
+            gebruik_id=foreign_key_id(models.Gebruik, r['VBOGBK/GBK/Code'], self.cache),
+            locatie_ingang_id=foreign_key_id(models.LocatieIngang, r['VBOLOC/LOC/Code'], self.cache),
+            ligging_id=foreign_key_id(models.Ligging, r['VBOLGG/LGG/Code'], self.cache),
             # ?=(r['VBOMNT/MNT/Code']),
-            toegang=foreign_key(models.Toegang, r['VBOTGG/TGG/Code']),
+            toegang_id=foreign_key_id(models.Toegang, r['VBOTGG/TGG/Code'], self.cache),
             # ?=(r['VBOOVR/OVR/Code']),
-            status=foreign_key(models.Status, r['VBOSTS/STS/Code']),
-            buurt=foreign_key(models.Buurt, r['VBOBRT/BRT/sleutelVerzendend']),
+            status_id=foreign_key_id(models.Status, r['VBOSTS/STS/Code'], self.cache),
+            buurt_id=foreign_key_id(models.Buurt, r['VBOBRT/BRT/sleutelVerzendend'], self.cache),
         ))
 
 
@@ -403,7 +417,7 @@ class ImportNumVboHfdTask(AbstractUvaTask):
             return
 
         merge_existing(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'], dict(
-            hoofdadres=foreign_key(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+            hoofdadres_id=foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], self.cache)
         ))
 
 
@@ -427,7 +441,7 @@ class ImportPndTask(AbstractUvaTask):
             hoogste_bouwlaag=uva2.uva_nummer(r['HoogsteBouwlaag']),
             pandnummer=(r['Pandnummer']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            status=foreign_key(models.Status, r['PNDSTS/STS/Code']),
+            status_id=foreign_key_id(models.Status, r['PNDSTS/STS/Code'], self.cache),
         ))
 
 
@@ -494,21 +508,26 @@ class ImportWkpbBrondocumentTask(object):
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_brondocument.dat')
+        self.cache = dict()
 
     def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            for row in rows:
-                self.process_row(row)
+        try:
+            with open(self.source) as f:
+                rows = csv.reader(f, delimiter=';')
+                for row in rows:
+                    self.process_row(row)
+        finally:
+            self.cache.clear()
 
     def process_row(self, r):
         if r[4] == '0':
             pers_afsch = False
         else:
             pers_afsch = True
+
         merge(models.WkpbBrondocument, r[0], dict(
             documentnummer=r[0],
-            bron=foreign_key(models.WkpbBroncode, r[2]),
+            bron_id=foreign_key_id(models.WkpbBroncode, r[2], self.cache),
             documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
             persoonsgegeven_afschermen=pers_afsch,
             soort_besluit=r[5],
@@ -520,12 +539,16 @@ class ImportBeperkingTask(object):
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmering.dat')
+        self.cache = dict()
 
     def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            for row in rows:
-                self.process_row(row)
+        try:
+            with open(self.source) as f:
+                rows = csv.reader(f, delimiter=';')
+                for row in rows:
+                    self.process_row(row)
+        finally:
+            self.cache.clear()
 
     def get_date(self, s):
         if s:
@@ -537,7 +560,7 @@ class ImportBeperkingTask(object):
 
         merge(models.Beperking, r[0], dict(
             inschrijfnummer=r[1],
-            beperkingtype=foreign_key(models.Beperkingcode, r[2]),
+            beperkingtype_id=foreign_key_id(models.Beperkingcode, r[2], self.cache),
             datum_in_werking=self.get_date(r[3]),
             datum_einde=self.get_date(r[4]),
         ))
@@ -548,12 +571,16 @@ class ImportWkpbBepKadTask(object):
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
+        self.cache = dict()
 
     def execute(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            for row in rows:
-                self.process_row(row)
+        try:
+            with open(self.source) as f:
+                rows = csv.reader(f, delimiter=';')
+                for row in rows:
+                    self.process_row(row)
+        finally:
+            self.cache.clear()
 
     def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
         return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)

@@ -639,7 +639,5 @@ class ImportLkiKadastraalObject(TestCase):
         self.assertEqual(o.ingang_cyclus, datetime.date(2015, 2, 10))
         self.assertEqual(o.aanduiding, 'STN02G01478G0000')
         self.assertEqual(o.geometrie.area, 78.42037450020632)
-        
-        
 
 
