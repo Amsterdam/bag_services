@@ -4,7 +4,7 @@ import os
 import datetime
 
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, Point, fromstr
+from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.gis.gdal import DataSource
 
 from elasticsearch_dsl.connections import connections
@@ -53,6 +53,7 @@ class CodeOmschrijvingUvaTask(AbstractUvaTask):
     model = None
 
     def process_row(self, r):
+        # noinspection PyTypeChecker
         merge(self.model, r['Code'], dict(
             omschrijving=r['Omschrijving']
         ))
@@ -427,7 +428,6 @@ class ImportPndTask(AbstractUvaTask):
             pandnummer=(r['Pandnummer']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             status=foreign_key(models.Status, r['PNDSTS/STS/Code']),
-            # x=(r['PNDBBK/BBK/Bouwbloknummer']),
         ))
 
 
@@ -436,8 +436,6 @@ class ImportPndVboTask(AbstractUvaTask):
     code = "PNDVBO"
 
     def process_row(self, r):
-        # todo: verwijderen panden die niet langer relevant zijn
-
         if not uva2.geldig_tijdvak(r):
             return
 
@@ -564,25 +562,22 @@ class ImportWkpbBepKadTask(object):
         k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
         uid = '{0}_{1}'.format(r[5], k)
 
-        bp = None
         try:
             bp = models.Beperking.objects.get(pk=r[5])
-        except:
-            bp = None
+        except models.Beperking.DoesNotExist:
             log.warning('Non-existing Beperking: {0}'.format(r[5]))
+            return
 
-        ko = None
         try:
             ko = models.LkiKadastraalObject.objects.get(aanduiding=k)
-        except:
-            ko = None
+        except models.LkiKadastraalObject.DoesNotExist:
             log.warning('Non-existing LkiKadastraalObject: {0}'.format(k))
+            return
 
-        if bp is not None and ko is not None:
-            merge(models.BeperkingKadastraalObject, uid, dict(
-                beperking=bp,
-                kadastraal_object=ko
-            ))
+        merge(models.BeperkingKadastraalObject, uid, dict(
+            beperking=bp,
+            kadastraal_object=ko
+        ))
 
 
 # Kadaster - LKI
@@ -603,7 +598,7 @@ class ImportLkiGemeenteTask(object):
         values = dict(
             gemeentecode=feat.get('GEM_CODE'),
             gemeentenaam=feat.get('GEM_NAAM'),
-            geometrie=fromstr(feat.geom.wkt)  # TODO: kan dit mooier???
+            geometrie=GEOSGeometry(feat.geom.wkt)
         )
         diva_id = feat.get('DIVA_ID')
 
@@ -632,7 +627,7 @@ class ImportLkiKadastraleGemeenteTask(object):
         values = dict(
             code=feat.get('KAD_GEM'),
             ingang_cyclus=feat.get('INGANG_CYC'),
-            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
+            geometrie=GEOSGeometry(wkt)
         )
         diva_id = feat.get('DIVA_ID')
 
@@ -662,7 +657,7 @@ class ImportLkiSectieTask(object):
             kadastrale_gemeente_code=feat.get('KAD_GEM'),
             code=feat.get('SECTIE'),
             ingang_cyclus=feat.get('INGANG_CYC'),
-            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
+            geometrie=GEOSGeometry(wkt)
         )
         diva_id = feat.get('DIVA_ID')
 
@@ -702,7 +697,7 @@ class ImportLkiKadastraalObjectTask(object):
             ingang_cyclus=feat.get('INGANG_CYC'),
             aanduiding=self.get_kadastrale_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'), feat.get('PERCEELNR'),
                                                       feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
-            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
+            geometrie=GEOSGeometry(wkt)
         )
         diva_id = feat.get('DIVA_ID')
 
