@@ -2,12 +2,11 @@ import csv
 import logging
 import os
 import datetime
-from django.conf import settings
 
-from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon, fromstr
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry, Point, fromstr
 from django.contrib.gis.gdal import DataSource
-#from django.contrib.gis.db import models
-from django.contrib.gis.utils import LayerMapping
+
 from elasticsearch_dsl.connections import connections
 
 from atlas import models, documents
@@ -461,64 +460,66 @@ class ImportBeperkingcodeTask(object):
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
-        
+
     def execute(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             for row in rows:
                 self.process_row(row)
-    
+
     def process_row(self, r):
         merge(models.Beperkingcode, r[0], dict(
-            omschrijving = r[1],
+            omschrijving=r[1],
         ))
+
 
 class ImportWkpbBroncodeTask(object):
     name = "import Wkpb Broncode"
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_broncode.dat')
-        
+
     def execute(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             for row in rows:
                 self.process_row(row)
-    
+
     def process_row(self, r):
         merge(models.WkpbBroncode, r[0], dict(
-            omschrijving = r[1],
+            omschrijving=r[1],
         ))
-        
+
 
 class ImportWkpbBrondocumentTask(object):
     name = "import Wkpb Brondocument"
 
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_brondocument.dat')
-        
+
     def execute(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             for row in rows:
                 self.process_row(row)
-    
+
     def process_row(self, r):
         if r[4] == '0':
             pers_afsch = False
         else:
             pers_afsch = True
         merge(models.WkpbBrondocument, r[0], dict(
-            documentnummer = r[0],
-            bron = foreign_key(models.WkpbBroncode, r[2]),
-            documentnaam = r[3][:21], # afknippen, omdat data corrupt is (zie brondocument: 5820)
-            persoonsgegeven_afschermen = pers_afsch,
-            soort_besluit = r[5],
+            documentnummer=r[0],
+            bron=foreign_key(models.WkpbBroncode, r[2]),
+            documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
+            persoonsgegeven_afschermen=pers_afsch,
+            soort_besluit=r[5],
         ))
+
 
 class ImportBeperkingTask(object):
     name = "import Beperking"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmering.dat')
 
@@ -527,25 +528,26 @@ class ImportBeperkingTask(object):
             rows = csv.reader(f, delimiter=';')
             for row in rows:
                 self.process_row(row)
-    
+
     def get_date(self, s):
         if s:
             return datetime.datetime.strptime(s, "%Y%m%d").date()
         else:
             return None
-        
+
     def process_row(self, r):
-        
+
         merge(models.Beperking, r[0], dict(
-            inschrijfnummer = r[1],
-            beperkingtype = foreign_key(models.Beperkingcode, r[2]),
-            datum_in_werking = self.get_date(r[3]),
-            datum_einde = self.get_date(r[4]),
+            inschrijfnummer=r[1],
+            beperkingtype=foreign_key(models.Beperkingcode, r[2]),
+            datum_in_werking=self.get_date(r[3]),
+            datum_einde=self.get_date(r[4]),
         ))
+
 
 class ImportWkpbBepKadTask(object):
     name = "import Beperking-Percelen"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
 
@@ -554,14 +556,14 @@ class ImportWkpbBepKadTask(object):
             rows = csv.reader(f, delimiter=';')
             for row in rows:
                 self.process_row(row)
-    
+
     def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
-        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index) 
-        
+        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
+
     def process_row(self, r):
         k = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
         uid = '{0}_{1}'.format(r[5], k)
-        
+
         bp = None
         try:
             bp = models.Beperking.objects.get(pk=r[5])
@@ -575,18 +577,19 @@ class ImportWkpbBepKadTask(object):
         except:
             ko = None
             log.warning('Non-existing LkiKadastraalObject: {0}'.format(k))
-        
+
         if bp is not None and ko is not None:
             merge(models.BeperkingKadastraalObject, uid, dict(
-                beperking = bp,
-                kadastraal_object = ko
+                beperking=bp,
+                kadastraal_object=ko
             ))
+
 
 # Kadaster - LKI
 
 class ImportLkiGemeenteTask(object):
     name = "import LKI Gemeente"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'LKI_Gemeente.shp')
 
@@ -595,21 +598,21 @@ class ImportLkiGemeenteTask(object):
         lyr = ds[0]
         for feat in lyr:
             self.process_feature(feat)
-        
+
     def process_feature(self, feat):
         values = dict(
-            gemeentecode = feat.get('GEM_CODE'),
-            gemeentenaam = feat.get('GEM_NAAM'),
-            geometrie = fromstr(feat.geom.wkt) # TODO: kan dit mooier???
+            gemeentecode=feat.get('GEM_CODE'),
+            gemeentenaam=feat.get('GEM_NAAM'),
+            geometrie=fromstr(feat.geom.wkt)  # TODO: kan dit mooier???
         )
         diva_id = feat.get('DIVA_ID')
-        
+
         merge(models.LkiGemeente, diva_id, values)
 
-        
+
 class ImportLkiKadastraleGemeenteTask(object):
     name = "import LKI Kadastrale gemeente"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'LKI_Kadastrale_gemeente.shp')
 
@@ -618,27 +621,27 @@ class ImportLkiKadastraleGemeenteTask(object):
         lyr = ds[0]
         for feat in lyr:
             self.process_feature(feat)
-        
+
     def process_feature(self, feat):
         wkt = feat.geom.wkt
-        
+
         # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
         if not 'MULTIPOLYGON' in wkt:
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
         values = dict(
-            code = feat.get('KAD_GEM'),
-            ingang_cyclus = feat.get('INGANG_CYC'),
-            geometrie = fromstr(wkt) # TODO: kan dit mooier???
+            code=feat.get('KAD_GEM'),
+            ingang_cyclus=feat.get('INGANG_CYC'),
+            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
         )
         diva_id = feat.get('DIVA_ID')
-        
+
         merge(models.LkiKadastraleGemeente, diva_id, values)
 
 
 class ImportLkiSectieTask(object):
     name = "import LKI Sectie"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'LKI_Sectie.shp')
 
@@ -647,40 +650,40 @@ class ImportLkiSectieTask(object):
         lyr = ds[0]
         for feat in lyr:
             self.process_feature(feat)
-        
+
     def process_feature(self, feat):
         wkt = feat.geom.wkt
-        
+
         # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
         if not 'MULTIPOLYGON' in wkt:
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
         values = dict(
-            kadastrale_gemeente_code = feat.get('KAD_GEM'),
-            code = feat.get('SECTIE'),
-            ingang_cyclus = feat.get('INGANG_CYC'),
-            geometrie = fromstr(wkt) # TODO: kan dit mooier???
+            kadastrale_gemeente_code=feat.get('KAD_GEM'),
+            code=feat.get('SECTIE'),
+            ingang_cyclus=feat.get('INGANG_CYC'),
+            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
         )
         diva_id = feat.get('DIVA_ID')
-        
+
         merge(models.LkiSectie, diva_id, values)
 
 
 class ImportLkiKadastraalObjectTask(object):
     name = "import LKI Kadastraal Object"
-    
+
     def __init__(self, source_path):
         self.source = os.path.join(source_path, 'LKI_Perceel.shp')
-        
+
     def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
         return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
-        
+
     def execute(self):
         ds = DataSource(self.source)
         lyr = ds[0]
         for feat in lyr:
             self.process_feature(feat)
-        
+
     def process_feature(self, feat):
 
         # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
@@ -690,20 +693,20 @@ class ImportLkiKadastraalObjectTask(object):
             wkt += ')'
 
         values = dict(
-            kadastrale_gemeente_code = feat.get('KAD_GEM'),
-            sectie_code = feat.get('SECTIE'),
-            perceelnummer = feat.get('PERCEELNR'),
-            indexletter = feat.get('IDX_LETTER'),
-            indexnummer = feat.get('IDX_NUMMER'),
-            oppervlakte = feat.get('OPP_VLAKTE'),
-            ingang_cyclus = feat.get('INGANG_CYC'),
-            aanduiding = self.get_kadastrale_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'),feat.get('PERCEELNR'),feat.get('IDX_LETTER'),feat.get('IDX_NUMMER')),
-            geometrie = fromstr(wkt) # TODO: kan dit mooier???
+            kadastrale_gemeente_code=feat.get('KAD_GEM'),
+            sectie_code=feat.get('SECTIE'),
+            perceelnummer=feat.get('PERCEELNR'),
+            indexletter=feat.get('IDX_LETTER'),
+            indexnummer=feat.get('IDX_NUMMER'),
+            oppervlakte=feat.get('OPP_VLAKTE'),
+            ingang_cyclus=feat.get('INGANG_CYC'),
+            aanduiding=self.get_kadastrale_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'), feat.get('PERCEELNR'),
+                                                      feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
+            geometrie=fromstr(wkt)  # TODO: kan dit mooier???
         )
         diva_id = feat.get('DIVA_ID')
-        
-        merge(models.LkiKadastraalObject, diva_id, values)
 
+        merge(models.LkiKadastraalObject, diva_id, values)
 
 
 # Geo
@@ -736,7 +739,6 @@ class ImportPndGeoTask(AbstractGeoTask):
         merge_existing(models.Pand, '0' + row_id, dict(
             geometrie=geom
         ))
-
 
 
 # Elasticsearch
@@ -827,12 +829,12 @@ class ImportJob(object):
             ImportPndTask(self.bag),
             ImportPndGeoTask(self.bag_wkt),
             ImportPndVboTask(self.bag),
-            
+
             ImportBeperkingcodeTask(self.beperkingen),
             ImportWkpbBroncodeTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportBeperkingTask(self.beperkingen),
-            
+
             ImportLkiGemeenteTask(self.kadaster_lki),
             ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
             ImportLkiSectieTask(self.kadaster_lki),
