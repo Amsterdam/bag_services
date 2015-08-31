@@ -6,6 +6,7 @@ from django.test import TestCase
 from atlas_jobs import jobs
 from atlas import models
 import atlas_jobs.batch.bag
+import atlas_jobs.batch.wkpb
 
 BAG = 'atlas_jobs/fixtures/testset/bag'
 BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
@@ -502,7 +503,7 @@ class ImportVboPndTask(TestCase):
 class ImportBeperkingcode(TestCase):
 
     def test_import(self):
-        task = jobs.ImportBeperkingcodeTask(BEPERKINGEN)
+        task = atlas_jobs.batch.wkpb.ImportBeperkingcodeTask(BEPERKINGEN)
         task.execute()
 
         imported = models.Beperkingcode.objects.all()
@@ -514,7 +515,7 @@ class ImportBeperkingcode(TestCase):
 class ImportWkpbBroncode(TestCase):
 
     def test_import(self):
-        task = jobs.ImportWkpbBroncodeTask(BEPERKINGEN)
+        task = atlas_jobs.batch.wkpb.ImportWkpbBroncodeTask(BEPERKINGEN)
         task.execute()
 
         imported = models.WkpbBroncode.objects.all()
@@ -527,9 +528,9 @@ class ImportWkpbBrondocument(TestCase):
 
     def test_import(self):
 
-        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
 
-        task = jobs.ImportWkpbBrondocumentTask(BEPERKINGEN)
+        task = atlas_jobs.batch.wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN)
         task.execute()
 
         imported = models.WkpbBrondocument.objects.all()
@@ -546,11 +547,11 @@ class ImportBeperking(TestCase):
 
     def test_import(self):
 
-        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        jobs.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        jobs.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
 
-        task = jobs.ImportBeperkingTask(BEPERKINGEN)
+        task = atlas_jobs.batch.wkpb.ImportBeperkingTask(BEPERKINGEN)
         task.execute()
 
         imported = models.Beperking.objects.all()
@@ -567,13 +568,13 @@ class ImportWkpbBepKad(TestCase):
 
     def test_import(self):
 
-        jobs.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        jobs.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        jobs.ImportBeperkingcodeTask(BEPERKINGEN).execute()
-        jobs.ImportBeperkingTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+        atlas_jobs.batch.wkpb.ImportBeperkingTask(BEPERKINGEN).execute()
         jobs.ImportLkiKadastraalObjectTask(KAD_LKI).execute()
 
-        task = jobs.ImportWkpbBepKadTask(BEPERKINGEN)
+        task = atlas_jobs.batch.wkpb.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
 
         bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')

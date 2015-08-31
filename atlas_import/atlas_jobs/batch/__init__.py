@@ -57,15 +57,11 @@ class AbstractUvaTask(AbstractOrmTask):
     def __init__(self, source):
         super().__init__()
         self.source = uva2.resolve_file(source, self.code)
-        self.cache = dict()
 
     def execute(self):
-        try:
-            with uva2.uva_reader(self.source) as rows:
-                for r in rows:
-                    self.process_row(r)
-        finally:
-            self.cache.clear()
+        with uva2.uva_reader(self.source) as rows:
+            for r in rows:
+                self.process_row(r)
 
     def process_row(self, r):
         raise NotImplementedError()
