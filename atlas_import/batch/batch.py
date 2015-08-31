@@ -11,17 +11,10 @@ def execute(job):
     job_execution = JobExecution.objects.create(name=job.name)
 
     for t in job.tasks():
-        if callable(t):
-            task_function = t
-            task_name = t.__name__
-        else:
-            task_function = t.execute
-            task_name = getattr(t, "name", "no name specified")
-
         try:
-            _execute_task(job_execution, task_name, task_function)
+            _execute_task(job_execution, t)
         except:
-            log.exception("Job failed: %s", task_name)
+            log.exception("Job failed: %s", job.name)
             job_execution.date_finished = timezone.now()
             job_execution.status = JobExecution.STATUS_FAILED
             job_execution.save()
@@ -35,12 +28,26 @@ def execute(job):
     return job_execution
 
 
-def _execute_task(job_execution, task_name, task_function):
+def _execute_task(job_execution, task):
+    if callable(task):
+        task_name = task.__name__
+        execute = task
+        tear_down = None
+    else:
+        task_name = getattr(task, "name", "no name specified")
+        execute = task.execute
+        tear_down = getattr(task, "tear_down", None)
+
+
     log.info("Executing task: %s", task_name)
     task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
 
     try:
-        task_function()
+        try:
+            execute()
+        finally:
+            if tear_down:
+                tear_down()
     except:
         e = sys.exc_info()[0]
         log.exception("Task failed: %s", task_name)
