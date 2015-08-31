@@ -804,8 +804,8 @@ class ImportELVerblijfsobjectTask(object):
             doc.save()
 
 
-class ImportJob(object):
-    name = "atlas-import"
+class ImportBagJob(object):
+    name = "atlas-import BAG"
 
     def __init__(self):
         diva = settings.DIVA_DIR
@@ -815,8 +815,6 @@ class ImportJob(object):
         self.bag = os.path.join(diva, 'bag')
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
-        self.beperkingen = os.path.join(diva, 'beperkingen')
-        self.kadaster_lki = os.path.join(diva, 'kadaster/lki')
 
     def tasks(self):
         return [
@@ -851,19 +849,45 @@ class ImportJob(object):
             ImportPndTask(self.bag),
             ImportPndGeoTask(self.bag_wkt),
             ImportPndVboTask(self.bag),
+        ]
 
-            ImportBeperkingcodeTask(self.beperkingen),
-            ImportWkpbBroncodeTask(self.beperkingen),
-            ImportWkpbBrondocumentTask(self.beperkingen),
-            ImportBeperkingTask(self.beperkingen),
 
+class ImportKadasterJob(object):
+    name = "atlas-import Kadaster"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.kadaster_lki = os.path.join(diva, 'kadaster', 'lki')
+
+    def tasks(self):
+        return [
             ImportLkiGemeenteTask(self.kadaster_lki),
             ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
             ImportLkiSectieTask(self.kadaster_lki),
             ImportLkiKadastraalObjectTask(self.kadaster_lki),
+        ]
 
+
+class ImportWkpbJob(object):
+    name = "atlas-import WKPB"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.beperkingen = os.path.join(diva, 'beperkingen')
+
+    def tasks(self):
+        return [
+            ImportBeperkingcodeTask(self.beperkingen),
+            ImportWkpbBroncodeTask(self.beperkingen),
+            ImportWkpbBrondocumentTask(self.beperkingen),
+            ImportBeperkingTask(self.beperkingen),
             ImportWkpbBepKadTask(self.beperkingen),
-
         ]
 
 
