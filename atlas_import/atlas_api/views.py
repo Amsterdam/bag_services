@@ -11,6 +11,19 @@ from atlas_api import serializers
 from atlas_api.serializers import Autocomplete
 
 
+class ExpansionMetadata(metadata.SimpleMetadata):
+    def determine_metadata(self, request, view):
+        result = super().determine_metadata(request, view)
+        result['parameters'] = dict(
+            full=dict(
+                type="string",
+                description="If present, related entities are inlined",
+                required=False
+            )
+        )
+        return result
+
+
 class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
@@ -21,6 +34,7 @@ class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/)
     """
 
+    metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
     serializer_class = serializers.Ligplaats
 
@@ -33,6 +47,8 @@ class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/)
     """
+
+    metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
     serializer_class = serializers.Standplaats
 
@@ -46,6 +62,8 @@ class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/)
     """
+
+    metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects.all()
     serializer_class = serializers.Verblijfsobject
 
@@ -57,6 +75,8 @@ class NummeraanduidingViewSet(viewsets.ReadOnlyModelViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
+
+    metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
     serializer_class = serializers.Nummeraanduiding
 
@@ -68,6 +88,8 @@ class PandViewSet(viewsets.ReadOnlyModelViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
     """
+
+    metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
     serializer_class = serializers.Pand
 
