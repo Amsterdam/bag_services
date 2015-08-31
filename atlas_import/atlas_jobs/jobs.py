@@ -2,82 +2,10 @@ import logging
 import os
 
 from django.conf import settings
-from elasticsearch_dsl.connections import connections
 
-from atlas import models, documents
-from .batch import bag, kadaster, wkpb
+from .batch import bag, kadaster, wkpb, elastic
 
 log = logging.getLogger(__name__)
-
-
-def merge(model, pk, values):
-    model.objects.update_or_create(pk=pk, defaults=values)
-
-
-def merge_existing(model, pk, values):
-    model.objects.filter(pk=pk).update(**values)
-
-
-def foreign_key_id(model, model_id, cache):
-    """
-    Returns `model_id` if `model_id` identifies a valid instance of `model`; returns None otherwise.
-    """
-    if not model_id:
-        return None
-
-    key = str(model)
-    id_set = cache.get(key, None)
-
-    if id_set is None:
-        id_set = set(model.objects.values_list('pk', flat=True))
-        cache[key] = id_set
-
-    if model_id not in id_set:
-        log.warning("Reference to non-existing object of type %s with key %s", model, model_id)
-        return None
-
-    return model_id
-
-
-# Elasticsearch
-
-class ImportELLigplaatsTask(object):
-    name = "EL: import ligplaatsen"
-
-    def __init__(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Ligplaats.init()
-
-    def execute(self):
-        for l in models.Ligplaats.objects.all():
-            doc = documents.from_ligplaats(l)
-            doc.save()
-
-
-class ImportELStandplaatsTask(object):
-    name = "EL: import standplaatsen"
-
-    def __init__(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Standplaats.init()
-
-    def execute(self):
-        for s in models.Standplaats.objects.all():
-            doc = documents.from_standplaats(s)
-            doc.save()
-
-
-class ImportELVerblijfsobjectTask(object):
-    name = "EL: import verblijfsobjecten"
-
-    def __init__(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Verblijfsobject.init()
-
-    def execute(self):
-        for v in models.Verblijfsobject.objects.all():
-            doc = documents.from_verblijfsobject(v)
-            doc.save()
 
 
 class ImportBagJob(object):
@@ -172,7 +100,7 @@ class IndexJob(object):
 
     def tasks(self):
         return [
-            ImportELLigplaatsTask(),
-            ImportELStandplaatsTask(),
-            ImportELVerblijfsobjectTask(),
+            elastic.ImportELLigplaatsTask(),
+            elastic.ImportELStandplaatsTask(),
+            elastic.ImportELVerblijfsobjectTask(),
         ]

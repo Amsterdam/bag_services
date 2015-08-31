@@ -29,9 +29,9 @@ class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
 
 
 
-# task maken in atlas_jobs/jobs.py
+# task maken in atlas_jobs/batch/XXX.py
 
-class ImportBeperkingcodeTask(object):
+class ImportBeperkingcodeTask(batch.AbstractOrmTask):
     name = "import Beperkingcode"
 
     def __init__(self, source_path):
@@ -44,7 +44,7 @@ class ImportBeperkingcodeTask(object):
                 self.process_row(row)
     
     def process_row(self, r):
-        merge(models.Beperkingcode, r[0], dict(
+        self.merge(models.Beperkingcode, r[0], dict(
             omschrijving = r[1],
         ))
 
