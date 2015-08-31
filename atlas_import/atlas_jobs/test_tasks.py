@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from atlas_jobs import jobs
 from atlas import models
+import atlas_jobs.batch.bag
 
 BAG = 'atlas_jobs/fixtures/testset/bag'
 BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
@@ -15,7 +16,7 @@ KAD_AKR = 'atlas_jobs/fixtures/testset/kadaster/akr'
 
 class ImportBrnTest(TestCase):
     def test_import(self):
-        task = jobs.ImportBrnTask(BAG)
+        task = atlas_jobs.batch.bag.ImportBrnTask(BAG)
         task.execute()
 
         imported = models.Bron.objects.all()
@@ -27,7 +28,7 @@ class ImportBrnTest(TestCase):
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
 
     def test_import_twice(self):
-        task = jobs.ImportBrnTask(BAG)
+        task = atlas_jobs.batch.bag.ImportBrnTask(BAG)
         task.execute()
         task.execute()
 
@@ -37,7 +38,7 @@ class ImportBrnTest(TestCase):
 
 class ImportAvrTest(TestCase):
     def test_import(self):
-        task = jobs.ImportAvrTask(BAG)
+        task = atlas_jobs.batch.bag.ImportAvrTask(BAG)
         task.execute()
 
         imported = models.RedenAfvoer.objects.all()
@@ -49,7 +50,7 @@ class ImportAvrTest(TestCase):
 
 class ImportEgmTest(TestCase):
     def test_import(self):
-        task = jobs.ImportEgmTask(BAG)
+        task = atlas_jobs.batch.bag.ImportEgmTask(BAG)
         task.execute()
 
         imported = models.Eigendomsverhouding.objects.all()
@@ -61,7 +62,7 @@ class ImportEgmTest(TestCase):
 
 class ImportFngTest(TestCase):
     def test_import(self):
-        task = jobs.ImportFngTask(BAG)
+        task = atlas_jobs.batch.bag.ImportFngTask(BAG)
         task.execute()
 
         imported = models.Financieringswijze.objects.all()
@@ -73,7 +74,7 @@ class ImportFngTest(TestCase):
 
 class ImportLggTest(TestCase):
     def test_import(self):
-        task = jobs.ImportLggTask(BAG)
+        task = atlas_jobs.batch.bag.ImportLggTask(BAG)
         task.execute()
 
         imported = models.Ligging.objects.all()
@@ -85,7 +86,7 @@ class ImportLggTest(TestCase):
 
 class ImportGbkTest(TestCase):
     def test_import(self):
-        task = jobs.ImportGbkTask(BAG)
+        task = atlas_jobs.batch.bag.ImportGbkTask(BAG)
         task.execute()
 
         imported = models.Gebruik.objects.all()
@@ -97,7 +98,7 @@ class ImportGbkTest(TestCase):
 
 class ImportLocTest(TestCase):
     def test_import(self):
-        task = jobs.ImportLocTask(BAG)
+        task = atlas_jobs.batch.bag.ImportLocTask(BAG)
         task.execute()
 
         imported = models.LocatieIngang.objects.all()
@@ -109,7 +110,7 @@ class ImportLocTest(TestCase):
 
 class ImportTggTest(TestCase):
     def test_import(self):
-        task = jobs.ImportTggTask(BAG)
+        task = atlas_jobs.batch.bag.ImportTggTask(BAG)
         task.execute()
 
         imported = models.Toegang.objects.all()
@@ -121,7 +122,7 @@ class ImportTggTest(TestCase):
 
 class ImportStsTest(TestCase):
     def test_import(self):
-        task = jobs.ImportStsTask(BAG)
+        task = atlas_jobs.batch.bag.ImportStsTask(BAG)
         task.execute()
 
         imported = models.Status.objects.all()
@@ -135,7 +136,7 @@ class ImportStsTest(TestCase):
 
 class ImportGmeTest(TestCase):
     def test_import(self):
-        task = jobs.ImportGmeTask(GEBIEDEN)
+        task = atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN)
         task.execute()
 
         imported = models.Gemeente.objects.all()
@@ -152,9 +153,9 @@ class ImportGmeTest(TestCase):
 
 class ImportSdlTest(TestCase):
     def test_import(self):
-        jobs.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
 
-        task = jobs.ImportSdlTask(GEBIEDEN)
+        task = atlas_jobs.batch.bag.ImportSdlTask(GEBIEDEN)
         task.execute()
 
         imported = models.Stadsdeel.objects.all()
@@ -171,10 +172,10 @@ class ImportSdlTest(TestCase):
 
 class ImportBrtTest(TestCase):
     def test_import(self):
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportSdlTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportSdlTask(GEBIEDEN).execute()
 
-        task = jobs.ImportBrtTask(GEBIEDEN)
+        task = atlas_jobs.batch.bag.ImportBrtTask(GEBIEDEN)
         task.execute()
 
         imported = models.Buurt.objects.all()
@@ -191,14 +192,14 @@ class ImportBrtTest(TestCase):
 
 class ImportLigTest(TestCase):
     def test_import(self):
-        jobs.ImportBrnTask(BAG).execute()
-        jobs.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportBrnTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
 
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportSdlTask(GEBIEDEN).execute()
-        jobs.ImportBrtTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportSdlTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportBrtTask(GEBIEDEN).execute()
 
-        task = jobs.ImportLigTask(BAG)
+        task = atlas_jobs.batch.bag.ImportLigTask(BAG)
         task.execute()
 
         imported = models.Ligplaats.objects.all()
@@ -216,10 +217,10 @@ class ImportLigTest(TestCase):
 
 class ImportLigGeoTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportLigTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportLigTask(BAG).execute()
 
-        task = jobs.ImportLigGeoTask(BAG_WKT)
+        task = atlas_jobs.batch.bag.ImportLigGeoTask(BAG_WKT)
         task.execute()
 
         imported = models.Ligplaats.objects.exclude(geometrie__isnull=True)
@@ -231,9 +232,9 @@ class ImportLigGeoTest(TestCase):
 
 class ImportWplTest(TestCase):
     def test_import(self):
-        jobs.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
 
-        task = jobs.ImportWplTask(BAG)
+        task = atlas_jobs.batch.bag.ImportWplTask(BAG)
         task.execute()
 
         imported = models.Woonplaats.objects.all()
@@ -252,12 +253,12 @@ class ImportWplTest(TestCase):
 
 class ImportOprTest(TestCase):
     def test_import(self):
-        jobs.ImportBrnTask(BAG).execute()
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportWplTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportBrnTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportWplTask(BAG).execute()
 
-        task = jobs.ImportOprTask(BAG)
+        task = atlas_jobs.batch.bag.ImportOprTask(BAG)
         task.execute()
 
         imported = models.OpenbareRuimte.objects.all()
@@ -281,12 +282,12 @@ class ImportOprTest(TestCase):
 
 class ImportNumTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportWplTask(BAG).execute()
-        jobs.ImportOprTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportWplTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportOprTask(BAG).execute()
 
-        task = jobs.ImportNumTask(BAG)
+        task = atlas_jobs.batch.bag.ImportNumTask(BAG)
         task.execute()
 
         imported = models.Nummeraanduiding.objects.all()
@@ -309,14 +310,14 @@ class ImportNumTest(TestCase):
 
 class ImportNumLigHfdTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportWplTask(BAG).execute()
-        jobs.ImportOprTask(BAG).execute()
-        jobs.ImportNumTask(BAG).execute()
-        jobs.ImportLigTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportWplTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportOprTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportNumTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportLigTask(BAG).execute()
 
-        task = jobs.ImportNumLigHfdTask(BAG)
+        task = atlas_jobs.batch.bag.ImportNumLigHfdTask(BAG)
         task.execute()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
@@ -328,9 +329,9 @@ class ImportNumLigHfdTest(TestCase):
 
 class ImportStaTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
 
-        task = jobs.ImportStaTask(BAG)
+        task = atlas_jobs.batch.bag.ImportStaTask(BAG)
         task.execute()
 
         imported = models.Standplaats.objects.all()
@@ -348,10 +349,10 @@ class ImportStaTest(TestCase):
 
 class ImportStaGeoTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportStaTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStaTask(BAG).execute()
 
-        task = jobs.ImportStaGeoTask(BAG_WKT)
+        task = atlas_jobs.batch.bag.ImportStaGeoTask(BAG_WKT)
         task.execute()
 
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
@@ -363,14 +364,14 @@ class ImportStaGeoTest(TestCase):
 
 class ImportNumStaHfdTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportWplTask(BAG).execute()
-        jobs.ImportOprTask(BAG).execute()
-        jobs.ImportNumTask(BAG).execute()
-        jobs.ImportStaTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportWplTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportOprTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportNumTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStaTask(BAG).execute()
 
-        task = jobs.ImportNumStaHfdTask(BAG)
+        task = atlas_jobs.batch.bag.ImportNumStaHfdTask(BAG)
         task.execute()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
@@ -382,15 +383,15 @@ class ImportNumStaHfdTest(TestCase):
 
 class ImportVboTest(TestCase):
     def test_import(self):
-        jobs.ImportEgmTask(BAG).execute()
-        jobs.ImportFngTask(BAG).execute()
-        jobs.ImportGbkTask(BAG).execute()
-        jobs.ImportLocTask(BAG).execute()
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportLggTask(BAG).execute()
-        jobs.ImportTggTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportEgmTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportFngTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGbkTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportLocTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportLggTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportTggTask(BAG).execute()
 
-        task = jobs.ImportVboTask(BAG)
+        task = atlas_jobs.batch.bag.ImportVboTask(BAG)
         task.execute()
 
         imported = models.Verblijfsobject.objects.all()
@@ -428,14 +429,14 @@ class ImportVboTest(TestCase):
 
 class ImportNumVboHfdTest(TestCase):
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportGmeTask(GEBIEDEN).execute()
-        jobs.ImportWplTask(BAG).execute()
-        jobs.ImportOprTask(BAG).execute()
-        jobs.ImportNumTask(BAG).execute()
-        jobs.ImportVboTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportGmeTask(GEBIEDEN).execute()
+        atlas_jobs.batch.bag.ImportWplTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportOprTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportNumTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportVboTask(BAG).execute()
 
-        task = jobs.ImportNumVboHfdTask(BAG)
+        task = atlas_jobs.batch.bag.ImportNumVboHfdTask(BAG)
         task.execute()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
@@ -448,9 +449,9 @@ class ImportNumVboHfdTest(TestCase):
 class ImportPndTest(TestCase):
 
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
 
-        task = jobs.ImportPndTask(BAG)
+        task = atlas_jobs.batch.bag.ImportPndTask(BAG)
         task.execute()
 
         imported = models.Pand.objects.all()
@@ -471,10 +472,10 @@ class ImportPndTest(TestCase):
 class ImportPndWktTest(TestCase):
 
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportPndTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportPndTask(BAG).execute()
 
-        task = jobs.ImportPndGeoTask(BAG_WKT)
+        task = atlas_jobs.batch.bag.ImportPndGeoTask(BAG_WKT)
         task.execute()
 
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
@@ -483,11 +484,11 @@ class ImportPndWktTest(TestCase):
 class ImportVboPndTask(TestCase):
 
     def test_import(self):
-        jobs.ImportStsTask(BAG).execute()
-        jobs.ImportVboTask(BAG).execute()
-        jobs.ImportPndTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportStsTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportVboTask(BAG).execute()
+        atlas_jobs.batch.bag.ImportPndTask(BAG).execute()
 
-        task = jobs.ImportPndVboTask(BAG)
+        task = atlas_jobs.batch.bag.ImportPndVboTask(BAG)
         task.execute()
 
         p = models.Pand.objects.get(pk='03630013113460')
