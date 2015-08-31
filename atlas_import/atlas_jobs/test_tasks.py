@@ -6,6 +6,7 @@ from django.test import TestCase
 from atlas_jobs import jobs
 from atlas import models
 import atlas_jobs.batch.bag
+import atlas_jobs.batch.kadaster
 import atlas_jobs.batch.wkpb
 
 BAG = 'atlas_jobs/fixtures/testset/bag'
@@ -572,7 +573,7 @@ class ImportWkpbBepKad(TestCase):
         atlas_jobs.batch.wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
         atlas_jobs.batch.wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
         atlas_jobs.batch.wkpb.ImportBeperkingTask(BEPERKINGEN).execute()
-        jobs.ImportLkiKadastraalObjectTask(KAD_LKI).execute()
+        atlas_jobs.batch.kadaster.ImportLkiKadastraalObjectTask(KAD_LKI).execute()
 
         task = atlas_jobs.batch.wkpb.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
@@ -588,7 +589,7 @@ class ImportLkiGemeente(TestCase):
 
     def test_import(self):
 
-        task = jobs.ImportLkiGemeenteTask(KAD_LKI)
+        task = atlas_jobs.batch.kadaster.ImportLkiGemeenteTask(KAD_LKI)
         task.execute()
 
         g = models.LkiGemeente.objects.get(pk=3630010602635)
@@ -601,7 +602,7 @@ class ImportLkiKadastraleGemeente(TestCase):
 
     def test_import(self):
 
-        task = jobs.ImportLkiKadastraleGemeenteTask(KAD_LKI)
+        task = atlas_jobs.batch.kadaster.ImportLkiKadastraleGemeenteTask(KAD_LKI)
         task.execute()
 
         g = models.LkiKadastraleGemeente.objects.get(pk=3630010602590)
@@ -614,7 +615,7 @@ class ImportLkiSectie(TestCase):
     
     def test_import(self):
         
-        task = jobs.ImportLkiSectieTask(KAD_LKI)
+        task = atlas_jobs.batch.kadaster.ImportLkiSectieTask(KAD_LKI)
         task.execute()
 
         s = models.LkiSectie.objects.get(pk=3630010602661)
@@ -628,7 +629,7 @@ class ImportLkiKadastraalObject(TestCase):
     
     def test_import(self):
         
-        task = jobs.ImportLkiKadastraalObjectTask(KAD_LKI)
+        task = atlas_jobs.batch.kadaster.ImportLkiKadastraalObjectTask(KAD_LKI)
         task.execute()
 
         o = models.LkiKadastraalObject.objects.get(pk=3630010603206)
