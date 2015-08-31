@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 
 def execute(job):
-    log.info("Creating job")
+    log.info("Creating job: %s", job.name)
     job_execution = JobExecution.objects.create(name=job.name)
 
     for t in job.tasks():
@@ -27,7 +27,7 @@ def execute(job):
             job_execution.save()
             return job_execution
 
-    log.info("Job completed")
+    log.info("Job completed: %s", job.name)
     job_execution.date_finished = timezone.now()
     job_execution.status = JobExecution.STATUS_FINISHED
     job_execution.save()
@@ -36,7 +36,7 @@ def execute(job):
 
 
 def _execute_task(job_execution, task_name, task_function):
-    log.info("Executing task %s", task_name)
+    log.info("Executing task: %s", task_name)
     task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
 
     try:
@@ -49,7 +49,7 @@ def _execute_task(job_execution, task_name, task_function):
         task_execution.save()
         raise e
 
-    log.info("Task completed")
+    log.info("Task completed: %s", task_name)
     task_execution.date_finished = timezone.now()
     task_execution.status = TaskExecution.STATUS_FINISHED
     task_execution.save()
