@@ -2,8 +2,7 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
-from rest_framework import viewsets, generics, metadata
-from rest_framework.decorators import api_view
+from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -13,26 +12,62 @@ from atlas_api.serializers import Autocomplete
 
 
 class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
+    al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
+    die bestemd is voor het permanent afmeren van een voor woon-, bedrijfsmatige of recreatieve doeleinden geschikt
+    vaartuig.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/)
+    """
+
     queryset = models.Ligplaats.objects.all()
     serializer_class = serializers.Ligplaats
 
 
 class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
+    dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
+    woon -, bedrijfsmatige, of recreatieve doeleinden geschikte ruimte.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/)
+    """
     queryset = models.Standplaats.objects.all()
     serializer_class = serializers.Standplaats
 
 
 class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon -, bedrijfsmatige, of recreatieve
+    doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de openbare
+    weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van goederenrechtelijke rechtshandelingen en in
+    functioneel opzicht zelfstandig is.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/)
+    """
     queryset = models.Verblijfsobject.objects.all()
     serializer_class = serializers.Verblijfsobject
 
 
 class NummeraanduidingViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
+    """
     queryset = models.Nummeraanduiding.objects.all()
     serializer_class = serializers.Nummeraanduiding
 
 
 class PandViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die
+    direct en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
+    """
     queryset = models.Pand.objects.all()
     serializer_class = serializers.Pand
 
@@ -51,7 +86,6 @@ def _get_url(request, doc_type, id):
 
 
 class TypeaheadMetadata(metadata.SimpleMetadata):
-
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
@@ -64,7 +98,7 @@ class TypeaheadMetadata(metadata.SimpleMetadata):
         return result
 
 
-class TypeaheadView(generics.ListAPIView):
+class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all objects that (partially) match the
     specified query.
@@ -98,37 +132,3 @@ class TypeaheadView(generics.ListAPIView):
 
         autocomplete = Autocomplete(data=data)
         return Response(autocomplete.initial_data)
-
-
-@api_view(['GET'])
-def typeahead(request):
-    """
-    Given a query parameter `q`, this function returns a subset of all objects that (partially) match the
-    specified query.
-    """
-
-    if 'q' not in request.GET:
-        return Response([])
-
-    query = request.GET['q']
-
-    client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-    s = Search(client)
-    for part in query.split():
-        s = s.query("match_phrase_prefix", _all=part)
-    result = s.index("atlas").execute()
-
-    data = [dict(
-        id=h.meta.id,
-        url=_get_url(request, h.meta.doc_type, h.meta.id),
-        type=h.meta.doc_type,
-        adres=h.get('adres'),
-        postcode=h.get('postcode'),
-        oppervlakte=h.get('oppervlakte'),
-        kamers=h.get('kamers'),
-        bestemming=h.get('bestemming'),
-        centroid=h.get('centroid'),
-    ) for h in result]
-
-    autocomplete = Autocomplete(data=data)
-    return Response(autocomplete.initial_data)

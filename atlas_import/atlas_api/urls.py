@@ -8,8 +8,8 @@ router.register(r'standplaatsen', views.StandplaatsViewSet)
 router.register(r'verblijfsobjecten', views.VerblijfsobjectViewSet)
 router.register(r'nummeraanduidingen', views.NummeraanduidingViewSet)
 router.register(r'panden', views.PandViewSet)
+router.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
 
 urlpatterns = [
-    url(r'^typeahead$', views.TypeaheadView.as_view()),
     url(r'^', include(router.urls)),
 ]
