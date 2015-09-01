@@ -47,6 +47,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'atlas_jobs': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        }
     },
 }
 

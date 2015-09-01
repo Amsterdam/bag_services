@@ -301,7 +301,7 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
     hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="verblijfsobjecten")
-    panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten')
+    panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten', through='VerblijfsobjectPandRelatie')
 
     geometrie = geo.PointField(null=True, srid=28992)
 
@@ -334,7 +334,22 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
 
     def __str__(self):
         return "Pand({})".format(self.id)
-    
+
+
+class VerblijfsobjectPandRelatie(ImportStatusMixin, models.Model):
+
+    id = models.CharField(max_length=29, primary_key=True)
+    pand = models.ForeignKey(Pand)
+    verblijfsobject = models.ForeignKey(Verblijfsobject)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.pand and self.verblijfsobject:
+            self.id = self.pand_id + '_' + self.verblijfsobject.id
+
+    def __str__(self):
+        return "Pand-Verblijfsobject({}-{})".format(self.pand.id, self.verblijfsobject.id)
+
 
 # Wkpb
 

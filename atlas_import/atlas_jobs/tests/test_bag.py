@@ -13,10 +13,26 @@ BAG_WKT = 'atlas_jobs/fixtures/testset/bag_wkt'
 GEBIEDEN = 'atlas_jobs/fixtures/testset/gebieden'
 
 
+class ImportAvrTest(TestCase):
+    def test_import(self):
+        task = bag.ImportAvrTask(BAG)
+        task.execute()
+
+        bag.FlushCacheTask().execute()
+
+        imported = models.RedenAfvoer.objects.all()
+        self.assertEqual(len(imported), 44)
+
+        a = models.RedenAfvoer.objects.get(pk='20')
+        self.assertEqual(a.omschrijving, 'Geconstateerd adres')
+
+
 class ImportBrnTest(TestCase):
     def test_import(self):
         task = bag.ImportBrnTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Bron.objects.all()
         self.assertEqual(len(imported), 100)
@@ -26,31 +42,13 @@ class ImportBrnTest(TestCase):
         b = models.Bron.objects.get(pk='13')
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
 
-    def test_import_twice(self):
-        task = bag.ImportBrnTask(BAG)
-        task.execute()
-        task.execute()
-
-        imported = models.Bron.objects.all()
-        self.assertEqual(len(imported), 100)
-
-
-class ImportAvrTest(TestCase):
-    def test_import(self):
-        task = bag.ImportAvrTask(BAG)
-        task.execute()
-
-        imported = models.RedenAfvoer.objects.all()
-        self.assertEqual(len(imported), 44)
-
-        a = models.RedenAfvoer.objects.get(pk='20')
-        self.assertEqual(a.omschrijving, 'Geconstateerd adres')
-
 
 class ImportEgmTest(TestCase):
     def test_import(self):
         task = bag.ImportEgmTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Eigendomsverhouding.objects.all()
         self.assertEqual(len(imported), 2)
@@ -64,6 +62,8 @@ class ImportFngTest(TestCase):
         task = bag.ImportFngTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Financieringswijze.objects.all()
         self.assertEqual(len(imported), 19)
 
@@ -75,6 +75,8 @@ class ImportLggTest(TestCase):
     def test_import(self):
         task = bag.ImportLggTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Ligging.objects.all()
         self.assertEqual(len(imported), 6)
@@ -88,6 +90,8 @@ class ImportGbkTest(TestCase):
         task = bag.ImportGbkTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Gebruik.objects.all()
         self.assertEqual(len(imported), 320)
 
@@ -99,6 +103,8 @@ class ImportLocTest(TestCase):
     def test_import(self):
         task = bag.ImportLocTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.LocatieIngang.objects.all()
         self.assertEqual(len(imported), 5)
@@ -112,6 +118,8 @@ class ImportTggTest(TestCase):
         task = bag.ImportTggTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Toegang.objects.all()
         self.assertEqual(len(imported), 9)
 
@@ -123,6 +131,8 @@ class ImportStsTest(TestCase):
     def test_import(self):
         task = bag.ImportStsTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Status.objects.all()
         self.assertEqual(len(imported), 43)
@@ -137,6 +147,8 @@ class ImportGmeTest(TestCase):
     def test_import(self):
         task = bag.ImportGmeTask(GEBIEDEN)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Gemeente.objects.all()
         self.assertEqual(len(imported), 1)
@@ -157,6 +169,8 @@ class ImportSdlTest(TestCase):
         task = bag.ImportSdlTask(GEBIEDEN)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Stadsdeel.objects.all()
         self.assertEqual(len(imported), 8)
 
@@ -176,6 +190,8 @@ class ImportBrtTest(TestCase):
 
         task = bag.ImportBrtTask(GEBIEDEN)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Buurt.objects.all()
         self.assertEqual(len(imported), 481)
@@ -201,6 +217,8 @@ class ImportLigTest(TestCase):
         task = bag.ImportLigTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Ligplaats.objects.all()
         self.assertEqual(len(imported), 60)
 
@@ -222,6 +240,8 @@ class ImportLigGeoTest(TestCase):
         task = bag.ImportLigGeoTask(BAG_WKT)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Ligplaats.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 60)
 
@@ -235,6 +255,8 @@ class ImportWplTest(TestCase):
 
         task = bag.ImportWplTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Woonplaats.objects.all()
         self.assertEqual(len(imported), 1)
@@ -259,6 +281,8 @@ class ImportOprTest(TestCase):
 
         task = bag.ImportOprTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.OpenbareRuimte.objects.all()
         self.assertEqual(len(imported), 97)
@@ -288,6 +312,8 @@ class ImportNumTest(TestCase):
 
         task = bag.ImportNumTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Nummeraanduiding.objects.all()
         self.assertEqual(len(imported), 207)
@@ -319,6 +345,8 @@ class ImportNumLigHfdTest(TestCase):
         task = bag.ImportNumLigHfdTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
         l = models.Ligplaats.objects.get(pk='03630001035885')
 
@@ -332,6 +360,8 @@ class ImportStaTest(TestCase):
 
         task = bag.ImportStaTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Standplaats.objects.all()
         self.assertEqual(len(imported), 51)
@@ -354,6 +384,8 @@ class ImportStaGeoTest(TestCase):
         task = bag.ImportStaGeoTask(BAG_WKT)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 51)
 
@@ -372,6 +404,8 @@ class ImportNumStaHfdTest(TestCase):
 
         task = bag.ImportNumStaHfdTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
         s = models.Standplaats.objects.get(pk='03630000717733')
@@ -392,6 +426,8 @@ class ImportVboTest(TestCase):
 
         task = bag.ImportVboTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Verblijfsobject.objects.all()
         self.assertEqual(len(imported), 96)
@@ -438,6 +474,8 @@ class ImportNumVboHfdTest(TestCase):
         task = bag.ImportNumVboHfdTask(BAG)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
         v = models.Verblijfsobject.objects.get(pk='03630000721053')
 
@@ -451,6 +489,8 @@ class ImportPndTest(TestCase):
 
         task = bag.ImportPndTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
 
         imported = models.Pand.objects.all()
         self.assertEquals(len(imported), 79)
@@ -475,6 +515,8 @@ class ImportPndWktTest(TestCase):
         task = bag.ImportPndGeoTask(BAG_WKT)
         task.execute()
 
+        bag.FlushCacheTask().execute()
+
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
         self.assertEquals(len(imported), 79)
 
@@ -487,6 +529,11 @@ class ImportVboPndTask(TestCase):
 
         task = bag.ImportPndVboTask(BAG)
         task.execute()
+
+        bag.FlushCacheTask().execute()
+
+        imported = models.VerblijfsobjectPandRelatie.objects.all()
+        self.assertEquals(len(imported), 96)
 
         p = models.Pand.objects.get(pk='03630013113460')
         v1 = models.Verblijfsobject.objects.get(pk='03630000716108')

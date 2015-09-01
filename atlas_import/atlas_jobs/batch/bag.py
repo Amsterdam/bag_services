@@ -1,40 +1,156 @@
 from collections import OrderedDict
+import csv
 import logging
+import os
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, GEOSGeometry
 
 from atlas import models
 from atlas_jobs import uva2
-from atlas_jobs import batch
 
 log = logging.getLogger(__name__)
 
 
-class CodeOmschrijvingUvaTask(batch.AbstractUvaTask):
-    model = None
+class Cache(object):
+    """
+    In-memory cache for all bag-data.
+    """
+
+    def __init__(self):
+        self.cache = OrderedDict()
+
+    def clear(self):
+        """
+        Clears the cache.
+        """
+        self.cache.clear()
+
+    def put(self, obj):
+        """
+        Adds an object to the cache.
+        """
+        model = type(obj)
+        pk = obj.pk
+        self.cache.setdefault(model, dict())[pk] = obj
+
+    def models(self):
+        """
+        Returns all the models that have been added to the cache in the order in which they were first added.
+        """
+        return list(self.cache.keys())
+
+    def objects(self, model):
+        """
+        Returns all objects stored for a specific model.
+        """
+        return list(self.cache[model].values())
+
+    def get(self, model, pk):
+        """
+        Returns the object with the specified PK, or None
+        """
+        return self.cache.get(model, dict()).get(pk)
+
+
+bag_cache = Cache()
+
+
+class AbstractCacheBasedTask(object):
+    def execute(self):
+        raise NotImplementedError()
+
+    def create(self, obj):
+        bag_cache.put(obj)
+
+    def foreign_key_id(self, model, model_id):
+        obj = bag_cache.get(model, model_id)
+        if not obj:
+            return None
+
+        return obj.pk
+
+    def get(self, model, pk):
+        return bag_cache.get(model, pk)
+
+    def merge_existing(self, model, pk, values):
+        obj = bag_cache.get(model, pk)
+        if not obj:
+            return
+
+        for key, value in values.items():
+            setattr(obj, key, value)
+
+        bag_cache.put(obj)
+
+
+class FlushCacheTask(object):
+    """
+     1. Remove all data from the database
+     2. Use batch-insert to insert all data into the database
+     3. Clear the cache
+    """
+    name = "Flush data to database"
+    chunk_size = 500
 
     def execute(self):
-        self.model.objects.all().delete()
-        super().execute()
+        global bag_cache
+        stored_models = bag_cache.models()
+
+        # drop all data
+        for model in reversed(stored_models):
+            log.info("Dropping data from %s", model)
+            model.objects.all().delete()
+
+        # batch-insert all data
+        for model in stored_models:
+            log.info("Creating data for %s", model)
+            values = bag_cache.objects(model)
+
+            for i in range(0, len(values), self.chunk_size):
+                model.objects.bulk_create(values[i:i + self.chunk_size])
+
+        # clear cache
+        bag_cache.clear()
+
+
+class AbstractUvaTask(AbstractCacheBasedTask):
+    """
+    Basic task for processing UVA2 files
+    """
+    code = None
+
+    def __init__(self, source):
+        super().__init__()
+        self.source = uva2.resolve_file(source, self.code)
+
+    def execute(self):
+        with uva2.uva_reader(self.source) as rows:
+            for r in rows:
+                self.process_row(r)
+
+    def process_row(self, r):
+        raise NotImplementedError()
+
+
+class CodeOmschrijvingUvaTask(AbstractUvaTask):
+    model = None
 
     def process_row(self, r):
         # noinspection PyCallingNonCallable
-        self.create(self.model(
-            pk=r['Code'],
-            omschrijving=r['Omschrijving']
-        ))
-
-
-class ImportBrnTask(CodeOmschrijvingUvaTask):
-    name = "import BRN"
-    code = "BRN"
-    model = models.Bron
+        obj = self.model(pk=r['Code'], omschrijving=r['Omschrijving'])
+        self.create(obj)
 
 
 class ImportAvrTask(CodeOmschrijvingUvaTask):
     name = "import AVR"
     code = "AVR"
     model = models.RedenAfvoer
+
+
+class ImportBrnTask(CodeOmschrijvingUvaTask):
+    name = "import BRN"
+    code = "BRN"
+    model = models.Bron
 
 
 class ImportStsTask(CodeOmschrijvingUvaTask):
@@ -79,13 +195,9 @@ class ImportTggTask(CodeOmschrijvingUvaTask):
     model = models.Toegang
 
 
-class ImportGmeTask(batch.AbstractUvaTask):
+class ImportGmeTask(AbstractUvaTask):
     name = "import GME"
     code = "GME"
-
-    def execute(self):
-        models.Gemeente.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -100,13 +212,9 @@ class ImportGmeTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportSdlTask(batch.AbstractUvaTask):
+class ImportSdlTask(AbstractUvaTask):
     name = "import SDL"
     code = "SDL"
-
-    def execute(self):
-        models.Stadsdeel.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -118,21 +226,17 @@ class ImportSdlTask(batch.AbstractUvaTask):
             return
 
         self.create(models.Stadsdeel(
-            pk=r['sleutelVerzendend'],
+            pk=(r['sleutelVerzendend']),
             code=r['Stadsdeelcode'],
             naam=r['Stadsdeelnaam'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            gemeente=models.Gemeente.objects.get(pk=r['SDLGME/GME/sleutelVerzendend']),
+            gemeente_id=(self.foreign_key_id(models.Gemeente, r['SDLGME/GME/sleutelVerzendend'])),
         ))
 
 
-class ImportBrtTask(batch.AbstractUvaTask):
+class ImportBrtTask(AbstractUvaTask):
     name = "import BRT"
     code = "BRT"
-
-    def execute(self):
-        models.Buurt.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -147,18 +251,14 @@ class ImportBrtTask(batch.AbstractUvaTask):
             pk=r['sleutelVerzendend'],
             code=r['Buurtcode'],
             naam=r['Buurtnaam'],
-            stadsdeel=models.Stadsdeel.objects.get(pk=r['BRTSDL/SDL/sleutelVerzendend']),
+            stadsdeel_id=self.foreign_key_id(models.Stadsdeel, r['BRTSDL/SDL/sleutelVerzendend']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
         ))
 
 
-class ImportWplTask(batch.AbstractUvaTask):
+class ImportWplTask(AbstractUvaTask):
     name = "import WPL"
     code = "WPL"
-
-    def execute(self):
-        models.Woonplaats.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -179,13 +279,9 @@ class ImportWplTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportOprTask(batch.AbstractUvaTask):
+class ImportOprTask(AbstractUvaTask):
     name = "import OPR"
     code = "OPR"
-
-    def execute(self):
-        models.OpenbareRuimte.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -211,13 +307,9 @@ class ImportOprTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportNumTask(batch.AbstractUvaTask):
+class ImportNumTask(AbstractUvaTask):
     name = "import NUM"
     code = "NUM"
-
-    def execute(self):
-        models.Nummeraanduiding.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -244,13 +336,9 @@ class ImportNumTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportLigTask(batch.AbstractUvaTask):
+class ImportLigTask(AbstractUvaTask):
     name = "import LIG"
     code = "LIG"
-
-    def execute(self):
-        models.Ligplaats.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -271,7 +359,7 @@ class ImportLigTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportNumLigHfdTask(batch.AbstractUvaTask):
+class ImportNumLigHfdTask(AbstractUvaTask):
     name = "import NUMLIGHFD"
     code = "NUMLIGHFD"
 
@@ -287,13 +375,9 @@ class ImportNumLigHfdTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportStaTask(batch.AbstractUvaTask):
+class ImportStaTask(AbstractUvaTask):
     name = "import STA"
     code = "STA"
-
-    def execute(self):
-        models.Standplaats.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -314,7 +398,7 @@ class ImportStaTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportNumStaHfdTask(batch.AbstractUvaTask):
+class ImportNumStaHfdTask(AbstractUvaTask):
     name = "import NUMSTAHFD"
     code = "NUMSTAHFD"
 
@@ -330,13 +414,9 @@ class ImportNumStaHfdTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportVboTask(batch.AbstractUvaTask):
+class ImportVboTask(AbstractUvaTask):
     name = "import VBO"
     code = "VBO"
-
-    def execute(self):
-        models.Verblijfsobject.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -386,7 +466,7 @@ class ImportVboTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportNumVboHfdTask(batch.AbstractUvaTask):
+class ImportNumVboHfdTask(AbstractUvaTask):
     name = "import NUMVBOHFD"
     code = "NUMVBOHFD"
 
@@ -402,13 +482,9 @@ class ImportNumVboHfdTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportPndTask(batch.AbstractUvaTask):
+class ImportPndTask(AbstractUvaTask):
     name = "import PND"
     code = "PND"
-
-    def execute(self):
-        models.Pand.objects.all().delete()
-        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -431,7 +507,7 @@ class ImportPndTask(batch.AbstractUvaTask):
         ))
 
 
-class ImportPndVboTask(batch.AbstractUvaTask):
+class ImportPndVboTask(AbstractUvaTask):
     name = "import PNDVBO"
     code = "PNDVBO"
 
@@ -442,17 +518,45 @@ class ImportPndVboTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'PNDVBO'):
             return
 
-        pand_id = r['sleutelverzendend']
         vbo_id = r['PNDVBO/VBO/sleutelVerzendend']
+        vbo = self.get(models.Verblijfsobject, vbo_id)
 
-        try:
-            vbo = models.Verblijfsobject.objects.get(pk=vbo_id)
-            vbo.panden.add(models.Pand.objects.get(pk=pand_id))
-        except models.Verblijfsobject.DoesNotExist:
-            log.warn("Non-existing verblijfsobject: %s", vbo_id)
+        if not vbo:
+            log.warning("Unknown verblijfsobject: %s", vbo_id)
+            return
+
+        pand_id = r['sleutelverzendend']
+        pand = self.get(models.Pand, pand_id)
+
+        if not pand:
+            log.warning("Unknown pand: %s", pand_id)
+            return
+
+        self.create(models.VerblijfsobjectPandRelatie(verblijfsobject=vbo, pand=pand))
 
 
-class ImportStaGeoTask(batch.AbstractWktTask):
+class AbstractWktTask(AbstractCacheBasedTask):
+    """
+    Basic task for processing WKT files
+    """
+
+    source_file = None
+
+    def __init__(self, source_path):
+        super().__init__()
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter='|')
+            for row in rows:
+                self.process_row(row[0], GEOSGeometry(row[1]))
+
+    def process_row(self, row_id, geom):
+        raise NotImplementedError()
+
+
+class ImportStaGeoTask(AbstractWktTask):
     name = "import STA WKT"
     source_file = "BAG_STANDPLAATS_GEOMETRIE.dat"
 
@@ -462,7 +566,7 @@ class ImportStaGeoTask(batch.AbstractWktTask):
         ))
 
 
-class ImportLigGeoTask(batch.AbstractWktTask):
+class ImportLigGeoTask(AbstractWktTask):
     name = "import LIG WKT"
     source_file = "BAG_LIGPLAATS_GEOMETRIE.dat"
 
@@ -472,7 +576,7 @@ class ImportLigGeoTask(batch.AbstractWktTask):
         ))
 
 
-class ImportPndGeoTask(batch.AbstractWktTask):
+class ImportPndGeoTask(AbstractWktTask):
     name = "import PND WKT"
     source_file = "BAG_PAND_GEOMETRIE.dat"
 

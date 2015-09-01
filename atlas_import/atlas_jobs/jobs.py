@@ -22,6 +22,7 @@ class ImportBagJob(object):
 
     def tasks(self):
         return [
+
             bag.ImportAvrTask(self.bag),
             bag.ImportBrnTask(self.bag),
             bag.ImportEgmTask(self.bag),
@@ -53,6 +54,8 @@ class ImportBagJob(object):
             bag.ImportPndTask(self.bag),
             bag.ImportPndGeoTask(self.bag_wkt),
             bag.ImportPndVboTask(self.bag),
+
+            bag.FlushCacheTask(),
         ]
 
 
