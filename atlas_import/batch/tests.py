@@ -1,10 +1,10 @@
 from django.test import TestCase
+
 from . import models
 import batch.batch
 
 
 class EmptyJob(object):
-
     name = "empty"
 
     def tasks(self):
@@ -12,7 +12,6 @@ class EmptyJob(object):
 
 
 class FailingTask(object):
-
     name = "failing"
 
     def execute(self):
@@ -20,7 +19,6 @@ class FailingTask(object):
 
 
 class FailedJob(object):
-
     name = "failed"
 
     def tasks(self):
@@ -28,7 +26,6 @@ class FailedJob(object):
 
 
 class SimpleJob(object):
-
     def __init__(self, name, *tasks):
         self.name = name
         self._tasks = tasks
@@ -38,7 +35,6 @@ class SimpleJob(object):
 
 
 class JobTest(TestCase):
-
     def test_job_results_in_execution(self):
         e = batch.batch.execute(EmptyJob())
 
@@ -84,7 +80,6 @@ class JobTest(TestCase):
 
     def test_task_results_in_execution(self):
         class Task(object):
-
             def __init__(self):
                 self.executed = False
                 self.torn_down = False
@@ -100,5 +95,3 @@ class JobTest(TestCase):
         batch.batch.execute(SimpleJob("simple", t))
         self.assertEqual(t.executed, True)
         self.assertEqual(t.torn_down, True)
-
-

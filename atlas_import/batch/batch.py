@@ -1,6 +1,8 @@
 import logging
-from django.utils import timezone
 import sys
+
+from django.utils import timezone
+
 from batch.models import JobExecution, TaskExecution
 
 log = logging.getLogger(__name__)
@@ -11,6 +13,7 @@ def execute(job):
     job_execution = JobExecution.objects.create(name=job.name)
 
     for t in job.tasks():
+        # noinspection PyBroadException
         try:
             _execute_task(job_execution, t)
         except:
@@ -31,20 +34,19 @@ def execute(job):
 def _execute_task(job_execution, task):
     if callable(task):
         task_name = task.__name__
-        execute = task
+        execute_func = task
         tear_down = None
     else:
         task_name = getattr(task, "name", "no name specified")
-        execute = task.execute
+        execute_func = task.execute
         tear_down = getattr(task, "tear_down", None)
-
 
     log.info("Executing task: %s", task_name)
     task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
 
     try:
         try:
-            execute()
+            execute_func()
         finally:
             if tear_down:
                 tear_down()
