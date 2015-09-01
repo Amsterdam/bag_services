@@ -32,4 +32,3 @@ To run an import, execute:
 
 	./atlas_import/manage.py run_import
 	
-	
