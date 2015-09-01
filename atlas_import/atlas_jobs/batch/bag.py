@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 
 from django.contrib.gis.geos import Point
@@ -12,9 +13,14 @@ log = logging.getLogger(__name__)
 class CodeOmschrijvingUvaTask(batch.AbstractUvaTask):
     model = None
 
+    def execute(self):
+        self.model.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
-        # noinspection PyTypeChecker
-        self.merge(self.model, r['Code'], dict(
+        # noinspection PyCallingNonCallable
+        self.create(self.model(
+            pk=r['Code'],
             omschrijving=r['Omschrijving']
         ))
 
@@ -77,11 +83,16 @@ class ImportGmeTask(batch.AbstractUvaTask):
     name = "import GME"
     code = "GME"
 
+    def execute(self):
+        models.Gemeente.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
 
-        self.merge(models.Gemeente, r['sleutelVerzendend'], dict(
+        self.create(models.Gemeente(
+            pk=r['sleutelVerzendend'],
             code=r['Gemeentecode'],
             naam=r['Gemeentenaam'],
             verzorgingsgebied=uva2.uva_indicatie(r['IndicatieVerzorgingsgebied']),
@@ -93,6 +104,10 @@ class ImportSdlTask(batch.AbstractUvaTask):
     name = "import SDL"
     code = "SDL"
 
+    def execute(self):
+        models.Stadsdeel.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
                                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
@@ -102,7 +117,8 @@ class ImportSdlTask(batch.AbstractUvaTask):
                                r['SDLGME/TijdvakRelatie/einddatumRelatie']):
             return
 
-        self.merge(models.Stadsdeel, r['sleutelVerzendend'], dict(
+        self.create(models.Stadsdeel(
+            pk=r['sleutelVerzendend'],
             code=r['Stadsdeelcode'],
             naam=r['Stadsdeelnaam'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
@@ -114,6 +130,10 @@ class ImportBrtTask(batch.AbstractUvaTask):
     name = "import BRT"
     code = "BRT"
 
+    def execute(self):
+        models.Buurt.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
                                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
@@ -123,7 +143,8 @@ class ImportBrtTask(batch.AbstractUvaTask):
                                r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
             return
 
-        self.merge(models.Buurt, r['sleutelVerzendend'], dict(
+        self.create(models.Buurt(
+            pk=r['sleutelVerzendend'],
             code=r['Buurtcode'],
             naam=r['Buurtnaam'],
             stadsdeel=models.Stadsdeel.objects.get(pk=r['BRTSDL/SDL/sleutelVerzendend']),
@@ -135,6 +156,10 @@ class ImportWplTask(batch.AbstractUvaTask):
     name = "import WPL"
     code = "WPL"
 
+    def execute(self):
+        models.Woonplaats.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -142,7 +167,8 @@ class ImportWplTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'WPLGME'):
             return
 
-        self.merge(models.Woonplaats, r['sleutelverzendend'], dict(
+        self.create(models.Woonplaats(
+            pk=r['sleutelverzendend'],
             code=r['Woonplaatsidentificatie'],
             naam=r['Woonplaatsnaam'],
             document_nummer=r['DocumentnummerMutatieWoonplaats'],
@@ -157,6 +183,10 @@ class ImportOprTask(batch.AbstractUvaTask):
     name = "import OPR"
     code = "OPR"
 
+    def execute(self):
+        models.OpenbareRuimte.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -164,7 +194,8 @@ class ImportOprTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'OPRBRN', 'OPRSTS', 'OPRWPL'):
             return
 
-        self.merge(models.OpenbareRuimte, r['sleutelVerzendend'], dict(
+        self.create(models.OpenbareRuimte(
+            pk=r['sleutelVerzendend'],
             type=r['TypeOpenbareRuimteDomein'],
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
@@ -184,6 +215,10 @@ class ImportNumTask(batch.AbstractUvaTask):
     name = "import NUM"
     code = "NUM"
 
+    def execute(self):
+        models.Nummeraanduiding.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -191,7 +226,8 @@ class ImportNumTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMBRN', 'NUMSTS', 'NUMOPR'):
             return
 
-        self.merge(models.Nummeraanduiding, r['sleutelVerzendend'], dict(
+        self.create(models.Nummeraanduiding(
+            pk=r['sleutelVerzendend'],
             code=r['IdentificatiecodeNummeraanduiding'],
             huisnummer=r['Huisnummer'],
             huisletter=r['Huisletter'],
@@ -212,6 +248,10 @@ class ImportLigTask(batch.AbstractUvaTask):
     name = "import LIG"
     code = "LIG"
 
+    def execute(self):
+        models.Ligplaats.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -219,7 +259,8 @@ class ImportLigTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'LIGBRN', 'LIGSTS', 'LIGBRT'):
             return
 
-        self.merge(models.Ligplaats, r['sleutelverzendend'], dict(
+        self.create(models.Ligplaats(
+            pk=r['sleutelverzendend'],
             identificatie=r['Ligplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieLigplaats'],
@@ -250,6 +291,10 @@ class ImportStaTask(batch.AbstractUvaTask):
     name = "import STA"
     code = "STA"
 
+    def execute(self):
+        models.Standplaats.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -257,7 +302,8 @@ class ImportStaTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'STABRN', 'STASTS', 'STABRT'):
             return
 
-        self.merge(models.Standplaats, r['sleutelverzendend'], dict(
+        self.create(models.Standplaats(
+            pk=r['sleutelverzendend'],
             identificatie=r['Standplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieStandplaats'],
@@ -288,6 +334,10 @@ class ImportVboTask(batch.AbstractUvaTask):
     name = "import VBO"
     code = "VBO"
 
+    def execute(self):
+        models.Verblijfsobject.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -303,7 +353,8 @@ class ImportVboTask(batch.AbstractUvaTask):
         else:
             geo = None
 
-        self.merge(models.Verblijfsobject, r['sleutelverzendend'], dict(
+        self.create(models.Verblijfsobject(
+            pk=r['sleutelverzendend'],
             identificatie=(r['Verblijfsobjectidentificatie']),
             geometrie=geo,
             gebruiksdoel_code=(r['GebruiksdoelVerblijfsobjectDomein']),
@@ -355,6 +406,10 @@ class ImportPndTask(batch.AbstractUvaTask):
     name = "import PND"
     code = "PND"
 
+    def execute(self):
+        models.Pand.objects.all().delete()
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -362,7 +417,8 @@ class ImportPndTask(batch.AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'PNDSTS', 'PNDBBK'):
             return
 
-        self.merge(models.Pand, r['sleutelverzendend'], dict(
+        self.create(models.Pand(
+            pk=r['sleutelverzendend'],
             identificatie=(r['Pandidentificatie']),
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatiePand']),
             document_nummer=(r['DocumentnummerMutatiePand']),

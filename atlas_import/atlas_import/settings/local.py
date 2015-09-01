@@ -42,7 +42,6 @@ LOGGING = {
         'handlers': ['console'],
     },
     'loggers': {
-        # The actual soap server
         'batch': {
             'handlers': ['console'],
             'level': 'DEBUG',
