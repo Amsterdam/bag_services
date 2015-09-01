@@ -31,4 +31,9 @@ The Atlas import module should now be available on http://localhost:8000/
 To run an import, execute:
 
 	./atlas_import/manage.py run_import
+
+To see the various options for partial imports, execute:
+
+	./atlas_import/manage.py run_import --help
 	
+
