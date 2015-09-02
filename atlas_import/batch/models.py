@@ -18,6 +18,12 @@ class JobExecution(models.Model):
     date_finished = models.DateTimeField(null=True)
     status = models.IntegerField(default=STATUS_RUNNING, choices=STATUS_CHOICES)
 
+    def duration(self):
+        if not self.date_started or not self.date_finished:
+            return None
+
+        return int((self.date_finished - self.date_started).total_seconds())
+
 
 class TaskExecution(models.Model):
 
@@ -39,3 +45,9 @@ class TaskExecution(models.Model):
 
     class Meta:
         ordering = ("date_started", )
+
+    def duration(self):
+        if not self.date_started or not self.date_finished:
+            return None
+
+        return int((self.date_finished - self.date_started).total_seconds())
