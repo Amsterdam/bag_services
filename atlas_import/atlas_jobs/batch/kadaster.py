@@ -64,7 +64,7 @@ class ImportLkiKadastraleGemeenteTask(object):
         )
 
 
-class ImportLkiSectieTask(batch.AbstractOrmTask):
+class ImportLkiSectieTask(object):
     name = "import LKI Sectie"
 
     def __init__(self, source_path):
@@ -97,7 +97,7 @@ class ImportLkiSectieTask(batch.AbstractOrmTask):
         )
 
 
-class ImportLkiKadastraalObjectTask(batch.AbstractOrmTask):
+class ImportLkiKadastraalObjectTask(object):
     name = "import LKI Kadastraal Object"
 
     def __init__(self, source_path):
