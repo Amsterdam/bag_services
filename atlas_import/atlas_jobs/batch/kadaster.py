@@ -4,7 +4,6 @@ from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import GEOSGeometry
 
 from atlas import models
-from atlas_jobs import batch
 
 
 class ImportLkiGemeenteTask(object):
@@ -40,12 +39,11 @@ class ImportLkiKadastraleGemeenteTask(object):
         self.source = os.path.join(source_path, 'LKI_Kadastrale_gemeente.shp')
 
     def execute(self):
-        models.LkiKadastraleGemeente.objects.all().delete()
-
         ds = DataSource(self.source)
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
+        models.LkiKadastraleGemeente.objects.all().delete()
         models.LkiKadastraleGemeente.objects.bulk_create(objects)
 
     def process_feature(self, feat):
@@ -72,12 +70,11 @@ class ImportLkiSectieTask(object):
         self.source = os.path.join(source_path, 'LKI_Sectie.shp')
 
     def execute(self):
-        models.LkiSectie.objects.all().delete()
-
         ds = DataSource(self.source)
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
+        models.LkiSectie.objects.all().delete()
         models.LkiSectie.objects.bulk_create(objects)
 
     def process_feature(self, feat):
@@ -108,19 +105,18 @@ class ImportLkiKadastraalObjectTask(object):
         return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
 
     def execute(self):
-        models.LkiKadastraalObject.objects.all().delete()
-
         ds = DataSource(self.source)
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
+        models.LkiKadastraalObject.objects.all().delete()
         models.LkiKadastraalObject.objects.bulk_create(objects)
 
     def process_feature(self, feat):
 
         # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
         wkt = feat.geom.wkt
-        if not 'MULTIPOLYGON' in wkt:
+        if 'MULTIPOLYGON' not in wkt:
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
 
