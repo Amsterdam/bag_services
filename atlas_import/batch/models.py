@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class JobExecution(models.Model):
@@ -19,10 +20,12 @@ class JobExecution(models.Model):
     status = models.IntegerField(default=STATUS_RUNNING, choices=STATUS_CHOICES)
 
     def duration(self):
-        if not self.date_started or not self.date_finished:
+        if not self.date_started:
             return None
 
-        return int((self.date_finished - self.date_started).total_seconds())
+        f = self.date_finished or timezone.now()
+
+        return int((f - self.date_started).total_seconds())
 
 
 class TaskExecution(models.Model):
@@ -47,7 +50,11 @@ class TaskExecution(models.Model):
         ordering = ("date_started", )
 
     def duration(self):
-        if not self.date_started or not self.date_finished:
+        if not self.date_started:
             return None
 
-        return int((self.date_finished - self.date_started).total_seconds())
+        f = self.date_finished or timezone.now()
+
+        return int((f - self.date_started).total_seconds())
+
+
