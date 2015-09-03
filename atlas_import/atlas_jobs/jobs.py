@@ -38,18 +38,20 @@ class ImportBagJob(object):
             bag.ImportSdlTask(self.gebieden),
             bag.ImportBrtTask(self.gebieden),
             bag.ImportOprTask(self.bag),
-            bag.ImportNumTask(self.bag),
 
             bag.ImportLigTask(self.bag),
             bag.ImportLigGeoTask(self.bag_wkt),
-            bag.ImportNumLigHfdTask(self.bag),
 
             bag.ImportStaTask(self.bag),
             bag.ImportStaGeoTask(self.bag_wkt),
-            bag.ImportNumStaHfdTask(self.bag),
 
             bag.ImportVboTask(self.bag),
+
+            bag.ImportNumTask(self.bag),
+            bag.ImportNumLigHfdTask(self.bag),
+            bag.ImportNumStaHfdTask(self.bag),
             bag.ImportNumVboHfdTask(self.bag),
+            bag.ImportNumVboNvnTask(self.bag),
 
             bag.ImportPndTask(self.bag),
             bag.ImportPndGeoTask(self.bag_wkt),

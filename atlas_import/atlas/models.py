@@ -205,6 +205,11 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     openbare_ruimte = models.ForeignKey(OpenbareRuimte)
 
+    ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
+    standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')
+    verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
+    is_hoofdadres = models.NullBooleanField(default=None)
+
     def __str__(self):
         return "Nummeraanduiding({}, {})".format(self.id, self.code)
 
@@ -216,8 +221,20 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
                 )
 
 
+class AdresseerbaarObjectMixin(object):
 
-class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
+    @property
+    def hoofdadres(self):
+        # noinspection PyUnresolvedReferences
+        # candidates = [a for a in self.adressen.all() if a.is_hoofdadres]
+        # return candidates[0] if candidates else None
+
+        candidates = [a for a in self.adressen.all() if a.is_hoofdadres]
+        return candidates[0] if candidates else None
+        # return None
+
+
+class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
@@ -234,7 +251,6 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
     geometrie = geo.PolygonField(null=True, srid=28992)
-    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="ligplaatsen")
 
     objects = geo.GeoManager()
 
@@ -242,7 +258,7 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Ligplaats({}, {})".format(self.id, self.identificatie)
 
 
-class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
     dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
@@ -258,7 +274,6 @@ class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
     geometrie = geo.PolygonField(null=True, srid=28992)
-    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="standplaatsen")
 
     objects = geo.GeoManager()
 
@@ -266,7 +281,7 @@ class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "Standplaats({}, {})".format(self.id, self.identificatie)
 
 
-class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
@@ -300,8 +315,7 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
     toegang = models.ForeignKey(Toegang, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True)
-    hoofdadres = models.ForeignKey(Nummeraanduiding, null=True, related_name="verblijfsobjecten")
-    nevenadressen = models.ManyToManyField(Nummeraanduiding, through='VerblijfsobjectNevenadresRelatie')
+
     panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten', through='VerblijfsobjectPandRelatie')
 
     geometrie = geo.PointField(null=True, srid=28992)
@@ -310,13 +324,6 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model):
 
     def __str__(self):
         return "Verblijfsobject({}, {})".format(self.id, self.identificatie)
-
-
-class VerblijfsobjectNevenadresRelatie(ImportStatusMixin, models.Model):
-
-    id = models.CharField(max_length=29, primary_key=True)
-    verblijfsobject = models.ForeignKey(Verblijfsobject)
-    nummeraanduiding = models.ForeignKey(Nummeraanduiding)
 
 
 class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):

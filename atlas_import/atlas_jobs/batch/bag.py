@@ -370,8 +370,14 @@ class ImportNumLigHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMLIGHFD'):
             return
 
-        self.merge_existing(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'], dict(
-            hoofdadres_id=self.foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        l_id = self.foreign_key_id(models.Ligplaats, r['NUMLIGHFD/LIG/sleutelVerzendend'])
+        if not l_id:
+            log.warning("Onbekende ligplaats: %s", r['NUMLIGHFD/LIG/sleutelVerzendend'])
+            return
+
+        self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
+            ligplaats_id=l_id,
+            is_hoofdadres=True,
         ))
 
 
@@ -409,8 +415,14 @@ class ImportNumStaHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMSTAHFD'):
             return
 
-        self.merge_existing(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'], dict(
-            hoofdadres_id=self.foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        s_id = self.foreign_key_id(models.Standplaats, r['NUMSTAHFD/STA/sleutelVerzendend'])
+        if not s_id:
+            log.warning("Onbekende standplaats: %s", r['NUMSTAHFD/STA/sleutelVerzendend'])
+            return
+
+        self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
+            standplaats_id=s_id,
+            is_hoofdadres=True,
         ))
 
 
@@ -477,8 +489,14 @@ class ImportNumVboHfdTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMVBOHFD'):
             return
 
-        self.merge_existing(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'], dict(
-            hoofdadres_id=self.foreign_key_id(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'])
+        v_id = self.foreign_key_id(models.Verblijfsobject, r['NUMVBOHFD/VBO/sleutelVerzendend'])
+        if not v_id:
+            log.warning("Onbekend verblijfsobject: %s", r['NUMVBOHFD/VBO/sleutelVerzendend'])
+            return
+
+        self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
+            verblijfsobject_id=v_id,
+            is_hoofdadres=True,
         ))
 
 
@@ -493,21 +511,16 @@ class ImportNumVboNvnTask(AbstractUvaTask):
         if not uva2.geldige_relaties(r, 'NUMVBONVN'):
             return
 
+        nummeraanduiding_id = r["sleutelVerzendend"]
         verblijfsobject_id = self.foreign_key_id(models.Verblijfsobject, r["NUMVBONVN/sleutelVerzendend"])
-        nummeraanduiding_id = self.foreign_key_id(models.Nummeraanduiding, r["sleutelVerzendend"])
-
-        if not nummeraanduiding_id:
-            log.warning("Onbekende nummeraanduiding: %s", r["sleutelVerzendend"])
-            return
 
         if not verblijfsobject_id:
             log.warning("Onbekend verblijfsobject: %s", r["NUMVBONVN/sleutelVerzendend"])
             return
 
-        self.create(models.VerblijfsobjectNevenadresRelatie(
-            pk='{}_{}'.format(verblijfsobject_id, nummeraanduiding_id),
+        self.merge_existing(models.Nummeraanduiding, nummeraanduiding_id, dict(
             verblijfsobject_id=verblijfsobject_id,
-            nummeraanduiding_id=nummeraanduiding_id
+            is_hoofdadres=False,
         ))
 
 

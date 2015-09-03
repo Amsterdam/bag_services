@@ -350,8 +350,9 @@ class ImportNumLigHfdTest(TestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
         l = models.Ligplaats.objects.get(pk='03630001035885')
 
-        self.assertEquals([l.id for l in n.ligplaatsen.all()], [l.id])
+        self.assertEquals(n.ligplaats.id, l.id)
         self.assertEquals(l.hoofdadres.id, n.id)
+        self.assertIn(n.id, [a.id for a in l.adressen.all()])
 
 
 class ImportStaTest(TestCase):
@@ -410,8 +411,9 @@ class ImportNumStaHfdTest(TestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
         s = models.Standplaats.objects.get(pk='03630000717733')
 
-        self.assertEquals([l.id for l in n.standplaatsen.all()], [s.id])
+        self.assertEquals(n.standplaats.id, s.id)
         self.assertEquals(s.hoofdadres.id, n.id)
+        self.assertIn(n.id, [a.id for a in s.adressen.all()])
 
 
 class ImportVboTest(TestCase):
@@ -479,8 +481,9 @@ class ImportNumVboHfdTest(TestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
         v = models.Verblijfsobject.objects.get(pk='03630000721053')
 
-        self.assertEquals([v.id for v in n.verblijfsobjecten.all()], [v.id])
+        self.assertEquals(n.verblijfsobject.id, v.id)
         self.assertEquals(v.hoofdadres.id, n.id)
+        self.assertIn(n.id, [n.id for n in v.adressen.all()])
 
 
 class ImportNumVboNvnTest(TestCase):
@@ -501,9 +504,10 @@ class ImportNumVboNvnTest(TestCase):
         n1 = models.Nummeraanduiding.objects.get(pk='03630000087815')
         n2 = models.Nummeraanduiding.objects.get(pk='03630000105581')
 
-        xxx = list(models.VerblijfsobjectNevenadresRelatie.objects.all())
-
-        self.assertEquals(set([n.id for n in v.nevenadressen.all()]), {n1.id, n2.id})
+        self.assertIn(n1.id, [n.id for n in v.adressen.all()])
+        self.assertIn(n2.id, [n.id for n in v.adressen.all()])
+        self.assertEquals(n1.verblijfsobject.id, v.id)
+        self.assertEquals(n2.verblijfsobject.id, v.id)
 
 
 class ImportPndTest(TestCase):

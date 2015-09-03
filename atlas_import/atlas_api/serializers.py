@@ -64,7 +64,6 @@ class Gemeente(serializers.ModelSerializer):
             'code',
             'date_created',
             'date_modified',
-            'vervallen',
 
             'naam',
             'verzorgingsgebied',
@@ -81,7 +80,6 @@ class Stadsdeel(serializers.ModelSerializer):
             'code',
             'date_created',
             'date_modified',
-            'vervallen',
 
             'naam',
             'gemeente',
@@ -96,7 +94,6 @@ class Buurt(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
-            'vervallen',
 
             'naam',
             'stadsdeel',
@@ -115,7 +112,6 @@ class Woonplaats(serializers.ModelSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
-            'vervallen',
 
             'naam',
             'naam_ptt',
@@ -139,7 +135,6 @@ class OpenbareRuimte(serializers.ModelSerializer):
             'document_nummer',
             'status',
             'bron',
-            'vervallen',
 
             'type',
             'naam',
@@ -167,7 +162,6 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'document_nummer',
             'status',
             'bron',
-            'vervallen',
             'adres',
 
             'postcode',
@@ -177,15 +171,16 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'type',
             'adres_nummer',
             'openbare_ruimte',
-            'ligplaatsen',
-            'standplaatsen',
-            'verblijfsobjecten',
+            'ligplaats',
+            'standplaats',
+            'verblijfsobject',
         )
 
 
 class Ligplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
+    hoofdadres = Nummeraanduiding()
 
     class Meta:
         model = models.Ligplaats
@@ -199,10 +194,10 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
             'document_nummer',
             'status',
             'bron',
-            'vervallen',
 
             'geometrie',
             'hoofdadres',
+            'adressen',
             'buurt',
         )
 
@@ -217,6 +212,7 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
 class Standplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
+    hoofdadres = Nummeraanduiding()
 
     class Meta:
         model = models.Standplaats
@@ -230,10 +226,10 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
             'document_nummer',
             'status',
             'bron',
-            'vervallen',
 
             'geometrie',
             'hoofdadres',
+            'adressen',
             'buurt',
         )
 
@@ -257,6 +253,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
     gebruiksdoel = serializers.SerializerMethodField()
+    hoofdadres = Nummeraanduiding()
 
     class Meta:
         model = models.Verblijfsobject
@@ -270,7 +267,6 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'document_nummer',
             'status',
             'bron',
-            'vervallen',
 
             'geometrie',
             'gebruiksdoel',
@@ -289,6 +285,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'locatie_ingang',
             'toegang',
             'hoofdadres',
+            'adressen',
             'buurt',
             'panden',
         )
@@ -334,7 +331,6 @@ class Pand(serializers.HyperlinkedModelSerializer):
             'document_mutatie',
             'document_nummer',
             'status',
-            'vervallen',
 
             'geometrie',
 
