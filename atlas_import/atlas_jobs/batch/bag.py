@@ -482,6 +482,35 @@ class ImportNumVboHfdTask(AbstractUvaTask):
         ))
 
 
+class ImportNumVboNvnTask(AbstractUvaTask):
+    name = "import NUMVBONVN"
+    code = "NUMVBONVN"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, 'NUMVBONVN'):
+            return
+
+        verblijfsobject_id = self.foreign_key_id(models.Verblijfsobject, r["NUMVBONVN/sleutelVerzendend"])
+        nummeraanduiding_id = self.foreign_key_id(models.Nummeraanduiding, r["sleutelVerzendend"])
+
+        if not nummeraanduiding_id:
+            log.warning("Onbekende nummeraanduiding: %s", r["sleutelVerzendend"])
+            return
+
+        if not verblijfsobject_id:
+            log.warning("Onbekend verblijfsobject: %s", r["NUMVBONVN/sleutelVerzendend"])
+            return
+
+        self.create(models.VerblijfsobjectNevenadresRelatie(
+            pk='{}_{}'.format(verblijfsobject_id, nummeraanduiding_id),
+            verblijfsobject_id=verblijfsobject_id,
+            nummeraanduiding_id=nummeraanduiding_id
+        ))
+
+
 class ImportPndTask(AbstractUvaTask):
     name = "import PND"
     code = "PND"

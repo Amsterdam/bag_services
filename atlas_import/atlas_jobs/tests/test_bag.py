@@ -483,6 +483,29 @@ class ImportNumVboHfdTest(TestCase):
         self.assertEquals(v.hoofdadres.id, n.id)
 
 
+class ImportNumVboNvnTest(TestCase):
+    def test_import(self):
+        bag.ImportStsTask(BAG).execute()
+        bag.ImportGmeTask(GEBIEDEN).execute()
+        bag.ImportWplTask(BAG).execute()
+        bag.ImportOprTask(BAG).execute()
+        bag.ImportNumTask(BAG).execute()
+        bag.ImportVboTask(BAG).execute()
+
+        task = bag.ImportNumVboNvnTask(BAG)
+        task.execute()
+
+        bag.FlushCacheTask().execute()
+
+        v = models.Verblijfsobject.objects.get(pk='03630000643306')
+        n1 = models.Nummeraanduiding.objects.get(pk='03630000087815')
+        n2 = models.Nummeraanduiding.objects.get(pk='03630000105581')
+
+        xxx = list(models.VerblijfsobjectNevenadresRelatie.objects.all())
+
+        self.assertEquals(set([n.id for n in v.nevenadressen.all()]), {n1.id, n2.id})
+
+
 class ImportPndTest(TestCase):
     def test_import(self):
         bag.ImportStsTask(BAG).execute()
