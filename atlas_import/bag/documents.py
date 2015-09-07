@@ -1,6 +1,6 @@
 import elasticsearch_dsl as es
 
-from atlas import models
+from . import models
 
 class Ligplaats(es.DocType):
     type = es.String()

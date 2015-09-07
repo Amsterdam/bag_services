@@ -3,10 +3,10 @@ import csv
 import logging
 import os
 
+from django.conf import settings
 from django.contrib.gis.geos import Point, GEOSGeometry
 
-from atlas import models
-from atlas_jobs import uva2
+from . import models, uva2
 
 log = logging.getLogger(__name__)
 
@@ -626,3 +626,55 @@ class ImportPndGeoTask(AbstractWktTask):
         self.merge_existing(models.Pand, '0' + row_id, dict(
             geometrie=geom
         ))
+
+
+class ImportBagJob(object):
+    name = "atlas-import BAG"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.bag = os.path.join(diva, 'bag')
+        self.bag_wkt = os.path.join(diva, 'bag_wkt')
+        self.gebieden = os.path.join(diva, 'gebieden')
+
+    def tasks(self):
+        return [
+            ImportAvrTask(self.bag),
+            ImportBrnTask(self.bag),
+            ImportEgmTask(self.bag),
+            ImportFngTask(self.bag),
+            ImportGbkTask(self.bag),
+            ImportLggTask(self.bag),
+            ImportLocTask(self.bag),
+            ImportTggTask(self.bag),
+            ImportStsTask(self.bag),
+
+            ImportGmeTask(self.gebieden),
+            ImportWplTask(self.bag),
+            ImportSdlTask(self.gebieden),
+            ImportBrtTask(self.gebieden),
+            ImportOprTask(self.bag),
+
+            ImportLigTask(self.bag),
+            ImportLigGeoTask(self.bag_wkt),
+
+            ImportStaTask(self.bag),
+            ImportStaGeoTask(self.bag_wkt),
+
+            ImportVboTask(self.bag),
+
+            ImportNumTask(self.bag),
+            ImportNumLigHfdTask(self.bag),
+            ImportNumStaHfdTask(self.bag),
+            ImportNumVboHfdTask(self.bag),
+            ImportNumVboNvnTask(self.bag),
+
+            ImportPndTask(self.bag),
+            ImportPndGeoTask(self.bag_wkt),
+            ImportPndVboTask(self.bag),
+
+            FlushCacheTask(),
+        ]
