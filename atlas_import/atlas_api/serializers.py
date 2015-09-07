@@ -171,6 +171,7 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'type',
             'adres_nummer',
             'openbare_ruimte',
+            'hoofdadres',
             'ligplaats',
             'standplaats',
             'verblijfsobject',
@@ -180,7 +181,11 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
 class Ligplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
-    hoofdadres = Nummeraanduiding()
+    hoofdadres = serializers.HyperlinkedRelatedField(
+        source='hoofdadres.id',
+        view_name='nummeraanduiding-detail',
+        read_only=True,
+    )
 
     class Meta:
         model = models.Ligplaats
@@ -203,16 +208,20 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].QUERY_PARAMS
+        expand = 'full' in self.context['request'].QUERY_PARAMS if self.context else False
 
         if expand:
-            self.fields['hoofdadres'] = Nummeraanduiding()
+            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
 
 
 class Standplaats(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
-    hoofdadres = Nummeraanduiding()
+    hoofdadres = serializers.HyperlinkedRelatedField(
+        source='hoofdadres.id',
+        view_name='nummeraanduiding-detail',
+        read_only=True,
+    )
 
     class Meta:
         model = models.Standplaats
@@ -238,7 +247,7 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
         expand = 'full' in self.context['request'].QUERY_PARAMS
 
         if expand:
-            self.fields['hoofdadres'] = Nummeraanduiding()
+            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
 
 
 class Verblijfsobject(serializers.HyperlinkedModelSerializer):
@@ -253,7 +262,11 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
     gebruiksdoel = serializers.SerializerMethodField()
-    hoofdadres = Nummeraanduiding()
+    hoofdadres = serializers.HyperlinkedRelatedField(
+        source='hoofdadres.id',
+        view_name='nummeraanduiding-detail',
+        read_only=True,
+    )
 
     class Meta:
         model = models.Verblijfsobject
@@ -295,7 +308,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
         expand = 'full' in self.context['request'].QUERY_PARAMS
 
         if expand:
-            self.fields['hoofdadres'] = Nummeraanduiding()
+            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
             self.fields['panden'] = serializers.ManyRelatedField(child_relation=Pand())
 
     def get_gebruiksdoel(self, obj):

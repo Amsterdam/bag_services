@@ -377,7 +377,7 @@ class ImportNumLigHfdTask(AbstractUvaTask):
 
         self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
             ligplaats_id=l_id,
-            is_hoofdadres=True,
+            hoofdadres=True,
         ))
 
 
@@ -422,7 +422,7 @@ class ImportNumStaHfdTask(AbstractUvaTask):
 
         self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
             standplaats_id=s_id,
-            is_hoofdadres=True,
+            hoofdadres=True,
         ))
 
 
@@ -496,7 +496,7 @@ class ImportNumVboHfdTask(AbstractUvaTask):
 
         self.merge_existing(models.Nummeraanduiding, r['IdentificatiecodeNummeraanduiding'], dict(
             verblijfsobject_id=v_id,
-            is_hoofdadres=True,
+            hoofdadres=True,
         ))
 
 
@@ -520,7 +520,7 @@ class ImportNumVboNvnTask(AbstractUvaTask):
 
         self.merge_existing(models.Nummeraanduiding, nummeraanduiding_id, dict(
             verblijfsobject_id=verblijfsobject_id,
-            is_hoofdadres=False,
+            hoofdadres=False,
         ))
 
 

@@ -208,7 +208,7 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
     ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
     standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')
     verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
-    is_hoofdadres = models.NullBooleanField(default=None)
+    hoofdadres = models.NullBooleanField(default=None)
 
     def __str__(self):
         return "Nummeraanduiding({}, {})".format(self.id, self.code)
@@ -226,12 +226,8 @@ class AdresseerbaarObjectMixin(object):
     @property
     def hoofdadres(self):
         # noinspection PyUnresolvedReferences
-        # candidates = [a for a in self.adressen.all() if a.is_hoofdadres]
-        # return candidates[0] if candidates else None
-
-        candidates = [a for a in self.adressen.all() if a.is_hoofdadres]
+        candidates = [a for a in self.adressen.all() if a.hoofdadres]
         return candidates[0] if candidates else None
-        # return None
 
 
 class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
