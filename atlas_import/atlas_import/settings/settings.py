@@ -46,6 +46,8 @@ INSTALLED_APPS = (
     'datasets.bag',
     'datasets.lki',
     'datasets.wkpb',
+
+    'geo_views',
     'atlas_api',
 
     'django.contrib.gis',
