@@ -7,7 +7,7 @@ class ViewsTest(TestCase):
 
     def get_row(self, view_name):
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM {} LIMIT 1".format(view_name))
+        cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
         row = dict(zip([col[0] for col in cursor.description], cursor.fetchone()))
         return row
 
@@ -60,6 +60,3 @@ class ViewsTest(TestCase):
         self.assertIn("id", row)
         self.assertIn("geometrie", row)
         self.assertIn("beperkingtype_id", row)
-
-
-
