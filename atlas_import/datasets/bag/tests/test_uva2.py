@@ -1,6 +1,6 @@
 import datetime
 from django.test import TestCase
-from bag import uva2
+from .. import uva2
 
 
 class UvaHelperTest(TestCase):

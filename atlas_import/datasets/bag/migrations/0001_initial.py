@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import bag.models
+import datasets.bag.models
 import django.contrib.gis.db.models.fields
 
 
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('code', models.CharField(max_length=3, unique=True)),
                 ('naam', models.CharField(max_length=40)),
                 ('vervallen', models.BooleanField(default=False)),
@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('code', models.CharField(max_length=4, unique=True)),
                 ('naam', models.CharField(max_length=40)),
                 ('verzorgingsgebied', models.BooleanField(default=False)),
@@ -94,7 +94,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -108,7 +108,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('identificatie', models.CharField(max_length=14, unique=True)),
                 ('vervallen', models.BooleanField(default=False)),
                 ('geometrie', django.contrib.gis.db.models.fields.PolygonField(null=True, srid=28992)),
@@ -118,14 +118,14 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model, bag.models.AdresseerbaarObjectMixin),
+            bases=(models.Model, datasets.bag.models.AdresseerbaarObjectMixin),
         ),
         migrations.CreateModel(
             name='LocatieIngang',
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -139,18 +139,18 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('code', models.CharField(max_length=14, unique=True)),
                 ('huisnummer', models.CharField(max_length=5)),
                 ('huisletter', models.CharField(max_length=1, null=True)),
                 ('huisnummer_toevoeging', models.CharField(max_length=4, null=True)),
                 ('postcode', models.CharField(max_length=6, null=True)),
-                ('type', models.CharField(max_length=2, null=True, choices=[('01', 'Verblijfsobject'), ('02', 'Standplaats'), ('03', 'Ligplaats'), ('04', 'Overig gebouwd object'), ('05', 'Overig terrein')])),
+                ('type', models.CharField(max_length=2, choices=[('01', 'Verblijfsobject'), ('02', 'Standplaats'), ('03', 'Ligplaats'), ('04', 'Overig gebouwd object'), ('05', 'Overig terrein')], null=True)),
                 ('adres_nummer', models.CharField(max_length=10, null=True)),
                 ('vervallen', models.BooleanField(default=False)),
                 ('hoofdadres', models.NullBooleanField(default=None)),
                 ('bron', models.ForeignKey(null=True, to='bag.Bron')),
-                ('ligplaats', models.ForeignKey(null=True, to='bag.Ligplaats', related_name='adressen')),
+                ('ligplaats', models.ForeignKey(to='bag.Ligplaats', related_name='adressen', null=True)),
             ],
             options={
                 'abstract': False,
@@ -163,8 +163,8 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
-                ('type', models.CharField(max_length=2, null=True, choices=[('01', 'Weg'), ('02', 'Water'), ('03', 'Spoorbaan'), ('04', 'Terrein'), ('05', 'Kunstwerk'), ('06', 'Landschappelijk gebied'), ('07', 'Administratief gebied')])),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
+                ('type', models.CharField(max_length=2, choices=[('01', 'Weg'), ('02', 'Water'), ('03', 'Spoorbaan'), ('04', 'Terrein'), ('05', 'Kunstwerk'), ('06', 'Landschappelijk gebied'), ('07', 'Administratief gebied')], null=True)),
                 ('naam', models.CharField(max_length=150)),
                 ('code', models.CharField(max_length=5, unique=True)),
                 ('straat_nummer', models.CharField(max_length=10, null=True)),
@@ -184,7 +184,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('identificatie', models.CharField(max_length=14, unique=True)),
                 ('bouwjaar', models.PositiveIntegerField(null=True)),
                 ('laagste_bouwlaag', models.IntegerField(null=True)),
@@ -202,7 +202,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -214,7 +214,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('code', models.CharField(max_length=3, unique=True)),
                 ('naam', models.CharField(max_length=40)),
                 ('vervallen', models.BooleanField(default=False)),
@@ -231,7 +231,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('identificatie', models.CharField(max_length=14, unique=True)),
                 ('vervallen', models.BooleanField(default=False)),
                 ('geometrie', django.contrib.gis.db.models.fields.PolygonField(null=True, srid=28992)),
@@ -241,14 +241,14 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model, bag.models.AdresseerbaarObjectMixin),
+            bases=(models.Model, datasets.bag.models.AdresseerbaarObjectMixin),
         ),
         migrations.CreateModel(
             name='Status',
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -260,7 +260,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
+                ('code', models.CharField(serialize=False, primary_key=True, max_length=4)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={
@@ -274,7 +274,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('identificatie', models.CharField(max_length=14, unique=True)),
                 ('gebruiksdoel_code', models.CharField(max_length=4, null=True)),
                 ('gebruiksdoel_omschrijving', models.CharField(max_length=150, null=True)),
@@ -300,14 +300,14 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(models.Model, bag.models.AdresseerbaarObjectMixin),
+            bases=(models.Model, datasets.bag.models.AdresseerbaarObjectMixin),
         ),
         migrations.CreateModel(
             name='VerblijfsobjectPandRelatie',
             fields=[
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('id', models.CharField(max_length=29, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=29)),
                 ('pand', models.ForeignKey(to='bag.Pand')),
                 ('verblijfsobject', models.ForeignKey(to='bag.Verblijfsobject')),
             ],
@@ -322,7 +322,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('document_mutatie', models.DateField(null=True)),
                 ('document_nummer', models.CharField(max_length=20, null=True)),
-                ('id', models.CharField(max_length=14, serialize=False, primary_key=True)),
+                ('id', models.CharField(serialize=False, primary_key=True, max_length=14)),
                 ('code', models.CharField(max_length=4, unique=True)),
                 ('naam', models.CharField(max_length=80)),
                 ('naam_ptt', models.CharField(max_length=18, null=True)),
@@ -336,7 +336,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='verblijfsobject',
             name='panden',
-            field=models.ManyToManyField(to='bag.Pand', through='bag.VerblijfsobjectPandRelatie', related_name='verblijfsobjecten'),
+            field=models.ManyToManyField(related_name='verblijfsobjecten', through='bag.VerblijfsobjectPandRelatie', to='bag.Pand'),
         ),
         migrations.AddField(
             model_name='verblijfsobject',
@@ -381,7 +381,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='nummeraanduiding',
             name='standplaats',
-            field=models.ForeignKey(null=True, to='bag.Standplaats', related_name='adressen'),
+            field=models.ForeignKey(to='bag.Standplaats', related_name='adressen', null=True),
         ),
         migrations.AddField(
             model_name='nummeraanduiding',
@@ -391,7 +391,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='nummeraanduiding',
             name='verblijfsobject',
-            field=models.ForeignKey(null=True, to='bag.Verblijfsobject', related_name='adressen'),
+            field=models.ForeignKey(to='bag.Verblijfsobject', related_name='adressen', null=True),
         ),
         migrations.AddField(
             model_name='ligplaats',

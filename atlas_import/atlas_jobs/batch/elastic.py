@@ -1,6 +1,6 @@
 from django.conf import settings
 from elasticsearch_dsl.connections import connections
-from bag import documents, models
+from datasets.bag import documents, models
 
 
 class ImportELLigplaatsTask(object):

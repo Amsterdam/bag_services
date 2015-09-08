@@ -45,7 +45,7 @@ INSTALLED_APPS = (
     'atlas_jobs',
     'atlas_api',
 
-    'bag',
+    'datasets.bag',
 
     'django.contrib.gis',
     'rest_framework',

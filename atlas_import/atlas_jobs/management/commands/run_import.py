@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-import bag.batch
+import datasets.bag.batch
 
 from batch import batch
 from atlas_jobs import jobs
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['run-bag']:
-            batch.execute(bag.batch.ImportBagJob())
+            batch.execute(datasets.bag.batch.ImportBagJob())
 
         if options['run-kadaster']:
             batch.execute(jobs.ImportKadasterJob())

@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from bag import models
-
 
 class Autocomplete(serializers.Serializer):
     query = serializers.CharField()

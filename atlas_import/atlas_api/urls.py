@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 from atlas_api import views
-import bag.views
+import datasets.bag.views
 
 class DocumentedRouter(routers.DefaultRouter):
     """
@@ -26,11 +26,11 @@ class DocumentedRouter(routers.DefaultRouter):
 
 
 router = DocumentedRouter()
-router.register(r'bag/ligplaatsen', bag.views.LigplaatsViewSet)
-router.register(r'bag/standplaatsen', bag.views.StandplaatsViewSet)
-router.register(r'bag/verblijfsobjecten', bag.views.VerblijfsobjectViewSet)
-router.register(r'bag/nummeraanduidingen', bag.views.NummeraanduidingViewSet)
-router.register(r'bag/panden', bag.views.PandViewSet)
+router.register(r'bag/ligplaatsen', datasets.bag.views.LigplaatsViewSet)
+router.register(r'bag/standplaatsen', datasets.bag.views.StandplaatsViewSet)
+router.register(r'bag/verblijfsobjecten', datasets.bag.views.VerblijfsobjectViewSet)
+router.register(r'bag/nummeraanduidingen', datasets.bag.views.NummeraanduidingViewSet)
+router.register(r'bag/panden', datasets.bag.views.PandViewSet)
 
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
 

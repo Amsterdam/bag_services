@@ -3,7 +3,7 @@ import datetime
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 
-from bag import models, batch
+from .. import models, batch
 
 BAG = 'diva/bag'
 BAG_WKT = 'diva/bag_wkt'
