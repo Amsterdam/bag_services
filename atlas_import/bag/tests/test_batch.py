@@ -5,9 +5,9 @@ from django.test import TestCase
 
 from bag import models, batch
 
-BAG = 'bag/fixtures/testset/bag'
-BAG_WKT = 'bag/fixtures/testset/bag_wkt'
-GEBIEDEN = 'bag/fixtures/testset/gebieden'
+BAG = 'diva/bag'
+BAG_WKT = 'diva/bag_wkt'
+GEBIEDEN = 'diva/gebieden'
 
 
 class ImportAvrTest(TestCase):

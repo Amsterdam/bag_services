@@ -6,8 +6,6 @@ import bag.views
 class DocumentedRouter(routers.DefaultRouter):
     def get_api_root_view(self):
         view = super().get_api_root_view()
-        print(view)
-        view.description = "Hello world"
         return view
 
 

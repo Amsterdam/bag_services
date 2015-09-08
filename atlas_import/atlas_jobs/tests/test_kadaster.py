@@ -5,8 +5,8 @@ from django.test import TestCase
 from atlas import models
 from atlas_jobs.batch import kadaster
 
-KAD_LKI = 'atlas_jobs/fixtures/testset/kadaster/lki'
-KAD_AKR = 'atlas_jobs/fixtures/testset/kadaster/akr'
+KAD_LKI = 'diva/kadaster/lki'
+KAD_AKR = 'diva/kadaster/akr'
 
 
 # Kadaster
