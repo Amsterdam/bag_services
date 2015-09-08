@@ -24,8 +24,12 @@ class Gemeente(ImportStatusMixin, models.Model):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Gemeente"
+        verbose_name_plural = "Gemeentes"
+
     def __str__(self):
-        return "LkiGemeente({})".format(self.id)
+        return "{}: {}".format(self.gemeentecode, self.gemeentenaam)
 
 
 class KadastraleGemeente(ImportStatusMixin, models.Model):
@@ -42,8 +46,12 @@ class KadastraleGemeente(ImportStatusMixin, models.Model):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Kadastrale Gemeente"
+        verbose_name_plural = "Kadastrale Gemeentes"
+
     def __str__(self):
-        return "LkiKadastraleGemeente({})".format(self.id)
+        return "{}".format(self.code)
 
 
 class Sectie(ImportStatusMixin, models.Model):
@@ -62,8 +70,13 @@ class Sectie(ImportStatusMixin, models.Model):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Sectie"
+        verbose_name_plural = "Secties"
+
+
     def __str__(self):
-        return "LkiSectie({})".format(self.id)
+        return "{}".format(self.code)
 
 
 class KadastraalObject(ImportStatusMixin, models.Model):
@@ -87,5 +100,9 @@ class KadastraalObject(ImportStatusMixin, models.Model):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Kadastraal Object"
+        verbose_name_plural = "Kadastrale Objecten"
+
     def __str__(self):
-        return "LkiKadastraalObject({})".format(self.id)
+        return "{}".format(self.aanduiding)

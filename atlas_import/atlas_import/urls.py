@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.conf.urls import url, include
+from django.contrib import admin
 import atlas_api.urls
 
 import batch.views as b_views
@@ -22,4 +23,5 @@ urlpatterns = [
     url(r'^api/', include('atlas_api.urls')),
     url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
     url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),
+    url(r'^admin/', include(admin.site.urls)),
 ]

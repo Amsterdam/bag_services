@@ -24,50 +24,62 @@ class CodeOmschrijvingMixin(models.Model):
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return "{}: {}".format(self.code, self.omschrijving)
+
 
 class Bron(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Bron({})".format(self.code)
+    class Meta:
+        verbose_name = "Bron"
+        verbose_name_plural = "Bronnen"
 
 
 class Status(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Status({})".format(self.code)
+    class Meta:
+        verbose_name = "Status"
+        verbose_name_plural = "Status"
 
 
 class RedenAfvoer(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Afvoer({})".format(self.code)
+    class Meta:
+        verbose_name = "Reden Afvoer"
+        verbose_name_plural = "Reden Afvoer"
 
 
 class Eigendomsverhouding(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Eigendomsverhouding({})".format(self.code)
+    class Meta:
+        verbose_name = "Eigendomsverhouding"
+        verbose_name_plural = "Eigendomsverhoudingen"
 
 
 class Financieringswijze(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Financieringswijze({})".format(self.code)
+    class Meta:
+        verbose_name = "Financieringswijze"
+        verbose_name_plural = "Financieringswijzes"
 
 
 class Ligging(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Ligging({})".format(self.code)
+    class Meta:
+        verbose_name = "Ligging"
+        verbose_name_plural = "Ligging"
 
 
 class Gebruik(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Gebruik({})".format(self.code)
+    class Meta:
+        verbose_name = "Gebruik"
+        verbose_name_plural = "Gebruik"
 
 
 class LocatieIngang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "LocatieIngang({})".format(self.code)
+    class Meta:
+        verbose_name = "Locatie Ingang"
+        verbose_name_plural = "Locaties Ingang"
 
 
 class Toegang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
-    def __str__(self):
-        return "Toegang({})".format(self.code)
+    class Meta:
+        verbose_name = "Toegang"
+        verbose_name_plural = "Toegang"
 
 
 class Gemeente(ImportStatusMixin, models.Model):
@@ -77,8 +89,12 @@ class Gemeente(ImportStatusMixin, models.Model):
     verzorgingsgebied = models.BooleanField(default=False)
     vervallen = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name = "Gemeente"
+        verbose_name_plural = "Gemeentes"
+
     def __str__(self):
-        return "Gemeente({}, {})".format(self.id, self.naam)
+        return "{}: {}".format(self.code, self.naam)
 
 
 class Woonplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
@@ -89,8 +105,12 @@ class Woonplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
     vervallen = models.BooleanField(default=False)
     gemeente = models.ForeignKey(Gemeente)
 
+    class Meta:
+        verbose_name = "Woonplaats"
+        verbose_name_plural = "Woonplaatsen"
+
     def __str__(self):
-        return "Woonplaats({}, {})".format(self.id, self.naam)
+        return "{}: {}".format(self.code, self.naam)
 
 
 class Stadsdeel(ImportStatusMixin, models.Model):
@@ -105,8 +125,12 @@ class Stadsdeel(ImportStatusMixin, models.Model):
     vervallen = models.BooleanField(default=False)
     gemeente = models.ForeignKey(Gemeente)
 
+    class Meta:
+        verbose_name = "Stadsdeel"
+        verbose_name_plural = "Stadsdelen"
+
     def __str__(self):
-        return "Stadsdeel({}, {})".format(self.id, self.naam)
+        return "{}: {}".format(self.code, self.naam)
 
 
 class Buurt(ImportStatusMixin, models.Model):
@@ -122,8 +146,12 @@ class Buurt(ImportStatusMixin, models.Model):
     vervallen = models.BooleanField(default=False)
     stadsdeel = models.ForeignKey(Stadsdeel)
 
+    class Meta:
+        verbose_name = "Buurt"
+        verbose_name_plural = "Buurten"
+
     def __str__(self):
-        return "Buurt({}, {})".format(self.id, self.naam)
+        return "{}: {}".format(self.code, self.naam)
 
 
 class OpenbareRuimte(ImportStatusMixin, DocumentStatusMixin, models.Model):
@@ -165,8 +193,12 @@ class OpenbareRuimte(ImportStatusMixin, DocumentStatusMixin, models.Model):
     status = models.ForeignKey(Status, null=True)
     woonplaats = models.ForeignKey(Woonplaats)
 
+    class Meta:
+        verbose_name = "Openbare Ruimte"
+        verbose_name_plural = "Openbare Ruimtes"
+
     def __str__(self):
-        return "Openbare Ruimte({}, {})".format(self.id, self.code)
+        return "{}: {}".format(self.code, self.naam)
 
 
 class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
@@ -209,8 +241,12 @@ class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
     verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
     hoofdadres = models.NullBooleanField(default=None)
 
+    class Meta:
+        verbose_name = "Nummeraanduiding"
+        verbose_name_plural = "Nummeraanduidingen"
+
     def __str__(self):
-        return "Nummeraanduiding({}, {})".format(self.id, self.code)
+        return self.adres()
 
     def adres(self):
         return (self.openbare_ruimte.naam
@@ -248,8 +284,12 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, Adresseerb
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Ligplaats"
+        verbose_name_plural = "Ligplaatsen"
+
     def __str__(self):
-        return "Ligplaats({}, {})".format(self.id, self.identificatie)
+        return "{}".format(self.id)
 
 
 class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
@@ -271,8 +311,12 @@ class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, Adressee
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Standplaats"
+        verbose_name_plural = "Standplaatsen"
+
     def __str__(self):
-        return "Standplaats({}, {})".format(self.id, self.identificatie)
+        return "{}".format(self.id)
 
 
 class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
@@ -316,8 +360,12 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model, Adre
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Verblijfsobject"
+        verbose_name_plural = "Verblijfsobjecten"
+
     def __str__(self):
-        return "Verblijfsobject({}, {})".format(self.id, self.identificatie)
+        return "{}".format(self.id)
 
 
 class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
@@ -341,14 +389,22 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        verbose_name = "Pand"
+        verbose_name_plural = "Panden"
+
     def __str__(self):
-        return "Pand({})".format(self.id)
+        return "{}".format(self.id)
 
 
 class VerblijfsobjectPandRelatie(ImportStatusMixin, models.Model):
     id = models.CharField(max_length=29, primary_key=True)
     pand = models.ForeignKey(Pand)
     verblijfsobject = models.ForeignKey(Verblijfsobject)
+
+    class Meta:
+        verbose_name = "Verblijfsobject-Pand relatie"
+        verbose_name_plural = "Verblijfsobject-Pand relaties"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
