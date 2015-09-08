@@ -51,7 +51,6 @@ class Gemeente(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
-            'date_created',
             'date_modified',
 
             'naam',
@@ -67,7 +66,6 @@ class Stadsdeel(serializers.ModelSerializer):
         fiels = (
             'id',
             'code',
-            'date_created',
             'date_modified',
 
             'naam',
@@ -97,7 +95,6 @@ class Woonplaats(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -118,7 +115,6 @@ class OpenbareRuimte(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -145,7 +141,6 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
             'id',
             'code',
             'url',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -182,7 +177,6 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
             'id',
             'identificatie',
             'url',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -218,7 +212,6 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
             'id',
             'identificatie',
             'url',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -263,7 +256,6 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'id',
             'identificatie',
             'url',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -328,7 +320,6 @@ class Pand(serializers.HyperlinkedModelSerializer):
             'id',
             'identificatie',
             'url',
-            'date_created',
             'date_modified',
             'document_mutatie',
             'document_nummer',
