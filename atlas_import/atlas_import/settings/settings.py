@@ -42,7 +42,6 @@ INSTALLED_APPS = (
 
     'batch',
     'atlas',
-    'atlas_jobs',
 
     'datasets.bag',
     'datasets.lki',
