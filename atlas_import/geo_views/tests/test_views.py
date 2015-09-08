@@ -55,5 +55,11 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertIn("perceelnummer", row)
 
+    def test_wkpb(self):
+        row = self.get_row('geo_wkpb')
+        self.assertIn("id", row)
+        self.assertIn("geometrie", row)
+        self.assertIn("beperkingtype_id", row)
+
 
 
