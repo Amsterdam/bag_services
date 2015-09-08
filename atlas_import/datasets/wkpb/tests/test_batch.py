@@ -2,8 +2,7 @@ import datetime
 
 from django.test import TestCase
 
-from atlas import models
-from atlas_jobs.batch import wkpb
+from .. import models, batch
 from datasets.lki import batch as lki
 
 BEPERKINGEN = 'diva/beperkingen'
@@ -12,7 +11,7 @@ KAD_LKI = 'diva/kadaster/lki'
 
 class ImportBeperkingcode(TestCase):
     def test_import(self):
-        task = wkpb.ImportBeperkingcodeTask(BEPERKINGEN)
+        task = batch.ImportBeperkingcodeTask(BEPERKINGEN)
         task.execute()
 
         imported = models.Beperkingcode.objects.all()
@@ -24,27 +23,27 @@ class ImportBeperkingcode(TestCase):
 
 class ImportWkpbBroncode(TestCase):
     def test_import(self):
-        task = wkpb.ImportWkpbBroncodeTask(BEPERKINGEN)
+        task = batch.ImportWkpbBroncodeTask(BEPERKINGEN)
         task.execute()
 
-        imported = models.WkpbBroncode.objects.all()
+        imported = models.Broncode.objects.all()
         self.assertEqual(len(imported), 6)
 
-        a = models.WkpbBroncode.objects.get(pk='5')
+        a = models.Broncode.objects.get(pk='5')
         self.assertEqual(a.omschrijving, 'Dagelijks Bestuur')
 
 
 class ImportWkpbBrondocument(TestCase):
     def test_import(self):
-        wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
 
-        task = wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN)
+        task = batch.ImportWkpbBrondocumentTask(BEPERKINGEN)
         task.execute()
 
-        imported = models.WkpbBrondocument.objects.all()
+        imported = models.Brondocument.objects.all()
         self.assertEqual(len(imported), 48)
 
-        a = models.WkpbBrondocument.objects.get(pk=6641)
+        a = models.Brondocument.objects.get(pk=6641)
         self.assertEqual(a.documentnummer, 6641)
         self.assertEqual(a.documentnaam, 'BD00000149_WK00WK.pdf')
         self.assertEqual(a.bron.omschrijving, 'Burgemeester')
@@ -53,11 +52,11 @@ class ImportWkpbBrondocument(TestCase):
 
 class ImportBeperking(TestCase):
     def test_import(self):
-        wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
 
-        task = wkpb.ImportBeperkingTask(BEPERKINGEN)
+        task = batch.ImportBeperkingTask(BEPERKINGEN)
         task.execute()
 
         imported = models.Beperking.objects.all()
@@ -72,13 +71,13 @@ class ImportBeperking(TestCase):
 
 class ImportWkpbBepKad(TestCase):
     def test_import(self):
-        wkpb.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
-        wkpb.ImportBeperkingTask(BEPERKINGEN).execute()
+        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+        batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
+        batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+        batch.ImportBeperkingTask(BEPERKINGEN).execute()
         lki.ImportKadastraalObjectTask(KAD_LKI).execute()
 
-        task = wkpb.ImportWkpbBepKadTask(BEPERKINGEN)
+        task = batch.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
 
         bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')

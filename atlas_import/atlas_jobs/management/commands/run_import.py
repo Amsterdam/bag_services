@@ -1,13 +1,12 @@
 from django.core.management import BaseCommand
+
 import datasets.bag.batch
 import datasets.lki.batch
-
+import datasets.wkpb.batch
 from batch import batch
-from atlas_jobs import jobs
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
         parser.add_argument('--no-bag',
                             action='store_false',
@@ -38,7 +37,7 @@ class Command(BaseCommand):
             batch.execute(datasets.lki.batch.ImportKadasterJob())
 
         if options['run-wkpb']:
-            batch.execute(jobs.ImportWkpbJob())
+            batch.execute(datasets.wkpb.batch.ImportWkpbJob())
 
         if options['run-index']:
             batch.execute(datasets.bag.batch.IndexJob())

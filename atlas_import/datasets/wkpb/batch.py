@@ -1,10 +1,12 @@
 import csv
-import datetime
 import logging
 import os
+import datetime
 
-from atlas import models
-from datasets.lki import models as lki
+from django.conf import settings
+
+import datasets.lki.models as lki
+from . import models
 
 log = logging.getLogger(__name__)
 
@@ -43,11 +45,11 @@ class ImportWkpbBroncodeTask(object):
             rows = csv.reader(f, delimiter=';')
             objects = [self.process_row(r) for r in rows]
 
-        models.WkpbBroncode.objects.all().delete()
-        models.WkpbBroncode.objects.bulk_create(objects)
+        models.Broncode.objects.all().delete()
+        models.Broncode.objects.bulk_create(objects)
 
     def process_row(self, r):
-        return models.WkpbBroncode(
+        return models.Broncode(
             pk=r[0],
             omschrijving=r[1],
         )
@@ -63,15 +65,15 @@ class ImportWkpbBrondocumentTask(object):
 
     def execute(self):
         try:
-            self.cache = set(models.WkpbBroncode.objects.values_list('pk', flat=True))
+            self.cache = set(models.Broncode.objects.values_list('pk', flat=True))
 
             with open(self.source) as f:
                 rows = csv.reader(f, delimiter=';')
                 objects = (self.process_row(r) for r in rows)
                 object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
 
-            models.WkpbBrondocument.objects.all().delete()
-            models.WkpbBrondocument.objects.bulk_create(object_dict.values())
+            models.Brondocument.objects.all().delete()
+            models.Brondocument.objects.bulk_create(object_dict.values())
 
         finally:
             self.cache.clear()
@@ -83,7 +85,7 @@ class ImportWkpbBrondocumentTask(object):
             pers_afsch = True
 
         bron_id = r[2] if r[2] in self.cache else None
-        return models.WkpbBrondocument(
+        return models.Brondocument(
             pk=r[0],
             documentnummer=r[0],
             bron_id=bron_id,
@@ -180,3 +182,23 @@ class ImportWkpbBepKadTask(object):
             beperking_id=beperking_id,
             kadastraal_object_id=kadastraal_object_id
         )
+
+
+class ImportWkpbJob(object):
+    name = "atlas-import WKPB"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.beperkingen = os.path.join(diva, 'beperkingen')
+
+    def tasks(self):
+        return [
+            ImportBeperkingcodeTask(self.beperkingen),
+            ImportWkpbBroncodeTask(self.beperkingen),
+            ImportWkpbBrondocumentTask(self.beperkingen),
+            ImportBeperkingTask(self.beperkingen),
+            ImportWkpbBepKadTask(self.beperkingen),
+        ]

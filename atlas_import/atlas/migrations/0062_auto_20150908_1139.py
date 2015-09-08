@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('atlas', '0061_auto_20150907_1623'),
+        ('lki', '0001_initial')
     ]
 
     operations = [
