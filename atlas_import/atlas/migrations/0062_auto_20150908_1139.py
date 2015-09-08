@@ -21,6 +21,7 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='LkiSectie',
         ),
+        migrations.RunSQL('DELETE FROM atlas_beperkingkadastraalobject'),
         migrations.AlterField(
             model_name='beperkingkadastraalobject',
             name='kadastraal_object',
