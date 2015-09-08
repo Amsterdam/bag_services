@@ -4,7 +4,7 @@ import logging
 import os
 
 from atlas import models
-from atlas_jobs import batch
+from datasets.lki import models as lki
 
 log = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class ImportWkpbBepKadTask(object):
     def execute(self):
         try:
             self.beperkingen_cache = set(models.Beperking.objects.values_list('pk', flat=True))
-            self.lki_cache = dict(models.LkiKadastraalObject.objects.values_list('aanduiding', 'pk'))
+            self.lki_cache = dict(lki.KadastraalObject.objects.values_list('aanduiding', 'pk'))
 
             with open(self.source) as f:
                 rows = csv.reader(f, delimiter=';')

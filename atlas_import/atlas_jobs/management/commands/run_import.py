@@ -1,5 +1,6 @@
 from django.core.management import BaseCommand
 import datasets.bag.batch
+import datasets.lki.batch
 
 from batch import batch
 from atlas_jobs import jobs
@@ -34,7 +35,7 @@ class Command(BaseCommand):
             batch.execute(datasets.bag.batch.ImportBagJob())
 
         if options['run-kadaster']:
-            batch.execute(jobs.ImportKadasterJob())
+            batch.execute(datasets.lki.batch.ImportKadasterJob())
 
         if options['run-wkpb']:
             batch.execute(jobs.ImportWkpbJob())

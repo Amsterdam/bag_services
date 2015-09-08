@@ -3,28 +3,9 @@ import os
 
 from django.conf import settings
 
-from .batch import kadaster, wkpb, elastic
+from .batch import wkpb, elastic
 
 log = logging.getLogger(__name__)
-
-
-class ImportKadasterJob(object):
-    name = "atlas-import Kadaster"
-
-    def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
-
-        self.kadaster_lki = os.path.join(diva, 'kadaster', 'lki')
-
-    def tasks(self):
-        return [
-            kadaster.ImportLkiGemeenteTask(self.kadaster_lki),
-            kadaster.ImportLkiKadastraleGemeenteTask(self.kadaster_lki),
-            kadaster.ImportLkiSectieTask(self.kadaster_lki),
-            kadaster.ImportLkiKadastraalObjectTask(self.kadaster_lki),
-        ]
 
 
 class ImportWkpbJob(object):

@@ -1,29 +1,30 @@
 import os
+from django.conf import settings
 
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import GEOSGeometry
 
-from atlas import models
+from . import models
 
 
-class ImportLkiGemeenteTask(object):
-    name = "import LKI Gemeente"
+class ImportGemeenteTask(object):
+    name = "import Gemeente"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'LKI_Gemeente.shp')
 
     def execute(self):
-        models.LkiGemeente.objects.all().delete()
+        models.Gemeente.objects.all().delete()
 
         ds = DataSource(self.source)
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
-        models.LkiGemeente.objects.bulk_create(objects)
+        models.Gemeente.objects.bulk_create(objects)
 
     def process_feature(self, feat):
-        return models.LkiGemeente(
+        return models.Gemeente(
             pk=feat.get('DIVA_ID'),
             gemeentecode=feat.get('GEM_CODE'),
             gemeentenaam=feat.get('GEM_NAAM'),
@@ -31,8 +32,8 @@ class ImportLkiGemeenteTask(object):
         )
 
 
-class ImportLkiKadastraleGemeenteTask(object):
-    name = "import LKI Kadastrale gemeente"
+class ImportKadastraleGemeenteTask(object):
+    name = "import Kadastrale gemeente"
 
     def __init__(self, source_path):
         super().__init__()
@@ -43,8 +44,8 @@ class ImportLkiKadastraleGemeenteTask(object):
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
-        models.LkiKadastraleGemeente.objects.all().delete()
-        models.LkiKadastraleGemeente.objects.bulk_create(objects)
+        models.KadastraleGemeente.objects.all().delete()
+        models.KadastraleGemeente.objects.bulk_create(objects)
 
     def process_feature(self, feat):
         wkt = feat.geom.wkt
@@ -54,7 +55,7 @@ class ImportLkiKadastraleGemeenteTask(object):
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
 
-        return models.LkiKadastraleGemeente(
+        return models.KadastraleGemeente(
             pk=(feat.get('DIVA_ID')),
             code=feat.get('KAD_GEM'),
             ingang_cyclus=feat.get('INGANG_CYC'),
@@ -62,8 +63,8 @@ class ImportLkiKadastraleGemeenteTask(object):
         )
 
 
-class ImportLkiSectieTask(object):
-    name = "import LKI Sectie"
+class ImportSectieTask(object):
+    name = "import Sectie"
 
     def __init__(self, source_path):
         super().__init__()
@@ -74,8 +75,8 @@ class ImportLkiSectieTask(object):
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
-        models.LkiSectie.objects.all().delete()
-        models.LkiSectie.objects.bulk_create(objects)
+        models.Sectie.objects.all().delete()
+        models.Sectie.objects.bulk_create(objects)
 
     def process_feature(self, feat):
         wkt = feat.geom.wkt
@@ -85,7 +86,7 @@ class ImportLkiSectieTask(object):
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
 
-        return models.LkiSectie(
+        return models.Sectie(
             pk=feat.get('DIVA_ID'),
             kadastrale_gemeente_code=feat.get('KAD_GEM'),
             code=feat.get('SECTIE'),
@@ -94,8 +95,8 @@ class ImportLkiSectieTask(object):
         )
 
 
-class ImportLkiKadastraalObjectTask(object):
-    name = "import LKI Kadastraal Object"
+class ImportKadastraalObjectTask(object):
+    name = "import Kadastraal Object"
 
     def __init__(self, source_path):
         super().__init__()
@@ -109,8 +110,8 @@ class ImportLkiKadastraalObjectTask(object):
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
-        models.LkiKadastraalObject.objects.all().delete()
-        models.LkiKadastraalObject.objects.bulk_create(objects)
+        models.KadastraalObject.objects.all().delete()
+        models.KadastraalObject.objects.bulk_create(objects)
 
     def process_feature(self, feat):
 
@@ -120,7 +121,7 @@ class ImportLkiKadastraalObjectTask(object):
             wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
             wkt += ')'
 
-        return models.LkiKadastraalObject(
+        return models.KadastraalObject(
             pk=feat.get('DIVA_ID'),
             kadastrale_gemeente_code=feat.get('KAD_GEM'),
             sectie_code=feat.get('SECTIE'),
@@ -133,3 +134,22 @@ class ImportLkiKadastraalObjectTask(object):
                                                       feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
             geometrie=GEOSGeometry(wkt)
         )
+
+
+class ImportKadasterJob(object):
+    name = "atlas-import Kadaster"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.kadaster_lki = os.path.join(diva, 'kadaster', 'lki')
+
+    def tasks(self):
+        return [
+            ImportGemeenteTask(self.kadaster_lki),
+            ImportKadastraleGemeenteTask(self.kadaster_lki),
+            ImportSectieTask(self.kadaster_lki),
+            ImportKadastraalObjectTask(self.kadaster_lki),
+        ]

@@ -2,8 +2,7 @@ import datetime
 
 from django.test import TestCase
 
-from atlas import models
-from atlas_jobs.batch import kadaster
+from .. import models, batch
 
 KAD_LKI = 'diva/kadaster/lki'
 KAD_AKR = 'diva/kadaster/akr'
@@ -11,46 +10,46 @@ KAD_AKR = 'diva/kadaster/akr'
 
 # Kadaster
 
-class ImportLkiGemeente(TestCase):
+class ImportGemeente(TestCase):
     def test_import(self):
-        task = kadaster.ImportLkiGemeenteTask(KAD_LKI)
+        task = batch.ImportGemeenteTask(KAD_LKI)
         task.execute()
 
-        g = models.LkiGemeente.objects.get(pk=3630010602635)
+        g = models.Gemeente.objects.get(pk=3630010602635)
         self.assertEqual(g.gemeentenaam, 'AMSTERDAM')
         self.assertEqual(g.gemeentecode, 363)
         self.assertEqual(g.geometrie.area, 219491741.99025947)
 
 
-class ImportLkiKadastraleGemeente(TestCase):
+class ImportKadastraleGemeente(TestCase):
     def test_import(self):
-        task = kadaster.ImportLkiKadastraleGemeenteTask(KAD_LKI)
+        task = batch.ImportKadastraleGemeenteTask(KAD_LKI)
         task.execute()
 
-        g = models.LkiKadastraleGemeente.objects.get(pk=3630010602590)
+        g = models.KadastraleGemeente.objects.get(pk=3630010602590)
         self.assertEqual(g.code, 'ASD06')
         self.assertEqual(g.ingang_cyclus, datetime.date(2008, 12, 2))
         self.assertEqual(g.geometrie.area, 1278700.9685260097)
 
 
-class ImportLkiSectie(TestCase):
+class ImportSectie(TestCase):
     def test_import(self):
-        task = kadaster.ImportLkiSectieTask(KAD_LKI)
+        task = batch.ImportSectieTask(KAD_LKI)
         task.execute()
 
-        s = models.LkiSectie.objects.get(pk=3630010602661)
+        s = models.Sectie.objects.get(pk=3630010602661)
         self.assertEqual(s.kadastrale_gemeente_code, 'RDP00')
         self.assertEqual(s.code, 'C')
         self.assertEqual(s.ingang_cyclus, datetime.date(2008, 12, 2))
         self.assertEqual(s.geometrie.area, 869579.8324124987)
 
 
-class ImportLkiKadastraalObject(TestCase):
+class ImportKadastraalObject(TestCase):
     def test_import(self):
-        task = kadaster.ImportLkiKadastraalObjectTask(KAD_LKI)
+        task = batch.ImportKadastraalObjectTask(KAD_LKI)
         task.execute()
 
-        o = models.LkiKadastraalObject.objects.get(pk=3630010603206)
+        o = models.KadastraalObject.objects.get(pk=3630010603206)
         self.assertEqual(o.kadastrale_gemeente_code, 'STN02')
         self.assertEqual(o.sectie_code, 'G')
         self.assertEqual(o.perceelnummer, 1478)

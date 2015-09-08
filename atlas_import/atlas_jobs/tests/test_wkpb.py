@@ -3,7 +3,8 @@ import datetime
 from django.test import TestCase
 
 from atlas import models
-from atlas_jobs.batch import wkpb, kadaster
+from atlas_jobs.batch import wkpb
+from datasets.lki import batch as lki
 
 BEPERKINGEN = 'diva/beperkingen'
 KAD_LKI = 'diva/kadaster/lki'
@@ -75,7 +76,7 @@ class ImportWkpbBepKad(TestCase):
         wkpb.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
         wkpb.ImportBeperkingcodeTask(BEPERKINGEN).execute()
         wkpb.ImportBeperkingTask(BEPERKINGEN).execute()
-        kadaster.ImportLkiKadastraalObjectTask(KAD_LKI).execute()
+        lki.ImportKadastraalObjectTask(KAD_LKI).execute()
 
         task = wkpb.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
