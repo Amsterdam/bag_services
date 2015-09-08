@@ -41,4 +41,4 @@ class Command(BaseCommand):
             batch.execute(jobs.ImportWkpbJob())
 
         if options['run-index']:
-            batch.execute(jobs.IndexJob())
+            batch.execute(datasets.bag.batch.IndexJob())

@@ -3,7 +3,7 @@ import os
 
 from django.conf import settings
 
-from .batch import wkpb, elastic
+from .batch import wkpb
 
 log = logging.getLogger(__name__)
 
@@ -28,12 +28,3 @@ class ImportWkpbJob(object):
         ]
 
 
-class IndexJob(object):
-    name = "atlas-index"
-
-    def tasks(self):
-        return [
-            elastic.ImportELLigplaatsTask(),
-            elastic.ImportELStandplaatsTask(),
-            elastic.ImportELVerblijfsobjectTask(),
-        ]
