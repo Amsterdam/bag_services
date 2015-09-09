@@ -637,7 +637,10 @@ class DeleteELIndexTask(object):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
 
     def execute(self):
-        Index('bag').delete(ignore=404)
+        try:
+            Index('bag').delete(ignore=404)
+        except AttributeError:
+            log.warning("Could not delete index 'bag', ignoring")
 
 
 class ImportELLigplaatsTask(object):
