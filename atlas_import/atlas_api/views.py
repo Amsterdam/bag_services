@@ -69,3 +69,33 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         autocomplete = Autocomplete(data=data)
         return Response(autocomplete.initial_data)
+
+
+class SearchViewSet(viewsets.ViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all object that match the elastic search query.
+    """
+
+    metadata_class = TypeaheadMetadata
+
+    def list(self, request, *args, **kwargs):
+        if 'q' not in request.QUERY_PARAMS:
+            return Response([])
+
+        query = request.QUERY_PARAMS['q']
+
+        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+        result = Search(client).index('bag').query("query_string", query=query).execute()
+
+        return Response(dict(
+            total=result.hits.total,
+            hits=[self.normalize_hit(h, request) for h in result.hits],
+        ))
+
+    def normalize_hit(self, hit, request):
+        result = hit.to_dict()
+        result['type'] = hit.meta.doc_type
+        result['dataset'] = hit.meta.index
+        result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
+        return result
+

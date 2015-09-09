@@ -9,7 +9,7 @@ class Ligplaats(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'atlas'
+        index = 'bag'
 
 class Standplaats(es.DocType):
     type = es.String()
@@ -18,7 +18,7 @@ class Standplaats(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'atlas'
+        index = 'bag'
 
 class Verblijfsobject(es.DocType):
     type = es.String()
@@ -31,7 +31,7 @@ class Verblijfsobject(es.DocType):
     oppervlakte = es.Integer()
 
     class Meta:
-        index = 'atlas'
+        index = 'bag'
 
 
 def get_centroid(geom):

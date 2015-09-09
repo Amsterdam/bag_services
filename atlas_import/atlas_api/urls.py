@@ -33,6 +33,7 @@ router.register(r'bag/nummeraanduidingen', datasets.bag.views.NummeraanduidingVi
 router.register(r'bag/panden', datasets.bag.views.PandViewSet)
 
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
+router.register(r'search', views.SearchViewSet, base_name='search')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

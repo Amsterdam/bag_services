@@ -1,3 +1,4 @@
+from _ast import Index
 from collections import OrderedDict
 import csv
 import logging
@@ -629,6 +630,16 @@ class ImportPndGeoTask(AbstractWktTask):
         ))
 
 
+class DeleteELIndexTask(object):
+    name = "EL: remove index"
+
+    def __init__(self):
+        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+
+    def execute(self):
+        Index('bag').delete(ignore=404)
+
+
 class ImportELLigplaatsTask(object):
     name = "EL: import ligplaatsen"
 
@@ -724,6 +735,7 @@ class IndexJob(object):
 
     def tasks(self):
         return [
+            DeleteELIndexTask(),
             ImportELLigplaatsTask(),
             ImportELStandplaatsTask(),
             ImportELVerblijfsobjectTask(),
