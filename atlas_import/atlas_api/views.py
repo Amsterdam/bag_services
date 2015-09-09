@@ -86,7 +86,7 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.QUERY_PARAMS['q']
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        result = Search(client).index('bag').query("query_string", query=query).execute()
+        result = Search(client).index('bag').query("query_string", query=query)[0:100].execute()
 
         res = OrderedDict()
         res['total'] = result.hits.total
@@ -100,6 +100,6 @@ class SearchViewSet(viewsets.ViewSet):
         result['dataset'] = hit.meta.index
         result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
-        
+
         return result
 
