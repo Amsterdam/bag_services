@@ -1,4 +1,5 @@
 # Create your views here.
+from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
@@ -87,15 +88,18 @@ class SearchViewSet(viewsets.ViewSet):
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         result = Search(client).index('bag').query("query_string", query=query).execute()
 
-        return Response(dict(
-            total=result.hits.total,
-            hits=[self.normalize_hit(h, request) for h in result.hits],
-        ))
+        res = OrderedDict()
+        res['total'] = result.hits.total
+        res['hits'] = [self.normalize_hit(h, request) for h in result.hits]
+
+        return Response(res)
 
     def normalize_hit(self, hit, request):
-        result = hit.to_dict()
+        result = OrderedDict()
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
         result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
+        result.update(hit.to_dict())
+        
         return result
 
