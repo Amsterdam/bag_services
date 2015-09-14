@@ -29,6 +29,7 @@ router = DocumentedRouter()
 router.register(r'bag/ligplaatsen', datasets.bag.views.LigplaatsViewSet)
 router.register(r'bag/standplaatsen', datasets.bag.views.StandplaatsViewSet)
 router.register(r'bag/verblijfsobjecten', datasets.bag.views.VerblijfsobjectViewSet)
+router.register(r'bag/openbareruimtes', datasets.bag.views.OpenbareRuimteViewSet)
 router.register(r'bag/nummeraanduidingen', datasets.bag.views.NummeraanduidingViewSet)
 router.register(r'bag/panden', datasets.bag.views.PandViewSet)
 

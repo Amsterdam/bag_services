@@ -84,3 +84,23 @@ class PandViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
     serializer_class = serializers.Pand
+
+
+class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een OPENBARE RUIMTE is een door het [bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam
+    voorziene buitenruimte](http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
+    die binnen één woonplaats is gelegen.
+
+    Als openbare ruimte worden onder meer aangemerkt weg, water, terrein, spoorbaan en landschappelijk gebied.
+
+    Bron: [Catalogus BAG (ministerie van VROM, 2009)](http://www.kadaster.nl/web/artikel/download/BAG-grondslagen-catalogus.htm).
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.OpenbareRuimte.objects.all()
+    serializer_class = serializers.OpenbareRuimte
+
+

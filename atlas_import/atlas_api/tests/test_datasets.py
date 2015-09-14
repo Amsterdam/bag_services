@@ -12,6 +12,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/verblijfsobjecten',
         'bag/panden',
         'bag/nummeraanduidingen',
+        'bag/openbareruimtes',
     ]
 
     fixtures = ['dataset.json']

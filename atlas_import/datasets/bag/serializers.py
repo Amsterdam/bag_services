@@ -105,7 +105,7 @@ class Woonplaats(serializers.ModelSerializer):
         )
 
 
-class OpenbareRuimte(serializers.ModelSerializer):
+class OpenbareRuimte(serializers.HyperlinkedModelSerializer):
     status = Status()
     type = serializers.CharField(source='get_type_display')
     woonplaats = Woonplaats()
@@ -115,6 +115,7 @@ class OpenbareRuimte(serializers.ModelSerializer):
         fields = (
             'id',
             'code',
+            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
