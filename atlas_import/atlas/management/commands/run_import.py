@@ -1,6 +1,7 @@
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
+import datasets.akr.batch
 import datasets.lki.batch
 import datasets.wkpb.batch
 from batch import batch
@@ -34,6 +35,7 @@ class Command(BaseCommand):
             batch.execute(datasets.bag.batch.ImportBagJob())
 
         if options['run-kadaster']:
+            batch.execute(datasets.akr.batch.ImportKadasterJob())
             batch.execute(datasets.lki.batch.ImportKadasterJob())
 
         if options['run-wkpb']:

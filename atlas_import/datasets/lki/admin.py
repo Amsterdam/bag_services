@@ -1,34 +1,22 @@
 from django.contrib import admin
 
 from . import models
+from datasets.generic import admin_mixins
 
 
-class ReadOnlyAdmin(admin.ModelAdmin):
-    readonly_fields = []
-
-    def get_readonly_fields(self, request, obj=None):
-        return list(self.readonly_fields) + [field.name for field in obj._meta.fields]
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
-class GemeenteAdmin(ReadOnlyAdmin):
+class GemeenteAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('gemeentecode', 'gemeentenaam')
 
 
-class KadastraleGemeenteAdmin(ReadOnlyAdmin):
+class KadastraleGemeenteAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'code',)
 
 
-class KadastraalObjectAdmin(ReadOnlyAdmin):
+class KadastraalObjectAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'aanduiding')
 
 
-class SectieAdmin(ReadOnlyAdmin):
+class SectieAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'code')
 
 

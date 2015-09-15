@@ -1,62 +1,50 @@
 from django.contrib import admin
 
 from . import models
+from datasets.generic import admin_mixins
 
 
-class ReadOnlyAdmin(admin.ModelAdmin):
-    readonly_fields = []
-
-    def get_readonly_fields(self, request, obj=None):
-        return list(self.readonly_fields) + [field.name for field in obj._meta.fields]
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
-class CodeOmschrijvingAdmin(ReadOnlyAdmin):
+class CodeOmschrijvingAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('code', 'omschrijving')
 
 
-class BuurtAdmin(ReadOnlyAdmin):
+class BuurtAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'code', 'naam', 'stadsdeel')
 
 
-class GemeenteAdmin(ReadOnlyAdmin):
+class GemeenteAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'code', 'naam')
 
 
-class LigplaatsAdmin(ReadOnlyAdmin):
+class LigplaatsAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'buurt', 'status')
 
 
-class NummeraanduidingAdmin(ReadOnlyAdmin):
+class NummeraanduidingAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'adres', 'type', 'status')
 
 
-class OpenbareRuimteAdmin(ReadOnlyAdmin):
+class OpenbareRuimteAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'code', 'naam', 'type', 'status')
 
 
-class PandAdmin(ReadOnlyAdmin):
+class PandAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'bouwjaar', 'status')
 
 
-class StadsdeelAdmin(ReadOnlyAdmin):
+class StadsdeelAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('code', 'naam')
 
 
-class StandplaatsAdmin(ReadOnlyAdmin):
+class StandplaatsAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'buurt', 'status')
 
 
-class VerblijfsobjectAdmin(ReadOnlyAdmin):
+class VerblijfsobjectAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('id', 'buurt', 'status', 'gebruiksdoel_omschrijving')
 
 
-class WoonplaatsAdmin(ReadOnlyAdmin):
+class WoonplaatsAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('code', 'naam')
 
 # Register your models here.
