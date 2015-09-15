@@ -2,13 +2,10 @@
 from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, A, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-
-from atlas_api.serializers import Autocomplete
-
 
 def _get_url(request, doc_type, id):
     if doc_type == "ligplaats":
@@ -23,7 +20,7 @@ def _get_url(request, doc_type, id):
     return None
 
 
-class TypeaheadMetadata(metadata.SimpleMetadata):
+class QueryMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
@@ -42,34 +39,26 @@ class TypeaheadViewSet(viewsets.ViewSet):
     specified query.
     """
 
-    metadata_class = TypeaheadMetadata
+    metadata_class = QueryMetadata
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.QUERY_PARAMS:
             return Response([])
 
         query = request.QUERY_PARAMS['q']
+        query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         s = Search(client)
-        for part in query.split():
-            s = s.query("match_phrase_prefix", _all=part)
-        result = s.index("atlas").execute()
+        s = s.query(
+            Q("prefix", naam={'value': query, 'boost': 2})
+            | Q("wildcard", naam={'value': '*{}*'.format(query)}))
+        s = s[:5]
 
-        data = [dict(
-            id=h.meta.id,
-            url=_get_url(request, h.meta.doc_type, h.meta.id),
-            type=h.meta.doc_type,
-            adres=h.get('adres'),
-            postcode=h.get('postcode'),
-            oppervlakte=h.get('oppervlakte'),
-            kamers=h.get('kamers'),
-            bestemming=h.get('bestemming'),
-            centroid=h.get('centroid'),
-        ) for h in result]
+        result = s.index("bag").execute()
 
-        autocomplete = Autocomplete(data=data)
-        return Response(autocomplete.initial_data)
+        data = [h.get('naam') for h in result]
+        return Response(data)
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -77,7 +66,7 @@ class SearchViewSet(viewsets.ViewSet):
     Given a query parameter `q`, this function returns a subset of all object that match the elastic search query.
     """
 
-    metadata_class = TypeaheadMetadata
+    metadata_class = QueryMetadata
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.QUERY_PARAMS:

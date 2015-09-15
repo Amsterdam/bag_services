@@ -2,17 +2,20 @@ import elasticsearch_dsl as es
 
 from . import models
 
+
+adres_analyzer = es.analyzer('adres', tokenizer='keyword', filter=['standard', 'lowercase', 'asciifolding'])
+
+
 class Ligplaats(es.DocType):
-    type = es.String()
     adres = es.String()
     postcode = es.String()
     centroid = es.GeoPoint()
 
     class Meta:
         index = 'bag'
+
 
 class Standplaats(es.DocType):
-    type = es.String()
     adres = es.String()
     postcode = es.String()
     centroid = es.GeoPoint()
@@ -20,8 +23,8 @@ class Standplaats(es.DocType):
     class Meta:
         index = 'bag'
 
+
 class Verblijfsobject(es.DocType):
-    type = es.String()
     adres = es.String()
     postcode = es.String()
     centroid = es.GeoPoint()
@@ -29,6 +32,13 @@ class Verblijfsobject(es.DocType):
     bestemming = es.String()
     kamers = es.Integer()
     oppervlakte = es.Integer()
+
+    class Meta:
+        index = 'bag'
+
+
+class OpenbareRuimte(es.DocType):
+    naam = es.String(analyzer=adres_analyzer)
 
     class Meta:
         index = 'bag'
@@ -73,5 +83,12 @@ def from_verblijfsobject(v: models.Verblijfsobject):
     d.bestemming = v.gebruiksdoel_omschrijving
     d.kamers = v.aantal_kamers
     d.oppervlakte = v.oppervlakte
+
+    return d
+
+
+def from_openbare_ruimte(o: models.OpenbareRuimte):
+    d = OpenbareRuimte(_id=o.id)
+    d.naam = o.naam
 
     return d

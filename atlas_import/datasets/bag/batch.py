@@ -1,4 +1,3 @@
-from _ast import Index
 from collections import OrderedDict
 import csv
 import logging
@@ -6,6 +5,7 @@ import os
 
 from django.conf import settings
 from django.contrib.gis.geos import Point, GEOSGeometry
+from elasticsearch_dsl import Index
 from elasticsearch_dsl.connections import connections
 
 from . import models, uva2, documents
@@ -637,8 +637,11 @@ class DeleteELIndexTask(object):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
 
     def execute(self):
+        idx = Index('bag')
+
         try:
-            Index('bag').delete(ignore=404)
+            idx.delete(ignore=404)
+            log.info("Deleted index bag")
         except AttributeError:
             log.warning("Could not delete index 'bag', ignoring")
 
@@ -646,11 +649,10 @@ class DeleteELIndexTask(object):
 class ImportELLigplaatsTask(object):
     name = "EL: import ligplaatsen"
 
-    def __init__(self):
+    def execute(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
         documents.Ligplaats.init()
 
-    def execute(self):
         for l in models.Ligplaats.objects.all():
             doc = documents.from_ligplaats(l)
             doc.save()
@@ -659,11 +661,10 @@ class ImportELLigplaatsTask(object):
 class ImportELStandplaatsTask(object):
     name = "EL: import standplaatsen"
 
-    def __init__(self):
+    def execute(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
         documents.Standplaats.init()
 
-    def execute(self):
         for s in models.Standplaats.objects.all():
             doc = documents.from_standplaats(s)
             doc.save()
@@ -672,13 +673,24 @@ class ImportELStandplaatsTask(object):
 class ImportELVerblijfsobjectTask(object):
     name = "EL: import verblijfsobjecten"
 
-    def __init__(self):
+    def execute(self):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
         documents.Verblijfsobject.init()
 
-    def execute(self):
         for v in models.Verblijfsobject.objects.all():
             doc = documents.from_verblijfsobject(v)
+            doc.save()
+
+
+class ImportELOpenbareRuimteTask(object):
+    name = "EL: import openbare ruimtes"
+
+    def execute(self):
+        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        documents.OpenbareRuimte.init()
+
+        for o in models.OpenbareRuimte.objects.all():
+            doc = documents.from_openbare_ruimte(o)
             doc.save()
 
 
@@ -739,6 +751,7 @@ class IndexJob(object):
     def tasks(self):
         return [
             DeleteELIndexTask(),
+            ImportELOpenbareRuimteTask(),
             ImportELLigplaatsTask(),
             ImportELStandplaatsTask(),
             ImportELVerblijfsobjectTask(),
