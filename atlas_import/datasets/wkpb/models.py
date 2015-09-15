@@ -1,28 +1,11 @@
 from django.db import models
+from datasets.generic import mixins
 from datasets.lki.models import KadastraalObject
-
-
-class ImportStatusMixin(models.Model):
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
-class CodeOmschrijvingMixin(models.Model):
-    code = models.CharField(max_length=4, primary_key=True)
-    omschrijving = models.CharField(max_length=150, null=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return "{}: {}".format(self.code, self.omschrijving)
 
 
 # Wkpb
 
-class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     """
     Kadastrale code voor de type beperking.
     """
@@ -32,7 +15,7 @@ class Beperkingcode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Beperkingcodes"
 
 
-class Broncode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     """
     Het orgaan dat de beperking heeft opgelegd.
     """
@@ -42,7 +25,7 @@ class Broncode(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Broncodes"
 
 
-class Brondocument(ImportStatusMixin, models.Model):
+class Brondocument(mixins.ImportStatusMixin, models.Model):
     """
     Het document dat aan de beperking ten grondslag ligt.
     """
@@ -62,7 +45,7 @@ class Brondocument(ImportStatusMixin, models.Model):
         return "{}".format(self.documentnummer)
 
 
-class Beperking(ImportStatusMixin, models.Model):
+class Beperking(mixins.ImportStatusMixin, models.Model):
     """
     Beperking van de eigendom, zoals door een publiekrechtelijke beperking als beschermd monument of een
     aanschrijving op
@@ -85,7 +68,7 @@ class Beperking(ImportStatusMixin, models.Model):
         return "Beperking({})".format(self.id)
 
 
-class BeperkingKadastraalObject(ImportStatusMixin, models.Model):
+class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     """
     n:n-relaties: Beperking <> KadastraalObject
     """

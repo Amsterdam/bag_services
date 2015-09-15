@@ -1,88 +1,64 @@
 from django.contrib.gis.db import models as geo
 from django.db import models
 
-
-class ImportStatusMixin(models.Model):
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
+from datasets.generic import mixins
 
 
-class DocumentStatusMixin(models.Model):
-    document_mutatie = models.DateField(null=True)
-    document_nummer = models.CharField(max_length=20, null=True)
-
-    class Meta:
-        abstract = True
-
-
-class CodeOmschrijvingMixin(models.Model):
-    code = models.CharField(max_length=4, primary_key=True)
-    omschrijving = models.CharField(max_length=150, null=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return "{}: {}".format(self.code, self.omschrijving)
-
-
-class Bron(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Bron(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Bron"
         verbose_name_plural = "Bronnen"
 
 
-class Status(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Status(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Status"
         verbose_name_plural = "Status"
 
 
-class RedenAfvoer(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class RedenAfvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Reden Afvoer"
         verbose_name_plural = "Reden Afvoer"
 
 
-class Eigendomsverhouding(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Eigendomsverhouding(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Eigendomsverhouding"
         verbose_name_plural = "Eigendomsverhoudingen"
 
 
-class Financieringswijze(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Financieringswijze(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Financieringswijze"
         verbose_name_plural = "Financieringswijzes"
 
 
-class Ligging(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Ligging(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Ligging"
         verbose_name_plural = "Ligging"
 
 
-class Gebruik(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Gebruik(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Gebruik"
         verbose_name_plural = "Gebruik"
 
 
-class LocatieIngang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class LocatieIngang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Locatie Ingang"
         verbose_name_plural = "Locaties Ingang"
 
 
-class Toegang(ImportStatusMixin, CodeOmschrijvingMixin, models.Model):
+class Toegang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Toegang"
         verbose_name_plural = "Toegang"
 
 
-class Gemeente(ImportStatusMixin, models.Model):
+class Gemeente(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
@@ -97,7 +73,7 @@ class Gemeente(ImportStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class Woonplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
@@ -113,7 +89,7 @@ class Woonplaats(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class Stadsdeel(ImportStatusMixin, models.Model):
+class Stadsdeel(mixins.ImportStatusMixin, models.Model):
     """
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
@@ -133,7 +109,7 @@ class Stadsdeel(ImportStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class Buurt(ImportStatusMixin, models.Model):
+class Buurt(mixins.ImportStatusMixin, models.Model):
     """
     Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
     elementen.
@@ -154,7 +130,7 @@ class Buurt(ImportStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class OpenbareRuimte(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     """
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorziene
     buitenruimte die binnen één woonplaats is gelegen.
@@ -201,7 +177,7 @@ class OpenbareRuimte(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class Nummeraanduiding(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     """
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
     zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
@@ -264,7 +240,7 @@ class AdresseerbaarObjectMixin(object):
         return candidates[0] if candidates else None
 
 
-class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
@@ -292,7 +268,7 @@ class Ligplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, Adresseerb
         return "{}".format(self.id)
 
 
-class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
     dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
@@ -319,7 +295,7 @@ class Standplaats(ImportStatusMixin, DocumentStatusMixin, models.Model, Adressee
         return "{}".format(self.id)
 
 
-class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
@@ -368,7 +344,7 @@ class Verblijfsobject(ImportStatusMixin, DocumentStatusMixin, models.Model, Adre
         return "{}".format(self.id)
 
 
-class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
+class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     """
     Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die direct
     en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
@@ -397,7 +373,7 @@ class Pand(ImportStatusMixin, DocumentStatusMixin, models.Model):
         return "{}".format(self.id)
 
 
-class VerblijfsobjectPandRelatie(ImportStatusMixin, models.Model):
+class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=29, primary_key=True)
     pand = models.ForeignKey(Pand)
     verblijfsobject = models.ForeignKey(Verblijfsobject)

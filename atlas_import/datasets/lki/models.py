@@ -1,15 +1,9 @@
 from django.db import models
 from django.contrib.gis.db import models as geo
+from datasets.generic import mixins
 
 
-class ImportStatusMixin(models.Model):
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
-class Gemeente(ImportStatusMixin, models.Model):
+class Gemeente(mixins.ImportStatusMixin, models.Model):
     """
     Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
     de Grondwet.
@@ -32,7 +26,7 @@ class Gemeente(ImportStatusMixin, models.Model):
         return "{}: {}".format(self.gemeentecode, self.gemeentenaam)
 
 
-class KadastraleGemeente(ImportStatusMixin, models.Model):
+class KadastraleGemeente(mixins.ImportStatusMixin, models.Model):
     """
     De kadastrale gemeente is het eerste gedeelte van de aanduiding van een kadastraal perceel.  
     
@@ -54,7 +48,7 @@ class KadastraleGemeente(ImportStatusMixin, models.Model):
         return "{}".format(self.code)
 
 
-class Sectie(ImportStatusMixin, models.Model):
+class Sectie(mixins.ImportStatusMixin, models.Model):
     """
     Een sectie is een onderdeel van een kadastrale gemeente en als zodanig een onderdeel van de
     kadastrale aanduiding waarbinnen uniek genummerde percelen zijn gelegen.  
@@ -79,7 +73,7 @@ class Sectie(ImportStatusMixin, models.Model):
         return "{}".format(self.code)
 
 
-class KadastraalObject(ImportStatusMixin, models.Model):
+class KadastraalObject(mixins.ImportStatusMixin, models.Model):
     """
     Een kadastraal object een onroerende zaak of een appartementsrecht waarvoor bij overdracht
     of vestiging van rechten inschrijving in de openbare registers van het Kadaster is vereist.   
