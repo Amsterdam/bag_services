@@ -1,4 +1,5 @@
 from rest_framework.test import APITestCase
+import time
 import datasets.bag.batch
 from batch import batch
 
@@ -11,6 +12,7 @@ class QueryTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         batch.execute(datasets.bag.batch.IndexJob())
+        time.sleep(1)   # this is stupid
 
     def test_non_matching_query(self):
         response = self.client.get('/api/search/', dict(q="anjel"))
@@ -24,5 +26,5 @@ class QueryTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('hits', response.data)
         self.assertIn('total', response.data)
-        self.assertEqual(response.data['total'], 4)
+        self.assertEqual(response.data['total'], 5)
 

@@ -1,11 +1,13 @@
 # Create your views here.
 from collections import OrderedDict
+
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, A, Q
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+
 
 def _get_url(request, doc_type, id):
     if doc_type == "ligplaats":
@@ -16,6 +18,9 @@ def _get_url(request, doc_type, id):
 
     if doc_type == "verblijfsobject":
         return reverse('verblijfsobject-detail', args=(id,), request=request)
+
+    if doc_type == "openbare_ruimte":
+        return reverse('openbareruimte-detail', args=(id,), request=request)
 
     return None
 
@@ -75,7 +80,8 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.QUERY_PARAMS['q']
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        result = Search(client).index('bag').query("query_string", query=query)[0:100].execute()
+        search = Search(client).index('bag').query("query_string", query=query)[0:100]
+        result = search.execute()
 
         res = OrderedDict()
         res['total'] = result.hits.total
@@ -91,4 +97,3 @@ class SearchViewSet(viewsets.ViewSet):
         result.update(hit.to_dict())
 
         return result
-
