@@ -3,6 +3,8 @@ import csv
 import datetime
 import os
 
+from datasets.generic.cache import AbstractCacheBasedTask
+
 __author__ = 'yigalduppen'
 
 
@@ -77,8 +79,28 @@ def geldige_relatie(row, relatie):
     return uva_geldig(row['{}/TijdvakRelatie/begindatumRelatie'.format(relatie)],
                       row['{}/TijdvakRelatie/einddatumRelatie'.format(relatie)])
 
+
 def geldige_relaties(row, *relaties):
     for relatie in relaties:
         if not geldige_relatie(row, relatie):
             return False
     return True
+
+
+class AbstractUvaTask(AbstractCacheBasedTask):
+    """
+    Basic task for processing UVA2 files
+    """
+    code = ""
+
+    def __init__(self, source, cache):
+        super().__init__(cache)
+        self.source = resolve_file(source, self.code)
+
+    def execute(self):
+        with uva_reader(self.source) as rows:
+            for r in rows:
+                self.process_row(r)
+
+    def process_row(self, r):
+        raise NotImplementedError()

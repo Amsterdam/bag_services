@@ -1,140 +1,22 @@
-from collections import OrderedDict
 import csv
 import logging
 import os
 
 from django.conf import settings
+
 from django.contrib.gis.geos import Point, GEOSGeometry
+
 from elasticsearch_dsl import Index
+
 from elasticsearch_dsl.connections import connections
 
-from . import models, uva2, documents
+from datasets.generic import uva2, cache
+from . import models, documents
 
 log = logging.getLogger(__name__)
 
 
-class Cache(object):
-    """
-    In-memory cache for all bag-data.
-    """
-
-    def __init__(self):
-        self.cache = OrderedDict()
-
-    def clear(self):
-        """
-        Clears the cache.
-        """
-        self.cache.clear()
-
-    def put(self, obj):
-        """
-        Adds an object to the cache.
-        """
-        model = type(obj)
-        pk = obj.pk
-        self.cache.setdefault(model, dict())[pk] = obj
-
-    def models(self):
-        """
-        Returns all the models that have been added to the cache in the order in which they were first added.
-        """
-        return list(self.cache.keys())
-
-    def objects(self, model):
-        """
-        Returns all objects stored for a specific model.
-        """
-        return list(self.cache[model].values())
-
-    def get(self, model, pk):
-        """
-        Returns the object with the specified PK, or None
-        """
-        return self.cache.get(model, dict()).get(pk)
-
-
-bag_cache = Cache()
-
-
-class AbstractCacheBasedTask(object):
-    def execute(self):
-        raise NotImplementedError()
-
-    def create(self, obj):
-        bag_cache.put(obj)
-
-    def foreign_key_id(self, model, model_id):
-        obj = bag_cache.get(model, model_id)
-        if not obj:
-            return None
-
-        return obj.pk
-
-    def get(self, model, pk):
-        return bag_cache.get(model, pk)
-
-    def merge_existing(self, model, pk, values):
-        obj = bag_cache.get(model, pk)
-        if not obj:
-            return
-
-        for key, value in values.items():
-            setattr(obj, key, value)
-
-        bag_cache.put(obj)
-
-
-class FlushCacheTask(object):
-    """
-     1. Remove all data from the database
-     2. Use batch-insert to insert all data into the database
-     3. Clear the cache
-    """
-    name = "Flush data to database"
-    chunk_size = 500
-
-    def execute(self):
-        global bag_cache
-        stored_models = bag_cache.models()
-
-        # drop all data
-        for model in reversed(stored_models):
-            log.info("Dropping data from %s", model)
-            model.objects.all().delete()
-
-        # batch-insert all data
-        for model in stored_models:
-            log.info("Creating data for %s", model)
-            values = bag_cache.objects(model)
-
-            for i in range(0, len(values), self.chunk_size):
-                model.objects.bulk_create(values[i:i + self.chunk_size])
-
-        # clear cache
-        bag_cache.clear()
-
-
-class AbstractUvaTask(AbstractCacheBasedTask):
-    """
-    Basic task for processing UVA2 files
-    """
-    code = None
-
-    def __init__(self, source):
-        super().__init__()
-        self.source = uva2.resolve_file(source, self.code)
-
-    def execute(self):
-        with uva2.uva_reader(self.source) as rows:
-            for r in rows:
-                self.process_row(r)
-
-    def process_row(self, r):
-        raise NotImplementedError()
-
-
-class CodeOmschrijvingUvaTask(AbstractUvaTask):
+class CodeOmschrijvingUvaTask(uva2.AbstractUvaTask):
     model = None
 
     def process_row(self, r):
@@ -197,7 +79,7 @@ class ImportTggTask(CodeOmschrijvingUvaTask):
     model = models.Toegang
 
 
-class ImportGmeTask(AbstractUvaTask):
+class ImportGmeTask(uva2.AbstractUvaTask):
     name = "import GME"
     code = "GME"
 
@@ -214,7 +96,7 @@ class ImportGmeTask(AbstractUvaTask):
         ))
 
 
-class ImportSdlTask(AbstractUvaTask):
+class ImportSdlTask(uva2.AbstractUvaTask):
     name = "import SDL"
     code = "SDL"
 
@@ -236,7 +118,7 @@ class ImportSdlTask(AbstractUvaTask):
         ))
 
 
-class ImportBrtTask(AbstractUvaTask):
+class ImportBrtTask(uva2.AbstractUvaTask):
     name = "import BRT"
     code = "BRT"
 
@@ -258,7 +140,7 @@ class ImportBrtTask(AbstractUvaTask):
         ))
 
 
-class ImportWplTask(AbstractUvaTask):
+class ImportWplTask(uva2.AbstractUvaTask):
     name = "import WPL"
     code = "WPL"
 
@@ -281,7 +163,7 @@ class ImportWplTask(AbstractUvaTask):
         ))
 
 
-class ImportOprTask(AbstractUvaTask):
+class ImportOprTask(uva2.AbstractUvaTask):
     name = "import OPR"
     code = "OPR"
 
@@ -309,7 +191,7 @@ class ImportOprTask(AbstractUvaTask):
         ))
 
 
-class ImportNumTask(AbstractUvaTask):
+class ImportNumTask(uva2.AbstractUvaTask):
     name = "import NUM"
     code = "NUM"
 
@@ -338,7 +220,7 @@ class ImportNumTask(AbstractUvaTask):
         ))
 
 
-class ImportLigTask(AbstractUvaTask):
+class ImportLigTask(uva2.AbstractUvaTask):
     name = "import LIG"
     code = "LIG"
 
@@ -361,7 +243,7 @@ class ImportLigTask(AbstractUvaTask):
         ))
 
 
-class ImportNumLigHfdTask(AbstractUvaTask):
+class ImportNumLigHfdTask(uva2.AbstractUvaTask):
     name = "import NUMLIGHFD"
     code = "NUMLIGHFD"
 
@@ -383,7 +265,7 @@ class ImportNumLigHfdTask(AbstractUvaTask):
         ))
 
 
-class ImportStaTask(AbstractUvaTask):
+class ImportStaTask(uva2.AbstractUvaTask):
     name = "import STA"
     code = "STA"
 
@@ -406,7 +288,7 @@ class ImportStaTask(AbstractUvaTask):
         ))
 
 
-class ImportNumStaHfdTask(AbstractUvaTask):
+class ImportNumStaHfdTask(uva2.AbstractUvaTask):
     name = "import NUMSTAHFD"
     code = "NUMSTAHFD"
 
@@ -428,7 +310,7 @@ class ImportNumStaHfdTask(AbstractUvaTask):
         ))
 
 
-class ImportVboTask(AbstractUvaTask):
+class ImportVboTask(uva2.AbstractUvaTask):
     name = "import VBO"
     code = "VBO"
 
@@ -480,7 +362,7 @@ class ImportVboTask(AbstractUvaTask):
         ))
 
 
-class ImportNumVboHfdTask(AbstractUvaTask):
+class ImportNumVboHfdTask(uva2.AbstractUvaTask):
     name = "import NUMVBOHFD"
     code = "NUMVBOHFD"
 
@@ -502,7 +384,7 @@ class ImportNumVboHfdTask(AbstractUvaTask):
         ))
 
 
-class ImportNumVboNvnTask(AbstractUvaTask):
+class ImportNumVboNvnTask(uva2.AbstractUvaTask):
     name = "import NUMVBONVN"
     code = "NUMVBONVN"
 
@@ -526,7 +408,7 @@ class ImportNumVboNvnTask(AbstractUvaTask):
         ))
 
 
-class ImportPndTask(AbstractUvaTask):
+class ImportPndTask(uva2.AbstractUvaTask):
     name = "import PND"
     code = "PND"
 
@@ -551,7 +433,7 @@ class ImportPndTask(AbstractUvaTask):
         ))
 
 
-class ImportPndVboTask(AbstractUvaTask):
+class ImportPndVboTask(uva2.AbstractUvaTask):
     name = "import PNDVBO"
     code = "PNDVBO"
 
@@ -579,15 +461,15 @@ class ImportPndVboTask(AbstractUvaTask):
         self.create(models.VerblijfsobjectPandRelatie(verblijfsobject=vbo, pand=pand))
 
 
-class AbstractWktTask(AbstractCacheBasedTask):
+class AbstractWktTask(cache.AbstractCacheBasedTask):
     """
     Basic task for processing WKT files
     """
 
     source_file = None
 
-    def __init__(self, source_path):
-        super().__init__()
+    def __init__(self, source_path, cache):
+        super().__init__(cache)
         self.source = os.path.join(source_path, self.source_file)
 
     def execute(self):
@@ -705,45 +587,47 @@ class ImportBagJob(object):
         self.bag = os.path.join(diva, 'bag')
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
+        self.cache = cache.Cache()
 
     def tasks(self):
         return [
-            ImportAvrTask(self.bag),
-            ImportBrnTask(self.bag),
-            ImportEgmTask(self.bag),
-            ImportFngTask(self.bag),
-            ImportGbkTask(self.bag),
-            ImportLggTask(self.bag),
-            ImportLocTask(self.bag),
-            ImportTggTask(self.bag),
-            ImportStsTask(self.bag),
+            ImportAvrTask(self.bag, self.cache),
+            ImportBrnTask(self.bag, self.cache),
+            ImportEgmTask(self.bag, self.cache),
+            ImportFngTask(self.bag, self.cache),
+            ImportGbkTask(self.bag, self.cache),
+            ImportLggTask(self.bag, self.cache),
+            ImportLocTask(self.bag, self.cache),
+            ImportTggTask(self.bag, self.cache),
+            ImportStsTask(self.bag, self.cache),
 
-            ImportGmeTask(self.gebieden),
-            ImportWplTask(self.bag),
-            ImportSdlTask(self.gebieden),
-            ImportBrtTask(self.gebieden),
-            ImportOprTask(self.bag),
+            ImportGmeTask(self.gebieden, self.cache),
+            ImportWplTask(self.bag, self.cache),
+            ImportSdlTask(self.gebieden, self.cache),
+            ImportBrtTask(self.gebieden, self.cache),
+            ImportOprTask(self.bag, self.cache),
 
-            ImportLigTask(self.bag),
-            ImportLigGeoTask(self.bag_wkt),
+            ImportLigTask(self.bag, self.cache),
+            ImportLigGeoTask(self.bag_wkt, self.cache),
 
-            ImportStaTask(self.bag),
-            ImportStaGeoTask(self.bag_wkt),
+            ImportStaTask(self.bag, self.cache),
+            ImportStaGeoTask(self.bag_wkt, self.cache),
 
-            ImportVboTask(self.bag),
+            ImportVboTask(self.bag, self.cache),
 
-            ImportNumTask(self.bag),
-            ImportNumLigHfdTask(self.bag),
-            ImportNumStaHfdTask(self.bag),
-            ImportNumVboHfdTask(self.bag),
-            ImportNumVboNvnTask(self.bag),
+            ImportNumTask(self.bag, self.cache),
+            ImportNumLigHfdTask(self.bag, self.cache),
+            ImportNumStaHfdTask(self.bag, self.cache),
+            ImportNumVboHfdTask(self.bag, self.cache),
+            ImportNumVboNvnTask(self.bag, self.cache),
 
-            ImportPndTask(self.bag),
-            ImportPndGeoTask(self.bag_wkt),
-            ImportPndVboTask(self.bag),
+            ImportPndTask(self.bag, self.cache),
+            ImportPndGeoTask(self.bag_wkt, self.cache),
+            ImportPndVboTask(self.bag, self.cache),
 
-            FlushCacheTask(),
+            cache.FlushCacheTask(self.cache),
         ]
+
 
 class IndexJob(object):
     name = "atlas-index BAG"
