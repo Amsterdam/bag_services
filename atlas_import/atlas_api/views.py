@@ -62,7 +62,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         result = s.index("bag").execute()
 
-        data = [h.get('naam') for h in result]
+        data = [dict(item=h.get('naam')) for h in result]
         return Response(data)
 
 

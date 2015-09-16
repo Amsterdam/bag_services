@@ -17,14 +17,14 @@ class TypeaheadTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         lst = response.data
-        self.assertEqual(lst[0], "Anjeliersstraat")
+        self.assertEqual(lst[0], dict(item="Anjeliersstraat"))
 
     def test_match_openbare_ruimte_lowercase(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="AN"))
         self.assertEqual(response.status_code, 200)
 
         lst = response.data
-        self.assertEqual(lst[0], "Anjeliersstraat")
+        self.assertEqual(lst[0], dict(item="Anjeliersstraat"))
 
     def test_match_maximum_length(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="a"))
