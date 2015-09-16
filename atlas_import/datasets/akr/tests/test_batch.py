@@ -119,3 +119,30 @@ class ImportKstTest(TestCase):
         self.assertEqual(kst.woonadres.beschrijving, '')
         self.assertIsNone(kst.postadres)
         self.assertIsNone(kst.a_nummer)
+
+
+class ImportTteTest(TestCase):
+    def test_import(self):
+        c = cache.Cache()
+
+        task = batch.ImportTteTask(AKR, c)
+        task.execute()
+        c.flush()
+
+        imported = models.Transactie.objects.all()
+        self.assertEqual(len(imported), 801)
+
+        tx = models.Transactie.objects.get(pk='1005480')
+
+        self.assertEqual(tx.registercode, '1005480')
+        self.assertEqual(tx.stukdeel_1, '17088')
+        self.assertEqual(tx.stukdeel_2, '00033')
+        self.assertEqual(tx.stukdeel_3, '')
+        self.assertEqual(tx.ontvangstdatum, datetime.date(2000, 12, 20))
+        self.assertEqual(tx.soort_stuk.code, '001')
+        self.assertEqual(tx.soort_stuk.omschrijving, 'AKTE VAN KOOP EN VERKOOP')
+        self.assertEqual(tx.verlijdensdatum, datetime.date(2000, 12, 19))
+        self.assertEqual(tx.meer_kadastrale_objecten, True)
+        self.assertEqual(tx.koopjaar, 2000)
+        self.assertEqual(tx.koopsom, 46444405)
+        self.assertEqual(tx.belastingplichtige, True)

@@ -201,6 +201,45 @@ class ImportKstTask(uva2.AbstractUvaTask):
         return self.create(models.Land(code=land_code, omschrijving=land_omschrijving))
 
 
+class ImportTteTask(uva2.AbstractUvaTask):
+    name = "import TTE"
+    code = "TTE"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, "TTEKSTABR", "TTEKSTBPE"):
+            return
+
+        soort = self.get_soort_stuk(r['SoortStukDomein'], r['OmschrijvingSoortStukDomein'])
+
+        self.create(models.Transactie(
+            id=r['sleutelVerzendend'],
+            registercode=r['RegistercodeDomein'],
+            stukdeel_1=r['Stukdeel1'],
+            stukdeel_2=r['Stukdeel2'],
+            stukdeel_3=r['Stukdeel3'],
+            soort_stuk=soort,
+            ontvangstdatum=uva2.uva_datum(r['OntvangstdatumStuk']),
+            verlijdensdatum=uva2.uva_datum(r['Verlijdensdatum']),
+            meer_kadastrale_objecten=uva2.uva_indicatie(r['IndicatieMeerKadastraleObjecten']),
+            koopjaar=uva2.uva_nummer(r['Koopjaar']),
+            koopsom=uva2.uva_nummer(r['Koopsom']),
+            belastingplichtige=uva2.uva_indicatie(r['IndicatieBelastingplichtige']),
+        ))
+
+    def get_soort_stuk(self, code, omschrijving):
+        if not code:
+            return None
+
+        soort = self.get(models.SoortStuk, code)
+        if soort:
+            return soort
+
+        return self.create(models.SoortStuk(code=code, omschrijving=omschrijving))
+
+
 class ImportKadasterJob(object):
     name = "atlas-import BKR"
 

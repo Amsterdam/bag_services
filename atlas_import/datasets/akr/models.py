@@ -139,3 +139,34 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastraal subject"
         verbose_name_plural = "Kadastrale subjecten"
+
+
+class SoortStuk(models.Model):
+    code = models.CharField(max_length=3, primary_key=True)
+    omschrijving = models.CharField(max_length=150)
+
+    class Meta:
+        verbose_name = 'Soort stuk'
+        verbose_name_plural = 'Soorten stukken'
+
+    def __str__(self):
+        return '{}: {}'.format(self.code, self.omschrijving)
+
+
+class Transactie(mixins.ImportStatusMixin):
+    id = models.CharField(max_length=14, primary_key=True)
+    registercode = models.CharField(max_length=14, null=False)
+    stukdeel_1 = models.CharField(max_length=5, null=True)
+    stukdeel_2 = models.CharField(max_length=5, null=True)
+    stukdeel_3 = models.CharField(max_length=5, null=True)
+    soort_stuk = models.ForeignKey(SoortStuk, null=True)
+    ontvangstdatum = models.DateField(null=True)
+    verlijdensdatum = models.DateField(null=True)
+    meer_kadastrale_objecten = models.BooleanField(default=False)
+    koopjaar = models.SmallIntegerField(null=True)
+    koopsom = models.IntegerField(null=True)
+    belastingplichtige = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Transactie"
+        verbose_name_plural = "Transacties"

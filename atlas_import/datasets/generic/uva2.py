@@ -76,8 +76,14 @@ def geldig_tijdvak(r):
 
 
 def geldige_relatie(row, relatie):
-    return uva_geldig(row['{}/TijdvakRelatie/begindatumRelatie'.format(relatie)],
-                      row['{}/TijdvakRelatie/einddatumRelatie'.format(relatie)])
+    begin = row['{}/TijdvakRelatie/begindatumRelatie'.format(relatie)]
+
+    try:
+        end = row['{}/TijdvakRelatie/einddatumRelatie'.format(relatie)]
+    except KeyError:
+        end = row['{}/TijdvakRelatie/eindatumRelatie'.format(relatie)]  # sic!
+
+    return uva_geldig(begin, end)
 
 
 def geldige_relaties(row, *relaties):
