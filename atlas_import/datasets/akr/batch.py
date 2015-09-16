@@ -15,12 +15,12 @@ class ImportKotTask(uva2.AbstractUvaTask):
         if not uva2.geldig_tijdvak(r):
             return
 
-        scod = self.get_soort_cultuur_onbebouwd_domein(r)
-        bd = self.get_bebouwingscode_domein(r)
+        scod = self.get_soort_cultuur_onbebouwd(r)
+        bd = self.get_bebouwingscode(r)
 
         self.create(models.KadastraalObject(
             id=r['sleutelverzendend'],
-            gemeentecode_domein=r['KadastraleGemeentecodeDomein'],
+            gemeentecode=r['KadastraleGemeentecodeDomein'],
             sectie=r['Sectie'],
             perceelnummer=uva2.uva_nummer(r['Perceelnummer']),
             objectindex_letter=r['ObjectindexletterDomein'],
@@ -28,40 +28,40 @@ class ImportKotTask(uva2.AbstractUvaTask):
             grootte=uva2.uva_nummer(r['Grootte']),
             grootte_geschat=uva2.uva_indicatie(r['IndicatieGrootteGeschat']),
             cultuur_tekst=r['CultuurTekst'],
-            soort_cultuur_onbebouwd_domein=scod,
+            soort_cultuur_onbebouwd=scod,
             meer_culturen_onbebouwd=uva2.uva_indicatie(r['IndicatieMeerCulturenOnbebouwd']),
-            bebouwingscode_domein=bd,
+            bebouwingscode=bd,
             kaartblad=uva2.uva_nummer(r['Kaartblad']),
             ruitletter=r['Ruitletter'],
             ruitnummer=uva2.uva_nummer(r['Ruitnummer']),
             omschrijving_deelperceel=r['OmschrijvingDeelperceel'],
         ))
 
-    def get_soort_cultuur_onbebouwd_domein(self, r):
+    def get_soort_cultuur_onbebouwd(self, r):
         scod_code = r['SoortCultuurOnbebouwdDomein']
         if not scod_code:
             return None
 
-        scod = self.get(models.SoortCultuurOnbebouwdDomein, scod_code)
+        scod = self.get(models.SoortCultuurOnbebouwd, scod_code)
         if scod:
             return scod
 
-        scod = models.SoortCultuurOnbebouwdDomein(code=scod_code,
-                                                  omschrijving=r['OmschrijvingSoortCultuurOnbebouwdDomein'])
+        scod = models.SoortCultuurOnbebouwd(code=scod_code,
+                                            omschrijving=r['OmschrijvingSoortCultuurOnbebouwdDomein'])
         self.create(scod)
         return scod
 
-    def get_bebouwingscode_domein(self, r):
+    def get_bebouwingscode(self, r):
         bd_code = r['BebouwingscodeDomein']
         if not bd_code:
             return None
 
-        bd = self.get(models.BebouwingscodeDomein, bd_code)
+        bd = self.get(models.Bebouwingscode, bd_code)
         if bd:
             return bd
 
-        return self.create(models.BebouwingscodeDomein(code=bd_code,
-                                                       omschrijving=r['OmschrijvingBebouwingscodeDomein']))
+        return self.create(models.Bebouwingscode(code=bd_code,
+                                                 omschrijving=r['OmschrijvingBebouwingscodeDomein']))
 
 
 class ImportKstTask(uva2.AbstractUvaTask):
