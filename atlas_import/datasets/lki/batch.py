@@ -1,10 +1,12 @@
 import os
-from django.conf import settings
 
+from django.conf import settings
 from django.contrib.gis.gdal import DataSource
+
 from django.contrib.gis.geos import GEOSGeometry
 
 from . import models
+from datasets.generic import kadaster
 
 
 class ImportGemeenteTask(object):
@@ -102,9 +104,6 @@ class ImportKadastraalObjectTask(object):
         super().__init__()
         self.source = os.path.join(source_path, 'LKI_Perceel.shp')
 
-    def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
-        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
-
     def execute(self):
         ds = DataSource(self.source)
         lyr = ds[0]
@@ -130,8 +129,8 @@ class ImportKadastraalObjectTask(object):
             indexnummer=feat.get('IDX_NUMMER'),
             oppervlakte=feat.get('OPP_VLAKTE'),
             ingang_cyclus=feat.get('INGANG_CYC'),
-            aanduiding=self.get_kadastrale_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'), feat.get('PERCEELNR'),
-                                                      feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
+            aanduiding=kadaster.get_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'), feat.get('PERCEELNR'),
+                                               feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
             geometrie=GEOSGeometry(wkt)
         )
 

@@ -4,6 +4,7 @@ import os
 import datetime
 
 from django.conf import settings
+from datasets.generic import kadaster
 
 import datasets.lki.models as lki
 from . import models
@@ -159,11 +160,8 @@ class ImportWkpbBepKadTask(object):
             self.beperkingen_cache.clear()
             self.lki_cache.clear()
 
-    def get_kadastrale_aanduiding(self, gem, sec, perc, app, index):
-        return '{0}{1}{2:0>5}{3}{4:0>4}'.format(gem, sec, perc, app, index)
-
     def process_row(self, r):
-        aanduiding = self.get_kadastrale_aanduiding(r[0], r[1], r[2], r[3], r[4])
+        aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
         kadastraal_object_id = self.lki_cache.get(aanduiding)
         beperking_id = int(r[5])
 
