@@ -51,7 +51,7 @@ class ImportKstTest(TestCase):
         c.flush()
 
         imported = models.KadastraalSubject.objects.all()
-        self.assertEqual(len(imported), 161)
+        self.assertEqual(len(imported), 163)
 
         kst = models.KadastraalSubject.objects.get(pk='44879')
         self.assertEqual(kst.subjectnummer, 1603175440)
@@ -161,7 +161,7 @@ class ImportZrtTest(TestCase):
         c.flush()
 
         imported = models.ZakelijkRecht.objects.all()
-        self.assertEqual(len(imported), 397)
+        self.assertEqual(len(imported), 400)
 
         zrt = models.ZakelijkRecht.objects.get(pk='1397395')
 
