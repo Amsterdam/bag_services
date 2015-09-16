@@ -51,7 +51,7 @@ class ImportKstTest(TestCase):
         c.flush()
 
         imported = models.KadastraalSubject.objects.all()
-        self.assertEqual(len(imported), 404)
+        self.assertEqual(len(imported), 163)
 
         kst = models.KadastraalSubject.objects.get(pk='44879')
         self.assertEqual(kst.subjectnummer, 1603175440)
