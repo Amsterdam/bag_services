@@ -51,7 +51,7 @@ class ImportKstTest(TestCase):
         c.flush()
 
         imported = models.KadastraalSubject.objects.all()
-        self.assertEqual(len(imported), 163)
+        self.assertEqual(len(imported), 161)
 
         kst = models.KadastraalSubject.objects.get(pk='44879')
         self.assertEqual(kst.subjectnummer, 1603175440)
@@ -146,3 +146,33 @@ class ImportTteTest(TestCase):
         self.assertEqual(tx.koopjaar, 2000)
         self.assertEqual(tx.koopsom, 46444405)
         self.assertEqual(tx.belastingplichtige, True)
+
+
+class ImportZrtTest(TestCase):
+    def test_import(self):
+        c = cache.Cache()
+
+        batch.ImportKotTask(AKR, c).execute()
+        batch.ImportKstTask(AKR, c).execute()
+        batch.ImportTteTask(AKR, c).execute()
+
+        task = batch.ImportZrtTask(AKR, c)
+        task.execute()
+        c.flush()
+
+        imported = models.ZakelijkRecht.objects.all()
+        self.assertEqual(len(imported), 397)
+
+        zrt = models.ZakelijkRecht.objects.get(pk='1397395')
+
+        self.assertEqual(zrt.identificatie, '1397395')
+        self.assertEqual(zrt.soort_recht.code, 'EVOS')
+        self.assertEqual(zrt.soort_recht.omschrijving, 'EIGENDOM BEL. MET RECHT VAN OPSTAL')
+        self.assertEqual(zrt.volgnummer, 3)
+        self.assertEqual(zrt.aandeel_medegerechtigden, '')
+        self.assertEqual(zrt.aandeel_subject, '1/1')
+        self.assertEqual(zrt.einde_filiatie, False)
+        self.assertEqual(zrt.sluimerend, False)
+        self.assertEqual(zrt.kadastraal_object.id, '295125')
+        self.assertEqual(zrt.kadastraal_subject.id, '20857')
+        self.assertEqual(zrt.transactie.id, '170922')

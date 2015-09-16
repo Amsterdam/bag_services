@@ -1,10 +1,13 @@
 import hashlib
+import logging
 import os
 
 from django.conf import settings
 
 from datasets.generic import uva2, cache
 from . import models
+
+log = logging.getLogger(__name__)
 
 
 class ImportKotTask(uva2.AbstractUvaTask):
@@ -238,6 +241,58 @@ class ImportTteTask(uva2.AbstractUvaTask):
             return soort
 
         return self.create(models.SoortStuk(code=code, omschrijving=omschrijving))
+
+
+class ImportZrtTask(uva2.AbstractUvaTask):
+    name = "import ZRT"
+    code = "ZRT"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relaties(r, "ZRTKOT", "ZRTKST", "ZRTTTE"):
+            return
+
+        soort = self.get_soort_recht(r['SoortRechtDomein'], r['OmschrijvingSoortRechtDomein'])
+
+        kot_id = self.foreign_key_id(models.KadastraalObject, r['ZRTKOT/KOT/sleutelVerzendend'])
+        if not kot_id:
+            log.warning("Onbekend object: %s", r['ZRTKOT/KOT/sleutelVerzendend'])
+            return
+
+        kst_id = self.foreign_key_id(models.KadastraalSubject, r['ZRTKST/KST/sleutelVerzendend'])
+        if not kst_id:
+            log.warning("Onbekend subject: %s", r['ZRTKST/KST/sleutelVerzendend'])
+            return
+
+        tte_id = self.foreign_key_id(models.Transactie, r['ZRTTTE/TTE/sleutelVerzendend'])
+        if not tte_id:
+            log.warning("Onbekende transactie: %s", r['ZRTTTE/TTE/sleutelVerzendend'])
+            return
+
+        self.create(models.ZakelijkRecht(
+            id=r['sleutelVerzendend'],
+            identificatie=r['ZakelijkRechtidentificatie'],
+            soort_recht=soort,
+            volgnummer=uva2.uva_nummer(r['ZakelijkRechtVolgnummer']),
+            aandeel_medegerechtigden=r['AandeelVanMedegerechtigdengroepInRecht'],
+            aandeel_subject=r['AandeelVanSubjectInRecht'],
+            einde_filiatie=uva2.uva_indicatie(r['IndicatieEindeFiliatie']),
+            sluimerend=uva2.uva_indicatie(r['IndicatieSluimerend']),
+            kadastraal_object_id=kot_id,
+            kadastraal_subject_id=kst_id,
+            transactie_id=tte_id,
+        ))
+
+    def get_soort_recht(self, code, omschrijving):
+        if not code:
+            return None
+        soort = self.get(models.SoortRecht, code)
+        if soort:
+            return soort
+
+        return self.create(models.SoortRecht(code=code, omschrijving=omschrijving))
 
 
 class ImportKadasterJob(object):

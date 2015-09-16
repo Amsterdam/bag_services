@@ -170,3 +170,33 @@ class Transactie(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Transactie"
         verbose_name_plural = "Transacties"
+
+
+class SoortRecht(models.Model):
+    code = models.CharField(max_length=6, primary_key=True)
+    omschrijving = models.CharField(max_length=150)
+
+    class Meta:
+        verbose_name = 'Soort recht'
+        verbose_name_plural = 'Soorten recht'
+
+    def __str__(self):
+        return '{}: {}'.format(self.code, self.omschrijving)
+
+
+class ZakelijkRecht(mixins.ImportStatusMixin):
+    id = models.CharField(max_length=14, primary_key=True)
+    identificatie = models.CharField(max_length=14)
+    soort_recht = models.ForeignKey(SoortRecht, null=True)
+    volgnummer = models.IntegerField(null=True)
+    aandeel_medegerechtigden = models.CharField(max_length=16, null=True)
+    aandeel_subject = models.CharField(max_length=16, null=True)
+    einde_filiatie = models.BooleanField(default=False)
+    sluimerend = models.BooleanField(default=False)
+    kadastraal_object = models.ForeignKey(KadastraalObject)
+    kadastraal_subject = models.ForeignKey(KadastraalSubject)
+    transactie = models.ForeignKey(Transactie)
+
+    class Meta:
+        verbose_name = "Zakelijke recht"
+        verbose_name_plural = "Zakelijke rechten"
