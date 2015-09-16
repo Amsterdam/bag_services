@@ -124,7 +124,7 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     naam_niet_natuurlijke_persoon = models.CharField(max_length=512, null=True)
     soort_subject = models.CharField(max_length=1, choices=SUBJECT_CHOICES, null=True)
     soort_niet_natuurlijke_persoon = models.ForeignKey(NietNatuurlijkePersoon, null=True)
-    voorletters = models.CharField(max_length=5, null=True)
+    voorletters = models.CharField(max_length=15, null=True)
     voornamen = models.CharField(max_length=128, null=True)
     voorvoegsel = models.CharField(max_length=10, null=True)
     geboortedatum = models.DateField(null=True)

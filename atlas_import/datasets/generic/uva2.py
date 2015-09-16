@@ -35,7 +35,7 @@ def uva_geldig(start, eind):
 
     now = datetime.date.today()
 
-    return e is None or (s <= now < e)
+    return e is None or s is None or (s <= now < e)
 
 
 def _wrap_uva_row(r, headers):
@@ -48,7 +48,7 @@ def uva_reader(source):
         raise ValueError("File not found: {}".format(source))
 
     with open(source, encoding='cp1252') as f:
-        rows = csv.reader(f, delimiter=';')
+        rows = csv.reader(f, delimiter=';', quoting=csv.QUOTE_NONE)
         # skip VAN
         next(rows)
         # skip TM

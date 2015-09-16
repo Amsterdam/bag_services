@@ -14,6 +14,11 @@ class ImportKotTask(uva2.AbstractUvaTask):
     name = "import KOT"
     code = "KOT"
 
+    def execute(self):
+        self.require(models.SoortCultuurOnbebouwd)
+        self.require(models.Bebouwingscode)
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -208,6 +213,10 @@ class ImportTteTask(uva2.AbstractUvaTask):
     name = "import TTE"
     code = "TTE"
 
+    def execute(self):
+        self.require(models.SoortStuk)
+        super().execute()
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
@@ -246,6 +255,10 @@ class ImportTteTask(uva2.AbstractUvaTask):
 class ImportZrtTask(uva2.AbstractUvaTask):
     name = "import ZRT"
     code = "ZRT"
+
+    def execute(self):
+        self.require(models.SoortRecht)
+        super().execute()
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -310,6 +323,8 @@ class ImportKadasterJob(object):
         return [
             ImportKotTask(self.akr, self.cache),
             ImportKstTask(self.akr, self.cache),
+            ImportTteTask(self.akr, self.cache),
+            ImportZrtTask(self.akr, self.cache),
 
             cache.FlushCacheTask(self.cache),
         ]
