@@ -18,6 +18,12 @@ class Cache(object):
         """
         self.cache.clear()
 
+    def require(self, model):
+        """
+        Enforces correct dependency resolution
+        """
+        self.cache.setdefault(model, dict())
+
     def put(self, obj):
         """
         Adds an object to the cache.
@@ -75,8 +81,12 @@ class AbstractCacheBasedTask(object):
     def execute(self):
         raise NotImplementedError()
 
+    def require(self, model):
+        self.cache.require(model)
+
     def create(self, obj):
         self.cache.put(obj)
+        return obj
 
     def foreign_key_id(self, model, model_id):
         obj = self.cache.get(model, model_id)
