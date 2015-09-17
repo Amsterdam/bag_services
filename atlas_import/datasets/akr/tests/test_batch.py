@@ -19,7 +19,7 @@ class ImportKotTest(TestCase):
         imported = models.KadastraalObject.objects.all()
         self.assertEqual(len(imported), 495)
 
-        kot = models.KadastraalObject.objects.get(pk='274434')
+        kot = models.KadastraalObject.objects.get(pk='ASD25AD00412G0000')
 
         self.assertIsNotNone(kot)
         self.assertEqual(kot.gemeentecode, "ASD25")
@@ -173,6 +173,6 @@ class ImportZrtTest(TestCase):
         self.assertEqual(zrt.aandeel_subject, '1/1')
         self.assertEqual(zrt.einde_filiatie, False)
         self.assertEqual(zrt.sluimerend, False)
-        self.assertEqual(zrt.kadastraal_object.id, '295125')
+        self.assertEqual(zrt.kadastraal_object.id, 'ASD25AD00588G0000')
         self.assertEqual(zrt.kadastraal_subject.id, '20857')
         self.assertEqual(zrt.transactie.id, '170922')

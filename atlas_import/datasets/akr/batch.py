@@ -4,7 +4,7 @@ import os
 
 from django.conf import settings
 
-from datasets.generic import uva2, cache
+from datasets.generic import uva2, cache, kadaster
 from . import models
 
 log = logging.getLogger(__name__)
@@ -26,13 +26,20 @@ class ImportKotTask(uva2.AbstractUvaTask):
         scod = self.get_soort_cultuur_onbebouwd(r)
         bd = self.get_bebouwingscode(r)
 
+        gemeente = r['KadastraleGemeentecodeDomein']
+        sectie = r['Sectie']
+        perceel = uva2.uva_nummer(r['Perceelnummer'])
+        letter = r['ObjectindexletterDomein']
+        nummer = uva2.uva_nummer(r['Objectindexnummer'])
+        aanduiding = kadaster.get_aanduiding(gemeente, sectie, perceel, letter, nummer)
+
         self.create(models.KadastraalObject(
-            id=r['sleutelverzendend'],
-            gemeentecode=r['KadastraleGemeentecodeDomein'],
-            sectie=r['Sectie'],
-            perceelnummer=uva2.uva_nummer(r['Perceelnummer']),
-            objectindex_letter=r['ObjectindexletterDomein'],
-            objectindex_nummer=uva2.uva_nummer(r['Objectindexnummer']),
+            id=aanduiding,
+            gemeentecode=gemeente,
+            sectie=sectie,
+            perceelnummer=perceel,
+            objectindex_letter=letter,
+            objectindex_nummer=nummer,
             grootte=uva2.uva_nummer(r['Grootte']),
             grootte_geschat=uva2.uva_indicatie(r['IndicatieGrootteGeschat']),
             cultuur_tekst=r['CultuurTekst'],
@@ -269,7 +276,15 @@ class ImportZrtTask(uva2.AbstractUvaTask):
 
         soort = self.get_soort_recht(r['SoortRechtDomein'], r['OmschrijvingSoortRechtDomein'])
 
-        kot_id = self.foreign_key_id(models.KadastraalObject, r['ZRTKOT/KOT/sleutelVerzendend'])
+        aanduiding = kadaster.get_aanduiding(
+            r['ZRTKOT/KOT/KadastraleGemeentecodeDomein'],
+            r['ZRTKOT/KOT/Sectie'],
+            r['ZRTKOT/KOT/Perceelnummer'],
+            r['ZRTKOT/KOT/ObjectindexletterDomein'],
+            r['ZRTKOT/KOT/Objectindexnummer']
+        )
+
+        kot_id = self.foreign_key_id(models.KadastraalObject, aanduiding)
         if not kot_id:
             log.warning("Onbekend object: %s", r['ZRTKOT/KOT/sleutelVerzendend'])
             return

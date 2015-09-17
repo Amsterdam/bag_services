@@ -28,7 +28,7 @@ class Bebouwingscode(models.Model):
 
 
 class KadastraalObject(mixins.ImportStatusMixin):
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=17, primary_key=True)
     gemeentecode = models.CharField(max_length=5)
     sectie = models.CharField(max_length=2)
     perceelnummer = models.IntegerField()
