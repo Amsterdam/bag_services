@@ -23,7 +23,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('dataset',
                             nargs='*',
-                            default=(' '.join(self.imports.keys())),
+                            default=self.imports.keys(),
                             help="Dataset to import, choose from {}".format(', '.join(self.imports.keys())))
 
         parser.add_argument('--no-import',
