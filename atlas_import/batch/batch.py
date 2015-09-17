@@ -41,7 +41,7 @@ def _execute_task(job_execution, task):
         execute_func = task.execute
         tear_down = getattr(task, "tear_down", None)
 
-    log.info("Executing task: %s", task_name)
+    log.debug("Executing task: %s", task_name)
     task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
 
     try:
@@ -58,7 +58,7 @@ def _execute_task(job_execution, task):
         task_execution.save()
         raise e
 
-    log.info("Task completed: %s", task_name)
+    log.debug("Task completed: %s", task_name)
     task_execution.date_finished = timezone.now()
     task_execution.status = TaskExecution.STATUS_FINISHED
     task_execution.save()
