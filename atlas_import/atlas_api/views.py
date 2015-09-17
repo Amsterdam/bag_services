@@ -69,7 +69,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         result = s.index("bag").execute()
 
-        data = [dict(item=h.get('naam')) for h in result]
+        data = [dict(item=h.get('naam') or h.get('adres')) for h in result]
         return Response(data)
 
 
@@ -85,6 +85,7 @@ class SearchViewSet(viewsets.ViewSet):
             return Response([])
 
         query = request.QUERY_PARAMS['q']
+        query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         search = Search(client).index('bag')
