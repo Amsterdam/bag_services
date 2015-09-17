@@ -62,6 +62,9 @@ def uva_reader(source):
 
 
 def resolve_file(path, code):
+    if not code:
+        raise ValueError("No code specified")
+
     prefix = code + '_'
     matches = [f for f in os.listdir(path) if f.startswith(prefix)]
     if len(matches) != 1:

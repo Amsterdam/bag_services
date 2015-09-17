@@ -1,20 +1,17 @@
 import datetime
 
-from django.test import TestCase
-
-from datasets.generic import cache
+from batch.test import TaskTestCase
 from .. import batch, models
 
 AKR = 'diva/kadaster/akr'
 
 
-class ImportKotTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportKotTest(TaskTestCase):
+    def task(self):
+        return batch.ImportKotTask(AKR, self.cache)
 
-        task = batch.ImportKotTask(AKR, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.KadastraalObject.objects.all()
         self.assertEqual(len(imported), 495)
@@ -41,14 +38,12 @@ class ImportKotTest(TestCase):
         self.assertEqual(kot.omschrijving_deelperceel, '')
 
 
-class ImportKstTest(TestCase):
+class ImportKstTest(TaskTestCase):
+    def task(self):
+        return batch.ImportKstTask(AKR, self.cache)
+
     def test_import(self):
-        c = cache.Cache()
-
-        task = batch.ImportKstTask(AKR, c)
-        task.execute()
-
-        c.flush()
+        self.run_task()
 
         imported = models.KadastraalSubject.objects.all()
         self.assertEqual(len(imported), 163)
@@ -121,13 +116,12 @@ class ImportKstTest(TestCase):
         self.assertIsNone(kst.a_nummer)
 
 
-class ImportTteTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportTteTest(TaskTestCase):
+    def task(self):
+        return batch.ImportTteTask(AKR, self.cache)
 
-        task = batch.ImportTteTask(AKR, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Transactie.objects.all()
         self.assertEqual(len(imported), 801)
@@ -148,17 +142,19 @@ class ImportTteTest(TestCase):
         self.assertEqual(tx.belastingplichtige, True)
 
 
-class ImportZrtTest(TestCase):
+class ImportZrtTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportKotTask(AKR, self.cache),
+            batch.ImportKstTask(AKR, self.cache),
+            batch.ImportTteTask(AKR, self.cache),
+        ]
+
+    def task(self):
+        return batch.ImportZrtTask(AKR, self.cache)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportKotTask(AKR, c).execute()
-        batch.ImportKstTask(AKR, c).execute()
-        batch.ImportTteTask(AKR, c).execute()
-
-        task = batch.ImportZrtTask(AKR, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.ZakelijkRecht.objects.all()
         self.assertEqual(len(imported), 400)
@@ -176,3 +172,33 @@ class ImportZrtTest(TestCase):
         self.assertEqual(zrt.kadastraal_object.id, 'ASD25AD00588G0000')
         self.assertEqual(zrt.kadastraal_subject.id, '20857')
         self.assertEqual(zrt.transactie.id, '170922')
+
+
+class ImportKotVboTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportKotTask(AKR, self.cache)
+        ]
+
+    def task(self):
+        return batch.ImportKotVboTask(AKR, self.cache)
+
+    def test_import(self):
+        self.run_task()
+
+        imported = models.KadastraalObjectVerblijfsobject.objects.all()
+        self.assertEqual(len(imported), 885)
+
+        kot = models.KadastraalObject.objects.get(pk='ASD25AD00561A0010')
+        vbos = kot.verblijfsobjecten.all()
+
+        self.assertEqual([v.vbo_id for v in vbos], ['03630001003914'])
+
+        kot = models.KadastraalObject.objects.get(pk='ASD25AD00584A0008')
+        vbos = kot.verblijfsobjecten.all()
+
+        print(set([v.vbo_id for v in vbos]))
+
+        self.assertEqual(set([v.vbo_id for v in vbos]),
+                         {'03630001002802', '03630001002807', '03630001002808', '03630001002812', '03630001008765',
+                          '03630001008766', '03630001008767', '03630001008768', '03630001008769', })

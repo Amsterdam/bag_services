@@ -200,3 +200,9 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Zakelijke recht"
         verbose_name_plural = "Zakelijke rechten"
+
+
+class KadastraalObjectVerblijfsobject(mixins.ImportStatusMixin):
+    id = models.UUIDField(primary_key=True)
+    kadastraal_object = models.ForeignKey(KadastraalObject, related_name="verblijfsobjecten")
+    vbo_id = models.CharField(max_length=14)

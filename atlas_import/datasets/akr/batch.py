@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import uuid
 
 from django.conf import settings
 
@@ -323,6 +324,32 @@ class ImportZrtTask(uva2.AbstractUvaTask):
         return self.create(models.SoortRecht(code=code, omschrijving=omschrijving))
 
 
+class ImportKotVboTask(uva2.AbstractUvaTask):
+    name = "import KOTVBO"
+    code = "KOTVBO"
+
+    def process_row(self, r):
+        if not uva2.geldig_tijdvak(r):
+            return
+
+        if not uva2.geldige_relatie(r, "KOTVBO"):
+            return
+
+        aanduiding = kadaster.get_aanduiding(
+            r['KadastraleGemeentecodeDomein'],
+            r['Sectie'],
+            r['Perceelnummer'],
+            r['ObjectindexletterDomein'],
+            r['Objectindexnummer'],
+        )
+
+        self.create(models.KadastraalObjectVerblijfsobject(
+            id=uuid.uuid4(),
+            kadastraal_object_id=self.foreign_key_id(models.KadastraalObject, aanduiding),
+            vbo_id=r['KOTVBO/VBO/Verblijfsobjectidentificatie'],
+        ))
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - AKR"
 
@@ -340,6 +367,7 @@ class ImportKadasterJob(object):
             ImportKstTask(self.akr, self.cache),
             ImportTteTask(self.akr, self.cache),
             ImportZrtTask(self.akr, self.cache),
+            ImportKotTask(self.akr, self.cache),
 
             cache.FlushCacheTask(self.cache),
         ]
