@@ -7,7 +7,7 @@ adres_analyzer = es.analyzer('adres', tokenizer='keyword', filter=['standard', '
 
 
 class Ligplaats(es.DocType):
-    adres = es.String()
+    adres = es.String(analyzer=adres_analyzer)
     postcode = es.String()
     centroid = es.GeoPoint()
 
@@ -16,7 +16,7 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
-    adres = es.String()
+    adres = es.String(analyzer=adres_analyzer)
     postcode = es.String()
     centroid = es.GeoPoint()
 
@@ -25,7 +25,7 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
-    adres = es.String()
+    adres = es.String(analyzer=adres_analyzer)
     postcode = es.String()
     centroid = es.GeoPoint()
 
