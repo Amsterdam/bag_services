@@ -15,16 +15,20 @@ class QueryTest(APITestCase):
         time.sleep(1)   # this is stupid
 
     def test_non_matching_query(self):
-        response = self.client.get('/api/search/', dict(q="anjel"))
+        response = self.client.get('/api/search/', dict(q="qqq"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('hits', response.data)
         self.assertIn('total', response.data)
         self.assertEqual(response.data['total'], 0)
 
     def test_matching_query(self):
-        response = self.client.get('/api/search/', dict(q="anjel*"))
+        response = self.client.get('/api/search/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('hits', response.data)
         self.assertIn('total', response.data)
         self.assertEqual(response.data['total'], 5)
+
+        first = response.data['hits'][0]
+        self.assertEqual(first.naam, "Anjeliersstraat")
+        self.assertEqual(first.type, "openbareruimte")
 

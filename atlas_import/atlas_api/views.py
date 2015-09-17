@@ -38,6 +38,15 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
+def get_matches_for(query):
+    wildcard = '*{}*'.format(query)
+
+    return (Q("prefix", naam={'value': query, 'boost': 12})
+            | Q("wildcard", naam={'value': wildcard, 'boost': 8})
+            | Q("prefix", adres={'value': query})
+            )
+
+
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all objects that (partially) match the
@@ -54,10 +63,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        s = Search(client)
-        s = s.query(
-            Q("prefix", naam={'value': query, 'boost': 2})
-            | Q("wildcard", naam={'value': '*{}*'.format(query)}))
+        s = Search(client).index('bag')
+        s = s.query(get_matches_for(query))
         s = s[:5]
 
         result = s.index("bag").execute()
@@ -80,7 +87,10 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.QUERY_PARAMS['q']
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = Search(client).index('bag').query("query_string", query=query)[0:100]
+        search = Search(client).index('bag')
+        search = search.query(get_matches_for(query))
+
+        search = search[0:100]
         result = search.execute()
 
         res = OrderedDict()
