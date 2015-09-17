@@ -136,7 +136,7 @@ class ImportKadastraalObjectTask(object):
 
 
 class ImportKadasterJob(object):
-    name = "atlas-import Kadaster"
+    name = "Import Kadaster - LKI"
 
     def __init__(self):
         diva = settings.DIVA_DIR

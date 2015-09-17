@@ -309,7 +309,7 @@ class ImportZrtTask(uva2.AbstractUvaTask):
 
 
 class ImportKadasterJob(object):
-    name = "atlas-import BKR"
+    name = "Import Kadaster - AKR"
 
     def __init__(self):
         diva = settings.DIVA_DIR

@@ -183,7 +183,7 @@ class ImportWkpbBepKadTask(object):
 
 
 class ImportWkpbJob(object):
-    name = "atlas-import WKPB"
+    name = "Import WKPB"
 
     def __init__(self):
         diva = settings.DIVA_DIR

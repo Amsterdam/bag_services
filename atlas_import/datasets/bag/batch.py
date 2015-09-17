@@ -577,7 +577,7 @@ class ImportELOpenbareRuimteTask(object):
 
 
 class ImportBagJob(object):
-    name = "atlas-import BAG"
+    name = "Import BAG"
 
     def __init__(self):
         diva = settings.DIVA_DIR
@@ -630,7 +630,7 @@ class ImportBagJob(object):
 
 
 class IndexJob(object):
-    name = "atlas-index BAG"
+    name = "Update search-index BAG"
 
     def tasks(self):
         return [

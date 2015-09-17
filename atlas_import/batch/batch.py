@@ -10,18 +10,18 @@ log = logging.getLogger(__name__)
 
 def execute(job):
     log.info("Creating job: %s", job.name)
+
     job_execution = JobExecution.objects.create(name=job.name)
 
-    for t in job.tasks():
-        # noinspection PyBroadException
-        try:
+    try:
+        for t in job.tasks():
             _execute_task(job_execution, t)
-        except:
-            log.exception("Job failed: %s", job.name)
-            job_execution.date_finished = timezone.now()
-            job_execution.status = JobExecution.STATUS_FAILED
-            job_execution.save()
-            return job_execution
+    except:
+        log.exception("Job failed: %s", job.name)
+        job_execution.date_finished = timezone.now()
+        job_execution.status = JobExecution.STATUS_FAILED
+        job_execution.save()
+        return job_execution
 
     log.info("Job completed: %s", job.name)
     job_execution.date_finished = timezone.now()
