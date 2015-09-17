@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def execute(job):
-    log.info("Creating job: %s", job.name)
+    log.info("Starting job: %s", job.name)
 
     job_execution = JobExecution.objects.create(name=job.name)
 
@@ -23,7 +23,7 @@ def execute(job):
         job_execution.save()
         return job_execution
 
-    log.info("Job completed: %s", job.name)
+    log.info("Finished job: %s", job.name)
     job_execution.date_finished = timezone.now()
     job_execution.status = JobExecution.STATUS_FINISHED
     job_execution.save()
@@ -41,7 +41,7 @@ def _execute_task(job_execution, task):
         execute_func = task.execute
         tear_down = getattr(task, "tear_down", None)
 
-    log.debug("Executing task: %s", task_name)
+    log.debug("Starting task: %s", task_name)
     task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
 
     try:
@@ -58,7 +58,7 @@ def _execute_task(job_execution, task):
         task_execution.save()
         raise e
 
-    log.debug("Task completed: %s", task_name)
+    log.debug("Finished task: %s", task_name)
     task_execution.date_finished = timezone.now()
     task_execution.status = TaskExecution.STATUS_FINISHED
     task_execution.save()
