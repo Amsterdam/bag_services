@@ -8,22 +8,30 @@ from batch import batch
 
 
 class Command(BaseCommand):
+    imports = dict(
+        bag=[datasets.bag.batch.ImportBagJob],
+        kadaster=[datasets.akr.batch.ImportKadasterJob, datasets.lki.batch.ImportKadasterJob],
+        wkpb=[datasets.wkpb.batch.ImportWkpbJob],
+    )
+
+    indexes = dict(
+        bag=[datasets.bag.batch.IndexJob],
+        kadaster=[],
+        wkpb=[],
+    )
+
     def add_arguments(self, parser):
-        parser.add_argument('--no-bag',
+        parser.add_argument('dataset',
+                            nargs='*',
+                            default=(' '.join(self.imports.keys())),
+                            help="Dataset to import, choose from {}".format(', '.join(self.imports.keys())))
+
+        parser.add_argument('--no-import',
                             action='store_false',
-                            dest='run-bag',
+                            dest='run-import',
                             default=True,
-                            help='Skip BAG import')
-        parser.add_argument('--no-kadaster',
-                            action='store_false',
-                            dest='run-kadaster',
-                            default=True,
-                            help='Skip kadaster import')
-        parser.add_argument('--no-wkpb',
-                            action='store_false',
-                            dest='run-wkpb',
-                            default=True,
-                            help='Skip WKPB import')
+                            help='Skip database importing')
+
         parser.add_argument('--no-index',
                             action='store_false',
                             dest='run-index',
@@ -31,15 +39,19 @@ class Command(BaseCommand):
                             help='Skip elastic search indexing')
 
     def handle(self, *args, **options):
-        if options['run-bag']:
-            batch.execute(datasets.bag.batch.ImportBagJob())
+        sets = options['dataset']
 
-        if options['run-kadaster']:
-            batch.execute(datasets.akr.batch.ImportKadasterJob())
-            batch.execute(datasets.lki.batch.ImportKadasterJob())
+        for ds in sets:
+            if ds not in self.imports.keys():
+                self.stderr.write("Unkown dataset: {}".format(ds))
+                return
 
-        if options['run-wkpb']:
-            batch.execute(datasets.wkpb.batch.ImportWkpbJob())
+        for ds in sets:
+            if options['run-import']:
+                for job_class in self.imports[ds]:
+                    batch.execute(job_class())
 
-        if options['run-index']:
-            batch.execute(datasets.bag.batch.IndexJob())
+            if options['run-index']:
+                for job_class in self.indexes[ds]:
+                    batch.execute(job_class())
+

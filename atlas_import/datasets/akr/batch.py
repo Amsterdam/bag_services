@@ -367,7 +367,7 @@ class ImportKadasterJob(object):
             ImportKstTask(self.akr, self.cache),
             ImportTteTask(self.akr, self.cache),
             ImportZrtTask(self.akr, self.cache),
-            ImportKotTask(self.akr, self.cache),
+            ImportKotVboTask(self.akr, self.cache),
 
             cache.FlushCacheTask(self.cache),
         ]
