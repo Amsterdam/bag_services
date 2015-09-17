@@ -512,7 +512,7 @@ class ImportPndGeoTask(AbstractWktTask):
         ))
 
 
-class DeleteELIndexTask(object):
+class RecreateELIndexTask(object):
     name = "EL: remove index"
 
     def __init__(self):
@@ -527,14 +527,17 @@ class DeleteELIndexTask(object):
         except AttributeError:
             log.warning("Could not delete index 'bag', ignoring")
 
+        idx.doc_type(documents.Ligplaats)
+        idx.doc_type(documents.Standplaats)
+        idx.doc_type(documents.Verblijfsobject)
+        idx.doc_type(documents.OpenbareRuimte)
+        idx.create()
+
 
 class ImportELLigplaatsTask(object):
     name = "EL: import ligplaatsen"
 
     def execute(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Ligplaats.init()
-
         for l in models.Ligplaats.objects.all():
             doc = documents.from_ligplaats(l)
             doc.save()
@@ -544,9 +547,6 @@ class ImportELStandplaatsTask(object):
     name = "EL: import standplaatsen"
 
     def execute(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Standplaats.init()
-
         for s in models.Standplaats.objects.all():
             doc = documents.from_standplaats(s)
             doc.save()
@@ -556,9 +556,6 @@ class ImportELVerblijfsobjectTask(object):
     name = "EL: import verblijfsobjecten"
 
     def execute(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.Verblijfsobject.init()
-
         for v in models.Verblijfsobject.objects.all():
             doc = documents.from_verblijfsobject(v)
             doc.save()
@@ -568,9 +565,6 @@ class ImportELOpenbareRuimteTask(object):
     name = "EL: import openbare ruimtes"
 
     def execute(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        documents.OpenbareRuimte.init()
-
         for o in models.OpenbareRuimte.objects.all():
             doc = documents.from_openbare_ruimte(o)
             doc.save()
@@ -634,7 +628,7 @@ class IndexJob(object):
 
     def tasks(self):
         return [
-            DeleteELIndexTask(),
+            RecreateELIndexTask(),
             ImportELOpenbareRuimteTask(),
             ImportELLigplaatsTask(),
             ImportELStandplaatsTask(),
