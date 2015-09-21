@@ -85,7 +85,8 @@ class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):
     definitieve ligging van de perceelsgrenzen in.
 
     Een uitgebreide beschrijving van de aanleiding en het proces is na te lezen in het artikel in het vakblad
-    [Geo-info (PDF, 359 kB)](http://www.amsterdam.nl/publish/pages/559654/12_kadaster_voorlopige_kadastrale_grenzen.pdf).
+    [Geo-info (PDF, 359 kB)](http://www.amsterdam.nl/publish/pages/559654/12_kadaster_voorlopige_kadastrale_grenzen
+    .pdf).
 
     ## Herkenbaarheid in LKI en Massale Output
 
@@ -102,3 +103,41 @@ class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
+
+
+class ZakelijkRechtViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Een recht is een door een complex van rechtsregels verleende en beschermende bevoegdheid van een persoon.
+
+    Het meest omvattende recht dat een persoon op een zaak kan hebben is de eigendom (art. 5:1 BW).
+
+    Uit dit recht kunnen beperkte rechten worden afgeleid en hiermee worden bezwaard (art. 3:8 BW).
+
+    Beperkte rechten zijn te vinden in de boeken 3 en 5 BW. (erfpacht, opstal, vruchtgebruik), zijn rechten van voor
+    1992 (beklemrecht en zakelijk recht als bedoeld in de Belemmeringenwet privaatrecht) en zijn oud vaderlandse
+    rechten (bijv. visrechten, grondrente enz).
+
+    Een Recht kan ook een oudhollandsrecht zijn.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
+    """
+    queryset = models.ZakelijkRecht.objects.all()
+    serializer_class = serializers.ZakelijkRecht
+
+
+class TransactieViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    In de objectklasse Transactie zijn elementen opgenomen uit de Stuk.
+
+    Een stuk bevat gegevens over de documenten op basis waarvan wijzigingen in de kadastrale vastgoedregistratie zijn
+    aangebracht.
+
+    Een voorbeeld van een dergelijk document is een notariële akte waarin bijvoorbeeld de transactie van vastgoed is
+    vastgelegd(verkoop woning, grond), of het vastleggen van belemmeringen op rechten en percelen.
+
+    Deze stukken worden aangeboden door het notariaat, deurwaarders, (lagere) overheden. etc.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-9/)
+    """
+    queryset = models.Transactie.objects.all()
+    serializer_class = serializers.Transactie

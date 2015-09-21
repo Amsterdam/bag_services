@@ -1,7 +1,7 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from . import models
-from rest_framework.reverse import reverse
 
 
 class NietNatuurlijkePersoon(serializers.ModelSerializer):
@@ -61,7 +61,8 @@ class KadastraalSubject(serializers.HyperlinkedModelSerializer):
             'zetel',
             'woonadres',
             'postadres',
-            'a_nummer'
+            'a_nummer',
+            'rechten',
         )
 
 
@@ -83,15 +84,45 @@ class BebouwingsCode(serializers.ModelSerializer):
         )
 
 
-class Verblijfsobjecten(serializers.HyperlinkedRelatedField):
+class Verblijfsobject(serializers.HyperlinkedRelatedField):
+    view_name = 'verblijfsobject-detail'
+
     def get_url(self, obj, view_name, request, fmt):
         return reverse(view_name, kwargs={'pk': obj.vbo_id}, request=request, format=fmt)
+
+
+class SoortRecht(serializers.ModelSerializer):
+    class Meta:
+        model = models.SoortRecht
+
+
+class ZakelijkRecht(serializers.HyperlinkedModelSerializer):
+    soort_recht = SoortRecht()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = (
+            'url',
+            'identificatie',
+
+            'kadastraal_object',
+            'kadastraal_subject',
+            'transactie',
+
+            'soort_recht',
+            'volgnummer',
+            'aandeel_medegerechtigden',
+            'aandeel_subject',
+
+            'einde_filiatie',
+            'sluimerend',
+        )
 
 
 class KadastraalObject(serializers.HyperlinkedModelSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
-    verblijfsobjecten = Verblijfsobjecten(view_name='verblijfsobject-detail', many=True, read_only=True)
+    verblijfsobjecten = Verblijfsobject(many=True, read_only=True)
 
     class Meta:
         model = models.KadastraalObject
@@ -112,4 +143,32 @@ class KadastraalObject(serializers.HyperlinkedModelSerializer):
             'ruitletter',
             'ruitnummer',
             'verblijfsobjecten',
+            'rechten',
+        )
+
+
+class SoortStuk(serializers.ModelSerializer):
+    class Meta:
+        model = models.SoortStuk
+
+
+class Transactie(serializers.HyperlinkedModelSerializer):
+    soort_stuk = SoortStuk()
+
+    class Meta:
+        model = models.Transactie
+        fields = (
+            'url',
+            'registercode',
+            'stukdeel_1',
+            'stukdeel_2',
+            'stukdeel_3',
+            'ontvangstdatum',
+            'soort_stuk',
+            'verlijdensdatum',
+            'meer_kadastrale_objecten',
+            'koopjaar',
+            'koopsom',
+            'belastingplichtige',
+            'rechten',
         )

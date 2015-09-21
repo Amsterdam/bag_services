@@ -15,8 +15,8 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/openbareruimte',
         'kadaster/object',
         'kadaster/subject',
-        # 'kadaster/transactie',
-        # 'kadaster/zakelijk-recht',
+        'kadaster/transactie',
+        'kadaster/zakelijk-recht',
     ]
 
     fixtures = ['dataset.json']
