@@ -63,9 +63,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        s = Search(client).index('bag')
-        s = s.query(get_matches_for(query))
-        s = s[:5]
+        s = (Search(client)
+                  .index('bag')
+                  .query(get_matches_for(query))
+                  [0:5]
+                  )
 
         result = s.index("bag").execute()
 
@@ -88,10 +90,13 @@ class SearchViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = Search(client).index('bag')
-        search = search.query(get_matches_for(query))
+        search = (Search(client)
+                  .index('bag')
+                  .query(get_matches_for(query))
+                  .sort('-_score', 'naam', 'adres')
+                  [0:100]
+                  )
 
-        search = search[0:100]
         result = search.execute()
 
         res = OrderedDict()
