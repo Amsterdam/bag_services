@@ -42,4 +42,13 @@ class QueryTest(APITestCase):
         first = response.data['hits'][0]
         self.assertEqual(first['naam'], "Anjeliersstraat")
 
+    def test_query_adresseerbaar_object(self):
+        response = self.client.get('/api/atlas/search/', dict(q="anjeliersstraat 11"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('hits', response.data)
+        self.assertIn('total', response.data)
+        self.assertEqual(response.data['total'], 3)
+
+        self.assertEqual(response.data['hits'][0]['adres'], "Anjeliersstraat 11A")
+
 

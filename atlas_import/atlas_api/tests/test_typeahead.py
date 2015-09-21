@@ -40,9 +40,13 @@ class TypeaheadTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         lst = response.data
-        print(lst)
         self.assertEqual(lst[0], dict(item="Anjeliersstraat"))
         self.assertIn("Anjeliersstraat 11A", [l['item'] for l in lst])
+
+    def test_match_adresseerbaar_object_met_huisnummer(self):
+        response = self.client.get('/api/atlas/typeahead/', dict(q="anjeliersstraat 11"))
+        lst = response.data
+        self.assertEqual(lst[0], dict(item="Anjeliersstraat 11A"))
 
 
 
