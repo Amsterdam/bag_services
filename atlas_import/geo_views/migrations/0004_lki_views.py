@@ -13,9 +13,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrate.ManageView(view_name='geo_lki_gemeente',
-                           sql='SELECT id,gemeentecode,gemeentenaam,geometrie FROM lki_gemeente'),
+                           sql="""SELECT id,gemeentecode,gemeentenaam,geometrie FROM lki_gemeente"""),
         migrate.ManageView(view_name='geo_lki_sectie',
-                           sql='SELECT id,kadastrale_gemeente_code || ' ' || code as volledige_code,code,geometrie FROM lki_sectie'),
+                           sql="""SELECT id,kadastrale_gemeente_code || ' ' || code as volledige_code,code,geometrie FROM lki_sectie"""),
         migrate.ManageView(view_name='geo_lki_kadastraalobject',
-                           sql='SELECT id,kadastrale_gemeente_code || ' ' || sectie_code || ' ' || perceelnummer as volledige_code, perceelnummer,geometrie FROM lki_kadastraalobject'),
+                           sql="""SELECT id,kadastrale_gemeente_code || ' ' || sectie_code || ' ' || perceelnummer as volledige_code, perceelnummer,geometrie FROM lki_kadastraalobject"""),
     ]
