@@ -56,10 +56,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
 
     def list(self, request, *args, **kwargs):
-        if 'q' not in request.QUERY_PARAMS:
+        if 'q' not in request.query_params:
             return Response([])
 
-        query = request.QUERY_PARAMS['q']
+        query = request.query_params['q']
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
@@ -71,7 +71,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         result = s.index("bag").execute()
 
-        data = [dict(item=h.get('naam') or h.get('adres')) for h in result]
+        data = [dict(item=h.naam if 'naam' in h else h.adres) for h in result]
         return Response(data)
 
 
@@ -83,10 +83,10 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
 
     def list(self, request, *args, **kwargs):
-        if 'q' not in request.QUERY_PARAMS:
+        if 'q' not in request.query_params:
             return Response([])
 
-        query = request.QUERY_PARAMS['q']
+        query = request.query_params['q']
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)

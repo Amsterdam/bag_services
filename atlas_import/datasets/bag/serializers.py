@@ -192,7 +192,7 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].QUERY_PARAMS if self.context else False
+        expand = 'full' in self.context['request'].query_params if self.context else False
 
         if expand:
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
@@ -227,7 +227,7 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].QUERY_PARAMS
+        expand = 'full' in self.context['request'].query_params
 
         if expand:
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
@@ -287,7 +287,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].QUERY_PARAMS
+        expand = 'full' in self.context['request'].query_params
 
         if expand:
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
