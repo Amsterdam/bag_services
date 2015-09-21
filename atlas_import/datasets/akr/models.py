@@ -193,9 +193,9 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     aandeel_subject = models.CharField(max_length=16, null=True)
     einde_filiatie = models.BooleanField(default=False)
     sluimerend = models.BooleanField(default=False)
-    kadastraal_object = models.ForeignKey(KadastraalObject)
-    kadastraal_subject = models.ForeignKey(KadastraalSubject)
-    transactie = models.ForeignKey(Transactie)
+    kadastraal_object = models.ForeignKey(KadastraalObject, related_name="rechten")
+    kadastraal_subject = models.ForeignKey(KadastraalSubject, related_name="rechten")
+    transactie = models.ForeignKey(Transactie, related_name="rechten")
 
     class Meta:
         verbose_name = "Zakelijke recht"

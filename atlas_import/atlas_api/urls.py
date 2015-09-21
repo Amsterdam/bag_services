@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from atlas_api import views
 import datasets.bag.views
+import datasets.akr.views
 
 class DocumentedRouter(routers.DefaultRouter):
     """
@@ -26,12 +27,14 @@ class DocumentedRouter(routers.DefaultRouter):
 
 
 router = DocumentedRouter()
-router.register(r'bag/ligplaatsen', datasets.bag.views.LigplaatsViewSet)
-router.register(r'bag/standplaatsen', datasets.bag.views.StandplaatsViewSet)
-router.register(r'bag/verblijfsobjecten', datasets.bag.views.VerblijfsobjectViewSet)
-router.register(r'bag/openbareruimtes', datasets.bag.views.OpenbareRuimteViewSet)
-router.register(r'bag/nummeraanduidingen', datasets.bag.views.NummeraanduidingViewSet)
-router.register(r'bag/panden', datasets.bag.views.PandViewSet)
+router.register(r'bag/ligplaats', datasets.bag.views.LigplaatsViewSet)
+router.register(r'bag/standplaats', datasets.bag.views.StandplaatsViewSet)
+router.register(r'bag/verblijfsobject', datasets.bag.views.VerblijfsobjectViewSet)
+router.register(r'bag/openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
+router.register(r'bag/nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
+router.register(r'bag/pand', datasets.bag.views.PandViewSet)
+router.register(r'kadaster/subject', datasets.akr.views.KadastraalSubjectViewSet)
+router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
