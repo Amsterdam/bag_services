@@ -237,7 +237,6 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
     def get_attribute(self, instance):
-        print(instance)
         return super().get_attribute(instance)
 
 

@@ -331,7 +331,6 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mode
     buurt = models.ForeignKey(Buurt, null=True)
 
     panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten', through='VerblijfsobjectPandRelatie')
-    kadastrale_objecten = models.ManyToManyField('akr.KadastraalObject', through='akr.KadastraalObjectVerblijfsobject')
 
     geometrie = geo.PointField(null=True, srid=28992)
 

@@ -45,7 +45,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
     ruitletter = models.CharField(max_length=1, null=True)
     ruitnummer = models.IntegerField(null=True)
     omschrijving_deelperceel = models.CharField(max_length=20, null=True)
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through="KadastraalObjectVerblijfsobject")
+    verblijfsobjecten = models.ManyToManyField('bag.Verblijfsobject', through="KadastraalObjectVerblijfsobject",
+                                               related_name="kadastrale_objecten")
 
     class Meta:
         verbose_name = "Kadastraal object"

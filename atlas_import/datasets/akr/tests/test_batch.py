@@ -190,17 +190,14 @@ class ImportKotVboTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        imported = models.KadastraalObjectVerblijfsobject.objects.all()
-        self.assertEqual(len(imported), 133)
+        imported = models.KadastraalObjectVerblijfsobject.objects.count()
+        self.assertEqual(imported, 133)
 
-        kot = models.KadastraalObject.objects.get(pk='ASD25AD00561A0010')
-        vbos = kot.verblijfsobjecten.all()
+        kot_vbos = models.KadastraalObjectVerblijfsobject.objects.filter(kadastraal_object_id='ASD25AD00561A0010')
+        self.assertEqual([v.verblijfsobject_id for v in kot_vbos], ['03630001003914'])
 
-        self.assertEqual([v.verblijfsobject_id for v in vbos], ['03630001003914'])
+        kot_vbos = models.KadastraalObjectVerblijfsobject.objects.filter(kadastraal_object_id='ASD25AD00584A0008')
 
-        kot = models.KadastraalObject.objects.get(pk='ASD25AD00584A0008')
-        vbos = kot.verblijfsobjecten.all()
-
-        self.assertEqual(set([v.verblijfsobject_id for v in vbos]),
+        self.assertEqual(set([v.verblijfsobject_id for v in kot_vbos]),
                          {'03630001002802', '03630001002807', '03630001002808', '03630001002812', '03630001008765',
                           '03630001008766', '03630001008767', '03630001008768', '03630001008769', })
