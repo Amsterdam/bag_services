@@ -7,8 +7,11 @@ adres_analyzer = es.analyzer('adres', tokenizer='keyword', filter=['standard', '
 
 
 class Ligplaats(es.DocType):
+    straatnaam = es.String(analyzer=adres_analyzer)
     adres = es.String(analyzer=adres_analyzer)
+    huisnummer = es.Integer()
     postcode = es.String()
+
     centroid = es.GeoPoint()
 
     class Meta:
@@ -16,8 +19,11 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
+    straatnaam = es.String(analyzer=adres_analyzer)
     adres = es.String(analyzer=adres_analyzer)
+    huisnummer = es.Integer()
     postcode = es.String()
+
     centroid = es.GeoPoint()
 
     class Meta:
@@ -25,7 +31,10 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
+    straatnaam = es.String(analyzer=adres_analyzer)
     adres = es.String(analyzer=adres_analyzer)
+    huisnummer = es.Integer()
+
     postcode = es.String()
     centroid = es.GeoPoint()
 
@@ -53,11 +62,17 @@ def get_centroid(geom):
     return result.coords
 
 
+def update_adres(dest, adres: models.Nummeraanduiding):
+    if adres:
+        dest.adres = adres.adres()
+        dest.postcode = adres.postcode
+        dest.straatnaam = adres.openbare_ruimte.naam
+        dest.huisnummer = adres.huisnummer
+
+
 def from_ligplaats(l: models.Ligplaats):
     d = Ligplaats(_id=l.id)
-    if l.hoofdadres:
-        d.adres = l.hoofdadres.adres()
-        d.postcode = l.hoofdadres.postcode
+    update_adres(d, l.hoofdadres)
     d.centroid = get_centroid(l.geometrie)
 
     return d
@@ -65,9 +80,7 @@ def from_ligplaats(l: models.Ligplaats):
 
 def from_standplaats(s: models.Standplaats):
     d = Standplaats(_id=s.id)
-    if s.hoofdadres:
-        d.adres = s.hoofdadres.adres()
-        d.postcode = s.hoofdadres.postcode
+    update_adres(d, s.hoofdadres)
     d.centroid = get_centroid(s.geometrie)
 
     return d
@@ -75,9 +88,7 @@ def from_standplaats(s: models.Standplaats):
 
 def from_verblijfsobject(v: models.Verblijfsobject):
     d = Verblijfsobject(_id=v.id)
-    if v.hoofdadres:
-        d.adres = v.hoofdadres.adres()
-        d.postcode = v.hoofdadres.postcode
+    update_adres(d, v.hoofdadres)
     d.centroid = get_centroid(v.geometrie)
 
     d.bestemming = v.gebruiksdoel_omschrijving

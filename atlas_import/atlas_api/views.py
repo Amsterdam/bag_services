@@ -41,9 +41,9 @@ class QueryMetadata(metadata.SimpleMetadata):
 def get_matches_for(query):
     wildcard = '*{}*'.format(query)
 
-    return (Q("prefix", naam={'value': query, 'boost': 12})
-            | Q("wildcard", naam={'value': wildcard, 'boost': 8})
-            | Q("prefix", adres={'value': query})
+    return (Q("match_phrase_prefix", naam={'query': query })
+            | Q("wildcard", naam={'value': wildcard })
+            | Q("match_phrase_prefix", adres={'query': query})
             )
 
 
@@ -60,12 +60,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
-        query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         s = (Search(client)
                   .index('bag')
                   .query(get_matches_for(query))
+                  .sort('naam', 'straatnaam', 'huisnummer', 'adres')
                   [0:5]
                   )
 
@@ -93,7 +93,7 @@ class SearchViewSet(viewsets.ViewSet):
         search = (Search(client)
                   .index('bag')
                   .query(get_matches_for(query))
-                  .sort('-_score', 'naam', 'adres')
+                  .sort('naam', 'straatnaam', 'huisnummer', 'adres')
                   [0:100]
                   )
 
