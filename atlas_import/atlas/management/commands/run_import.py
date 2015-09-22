@@ -9,7 +9,9 @@ from batch import batch
 
 
 class Command(BaseCommand):
-    imports = OrderedDict(
+    ordered = ['bag', 'kadaster', 'wkpb']
+
+    imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
         kadaster=[datasets.akr.batch.ImportKadasterJob, datasets.lki.batch.ImportKadasterJob],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
@@ -24,7 +26,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('dataset',
                             nargs='*',
-                            default=self.imports.keys(),
+                            default=self.ordered,
                             help="Dataset to import, choose from {}".format(', '.join(self.imports.keys())))
 
         parser.add_argument('--no-import',
@@ -41,12 +43,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dataset = options['dataset']
-        sets = [ds for ds in self.imports if ds in dataset]     # enforce order
+        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
         for ds in sets:
             if ds not in self.imports.keys():
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 return
+
+        self.stdout.write("Importing {}".format(", ".join(sets)))
 
         for ds in sets:
             if options['run-import']:
