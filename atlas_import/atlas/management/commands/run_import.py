@@ -40,7 +40,8 @@ class Command(BaseCommand):
                             help='Skip elastic search indexing')
 
     def handle(self, *args, **options):
-        sets = options['dataset']
+        dataset = options['dataset']
+        sets = [ds for ds in self.imports if ds in dataset]     # enforce order
 
         for ds in sets:
             if ds not in self.imports.keys():
