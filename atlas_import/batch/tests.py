@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.test import TestCase, SimpleTestCase
+from django.utils import timezone
 
 from . import models
 import batch.batch
@@ -95,3 +96,19 @@ class JobTest(TestCase):
         batch.batch.execute(SimpleJob("simple", t))
         self.assertEqual(t.executed, True)
         self.assertEqual(t.torn_down, True)
+
+
+class DurationTestCase(SimpleTestCase):
+    def test_duration(self):
+        cases = [
+            ((12, 0, 0), (12, 0, 7), "7s"),
+            ((12, 0, 59), (12, 1, 8), "9s"),
+            ((12, 0, 0), (12, 10, 4), "10m 4s"),
+            ((12, 0, 0), (20, 4, 12), "8h 4m 12s"),
+        ]
+
+        for start, end, expected in cases:
+            startdate = timezone.datetime(2000, 1, 1, start[0], start[1], start[2])
+            enddate = timezone.datetime(2000, 1, 1, end[0], end[1], end[2])
+            d = models._duration(startdate, enddate)
+            self.assertEqual(d, expected)
