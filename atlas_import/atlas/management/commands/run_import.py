@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
@@ -8,7 +9,7 @@ from batch import batch
 
 
 class Command(BaseCommand):
-    imports = dict(
+    imports = OrderedDict(
         bag=[datasets.bag.batch.ImportBagJob],
         kadaster=[datasets.akr.batch.ImportKadasterJob, datasets.lki.batch.ImportKadasterJob],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
