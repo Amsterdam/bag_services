@@ -1,6 +1,7 @@
 from django.db import models
 
 from datasets.generic import mixins
+from datasets.bag import models as bag
 
 
 class SoortCultuurOnbebouwd(models.Model):
@@ -44,6 +45,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     ruitletter = models.CharField(max_length=1, null=True)
     ruitnummer = models.IntegerField(null=True)
     omschrijving_deelperceel = models.CharField(max_length=20, null=True)
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through="KadastraalObjectVerblijfsobject")
 
     class Meta:
         verbose_name = "Kadastraal object"
@@ -204,5 +206,5 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
 class KadastraalObjectVerblijfsobject(mixins.ImportStatusMixin):
     id = models.UUIDField(primary_key=True)
-    kadastraal_object = models.ForeignKey(KadastraalObject, related_name="verblijfsobjecten")
-    vbo_id = models.CharField(max_length=14)
+    kadastraal_object = models.ForeignKey(KadastraalObject)
+    verblijfsobject = models.ForeignKey(bag.Verblijfsobject, null=True)

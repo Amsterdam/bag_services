@@ -6,6 +6,7 @@ import uuid
 from django.conf import settings
 
 from datasets.generic import uva2, cache, kadaster
+from datasets.bag import models as bag
 from . import models
 
 log = logging.getLogger(__name__)
@@ -328,11 +329,28 @@ class ImportKotVboTask(uva2.AbstractUvaTask):
     name = "import KOTVBO"
     code = "KOTVBO"
 
+    def __init__(self, source, cache):
+        super().__init__(source, cache)
+        self.valid_vbo_ids = []
+
+    def execute(self):
+        if not self.valid_vbo_ids:
+            self.valid_vbo_ids = set(bag.Verblijfsobject.objects.values_list('id', flat=True))
+        try:
+            super().execute()
+        finally:
+            self.valid_vbo_ids = []
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
 
         if not uva2.geldige_relatie(r, "KOTVBO"):
+            return
+
+        vbo_id = r['KOTVBO/VBO/Verblijfsobjectidentificatie']
+        if vbo_id not in self.valid_vbo_ids:
+            log.warning("Unknown VBO: {}".format(vbo_id))
             return
 
         aanduiding = kadaster.get_aanduiding(
@@ -346,7 +364,7 @@ class ImportKotVboTask(uva2.AbstractUvaTask):
         self.create(models.KadastraalObjectVerblijfsobject(
             id=uuid.uuid4(),
             kadastraal_object_id=self.foreign_key_id(models.KadastraalObject, aanduiding),
-            vbo_id=r['KOTVBO/VBO/Verblijfsobjectidentificatie'],
+            verblijfsobject_id=vbo_id,
         ))
 
 

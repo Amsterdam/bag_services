@@ -233,6 +233,14 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
 
 
+class KadastraalObjectField(serializers.HyperlinkedRelatedField):
+    view_name = "kadastraalobject-detail"
+
+    def get_attribute(self, instance):
+        print(instance)
+        return super().get_attribute(instance)
+
+
 class Verblijfsobject(serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
@@ -250,6 +258,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
         view_name='nummeraanduiding-detail',
         read_only=True,
     )
+    kadastrale_objecten = KadastraalObjectField(many=True, read_only=True)
 
     class Meta:
         model = models.Verblijfsobject
@@ -283,6 +292,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
             'adressen',
             'buurt',
             'panden',
+            'kadastrale_objecten',
         )
 
     def __init__(self, *args, **kwargs):

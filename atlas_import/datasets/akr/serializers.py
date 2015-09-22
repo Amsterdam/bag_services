@@ -84,13 +84,6 @@ class BebouwingsCode(serializers.ModelSerializer):
         )
 
 
-class Verblijfsobject(serializers.HyperlinkedRelatedField):
-    view_name = 'verblijfsobject-detail'
-
-    def get_url(self, obj, view_name, request, fmt):
-        return reverse(view_name, kwargs={'pk': obj.vbo_id}, request=request, format=fmt)
-
-
 class SoortRecht(serializers.ModelSerializer):
     class Meta:
         model = models.SoortRecht
@@ -122,7 +115,6 @@ class ZakelijkRecht(serializers.HyperlinkedModelSerializer):
 class KadastraalObject(serializers.HyperlinkedModelSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
-    verblijfsobjecten = Verblijfsobject(many=True, read_only=True)
 
     class Meta:
         model = models.KadastraalObject
