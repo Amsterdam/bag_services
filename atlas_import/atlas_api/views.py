@@ -45,9 +45,10 @@ def adres_query(client, query):
     return (
         Search(client)
             .index('bag')
-            .query(Q("match_phrase_prefix", naam=dict(query=query, boost=1000))
-                   | Q("wildcard", naam=dict(value=wildcard, boost=1000))
+            .query(Q("match_phrase_prefix", naam=dict(query=query))
+                   | Q("wildcard", naam=dict(value=wildcard))
                    | Q("match_phrase_prefix", adres=dict(query=query))
+                   | Q("match_phrase_prefix", postcode=dict(query=query))
                    )
             .sort({"straatnaam": {"order": "asc", "missing": "_first"}},
                   {"huisnummer": {"order": "asc", "missing": "_first"}},

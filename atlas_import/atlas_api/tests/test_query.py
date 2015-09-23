@@ -51,4 +51,13 @@ class QueryTest(APITestCase):
 
         self.assertEqual(response.data['hits'][0]['adres'], "Anjeliersstraat 11A")
 
+    def test_query_postcode(self):
+        response = self.client.get("/api/atlas/search/", dict(q="1015x"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('hits', response.data)
+        self.assertIn('total', response.data)
+        self.assertEqual(response.data['total'], 1)
+
+        self.assertEqual(response.data['hits'][0]['adres'], "Marnixkade 36F")
+
 
