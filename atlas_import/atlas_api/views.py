@@ -1,9 +1,10 @@
 # Create your views here.
 from collections import OrderedDict
+import re
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q
+from elasticsearch_dsl import Search, Q, A
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -38,7 +39,7 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def get_query_for(client, query):
+def adres_query(client, query):
     wildcard = '*{}*'.format(query)
 
     return (
@@ -57,13 +58,14 @@ def get_query_for(client, query):
     )
 
 
-def get_matches_for(query):
-    wildcard = '*{}*'.format(query)
-
-    return (Q("match_phrase_prefix", naam=dict(query=query, boost=1000))
-            | Q("wildcard", naam=dict(value=wildcard, boost=1000))
-            | Q("match_phrase_prefix", adres=dict(query=query))
-            )
+def postcode_autocomplete(client, query):
+    s = (
+        Search(client)
+            .index('bag')
+            .query(Q("match_phrase_prefix", postcode=dict(query=query)))
+    )
+    s.aggs.bucket('by_postcode', A('terms', field='postcode'))
+    return s
 
 
 class TypeaheadViewSet(viewsets.ViewSet):
@@ -74,18 +76,34 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
             return Response([])
 
         query = request.query_params['q']
 
-        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        s = get_query_for(client, query)[0:5]
+        if re.match("^\d", query):
+            return self.autocomplete_by_postcode(query)
+
+        return self.autocomplete_by_adres(query)
+
+    def autocomplete_by_adres(self, query):
+        s = adres_query(self.client, query)[0:5]
 
         result = s.execute()
 
         data = [dict(item=h.naam if 'naam' in h else h.adres) for h in result]
+        return Response(data)
+
+    def autocomplete_by_postcode(self, query):
+        s = postcode_autocomplete(self.client, query)[0:1]
+        result = s.execute()
+
+        data = [dict(item=b.key.upper()) for b in result.aggregations.by_postcode.buckets]
         return Response(data)
 
 
@@ -104,7 +122,7 @@ class SearchViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = get_query_for(client, query)[0:100]
+        search = adres_query(client, query)[0:100]
 
         result = search.execute()
 

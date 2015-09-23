@@ -48,5 +48,10 @@ class TypeaheadTest(APITestCase):
         lst = response.data
         self.assertEqual(lst[0], dict(item="Anjeliersstraat 11A"))
 
+    def test_match_postcode(self):
+        response = self.client.get("/api/atlas/typeahead/", dict(q='105'))
+        lst = response.data
+        self.assertEqual(lst[0], dict(item="1051LL"))
+
 
 
