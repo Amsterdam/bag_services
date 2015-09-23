@@ -41,9 +41,9 @@ class QueryMetadata(metadata.SimpleMetadata):
 def get_matches_for(query):
     wildcard = '*{}*'.format(query)
 
-    return (Q("match_phrase_prefix", naam={'query': query })
-            | Q("wildcard", naam={'value': wildcard })
-            | Q("match_phrase_prefix", adres={'query': query})
+    return (Q("match_phrase_prefix", naam=dict(query=query, boost=1000))
+            | Q("wildcard", naam=dict(value=wildcard, boost=1000))
+            | Q("match_phrase_prefix", adres=dict(query=query))
             )
 
 
