@@ -56,8 +56,9 @@ class QueryTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('hits', response.data)
         self.assertIn('total', response.data)
-        self.assertEqual(response.data['total'], 1)
+        self.assertEqual(response.data['total'], 2)
 
-        self.assertEqual(response.data['hits'][0]['adres'], "Marnixkade 36F")
+        self.assertEqual(response.data['hits'][0]['naam'], "Marnixkade")
+        self.assertEqual(response.data['hits'][1]['adres'], "Marnixkade 36F")
 
 
