@@ -38,6 +38,25 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
+def get_query_for(client, query):
+    wildcard = '*{}*'.format(query)
+
+    return (
+        Search(client)
+            .index('bag')
+            .query(Q("match_phrase_prefix", naam=dict(query=query, boost=1000))
+                   | Q("wildcard", naam=dict(value=wildcard, boost=1000))
+                   | Q("match_phrase_prefix", adres=dict(query=query))
+                   )
+            .sort({"straatnaam": {"order": "asc", "missing": "_first"}},
+                  {"huisnummer": {"order": "asc", "missing": "_first"}},
+                  {"adres": {"order": "asc", "missing": "_first"}},
+                  '-_score',
+                  'naam',
+                  )
+    )
+
+
 def get_matches_for(query):
     wildcard = '*{}*'.format(query)
 
@@ -62,14 +81,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = request.query_params['q']
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        s = (Search(client)
-                  .index('bag')
-                  .query(get_matches_for(query))
-                  .sort('naam', 'straatnaam', 'huisnummer', 'adres')
-                  [0:5]
-                  )
+        s = get_query_for(client, query)[0:5]
 
-        result = s.index("bag").execute()
+        result = s.execute()
 
         data = [dict(item=h.naam if 'naam' in h else h.adres) for h in result]
         return Response(data)
@@ -90,12 +104,7 @@ class SearchViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = (Search(client)
-                  .index('bag')
-                  .query(get_matches_for(query))
-                  .sort('naam', 'straatnaam', 'huisnummer', 'adres')
-                  [0:100]
-                  )
+        search = get_query_for(client, query)[0:100]
 
         result = search.execute()
 
