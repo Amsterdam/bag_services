@@ -104,7 +104,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         s = postcode_autocomplete(self.client, query)[0:1]
         result = s.execute()
 
-        data = [dict(item=b.key.upper()) for b in result.aggregations.by_postcode.buckets]
+        data = [dict(item=b.key.upper()) for b in result.aggregations.by_postcode.buckets][:5]
         return Response(data)
 
 
