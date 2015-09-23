@@ -210,7 +210,7 @@ class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mod
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    openbare_ruimte = models.ForeignKey(OpenbareRuimte)
+    openbare_ruimte = models.ForeignKey(OpenbareRuimte, related_name='adressen')
 
     ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
     standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')

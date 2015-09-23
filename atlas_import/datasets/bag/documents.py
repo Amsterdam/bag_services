@@ -48,6 +48,7 @@ class Verblijfsobject(es.DocType):
 
 class OpenbareRuimte(es.DocType):
     naam = es.String(analyzer=adres_analyzer)
+    postcode = es.String()
 
     class Meta:
         index = 'bag'
@@ -101,5 +102,6 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.naam = o.naam
+    d.postcode = list(o.adressen.values_list("postcode", flat=True).distinct())
 
     return d
