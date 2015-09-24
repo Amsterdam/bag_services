@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 
 from . import models, serializers
+from datasets.generic import renderers
 
 
 class KadastraalSubjectViewSet(viewsets.ReadOnlyModelViewSet):
@@ -103,6 +104,8 @@ class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
+    renderer_classes = renderers.DEFAULT_RENDERERS
+    template_name = "akr/kadastraal_object.html"
 
 
 class ZakelijkRechtViewSet(viewsets.ReadOnlyModelViewSet):

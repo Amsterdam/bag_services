@@ -2,29 +2,16 @@
 
 {% block details %}
     <h2>Verblijfsobject</h2>
-    <dl>
-        <dt>Gebruiksdoel</dt>
-        <dd>{{ object.gebruiksdoel_omschrijving }}</dd>
+    {% include "bag/includes/verblijfsobject.html" with vbo=object %}
 
-        <dt>Feitelijk gebruik</dt>
-        <dd>{{ object.gebruik.omschrijving }}</dd>
+    {% for pand in object.panden.all %}
+        <h2>Pand</h2>
+        {% include "bag/includes/pand.html" with pand=pand %}
+    {% endfor %}
 
-    <dt>Aantal bouwlagen</dt>
-    <dd></dd>
+    {% for kot in object.kadastrale_objecten.all %}
+        <h2>Kadastraal Object</h2>
 
-    <dt>Verdieping toegang</dt>
-    <dd></dd>
-
-    <dt>Toegang</dt>
-    <dd></dd>
-
-    <dt>Aantal verhuurbare eenheden</dt>
-    <dd></dd>
-
-    <dt>Aantal kamers</dt>
-    <dd></dd>
-
-    <dt>Oppervlakte</dt>
-    <dd></dd>
-    </dl>
+        {% include "akr/includes/kadastraal_object.html" with kot=kot %}
+    {% endfor %}
 {% endblock %}

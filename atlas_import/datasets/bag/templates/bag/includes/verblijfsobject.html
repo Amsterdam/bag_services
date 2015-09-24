@@ -1,0 +1,61 @@
+<dl>
+    <dt>Type woonvbo./dt>
+    <dd>{{ vbo.type_woonvbo.omschrijving }}</dd>
+
+    <dt>Gebruiksdoel</dt>
+    <dd>{{ vbo.gebruiksdoel_omschrijving }}</dd>
+
+    <dt>Feitelijk gebruik</dt>
+    <dd>{{ vbo.gebruik.omschrijving }}</dd>
+
+    <dt>Aantal bouwlagen</dt>
+    <dd>{{ vbo.bouwlagen }}</dd>
+
+    <dt>Verdieping toegang</dt>
+    <dd>{{ vbo.bouwlaag_toegang }}</dd>
+
+    <dt>Toegang</dt>
+    <dd>{{ vbo.toegang.omschrijving }}</dd>
+
+    <dt>Aantal kamers</dt>
+    <dd>{{ vbo.aantal_kamers }}</dd>
+
+    <dt>Oppervlakte</dt>
+    <dd>{{ vbo.oppervlakte }} m<sup>2</sup></dd>
+
+    <dt>Woningvoorraad</dt>
+    <dd>{{ vbo.woningvoorraad|yesno:"Ja,Nee" }}</dd>
+
+    <dt>Eigendomsverhouding</dt>
+    <dd>{{ vbo.eigendomsverhouding.omschrijving }}</dd>
+
+    <dt>Financieringswijze</dt>
+    <dd>{{ vbo.financieringswijze.omschrijving }}</dd>
+
+    <dt>Ligging</dt>
+    <dd>{{ vbo.ligging.omschrijving }}</dd>
+
+    <dt>Buurt</dt>
+    <dd>{{ vbo.buurt.naam }} [{{ vbo.buurt.code }}]</dd>
+
+    <dt>Stadsdeel</dt>
+    <dd>{{ vbo.buurt.stadsdeel.naam }}</dd>
+
+    <dt>Geometrie</dt>
+    <dd>{{ vbo.geometrie.x|floatformat:0 }},{{ vbo.geometrie.y|floatformat:0 }}</dd>
+
+    <dt>Status geometrie</dt>
+    <dd>{{ vbo.status_coordinaat_omschrijving }}</dd>
+
+    <dt>Landelijke identificatiecode</dt>
+    <dd>{{ vbo.id }}</dd>
+
+    <dt>Status</dt>
+    <dd>{{ vbo.status.omschrijving }}</dd>
+
+    <dt>Documentdatum mutatie</dt>
+    <dd>{{ vbo.document_mutatie|date:"d-m-Y" }}</dd>
+
+    <dt>Documentnummer mutatie</dt>
+    <dd>{{ vbo.document_nummer }}</dd>
+</dl>

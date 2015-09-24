@@ -1,4 +1,7 @@
 <div>
+    <h2>Woonplaats</h2>
+    {% include "bag/includes/woonplaats.html" with woonplaats=object.woonplaats %}
+
     <h2>Openbare ruimte</h2>
-    {% include "bag/includes/openbare_ruimte.html" with or=object %}
+    {% include "bag/includes/openbare_ruimte.html" with openbare_ruimte=object %}
 </div>

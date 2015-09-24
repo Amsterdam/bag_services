@@ -2,8 +2,11 @@
     <h2>Adres</h2>
     {% include "bag/includes/nummeraanduiding.html" with adres=object.hoofdadres %}
 
+    <h2>Woonplaats</h2>
+    {% include "bag/includes/woonplaats.html" with woonplaats=object.hoofdadres.openbare_ruimte.woonplaats %}
+
     <h2>Openbare Ruimte</h2>
-    {% include "bag/includes/openbare_ruimte.html" with or=object.hoofdadres.openbare_ruimte %}
+    {% include "bag/includes/openbare_ruimte.html" with openbare_ruimte=object.hoofdadres.openbare_ruimte %}
 
     {% if object.nevenadressen %}
         <h2>Nevenadressen</h2>

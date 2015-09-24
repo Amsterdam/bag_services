@@ -1,25 +1,25 @@
 <dl>
     <dt>Naam</dt>
-    <dd>{{ or.naam }}</dd>
+    <dd>{{ openbare_ruimte.naam }}</dd>
 
     <dt>Straatnaam 24-pos</dt>
-    <dd>{{ or.naam_nen }}</dd>
+    <dd>{{ openbare_ruimte.naam_nen }}</dd>
 
     <dt>Straatnaam 17-pos</dt>
-    <dd>{{ or.naam_ptt }}</dd>
+    <dd>{{ openbare_ruimte.naam_ptt }}</dd>
 
     <dt>Landelijke identificatiecode</dt>
-    <dd>{{ or.id }}</dd>
+    <dd>{{ openbare_ruimte.id }}</dd>
 
     <dt>Straatcode</dt>
-    <dd>{{ or.code }}</dd>
+    <dd>{{ openbare_ruimte.code }}</dd>
 
     <dt>Status</dt>
-    <dd>{{ or.status.omschrijving }}</dd>
+    <dd>{{ openbare_ruimte.status.omschrijving }}</dd>
 
     <dt>Documentdatum mutatie</dt>
-    <dd>{{ or.document_mutatie }}</dd>
+    <dd>{{ openbare_ruimte.document_mutatie|date:"d-m-Y" }}</dd>
 
     <dt>Documentnummer mutatie</dt>
-    <dd>{{ or.document_nummer }}</dd>
+    <dd>{{ openbare_ruimte.document_nummer }}</dd>
 </dl>
