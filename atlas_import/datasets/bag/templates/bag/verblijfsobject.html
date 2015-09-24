@@ -1,7 +1,30 @@
-<div>
+{% extends "bag/adresseerbaar_object.html" %}
+
+{% block details %}
     <h2>Verblijfsobject</h2>
+    <dl>
+        <dt>Gebruiksdoel</dt>
+        <dd>{{ object.gebruiksdoel_omschrijving }}</dd>
 
-    {{ object.hoofdadres }}
+        <dt>Feitelijk gebruik</dt>
+        <dd>{{ object.gebruik.omschrijving }}</dd>
 
-    {{ object.gebruiksdoel.code }}
-</div>
+    <dt>Aantal bouwlagen</dt>
+    <dd></dd>
+
+    <dt>Verdieping toegang</dt>
+    <dd></dd>
+
+    <dt>Toegang</dt>
+    <dd></dd>
+
+    <dt>Aantal verhuurbare eenheden</dt>
+    <dd></dd>
+
+    <dt>Aantal kamers</dt>
+    <dd></dd>
+
+    <dt>Oppervlakte</dt>
+    <dd></dd>
+    </dl>
+{% endblock %}

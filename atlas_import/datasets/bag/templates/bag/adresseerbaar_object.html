@@ -1,0 +1,19 @@
+<div>
+    <h2>Adres</h2>
+    {% include "bag/includes/nummeraanduiding.html" with adres=object.hoofdadres %}
+
+    <h2>Openbare Ruimte</h2>
+    {% include "bag/includes/openbare_ruimte.html" with or=object.hoofdadres.openbare_ruimte %}
+
+    {% if object.nevenadressen %}
+        <h2>Nevenadressen</h2>
+
+        {% for adres in object.nevenadressen %}
+            {% include 'bag/includes/nummeraanduiding.html' with adres=adres %}
+        {% endfor %}
+    {% endif %}
+
+    {% block details %}
+    {% endblock %}
+
+</div>

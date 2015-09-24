@@ -48,6 +48,8 @@ class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
     serializer_class = serializers.Ligplaats
+    renderer_classes = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
+    template_name = "bag/ligplaats.html"
 
 
 class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -62,6 +64,8 @@ class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
     serializer_class = serializers.Standplaats
+    renderer_classes = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
+    template_name = "bag/standplaats.html"
 
 
 class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
@@ -124,3 +128,5 @@ class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
     serializer_class = serializers.OpenbareRuimte
+    renderer_classes = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
+    template_name = "bag/openbare_ruimte.html"

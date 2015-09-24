@@ -239,6 +239,10 @@ class AdresseerbaarObjectMixin(object):
         candidates = [a for a in self.adressen.all() if a.hoofdadres]
         return candidates[0] if candidates else None
 
+    @property
+    def nevenadressen(self):
+        return [a for a in self.adressen.all() if not a.hoofdadres]
+
 
 class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
     """
