@@ -1,6 +1,25 @@
-from rest_framework import metadata, viewsets
+from django import template
+from django.template import loader, RequestContext, Context
+
+from rest_framework import metadata, viewsets, renderers
 
 from . import serializers, models
+
+
+class HTMLDetailRenderer(renderers.BaseRenderer):
+    format = 'html'
+    media_type = 'text/html+detail'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        view = renderer_context['view']
+        request = renderer_context['request']
+
+        # todo: not very smart
+        obj = view.queryset.get(pk=data['id'])
+
+        tmpl = loader.get_template(view.template_name)
+        ctx = RequestContext(request, dict(data=data, object=obj))
+        return tmpl.render(ctx)
 
 
 class ExpansionMetadata(metadata.SimpleMetadata):
@@ -58,6 +77,8 @@ class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects.all()
     serializer_class = serializers.Verblijfsobject
+    renderer_classes = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
+    template_name = "bag/verblijfsobject.html"
 
 
 class NummeraanduidingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -94,7 +115,8 @@ class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
 
     Als openbare ruimte worden onder meer aangemerkt weg, water, terrein, spoorbaan en landschappelijk gebied.
 
-    Bron: [Catalogus BAG (ministerie van VROM, 2009)](http://www.kadaster.nl/web/artikel/download/BAG-grondslagen-catalogus.htm).
+    Bron: [Catalogus BAG (ministerie van VROM, 2009)](
+    http://www.kadaster.nl/web/artikel/download/BAG-grondslagen-catalogus.htm).
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
     """
@@ -102,5 +124,3 @@ class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
     serializer_class = serializers.OpenbareRuimte
-
-
