@@ -1,14 +1,12 @@
 import elasticsearch_dsl as es
 
 from . import models
-
-
-adres_analyzer = es.analyzer('adres', tokenizer='keyword', filter=['standard', 'lowercase', 'asciifolding'])
+from datasets.generic import analyzers
 
 
 class Ligplaats(es.DocType):
-    straatnaam = es.String(analyzer=adres_analyzer)
-    adres = es.String(analyzer=adres_analyzer)
+    straatnaam = es.String(analyzer=analyzers.adres)
+    adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
     postcode = es.String()
 
@@ -19,8 +17,8 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
-    straatnaam = es.String(analyzer=adres_analyzer)
-    adres = es.String(analyzer=adres_analyzer)
+    straatnaam = es.String(analyzer=analyzers.adres)
+    adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
     postcode = es.String()
 
@@ -31,8 +29,8 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
-    straatnaam = es.String(analyzer=adres_analyzer)
-    adres = es.String(analyzer=adres_analyzer)
+    straatnaam = es.String(analyzer=analyzers.adres)
+    adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
 
     postcode = es.String()
@@ -47,7 +45,7 @@ class Verblijfsobject(es.DocType):
 
 
 class OpenbareRuimte(es.DocType):
-    naam = es.String(analyzer=adres_analyzer)
+    naam = es.String(analyzer=analyzers.adres)
     postcode = es.String()
 
     class Meta:

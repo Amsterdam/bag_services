@@ -5,9 +5,9 @@ import uuid
 
 from django.conf import settings
 
-from datasets.generic import uva2, cache, kadaster
+from datasets.generic import uva2, cache, kadaster, index
 from datasets.bag import models as bag
-from . import models
+from . import models, documents
 
 log = logging.getLogger(__name__)
 
@@ -388,4 +388,36 @@ class ImportKadasterJob(object):
             ImportKotVboTask(self.akr, self.cache),
 
             cache.FlushCacheTask(self.cache),
+        ]
+
+
+class RecreateIndexTask(index.RecreateIndexTask):
+    index = 'brk'
+    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+
+
+class IndexSubjectTask(index.ImportIndexTask):
+    name = "index kadastraal subject"
+    model = models.KadastraalSubject
+
+    def convert(self, obj):
+        return documents.from_kadastraal_subject(obj)
+
+
+class IndexObjectTask(index.ImportIndexTask):
+    name = "index kadastraal object"
+    model = models.KadastraalObject
+
+    def convert(self, obj):
+        return documents.from_kadastraal_object(obj)
+
+
+class IndexKadasterJob(object):
+    name = "Update search-index BRK"
+
+    def tasks(self):
+        return [
+            RecreateIndexTask(),
+            IndexSubjectTask(),
+            IndexObjectTask(),
         ]

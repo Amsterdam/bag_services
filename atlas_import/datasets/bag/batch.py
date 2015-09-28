@@ -6,11 +6,7 @@ from django.conf import settings
 
 from django.contrib.gis.geos import Point, GEOSGeometry
 
-from elasticsearch_dsl import Index
-
-from elasticsearch_dsl.connections import connections
-
-from datasets.generic import uva2, cache
+from datasets.generic import uva2, cache, index
 from . import models, documents
 
 log = logging.getLogger(__name__)
@@ -512,62 +508,41 @@ class ImportPndGeoTask(AbstractWktTask):
         ))
 
 
-class RecreateELIndexTask(object):
-    name = "EL: remove index"
-
-    def __init__(self):
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
-
-    def execute(self):
-        idx = Index('bag')
-
-        try:
-            idx.delete(ignore=404)
-            log.info("Deleted index bag")
-        except AttributeError:
-            log.warning("Could not delete index 'bag', ignoring")
-
-        idx.doc_type(documents.Ligplaats)
-        idx.doc_type(documents.Standplaats)
-        idx.doc_type(documents.Verblijfsobject)
-        idx.doc_type(documents.OpenbareRuimte)
-        idx.create()
+class RecreateIndexTask(index.RecreateIndexTask):
+    index = 'bag'
+    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
 
 
-class ImportELLigplaatsTask(object):
-    name = "EL: import ligplaatsen"
+class IndexLigplaatsTask(index.ImportIndexTask):
+    name = "index ligplaatsen"
+    model = models.Ligplaats
 
-    def execute(self):
-        for l in models.Ligplaats.objects.all():
-            doc = documents.from_ligplaats(l)
-            doc.save()
-
-
-class ImportELStandplaatsTask(object):
-    name = "EL: import standplaatsen"
-
-    def execute(self):
-        for s in models.Standplaats.objects.all():
-            doc = documents.from_standplaats(s)
-            doc.save()
+    def convert(self, obj):
+        return documents.from_ligplaats(obj)
 
 
-class ImportELVerblijfsobjectTask(object):
-    name = "EL: import verblijfsobjecten"
+class IndexStandplaatsTask(index.ImportIndexTask):
+    name = "index standplaatsen"
+    model = models.Standplaats
 
-    def execute(self):
-        for v in models.Verblijfsobject.objects.all():
-            doc = documents.from_verblijfsobject(v)
-            doc.save()
+    def convert(self, obj):
+        return documents.from_standplaats(obj)
 
 
-class ImportELOpenbareRuimteTask(object):
-    name = "EL: import openbare ruimtes"
+class IndexVerblijfsobjectTask(index.ImportIndexTask):
+    name = "index verblijfsobjecten"
+    model = models.Verblijfsobject
 
-    def execute(self):
-        for o in models.OpenbareRuimte.objects.all():
-            doc = documents.from_openbare_ruimte(o)
-            doc.save()
+    def convert(self, obj):
+        return documents.from_verblijfsobject(obj)
+
+
+class IndexOpenbareRuimteTask(index.ImportIndexTask):
+    name = "index openbare ruimtes"
+    model = models.OpenbareRuimte
+
+    def convert(self, obj):
+        return documents.from_openbare_ruimte(obj)
 
 
 class ImportBagJob(object):
@@ -628,9 +603,9 @@ class IndexJob(object):
 
     def tasks(self):
         return [
-            RecreateELIndexTask(),
-            ImportELOpenbareRuimteTask(),
-            ImportELLigplaatsTask(),
-            ImportELStandplaatsTask(),
-            ImportELVerblijfsobjectTask(),
+            RecreateIndexTask(),
+            IndexOpenbareRuimteTask(),
+            IndexLigplaatsTask(),
+            IndexStandplaatsTask(),
+            IndexVerblijfsobjectTask(),
         ]
