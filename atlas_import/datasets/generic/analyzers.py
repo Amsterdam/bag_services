@@ -4,3 +4,6 @@ kadastrale_aanduiding = es.analyzer('kadastrale_aanduiding', tokenizer='keyword'
 adres = es.analyzer('adres', tokenizer='keyword', filter=['standard', 'lowercase', 'asciifolding'])
 
 naam = es.analyzer('naam', tokenizer='keyword', filter=['standard', 'lowercase', 'asciifolding'])
+
+autocomplete = es.analyzer('completions', tokenizer='keyword',
+                           filter=['standard', 'lowercase', 'asciifolding'])

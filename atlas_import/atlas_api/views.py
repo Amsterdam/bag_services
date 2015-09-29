@@ -1,6 +1,5 @@
 # Create your views here.
 from collections import OrderedDict
-import re
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -57,14 +56,19 @@ def adres_query(client, query):
     )
 
 
-def postcode_autocomplete(client, query):
-    s = (
+def autocomplete_query(client, query):
+    return (
         Search(client)
-            .index('bag')
-            .query(Q("match_phrase_prefix", postcode=dict(query=query)))
+            .index('bag', 'brk')
+            .query("function_score",
+                   query=Q("multi_match", type="phrase_prefix", query=query, fields=['completions'])
+                         | Q("wildcard", naam=dict(value="*{}*".format(query))),
+                   functions=[
+                       {'filter': {'type': {'value': 'openbare_ruimte'}},
+                        'weight': 30}
+                   ])
+            .highlight('completions', pre_tags=[''], post_tags=[''])
     )
-    s.aggs.bucket('by_postcode', A('terms', field='postcode'))
-    return s
 
 
 class TypeaheadViewSet(viewsets.ViewSet):
@@ -85,25 +89,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         query = request.query_params['q']
 
-        if re.match("^\d", query):
-            return self.autocomplete_by_postcode(query)
+        result = autocomplete_query(self.client, query)[0:20].execute()
+        matches = []
+        seen = set()
+        for h in result:
+            for m in h.meta.highlight.completions:
+                if m not in seen:
+                    matches.append(m)
+                seen.add(m)
 
-        return self.autocomplete_by_adres(query)
-
-    def autocomplete_by_adres(self, query):
-        s = adres_query(self.client, query)[0:5]
-
-        result = s.execute()
-
-        data = [dict(item=h.naam if 'naam' in h else h.adres) for h in result]
-        return Response(data)
-
-    def autocomplete_by_postcode(self, query):
-        s = postcode_autocomplete(self.client, query)[0:1]
-        result = s.execute()
-
-        data = [dict(item=b.key.upper()) for b in result.aggregations.by_postcode.buckets][:5]
-        return Response(data)
+        return Response([dict(item=m) for m in matches][:5])
 
 
 class SearchViewSet(viewsets.ViewSet):
