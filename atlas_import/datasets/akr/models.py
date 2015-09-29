@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.contrib.gis.db import models as geo
+
 from datasets.generic import mixins
 from datasets.bag import models as bag
 
@@ -45,6 +47,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     ruitletter = models.CharField(max_length=1, null=True)
     ruitnummer = models.IntegerField(null=True)
     omschrijving_deelperceel = models.CharField(max_length=20, null=True)
+    geometrie = geo.PointField(null=True, srid=28992)
     verblijfsobjecten = models.ManyToManyField('bag.Verblijfsobject', through="KadastraalObjectVerblijfsobject",
                                                related_name="kadastrale_objecten")
 

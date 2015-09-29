@@ -1,4 +1,5 @@
 import datetime
+from django.contrib.gis import geos
 
 from batch.test import TaskTestCase
 from .. import batch, models
@@ -36,6 +37,7 @@ class ImportKotTest(TaskTestCase):
         self.assertEqual(kot.ruitletter, "D")
         self.assertEqual(kot.ruitnummer, 5)
         self.assertEqual(kot.omschrijving_deelperceel, '')
+        self.assertEqual(kot.geometrie, geos.Point(x=118333, y=483286, srid=28992))
 
 
 class ImportKstTest(TaskTestCase):

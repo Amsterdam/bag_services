@@ -4,6 +4,7 @@ import os
 import uuid
 
 from django.conf import settings
+from django.contrib.gis.geos import Point
 
 from datasets.generic import uva2, cache, kadaster, index
 from datasets.bag import models as bag
@@ -35,6 +36,13 @@ class ImportKotTask(uva2.AbstractUvaTask):
         nummer = uva2.uva_nummer(r['Objectindexnummer'])
         aanduiding = kadaster.get_aanduiding(gemeente, sectie, perceel, letter, nummer)
 
+        x = r['X-Coordinaat']
+        y = r['Y-Coordinaat']
+        if x and y:
+            geo = Point(int(x), int(y))
+        else:
+            geo = None
+
         self.create(models.KadastraalObject(
             id=aanduiding,
             gemeentecode=gemeente,
@@ -52,6 +60,7 @@ class ImportKotTask(uva2.AbstractUvaTask):
             ruitletter=r['Ruitletter'],
             ruitnummer=uva2.uva_nummer(r['Ruitnummer']),
             omschrijving_deelperceel=r['OmschrijvingDeelperceel'],
+            geometrie=geo,
         ))
 
     def get_soort_cultuur_onbebouwd(self, r):
