@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 import time
 import datasets.bag.batch
+import datasets.akr.batch
 from batch import batch
 
 
@@ -12,6 +13,7 @@ class TypeaheadTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.akr.batch.IndexKadasterJob())
         time.sleep(1)   # this is stupid
 
     def test_match_openbare_ruimte(self):
@@ -46,12 +48,12 @@ class TypeaheadTest(APITestCase):
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="anjeliersstraat 11"))
         lst = response.data
-        self.assertEqual(lst[0], dict(item="Anjeliersstraat 11A"))
+        self.assertTrue(lst[0]['item'].startswith("Anjeliersstraat 11"))
 
     def test_match_postcode(self):
         response = self.client.get("/api/atlas/typeahead/", dict(q='105'))
         lst = response.data
-        self.assertEqual(lst[0], dict(item="1051LL"))
+        self.assertTrue(lst[0]['item'].startswith('105'))
 
 
 

@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 import time
 import datasets.bag.batch
+import datasets.akr.batch
 from batch import batch
 
 
@@ -12,6 +13,7 @@ class QueryTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.akr.batch.IndexKadasterJob())
         time.sleep(1)   # this is stupid
 
     def test_non_matching_query(self):
