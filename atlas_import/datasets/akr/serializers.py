@@ -136,6 +136,7 @@ class KadastraalObject(serializers.HyperlinkedModelSerializer):
             'ruitnummer',
             'verblijfsobjecten',
             'rechten',
+            'geometrie',
         )
 
 
