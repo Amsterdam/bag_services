@@ -32,11 +32,10 @@ class RecreateIndexTask(object):
         except AttributeError:
             log.warning("Could not delete index '%s', ignoring", self.index)
 
-        idx.create()
-
         for dt in self.doc_types:
             idx.doc_type(dt)
 
+        idx.create()
 
 class ImportIndexTask(object):
     model = None

@@ -66,7 +66,7 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.adres = adres.adres()
         dest.postcode = adres.postcode
         dest.straatnaam = adres.openbare_ruimte.naam
-        dest.huisnummer = adres.huisnummer
+        dest.huisnummer = int(adres.huisnummer)
 
 
 def from_ligplaats(l: models.Ligplaats):
@@ -100,6 +100,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.naam = o.naam
-    d.postcode = list(o.adressen.values_list("postcode", flat=True).distinct())
+    postcodes = [p for p in o.adressen.values_list("postcode", flat=True).distinct() if p]
+    d.postcode = postcodes
 
     return d

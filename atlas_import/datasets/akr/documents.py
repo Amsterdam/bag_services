@@ -28,10 +28,9 @@ def from_kadastraal_subject(ks):
         d.natuurlijk_persoon = False
         d.naam = ks.naam_niet_natuurlijke_persoon
     else:
-        d.natuurlijk_persoon = True
-
         titel = ks.titel_of_predikaat.omschrijving if ks.titel_of_predikaat else None
 
+        d.natuurlijk_persoon = True
         d.naam = " ".join([part for part in (titel,
                                              ks.voorletters or ks.voornamen,
                                              ks.voorvoegsel,
@@ -43,7 +42,7 @@ def from_kadastraal_subject(ks):
 
 
 def from_kadastraal_object(ko):
-    d = KadastraalObject(_id = ko.id)
+    d = KadastraalObject(_id=ko.id)
 
     d.aanduiding = ko.id
     return d
