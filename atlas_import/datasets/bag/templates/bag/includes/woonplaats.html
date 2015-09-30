@@ -1,16 +1,17 @@
+{% load details %}
 <dl>
     <dt>Naam woonplaats</dt>
-    <dd>{{ woonplaats.naam }}</dd>
+    <dd>{{ woonplaats.naam|simple }}</dd>
 
     <dt>Naam woonplaats 17-pos</dt>
-    <dd>{{ woonplaats.naam_ptt }}</dd>
+    <dd>{{ woonplaats.naam_ptt|simple }}</dd>
 
     <dt>Landelijke identificatiecode</dt>
-    <dd>{{ woonplaats.code }}</dd>
+    <dd>{{ woonplaats.code|simple }}</dd>
 
     <dt>Documentdatum mutatie</dt>
-    <dd>{{ woonplaats.document_mutatie|date:"d-m-Y" }}</dd>
+    <dd>{{ woonplaats.document_mutatie|simple }}</dd>
 
     <dt>Documentnummer mutatie</dt>
-    <dd>{{ woonplaats.document_nummer }}</dd>
+    <dd>{{ woonplaats.document_nummer|simple }}</dd>
 </dl>

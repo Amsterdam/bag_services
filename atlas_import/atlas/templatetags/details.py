@@ -1,5 +1,8 @@
 import datetime
+
 from django import template
+from django.contrib.gis import geos
+from django.utils import safestring
 
 register = template.Library()
 
@@ -18,6 +21,9 @@ def simple(value):
     if isinstance(value, datetime.date):
         return value.strftime("%d-%m-%Y")
 
+    if isinstance(value, geos.Point):
+        return "{:.0f}, {:.0f}".format(value.x, value.y)
+
     return value
 
 
@@ -30,3 +36,11 @@ def choice(value, field):
 
     display = getattr(value, 'get_{}_display'.format(field))()
     return "{} ({})".format(display, v)
+
+
+@register.filter
+def oppervlak(value):
+    if value is None:
+        return ""
+
+    return safestring.mark_safe("{} m<sup>2</sup>".format(value))

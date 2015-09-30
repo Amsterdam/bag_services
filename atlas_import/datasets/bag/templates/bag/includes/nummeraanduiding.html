@@ -1,19 +1,21 @@
+{% load details %}
+
 <dl>
     <dt>Straatnaam</dt>
-    <dd>{{ adres.openbare_ruimte.naam }}</dd>
+    <dd>{{ adres.openbare_ruimte.naam|simple }}</dd>
 
     <dt>Huisnummer</dt>
-    <dd>{{ adres.huisnummer }}</dd>
+    <dd>{{ adres.huisnummer|simple }}</dd>
 
     <dt>Huisletter</dt>
-    <dd>{{ adres.huisletter }}</dd>
+    <dd>{{ adres.huisletter|simple }}</dd>
 
     <dt>Toevoeging</dt>
-    <dd>{{ adres.huisnummer_toevoeging }}</dd>
+    <dd>{{ adres.huisnummer_toevoeging|simple }}</dd>
 
     <dt>Postcode</dt>
-    <dd>{{ adres.postcode }}</dd>
+    <dd>{{ adres.postcode|simple }}</dd>
 
     <dt>Woonplaats</dt>
-    <dd>{{ adres.openbare_ruimte.woonplaats.naam }}</dd>
+    <dd>{{ adres.openbare_ruimte.woonplaats.naam|simple }}</dd>
 </dl>

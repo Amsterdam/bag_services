@@ -1,26 +1,27 @@
+{% load details %}
 <dl>
     <dt>Kadastrale gemeentecode</dt>
-    <dd>{{ kot.gemeentecode }}</dd>
+    <dd>{{ kot.gemeentecode|simple }}</dd>
 
     <dt>Sectie</dt>
-    <dd>{{ kot.sectie }}</dd>
+    <dd>{{ kot.sectie|simple }}</dd>
 
     <dt>Objectnummer</dt>
-    <dd>{{ kot.perceelnummer }}</dd>
+    <dd>{{ kot.perceelnummer|simple }}</dd>
 
     <dt>Indexletter</dt>
-    <dd>{{ kot.objectindex_letter }}</dd>
+    <dd>{{ kot.objectindex_letter|simple }}</dd>
 
     <dt>Indexnummer</dt>
-    <dd>{{ kot.objectindex_nummer }}</dd>
+    <dd>{{ kot.objectindex_nummer|simple }}</dd>
 
     <dt>Oppervlakte</dt>
-    <dd>{{ kot.grootte }} m<sup>2</sup></dd>
+    <dd>{{ kot.grootte|oppervlak }}</dd>
 
     <dt>Indicatie geschat</dt>
-    <dd>{{ kot.grootte_geschat|yesno:"Ja,Nee" }}</dd>
+    <dd>{{ kot.grootte_geschat|simple }}</dd>
 
     <dt>Indicatie vervallen</dt>
-    <dd>{{ kot.vervallen|yesno:"Ja,Nee" }}</dd>
+    <dd>{{ kot.vervallen|simple }}</dd>
 
 </dl>

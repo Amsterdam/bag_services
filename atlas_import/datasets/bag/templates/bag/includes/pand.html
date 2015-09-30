@@ -1,19 +1,20 @@
+{% load details %}
 <dl>
     <dt>Oorpspronkelijk bouwjaar</dt>
-    <dd>{{ pand.bouwjaar }}</dd>
+    <dd>{{ pand.bouwjaar|simple }}</dd>
 
     <dt>Bouwblok</dt>
-    <dd>{{ pand.pandnummer }}</dd>
+    <dd>{{ pand.pandnummer|simple }}</dd>
 
     <dt>Landelijke identificatiecode</dt>
-    <dd>{{ pand.id }}</dd>
+    <dd>{{ pand.id|simple }}</dd>
 
     <dt>Status</dt>
-    <dd>{{ pand.status.omschrijving }}</dd>
+    <dd>{{ pand.status.omschrijving|simple }}</dd>
 
     <dt>Documentdatum mutatie</dt>
-    <dd>{{ pand.document_mutatie|date:"d-m-Y" }}</dd>
+    <dd>{{ pand.document_mutatie|simple }}</dd>
 
     <dt>Documentnummer mutatie</dt>
-    <dd>{{ pand.document_nummer }}</dd>
+    <dd>{{ pand.document_nummer|simple }}</dd>
 </dl>
