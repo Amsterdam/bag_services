@@ -1,8 +1,7 @@
 from rest_framework import metadata, viewsets
 
 from . import serializers, models
-from datasets.generic import renderers
-from datasets.generic.renderers import HTMLDetailRenderer
+from datasets.generic import rest
 
 
 
@@ -32,7 +31,7 @@ class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
     serializer_class = serializers.Ligplaats
-    renderer_classes = renderers.DEFAULT_RENDERERS
+    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/ligplaats.html"
 
 
@@ -48,7 +47,7 @@ class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
     serializer_class = serializers.Standplaats
-    renderer_classes = renderers.DEFAULT_RENDERERS
+    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/standplaats.html"
 
 
@@ -65,7 +64,7 @@ class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects.all()
     serializer_class = serializers.Verblijfsobject
-    renderer_classes = renderers.DEFAULT_RENDERERS
+    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/verblijfsobject.html"
 
 
@@ -112,5 +111,5 @@ class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
     serializer_class = serializers.OpenbareRuimte
-    renderer_classes = renderers.DEFAULT_RENDERERS
+    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/openbare_ruimte.html"

@@ -1,9 +1,6 @@
 from django.template import loader, RequestContext
 from rest_framework import renderers
 
-__author__ = 'yigalduppen'
-
-
 class HTMLDetailRenderer(renderers.BaseRenderer):
     format = 'html'
     media_type = 'text/html+detail'
@@ -20,3 +17,8 @@ class HTMLDetailRenderer(renderers.BaseRenderer):
 DEFAULT_RENDERERS = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
 
 
+class DataSetSerializerMixin(object):
+    def to_representation(self, obj):
+        result = super().to_representation(obj)
+        result['dataset'] = self.dataset
+        return result

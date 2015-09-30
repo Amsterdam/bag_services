@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
 from . import models
+from datasets.generic import mixins
+import datasets.generic.rest
+
+
+class BagMixin(datasets.generic.rest.DataSetSerializerMixin):
+    dataset = 'bag'
 
 
 class Status(serializers.ModelSerializer):
@@ -105,7 +111,7 @@ class Woonplaats(serializers.ModelSerializer):
         )
 
 
-class OpenbareRuimte(serializers.HyperlinkedModelSerializer):
+class OpenbareRuimte(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
     type = serializers.CharField(source='get_type_display')
     woonplaats = Woonplaats()
@@ -131,7 +137,7 @@ class OpenbareRuimte(serializers.HyperlinkedModelSerializer):
         )
 
 
-class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
+class Nummeraanduiding(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
     openbare_ruimte = OpenbareRuimte()
     type = serializers.CharField(source='get_type_display')
@@ -163,7 +169,7 @@ class Nummeraanduiding(serializers.HyperlinkedModelSerializer):
         )
 
 
-class Ligplaats(serializers.HyperlinkedModelSerializer):
+class Ligplaats(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
@@ -198,7 +204,7 @@ class Ligplaats(serializers.HyperlinkedModelSerializer):
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
 
 
-class Standplaats(serializers.HyperlinkedModelSerializer):
+class Standplaats(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
@@ -236,11 +242,8 @@ class Standplaats(serializers.HyperlinkedModelSerializer):
 class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
-    def get_attribute(self, instance):
-        return super().get_attribute(instance)
 
-
-class Verblijfsobject(serializers.HyperlinkedModelSerializer):
+class Verblijfsobject(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
     buurt = Buurt()
     eigendomsverhouding = Eigendomsverhouding()
@@ -321,7 +324,7 @@ class Verblijfsobject(serializers.HyperlinkedModelSerializer):
         )
 
 
-class Pand(serializers.HyperlinkedModelSerializer):
+class Pand(BagMixin, serializers.HyperlinkedModelSerializer):
     status = Status()
 
     class Meta:
