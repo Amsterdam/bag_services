@@ -1,5 +1,4 @@
 from django.db import models
-
 from django.contrib.gis.db import models as geo
 
 from datasets.generic import mixins
@@ -145,6 +144,20 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastraal subject"
         verbose_name_plural = "Kadastrale subjecten"
+
+    def natuurlijk_persoon(self):
+        return not self.naam_niet_natuurlijke_persoon
+
+    def volledige_naam(self):
+        if not self.natuurlijk_persoon():
+            return self.naam_niet_natuurlijke_persoon
+
+        titel = self.titel_of_predikaat.omschrijving if self.titel_of_predikaat else None
+
+        return " ".join([part for part in (titel,
+                                           self.voorletters or self.voornamen,
+                                           self.voorvoegsel,
+                                           self.geslachtsnaam) if part])
 
 
 class SoortStuk(models.Model):

@@ -18,6 +18,8 @@ class KadastraalSubjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     serializer_class = serializers.KadastraalSubject
+    renderer_classes = renderers.DEFAULT_RENDERERS
+    template_name = "akr/kadastraal_subject.html"
 
 
 class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):

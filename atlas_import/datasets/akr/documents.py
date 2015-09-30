@@ -27,18 +27,13 @@ def from_kadastraal_subject(ks):
 
     if ks.naam_niet_natuurlijke_persoon:
         d.natuurlijk_persoon = False
-        d.naam = ks.naam_niet_natuurlijke_persoon
     else:
-        titel = ks.titel_of_predikaat.omschrijving if ks.titel_of_predikaat else None
-
         d.natuurlijk_persoon = True
-        d.naam = " ".join([part for part in (titel,
-                                             ks.voorletters or ks.voornamen,
-                                             ks.voorvoegsel,
-                                             ks.geslachtsnaam) if part])
+
         d.geslachtsnaam = ks.geslachtsnaam
         d.geboortedatum = ks.geboortedatum
 
+    d.naam = ks.volledige_naam()
     d.completions = [d.naam]
 
     return d

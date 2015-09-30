@@ -1,0 +1,69 @@
+{% load details %}
+
+<dl>
+    <dt>Naam</dt>
+    <dd>{{ subject.volledige_naam|simple }}</dd>
+
+    <dt>Natuurlijk persoon</dt>
+    <dd>{{ subject.natuurlijk_persoon|simple }}</dd>
+
+    <dt>Subjectnummer</dt>
+    <dd>{{ subject.subjectnummer|simple }}</dd>
+
+    {% if subject.natuurlijk_persoon %}
+        <dt>Titel of predikaat</dt>
+        <dd>{{ subject.titel_of_predikaat|simple }}</dd>
+
+        <dt>Geslachtsaanduiding</dt>
+        <dd>{{ subject|choice:"geslachtsaanduiding" }}</dd>
+
+        <dt>Geslachtsnaam</dt>
+        <dd>{{ subject.geslachtsnaam|simple }}</dd>
+
+        <dt>Diacritisch</dt>
+        <dd>{{ subject.diacritisch|simple }}</dd>
+
+        <dt>Voorletters</dt>
+        <dd>{{ subject.voorletters|simple }}</dd>
+
+        <dt>Voornamen</dt>
+        <dd>{{ subject.voornamen|simple }}</dd>
+
+        <dt>Voorvoegsel</dt>
+        <dd>{{ subject.voorvoegsel|simple }}</dd>
+
+        <dt>Geboortedatum</dt>
+        <dd>{{ subject.geboortedatum|simple }}</dd>
+
+        <dt>Geboorteplaats</dt>
+        <dd>{{ subject.geboorteplaats|simple }}</dd>
+
+        <dt>Overleden</dt>
+        <dd>{{ subject.overleden|simple }}</dd>
+
+        <dt>Overlijdensdatum</dt>
+        <dd>{{ subject.overlijdensdatum|simple }}</dd>
+    {% else %}
+        <dt>Soort niet-natuurlijke persoon</dt>
+        <dd>{{ subject.soort_niet_natuurlijke_persoon.omschrijving|simple }}</dd>
+
+        <dt>Zetel</dt>
+        <dd>{{ subject.zetel|simple }}</dd>
+    {% endif %}
+
+    <dt>Soort subject</dt>
+    <dd>{{ subject|choice:"soort_subject" }}</dd>
+
+    <dt>A-nummer</dt>
+    <dd>{{ subject.a_nummer|simple }}</dd>
+
+    {% if subject.woonadres %}
+        <h3>Woonadres</h3>
+        {% include "akr/includes/adres.html" with adres=subject.woonadres %}
+    {% endif %}
+
+    {% if subject.postadres %}
+        <h3>Postadres</h3>
+        {% include "akr/includes/adres.html" with adres=subject.postadres %}
+    {% endif %}
+</dl>
