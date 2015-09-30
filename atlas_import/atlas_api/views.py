@@ -22,6 +22,9 @@ def _get_url(request, doc_type, id):
     if doc_type == "openbare_ruimte":
         return reverse('openbareruimte-detail', args=(id,), request=request)
 
+    if doc_type == "kadastraal_subject":
+        return reverse('kadastraalsubject-detail', args=(id,), request=request)
+
     return None
 
 
@@ -38,18 +41,19 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def adres_query(client, query):
+def search_query(client, query):
     wildcard = '*{}*'.format(query)
 
     return (
         Search(client)
             .index('bag', 'brk')
-            .query(Q("multi_match", type="phrase_prefix", query=query, fields=['naam', 'adres', 'postcode'])
+            .query(Q("multi_match", type="phrase_prefix", query=query,
+                     fields=['naam', 'adres', 'postcode', 'geslachtsnaam'])
                    | Q("wildcard", naam=dict(value=wildcard))
                    )
-            .sort({"straatnaam": {"order": "asc", "missing": "_first"}},
-                  {"huisnummer": {"order": "asc", "missing": "_first"}},
-                  {"adres": {"order": "asc", "missing": "_first"}},
+            .sort({"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
+                  {"huisnummer": {"order": "asc", "missing": "_first", "unmapped_type": "long"}},
+                  {"adres": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
                   '-_score',
                   'naam',
                   )
@@ -116,7 +120,7 @@ class SearchViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = adres_query(client, query)[0:100]
+        search = search_query(client, query)[0:100]
 
         result = search.execute()
 
