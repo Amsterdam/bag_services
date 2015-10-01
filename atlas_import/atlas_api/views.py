@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -61,17 +61,34 @@ def search_query(client, query):
 
 
 def autocomplete_query(client, query):
+    match_fields = [
+        "openbare_ruimte.naam",
+        "openbare_ruimte.postcode",
+        "ligplaats.adres",
+        "standplaats.adres",
+        "verblijfsobject.adres",
+        "kadastraal_subject.geslachtsnaam",
+        "kadastraal_subject.naam"
+    ]
+
+    fuzzy_fields = [
+        "openbare_ruimte.naam",
+        "kadastraal_subject.geslachtsnaam"
+    ]
+
+    completions = [
+        "naam",
+        "adres",
+        "postcode",
+        "geslachtsnaam",
+    ]
+
     return (
         Search(client)
             .index('bag', 'brk')
-            .query("function_score",
-                   query=Q("multi_match", type="phrase_prefix", query=query, fields=['completions'])
-                         | Q("wildcard", naam=dict(value="*{}*".format(query))),
-                   functions=[
-                       {'filter': {'type': {'value': 'openbare_ruimte'}},
-                        'weight': 30}
-                   ])
-            .highlight('completions', pre_tags=[''], post_tags=[''])
+            .query(Q("multi_match", query=query, type="phrase_prefix", fields=match_fields)
+                   | Q("multi_match", query=query, fuzziness="auto", prefix_length=1, fields=fuzzy_fields))
+            .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 
@@ -94,15 +111,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = request.query_params['q']
 
         result = autocomplete_query(self.client, query)[0:20].execute()
-        matches = []
-        seen = set()
-        for h in result:
-            for m in h.meta.highlight.completions:
-                if m not in seen:
-                    matches.append(m)
-                seen.add(m)
+        matches = OrderedDict()
+        for r in result:
+            h = r.meta.highlight
+            for key in h:
+                highlights = h[key]
+                for match in highlights:
+                    matches[match] = 1
 
-        return Response([dict(item=m) for m in matches][:5])
+        return Response([dict(item=m) for m in matches.keys()][:5])
 
 
 class SearchViewSet(viewsets.ViewSet):

@@ -407,7 +407,7 @@ class RecreateIndexTask(index.RecreateIndexTask):
 
 class IndexSubjectTask(index.ImportIndexTask):
     name = "index kadastraal subject"
-    model = models.KadastraalSubject
+    queryset = models.KadastraalSubject.objects
 
     def convert(self, obj):
         return documents.from_kadastraal_subject(obj)
@@ -415,7 +415,7 @@ class IndexSubjectTask(index.ImportIndexTask):
 
 class IndexObjectTask(index.ImportIndexTask):
     name = "index kadastraal object"
-    model = models.KadastraalObject
+    queryset = models.KadastraalObject.objects
 
     def convert(self, obj):
         return documents.from_kadastraal_object(obj)

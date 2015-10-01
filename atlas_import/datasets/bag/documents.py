@@ -5,7 +5,6 @@ from datasets.generic import analyzers
 
 
 class Ligplaats(es.DocType):
-    completions = es.String(analyzer=analyzers.autocomplete)
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
@@ -18,7 +17,6 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
-    completions = es.String(analyzer=analyzers.autocomplete)
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
@@ -31,7 +29,6 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
-    completions = es.String(analyzer=analyzers.autocomplete)
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
@@ -48,7 +45,6 @@ class Verblijfsobject(es.DocType):
 
 
 class OpenbareRuimte(es.DocType):
-    completions = es.String(analyzer=analyzers.autocomplete)
     naam = es.String(analyzer=analyzers.adres)
     postcode = es.String()
 
@@ -67,7 +63,6 @@ def get_centroid(geom):
 
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
-        dest.completions = [adres.adres(), adres.postcode]
         dest.adres = adres.adres()
         dest.postcode = adres.postcode
         dest.straatnaam = adres.openbare_ruimte.naam
@@ -107,6 +102,5 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.naam = o.naam
     postcodes = [p for p in o.adressen.values_list("postcode", flat=True).distinct() if p]
     d.postcode = postcodes
-    d.completions = [d.naam] + postcodes
 
     return d

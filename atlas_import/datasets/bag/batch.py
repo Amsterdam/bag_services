@@ -515,7 +515,7 @@ class RecreateIndexTask(index.RecreateIndexTask):
 
 class IndexLigplaatsTask(index.ImportIndexTask):
     name = "index ligplaatsen"
-    model = models.Ligplaats
+    queryset = models.Ligplaats.objects.prefetch_related('adressen')
 
     def convert(self, obj):
         return documents.from_ligplaats(obj)
@@ -523,7 +523,7 @@ class IndexLigplaatsTask(index.ImportIndexTask):
 
 class IndexStandplaatsTask(index.ImportIndexTask):
     name = "index standplaatsen"
-    model = models.Standplaats
+    queryset = models.Standplaats.objects.prefetch_related('adressen')
 
     def convert(self, obj):
         return documents.from_standplaats(obj)
@@ -531,7 +531,7 @@ class IndexStandplaatsTask(index.ImportIndexTask):
 
 class IndexVerblijfsobjectTask(index.ImportIndexTask):
     name = "index verblijfsobjecten"
-    model = models.Verblijfsobject
+    queryset = models.Verblijfsobject.objects.prefetch_related('adressen')
 
     def convert(self, obj):
         return documents.from_verblijfsobject(obj)
@@ -539,7 +539,7 @@ class IndexVerblijfsobjectTask(index.ImportIndexTask):
 
 class IndexOpenbareRuimteTask(index.ImportIndexTask):
     name = "index openbare ruimtes"
-    model = models.OpenbareRuimte
+    queryset = models.OpenbareRuimte.objects
 
     def convert(self, obj):
         return documents.from_openbare_ruimte(obj)

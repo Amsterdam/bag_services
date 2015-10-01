@@ -12,7 +12,6 @@ class KadastraalObject(es.DocType):
 
 
 class KadastraalSubject(es.DocType):
-    completions = es.String(analyzer=analyzers.autocomplete)
     naam = es.String(analyzer=analyzers.naam)
     natuurlijk_persoon = es.Boolean()
     geslachtsnaam = es.String(analyzer=analyzers.naam)
@@ -34,7 +33,6 @@ def from_kadastraal_subject(ks):
         d.geboortedatum = ks.geboortedatum
 
     d.naam = ks.volledige_naam()
-    d.completions = [d.naam]
 
     return d
 

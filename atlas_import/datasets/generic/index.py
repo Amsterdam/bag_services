@@ -37,16 +37,16 @@ class RecreateIndexTask(object):
 
         idx.create()
 
-class ImportIndexTask(object):
-    model = None
 
-    def __init__(self):
-        if not self.model:
-            raise ValueError("No model specified")
+class ImportIndexTask(object):
+    queryset = None
+
+    def get_queryset(self):
+        return self.queryset.all()
 
     def convert(self, obj):
         raise NotImplementedError()
 
     def execute(self):
         client = elasticsearch.Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in self.model.objects.all()))
+        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in self.get_queryset()))
