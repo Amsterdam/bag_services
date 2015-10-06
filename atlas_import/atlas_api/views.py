@@ -128,7 +128,7 @@ class SearchViewSet(viewsets.ViewSet):
     """
 
     metadata_class = QueryMetadata
-    page_size = 10
+    page_size = 100
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
