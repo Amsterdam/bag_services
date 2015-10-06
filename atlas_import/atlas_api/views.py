@@ -9,21 +9,19 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 
+_details = {
+    'ligplaats': 'ligplaats-detail',
+    'standplaats': 'standplaats-detail',
+    'verblijfsobject': 'verblijfsobject-detail',
+    'openbare_ruimte': 'openbareruimte-detail',
+    'kadastraal_subject': 'kadastraalsubject-detail',
+    'kadastraal_object': 'kadastraalobject-detail',
+}
+
+
 def _get_url(request, doc_type, id):
-    if doc_type == "ligplaats":
-        return reverse('ligplaats-detail', args=(id,), request=request)
-
-    if doc_type == "standplaats":
-        return reverse('standplaats-detail', args=(id,), request=request)
-
-    if doc_type == "verblijfsobject":
-        return reverse('verblijfsobject-detail', args=(id,), request=request)
-
-    if doc_type == "openbare_ruimte":
-        return reverse('openbareruimte-detail', args=(id,), request=request)
-
-    if doc_type == "kadastraal_subject":
-        return reverse('kadastraalsubject-detail', args=(id,), request=request)
+    if doc_type in _details:
+        return reverse(_details[doc_type], args=(id,), request=request)
 
     return None
 
@@ -48,7 +46,7 @@ def search_query(client, query):
         Search(client)
             .index('bag', 'brk')
             .query(Q("multi_match", type="phrase_prefix", query=query,
-                     fields=['naam', 'adres', 'postcode', 'geslachtsnaam'])
+                     fields=['naam', 'adres', 'postcode', 'geslachtsnaam', 'aanduiding'])
                    | Q("wildcard", naam=dict(value=wildcard))
                    )
             .sort({"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
@@ -68,7 +66,8 @@ def autocomplete_query(client, query):
         "standplaats.adres",
         "verblijfsobject.adres",
         "kadastraal_subject.geslachtsnaam",
-        "kadastraal_subject.naam"
+        "kadastraal_subject.naam",
+        "kadastraal_object.aanduiding",
     ]
 
     fuzzy_fields = [
@@ -81,6 +80,7 @@ def autocomplete_query(client, query):
         "adres",
         "postcode",
         "geslachtsnaam",
+        "aanduiding",
     ]
 
     return (

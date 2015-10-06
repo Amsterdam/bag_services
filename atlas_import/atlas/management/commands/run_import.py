@@ -43,12 +43,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dataset = options['dataset']
-        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
-        for ds in sets:
+        for ds in dataset:
             if ds not in self.imports.keys():
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 return
+
+        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
 

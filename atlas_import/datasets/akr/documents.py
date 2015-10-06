@@ -6,6 +6,7 @@ from datasets.generic import analyzers
 class KadastraalObject(es.DocType):
     aanduiding = es.String(analyzer=analyzers.kadastrale_aanduiding)
     adres = es.String(analyzer=analyzers.adres)
+    centroid = es.GeoPoint()
 
     class Meta:
         index = 'brk'
@@ -41,4 +42,12 @@ def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.id)
 
     d.aanduiding = ko.id
+    if ko.geometrie:
+        centroid = ko.geometrie
+        centroid.transform('wgs84')
+
+        d.centroid = centroid.coords
+
+    d.adres = [vo.hoofdadres.adres() for vo in ko.verblijfsobjecten.all() if vo.hoofdadres]
+
     return d
