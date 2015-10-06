@@ -4,7 +4,7 @@ from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
-from rest_framework import viewsets, metadata
+from rest_framework import viewsets, metadata, pagination
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -128,22 +128,45 @@ class SearchViewSet(viewsets.ViewSet):
     """
 
     metadata_class = QueryMetadata
+    page_size = 10
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
             return Response([])
 
+        page = 1
+        if 'page' in request.query_params:
+            page = int(request.query_params['page'])
+
+        start = ((page - 1) * self.page_size)
+        end = (page * self.page_size)
+
         query = request.query_params['q']
-        query = query.lower()
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        search = search_query(client, query)[0:100]
+        search = search_query(client, query)[start:end]
 
         result = search.execute()
 
+        followup_url = reverse('search-list', request=request)
+        if page == 1:
+            prev_page = None
+        elif page == 2:
+            prev_page = "{}?q={}".format(followup_url, query)
+        else:
+            prev_page = "{}?q={}&page={}".format(followup_url, query, page-1)
+
+        total = result.hits.total
+        if end >= total:
+            next_page = None
+        else:
+            next_page = "{}?q={}&page={}".format(followup_url, query, page+1)
+
         res = OrderedDict()
-        res['total'] = result.hits.total
-        res['hits'] = [self.normalize_hit(h, request) for h in result.hits]
+        res['count'] = result.hits.total
+        res['next'] = next_page
+        res['previous'] = prev_page
+        res['results'] = [self.normalize_hit(h, request) for h in result.hits]
 
         return Response(res)
 
