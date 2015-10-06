@@ -6,7 +6,8 @@ postgres:
     POSTGRES_PASSWORD: insecure
   
 elasticsearch:
-  image: elasticsearch:1.7
+  build: docker-compose/elasticsearch
+  command: elasticsearch -Des.node.name="Atlas"
   ports:
     - "9200:9200"
     - "9300:9300"
