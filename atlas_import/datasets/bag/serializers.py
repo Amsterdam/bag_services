@@ -1,11 +1,10 @@
 from rest_framework import serializers
 
 from . import models
-from datasets.generic import mixins
-import datasets.generic.rest
+from datasets.generic import rest
 
 
-class BagMixin(datasets.generic.rest.DataSetSerializerMixin):
+class BagMixin(rest.DataSetSerializerMixin):
     dataset = 'bag'
 
 
@@ -111,7 +110,7 @@ class Woonplaats(serializers.ModelSerializer):
         )
 
 
-class OpenbareRuimte(BagMixin, serializers.HyperlinkedModelSerializer):
+class OpenbareRuimte(BagMixin, rest.HALSerializer):
     status = Status()
     type = serializers.CharField(source='get_type_display')
     woonplaats = Woonplaats()
@@ -119,9 +118,9 @@ class OpenbareRuimte(BagMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.OpenbareRuimte
         fields = (
+            '_links',
             'id',
             'code',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -137,7 +136,7 @@ class OpenbareRuimte(BagMixin, serializers.HyperlinkedModelSerializer):
         )
 
 
-class Nummeraanduiding(BagMixin, serializers.HyperlinkedModelSerializer):
+class Nummeraanduiding(BagMixin, rest.HALSerializer):
     status = Status()
     openbare_ruimte = OpenbareRuimte()
     type = serializers.CharField(source='get_type_display')
@@ -145,9 +144,9 @@ class Nummeraanduiding(BagMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.Nummeraanduiding
         fields = (
+            '_links',
             'id',
             'code',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -169,7 +168,7 @@ class Nummeraanduiding(BagMixin, serializers.HyperlinkedModelSerializer):
         )
 
 
-class Ligplaats(BagMixin, serializers.HyperlinkedModelSerializer):
+class Ligplaats(BagMixin, rest.HALSerializer):
     status = Status()
     buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
@@ -181,9 +180,9 @@ class Ligplaats(BagMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.Ligplaats
         fields = (
+            '_links',
             'id',
             'identificatie',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -204,7 +203,7 @@ class Ligplaats(BagMixin, serializers.HyperlinkedModelSerializer):
             self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
 
 
-class Standplaats(BagMixin, serializers.HyperlinkedModelSerializer):
+class Standplaats(BagMixin, rest.HALSerializer):
     status = Status()
     buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
@@ -216,9 +215,9 @@ class Standplaats(BagMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.Standplaats
         fields = (
+            '_links',
             'id',
             'identificatie',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -243,7 +242,7 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class Verblijfsobject(BagMixin, serializers.HyperlinkedModelSerializer):
+class Verblijfsobject(BagMixin, rest.HALSerializer):
     status = Status()
     buurt = Buurt()
     eigendomsverhouding = Eigendomsverhouding()
@@ -265,9 +264,9 @@ class Verblijfsobject(BagMixin, serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.Verblijfsobject
         fields = (
+            '_links',
             'id',
             'identificatie',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -324,15 +323,15 @@ class Verblijfsobject(BagMixin, serializers.HyperlinkedModelSerializer):
         )
 
 
-class Pand(BagMixin, serializers.HyperlinkedModelSerializer):
+class Pand(BagMixin, rest.HALSerializer):
     status = Status()
 
     class Meta:
         model = models.Pand
         fields = (
+            '_links',
             'id',
             'identificatie',
-            'url',
             'date_modified',
             'document_mutatie',
             'document_nummer',

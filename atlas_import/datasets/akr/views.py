@@ -4,7 +4,7 @@ from . import models, serializers
 from datasets.generic import rest
 
 
-class KadastraalSubjectViewSet(viewsets.ReadOnlyModelViewSet):
+class KadastraalSubjectViewSet(rest.AtlasViewSet):
     """
     Een subject is een persoon die in de kadastrale vastgoedregistratie voorkomt.
 
@@ -18,11 +18,10 @@ class KadastraalSubjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     serializer_class = serializers.KadastraalSubject
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "akr/kadastraal_subject.html"
 
 
-class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):
+class KadastraalObjectViewSet(rest.AtlasViewSet):
     """
     Een kadastraal object een onroerende zaak of een appartementsrecht waarvoor bij overdracht of vestiging van rechten
     inschrijving in de [openbare registers](http://wetten.overheid.nl/BWBR0005291/Boek3/Titel1/Afdeling2/Artikel16/)
@@ -106,11 +105,10 @@ class KadastraalObjectViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "akr/kadastraal_object.html"
 
 
-class ZakelijkRechtViewSet(viewsets.ReadOnlyModelViewSet):
+class ZakelijkRechtViewSet(rest.AtlasViewSet):
     """
     Een recht is een door een complex van rechtsregels verleende en beschermende bevoegdheid van een persoon.
 
@@ -130,7 +128,7 @@ class ZakelijkRechtViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.ZakelijkRecht
 
 
-class TransactieViewSet(viewsets.ReadOnlyModelViewSet):
+class TransactieViewSet(rest.AtlasViewSet):
     """
     In de objectklasse Transactie zijn elementen opgenomen uit de Stuk.
 

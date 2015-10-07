@@ -41,7 +41,7 @@ class BrowseDatasetsTestCase(APITestCase):
     def test_details(self):
         for url in self.datasets:
             response = self.client.get('/api/{}/'.format(url))
-            url = response.data['results'][0]['url']
+            url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
             self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))

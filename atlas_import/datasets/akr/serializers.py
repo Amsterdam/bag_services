@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from rest_framework.reverse import reverse
 
 from . import models
+from datasets.generic import rest
 
 
 class NietNatuurlijkePersoon(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class Adres(serializers.ModelSerializer):
         )
 
 
-class KadastraalSubject(serializers.HyperlinkedModelSerializer):
+class KadastraalSubject(rest.HALSerializer):
     titel_of_predikaat = Titel()
     woonadres = Adres()
     postadres = Adres()
@@ -42,7 +42,7 @@ class KadastraalSubject(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.KadastraalSubject
         fields = (
-            'url',
+            '_links',
             'subjectnummer',
             'titel_of_predikaat',
             'geslachtsaanduiding',
@@ -89,13 +89,13 @@ class SoortRecht(serializers.ModelSerializer):
         model = models.SoortRecht
 
 
-class ZakelijkRecht(serializers.HyperlinkedModelSerializer):
+class ZakelijkRecht(rest.HALSerializer):
     soort_recht = SoortRecht()
 
     class Meta:
         model = models.ZakelijkRecht
         fields = (
-            'url',
+            '_links',
             'identificatie',
 
             'kadastraal_object',
@@ -112,14 +112,14 @@ class ZakelijkRecht(serializers.HyperlinkedModelSerializer):
         )
 
 
-class KadastraalObject(serializers.HyperlinkedModelSerializer):
+class KadastraalObject(rest.HALSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
 
     class Meta:
         model = models.KadastraalObject
         fields = (
-            'url',
+            '_links',
             'gemeentecode',
             'sectie',
             'perceelnummer',
@@ -145,13 +145,13 @@ class SoortStuk(serializers.ModelSerializer):
         model = models.SoortStuk
 
 
-class Transactie(serializers.HyperlinkedModelSerializer):
+class Transactie(rest.HALSerializer):
     soort_stuk = SoortStuk()
 
     class Meta:
         model = models.Transactie
         fields = (
-            'url',
+            '_links',
             'registercode',
             'stukdeel_1',
             'stukdeel_2',

@@ -1,8 +1,7 @@
-from rest_framework import metadata, viewsets
+from rest_framework import metadata
 
 from . import serializers, models
 from datasets.generic import rest
-
 
 
 class ExpansionMetadata(metadata.SimpleMetadata):
@@ -18,7 +17,7 @@ class ExpansionMetadata(metadata.SimpleMetadata):
         return result
 
 
-class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
+class LigplaatsViewSet(rest.AtlasViewSet):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
@@ -31,11 +30,10 @@ class LigplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
     serializer_class = serializers.Ligplaats
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/ligplaats.html"
 
 
-class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
+class StandplaatsViewSet(rest.AtlasViewSet):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
     dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
@@ -47,11 +45,10 @@ class StandplaatsViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
     serializer_class = serializers.Standplaats
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/standplaats.html"
 
 
-class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
+class VerblijfsobjectViewSet(rest.AtlasViewSet):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon -, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de openbare
@@ -64,11 +61,10 @@ class VerblijfsobjectViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects.all()
     serializer_class = serializers.Verblijfsobject
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/verblijfsobject.html"
 
 
-class NummeraanduidingViewSet(viewsets.ReadOnlyModelViewSet):
+class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
     zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
@@ -81,7 +77,7 @@ class NummeraanduidingViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.Nummeraanduiding
 
 
-class PandViewSet(viewsets.ReadOnlyModelViewSet):
+class PandViewSet(rest.AtlasViewSet):
     """
     Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die
     direct en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
@@ -94,7 +90,7 @@ class PandViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.Pand
 
 
-class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
+class OpenbareRuimteViewSet(rest.AtlasViewSet):
     """
     Een OPENBARE RUIMTE is een door het [bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam
     voorziene buitenruimte](http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
@@ -111,5 +107,4 @@ class OpenbareRuimteViewSet(viewsets.ReadOnlyModelViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
     serializer_class = serializers.OpenbareRuimte
-    renderer_classes = rest.DEFAULT_RENDERERS
     template_name = "bag/openbare_ruimte.html"

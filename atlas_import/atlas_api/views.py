@@ -7,6 +7,7 @@ from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata, pagination
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from datasets.generic import rest
 
 
 _details = {
@@ -21,7 +22,7 @@ _details = {
 
 def _get_url(request, doc_type, id):
     if doc_type in _details:
-        return reverse(_details[doc_type], args=(id,), request=request)
+        return rest.get_links(view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
 
     return None
 
@@ -163,18 +164,30 @@ class SearchViewSet(viewsets.ViewSet):
             next_page = "{}?q={}&page={}".format(followup_url, query, page+1)
 
         res = OrderedDict()
+        res['_links'] = OrderedDict([
+            ('self', dict(href=followup_url)),
+        ])
+        if next_page:
+            res['_links']['next'] = dict(href=next_page)
+        else:
+            res['_links']['next'] = None
+
+        if prev_page:
+            res['_links']['previous'] = dict(href=prev_page)
+        else:
+            res['_links']['previous'] = None
+
         res['count'] = result.hits.total
-        res['next'] = next_page
-        res['previous'] = prev_page
         res['results'] = [self.normalize_hit(h, request) for h in result.hits]
 
         return Response(res)
 
     def normalize_hit(self, hit, request):
         result = OrderedDict()
+        result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
+        # result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
         return result
