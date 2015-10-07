@@ -1,5 +1,65 @@
+{% load details %}
+
 <div>
     <h2>Kadastraal Object</h2>
+    <dl>
+        <dt>Kadastrale aanduiding</dt>
+        <dd>{{ object.id|simple }}</dd>
 
-    {% include "akr/includes/kadastraal_object.html" with kot=object %}
+        <dt>Kadastrale gemeentecode</dt>
+        <dd>{{ object.gemeentecode|simple }}</dd>
+
+        <dt>Sectie</dt>
+        <dd>{{ object.sectie|simple }}</dd>
+
+        <dt>Objectnummer</dt>
+        <dd>{{ object.perceelnummer|simple }}</dd>
+
+        <dt>Indexletter</dt>
+        <dd>{{ object.objectindex_letter|simple }}</dd>
+
+        <dt>Indexnummer</dt>
+        <dd>{{ object.objectindex_nummer|simple }}</dd>
+
+        <dt>Oppervlakte</dt>
+        <dd>{{ object.grootte|oppervlak }}</dd>
+
+        <dt>Indicatie geschat</dt>
+        <dd>{{ object.grootte_geschat|simple }}</dd>
+
+        <dt>Indicatie vervallen</dt>
+        <dd>{{ object.vervallen|simple }}</dd>
+
+    </dl>
+
+    {% if object.verblijfsobjecten.all %}
+        <h2>Verblijfsobjecten</h2>
+        {% for vbo in object.verblijfsobjecten.all|dictsort:"id" %}
+            {% include "bag/includes/verblijfsobject-short.html" with vbo=vbo %}
+        {% endfor %}
+    {% endif %}
+
+    {% if object.rechten.all %}
+        <h2>Gerelateerde Subjecten</h2>
+        {% for recht in object.rechten.all %}
+            <dl>
+                <dt>Naam</dt>
+                <dd>
+                    <a href="{% url "kadastraalsubject-detail" pk=recht.kadastraal_subject.id format='html' %}">{{ recht.kadastraal_subject.volledige_naam }}</a>
+                </dd>
+
+                <dt>Recht</dt>
+                <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
+                    {{ recht.aandeel_subject }}
+                    {{ recht.soort_recht.omschrijving }}
+                </a></dd>
+
+                <dt>Transactie</dt>
+                <dd>
+                    <a href="{% url "transactie-detail" pk=recht.transactie.id format='html' %}">{{ recht.transactie.registercode }}</a>
+                </dd>
+            </dl>
+        {% endfor %}
+    {% endif %}
+
 </div>

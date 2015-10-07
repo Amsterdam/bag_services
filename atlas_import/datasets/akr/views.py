@@ -126,6 +126,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     """
     queryset = models.ZakelijkRecht.objects.all()
     serializer_class = serializers.ZakelijkRecht
+    template_name = "akr/zakelijk_recht.html"
 
 
 class TransactieViewSet(rest.AtlasViewSet):
@@ -144,3 +145,4 @@ class TransactieViewSet(rest.AtlasViewSet):
     """
     queryset = models.Transactie.objects.all()
     serializer_class = serializers.Transactie
+    template_name = "akr/transactie.html"

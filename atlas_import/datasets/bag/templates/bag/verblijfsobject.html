@@ -9,9 +9,15 @@
         {% include "bag/includes/pand.html" with pand=pand %}
     {% endfor %}
 
-    {% for kot in object.kadastrale_objecten.all %}
-        <h2>Kadastraal Object</h2>
+    {% if object.kadastrale_objecten.all %}
+        <h2>Kadastrale Objecten</h2>
 
-        {% include "akr/includes/kadastraal_object.html" with kot=kot %}
-    {% endfor %}
+        {% for kot in object.kadastrale_objecten.all %}
+            <dl>
+            <dt>Kadastrale Aanduiding</dt>
+            <dd><a href="{% url "kadastraalobject-detail" pk=kot.id format='html' %}">{{ kot.id }}</a></dd>
+            </dl>
+        {% endfor %}
+    {% endif %}
+
 {% endblock %}

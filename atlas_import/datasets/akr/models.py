@@ -53,6 +53,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastraal object"
         verbose_name_plural = "Kadastrale objecten"
+        ordering = ('id',)
 
 
 class Titel(models.Model):

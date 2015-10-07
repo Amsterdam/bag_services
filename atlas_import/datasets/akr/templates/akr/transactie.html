@@ -1,0 +1,61 @@
+{% load details %}
+<div>
+    <h2>Transactie</h2>
+    <dl>
+        <dt>Registercode</dt>
+        <dd>{{ object.registercode|simple }}</dd>
+
+        <dt>Stukdeel 1</dt>
+        <dd>{{ object.stukdeel_1|simple }}</dd>
+
+        <dt>Stukdeel 2</dt>
+        <dd>{{ object.stukdeel_2|simple }}</dd>
+
+        <dt>Stukdeel 3</dt>
+        <dd>{{ object.stukdeel_3|simple }}</dd>
+
+        <dt>Soort stuk</dt>
+        <dd>{{ object.soort_stuk.omschrijving|simple }}</dd>
+
+        <dt>Ontvangstdatum</dt>
+        <dd>{{ object.ontvangstdatum|simple }}</dd>
+
+        <dt>Verlijdensdatum</dt>
+        <dd>{{ object.verlijdensdatum|simple }}</dd>
+
+        <dt>Meer kadastrale objecten?</dt>
+        <dd>{{ object.meer_kadastrale_objecten|simple }}</dd>
+
+        <dt>Koopjaar</dt>
+        <dd>{{ object.koopjaar|simple }}</dd>
+
+        <dt>Koopsom</dt>
+        <dd>{{ object.koopsom|simple }}</dd>
+
+        <dt>Belastingplichtige</dt>
+        <dd>{{ object.belastingplichtige|simple }}</dd>
+    </dl>
+
+    {% if object.rechten.all %}
+    <h2>Rechten</h2>
+        {% for recht in object.rechten.all %}
+            <dl>
+                <dt>Subject</dt>
+                <dd>
+                    <a href="{% url "kadastraalsubject-detail" pk=recht.kadastraal_subject.id format='html' %}">{{ recht.kadastraal_subject.volledige_naam }}</a>
+                </dd>
+
+                <dt>Object</dt>
+                <dd>
+                    <a href="{% url "kadastraalobject-detail" pk=recht.kadastraal_object.id format='html' %}">{{ recht.kadastraal_object.id }}</a>
+                </dd>
+
+                <dt>Recht</dt>
+                <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
+                    {{ recht.aandeel_subject }}
+                    {{ recht.soort_recht.omschrijving }}
+                </a></dd>
+            </dl>
+        {% endfor %}
+    {% endif %}
+</div>

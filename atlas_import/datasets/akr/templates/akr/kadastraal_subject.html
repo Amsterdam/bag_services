@@ -1,5 +1,97 @@
 <div>
     <h2>Kadastraal Subject</h2>
 
-    {% include "akr/includes/kadastraal_subject.html" with subject=object %}
+    {% load details %}
+
+    <dl>
+        <dt>Naam</dt>
+        <dd>{{ object.volledige_naam|simple }}</dd>
+
+        <dt>Natuurlijk persoon</dt>
+        <dd>{{ object.natuurlijk_persoon|simple }}</dd>
+
+        <dt>objectnummer</dt>
+        <dd>{{ object.objectnummer|simple }}</dd>
+
+        {% if object.natuurlijk_persoon %}
+            <dt>Titel of predikaat</dt>
+            <dd>{{ object.titel_of_predikaat|simple }}</dd>
+
+            <dt>Geslachtsaanduiding</dt>
+            <dd>{{ object|choice:"geslachtsaanduiding" }}</dd>
+
+            <dt>Geslachtsnaam</dt>
+            <dd>{{ object.geslachtsnaam|simple }}</dd>
+
+            <dt>Diacritisch</dt>
+            <dd>{{ object.diacritisch|simple }}</dd>
+
+            <dt>Voorletters</dt>
+            <dd>{{ object.voorletters|simple }}</dd>
+
+            <dt>Voornamen</dt>
+            <dd>{{ object.voornamen|simple }}</dd>
+
+            <dt>Voorvoegsel</dt>
+            <dd>{{ object.voorvoegsel|simple }}</dd>
+
+            <dt>Geboortedatum</dt>
+            <dd>{{ object.geboortedatum|simple }}</dd>
+
+            <dt>Geboorteplaats</dt>
+            <dd>{{ object.geboorteplaats|simple }}</dd>
+
+            <dt>Overleden</dt>
+            <dd>{{ object.overleden|simple }}</dd>
+
+            <dt>Overlijdensdatum</dt>
+            <dd>{{ object.overlijdensdatum|simple }}</dd>
+        {% else %}
+            <dt>Soort niet-natuurlijke persoon</dt>
+            <dd>{{ object.soort_niet_natuurlijke_persoon.omschrijving|simple }}</dd>
+
+            <dt>Zetel</dt>
+            <dd>{{ object.zetel|simple }}</dd>
+        {% endif %}
+
+        <dt>Soort subject</dt>
+        <dd>{{ object|choice:"soort_subject" }}</dd>
+
+        <dt>A-nummer</dt>
+        <dd>{{ object.a_nummer|simple }}</dd>
+
+    </dl>
+
+    {% if object.woonadres %}
+        <h3>Woonadres</h3>
+        {% include "akr/includes/adres.html" with adres=object.woonadres %}
+    {% endif %}
+
+    {% if object.postadres %}
+        <h3>Postadres</h3>
+        {% include "akr/includes/adres.html" with adres=object.postadres %}
+    {% endif %}
+
+    <h2>Gerelateerde Kadastrale Objecten</h2>
+    {% for recht in object.rechten.all %}
+        {% with ko=recht.kadastraal_object %}
+            <dl>
+            <dt>Kadastrale aanduiding</dt>
+            <dd><a href="{% url "kadastraalobject-detail" pk=ko.id format='html' %}">{{ ko.id }}</a></dd>
+
+            <dt>Recht</dt>
+            <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
+                {{ recht.aandeel_subject }}
+                {{ recht.soort_recht.omschrijving }}
+            </a></dd>
+
+            <dt>Transactie</dt>
+            <dd><a href="{% url "transactie-detail" pk=recht.transactie.id format='html' %}">
+                {{ recht.transactie.registercode }}
+                {{ recht.transactie.soort_stuk.omschrijving }}
+            </a></dd>
+            </dl>
+        {% endwith %}
+
+    {% endfor %}
 </div>
