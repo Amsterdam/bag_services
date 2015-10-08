@@ -201,7 +201,7 @@ class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mod
 
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=14, unique=True)
-    huisnummer = models.CharField(max_length=5)
+    huisnummer = models.IntegerField()
     huisletter = models.CharField(max_length=1, null=True)
     huisnummer_toevoeging = models.CharField(max_length=4, null=True)
     postcode = models.CharField(max_length=6, null=True)
@@ -220,13 +220,14 @@ class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mod
     class Meta:
         verbose_name = "Nummeraanduiding"
         verbose_name_plural = "Nummeraanduidingen"
+        ordering = ('openbare_ruimte__naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
 
     def __str__(self):
         return self.adres()
 
     def adres(self):
         return (self.openbare_ruimte.naam
-                + ' ' + self.huisnummer
+                + ' ' + str(self.huisnummer)
                 + (self.huisletter if self.huisletter else '')
                 + ('-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else '')
                 )

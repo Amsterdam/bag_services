@@ -1,22 +1,18 @@
 <div>
-    <h2>Adres</h2>
-    {% include "bag/includes/nummeraanduiding.html" with adres=object.hoofdadres %}
-
-    <h2>Woonplaats</h2>
-    {% include "bag/includes/woonplaats.html" with woonplaats=object.hoofdadres.openbare_ruimte.woonplaats %}
-
-    <h2>Openbare Ruimte</h2>
-    {% include "bag/includes/openbare_ruimte.html" with openbare_ruimte=object.hoofdadres.openbare_ruimte %}
-
-    {% if object.nevenadressen %}
-        <h2>Nevenadressen</h2>
-
-        {% for adres in object.nevenadressen %}
-            {% include 'bag/includes/nummeraanduiding.html' with adres=adres %}
-        {% endfor %}
-    {% endif %}
-
     {% block details %}
     {% endblock %}
+
+    <h2>Adres</h2>
+    <dl>
+        <dt>Hoofdadres</dt>
+        <dd><a href="{% url "nummeraanduiding-detail" pk=object.hoofdadres.id format='html' %}">{{ object.hoofdadres.adres }}</a></dd>
+        <dt>Postcode</dt>
+        <dd>{{ object.hoofdadres.postcode }}</dd>
+
+        {% for adres in object.nevenadressen %}
+            <dt>Nevenadres</dt>
+            <dd><a href="{% url "nummeraanduiding-detail" pk=adres.id format='html' %}">{{ adres.adres }}</a></dd>
+        {% endfor %}
+    </dl>
 
 </div>

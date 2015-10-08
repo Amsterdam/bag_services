@@ -75,6 +75,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
     serializer_class = serializers.Nummeraanduiding
+    template_name = "bag/nummeraanduiding.html"
 
 
 class PandViewSet(rest.AtlasViewSet):
