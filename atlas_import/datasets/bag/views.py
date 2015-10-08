@@ -88,6 +88,7 @@ class PandViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
     serializer_class = serializers.Pand
+    template_name = "bag/pand.html"
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):

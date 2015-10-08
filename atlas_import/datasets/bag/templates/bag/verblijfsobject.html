@@ -1,21 +1,90 @@
 {% extends "bag/adresseerbaar_object.html" %}
+{% load details %}
 
 {% block details %}
     <h2>Verblijfsobject</h2>
-    {% include "bag/includes/verblijfsobject.html" with vbo=object %}
+    <dl>
+        <dt>Type woonobject</dt>
+        <dd>{{ object.type_woonobject.omschrijving|simple }}</dd>
 
-    {% for pand in object.panden.all %}
-        <h2>Pand</h2>
-        {% include "bag/includes/pand.html" with pand=pand %}
-    {% endfor %}
+        <dt>Gebruiksdoel</dt>
+        <dd>{{ object.gebruiksdoel_omschrijving|simple }}</dd>
+
+        <dt>Feitelijk gebruik</dt>
+        <dd>{{ object.gebruik.omschrijving|simple }}</dd>
+
+        <dt>Aantal bouwlagen</dt>
+        <dd>{{ object.bouwlagen|simple }}</dd>
+
+        <dt>Verdieping toegang</dt>
+        <dd>{{ object.bouwlaag_toegang|simple }}</dd>
+
+        <dt>Toegang</dt>
+        <dd>{{ object.toegang.omschrijving|simple }}</dd>
+
+        <dt>Aantal kamers</dt>
+        <dd>{{ object.aantal_kamers|simple }}</dd>
+
+        <dt>Oppervlakte</dt>
+        <dd>{{ object.oppervlakte|oppervlak }}</dd>
+
+        <dt>Woningvoorraad</dt>
+        <dd>{{ object.woningvoorraad|simple }}</dd>
+
+        <dt>Eigendomsverhouding</dt>
+        <dd>{{ object.eigendomsverhouding.omschrijving|simple }}</dd>
+
+        <dt>Financieringswijze</dt>
+        <dd>{{ object.financieringswijze.omschrijving|simple }}</dd>
+
+        <dt>Ligging</dt>
+        <dd>{{ object.ligging.omschrijving|simple }}</dd>
+
+        <dt>Buurt</dt>
+        <dd>{{ object.buurt.naam }} [{{ object.buurt.code }}]</dd>
+
+        <dt>Stadsdeel</dt>
+        <dd>{{ object.buurt.stadsdeel.naam|simple }}</dd>
+
+        <dt>Geometrie</dt>
+        <dd>{{ object.geometrie|simple }}</dd>
+
+        <dt>Status geometrie</dt>
+        <dd>{{ object.status_coordinaat_omschrijving|simple }}</dd>
+
+        <dt>Landelijke identificatiecode</dt>
+        <dd>{{ object.id|simple }}</dd>
+
+        <dt>Status</dt>
+        <dd>{{ object.status.omschrijving|simple }}</dd>
+
+        <dt>Documentdatum mutatie</dt>
+        <dd>{{ object.document_mutatie|simple }}</dd>
+
+        <dt>Documentnummer mutatie</dt>
+        <dd>{{ object.document_nummer|simple }}</dd>
+    </dl>
+
+    {% if object.panden.all %}
+        <h2>Panden</h2>
+        {% for pand in object.panden.all %}
+            <dl>
+            <dt>Pand</dt>
+            <dd>
+                <a href="{% url "pand-detail" pk=pand.id format='html' %}">{{ pand.identificatie|simple }}: {{ pand.status.omschrijving|simple }}</a>
+            </dd>
+            </dl>
+        {% endfor %}
+    {% endif %}
+
 
     {% if object.kadastrale_objecten.all %}
         <h2>Kadastrale Objecten</h2>
 
         {% for kot in object.kadastrale_objecten.all %}
             <dl>
-            <dt>Kadastrale Aanduiding</dt>
-            <dd><a href="{% url "kadastraalobject-detail" pk=kot.id format='html' %}">{{ kot.id }}</a></dd>
+                <dt>Kadastrale Aanduiding</dt>
+                <dd><a href="{% url "kadastraalobject-detail" pk=kot.id format='html' %}">{{ kot.id }}</a></dd>
             </dl>
         {% endfor %}
     {% endif %}

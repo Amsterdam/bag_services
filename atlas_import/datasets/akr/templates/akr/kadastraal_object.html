@@ -32,34 +32,8 @@
 
     </dl>
 
-    {% if object.verblijfsobjecten.all %}
-        <h2>Verblijfsobjecten</h2>
-        {% for vbo in object.verblijfsobjecten.all|dictsort:"id" %}
-            {% include "bag/includes/verblijfsobject-short.html" with vbo=vbo %}
-        {% endfor %}
-    {% endif %}
+    {% include "bag/includes/verblijfsobjecten.html" with object_list=object.verblijfsobjecten.all %}
 
-    {% if object.rechten.all %}
-        <h2>Gerelateerde Subjecten</h2>
-        {% for recht in object.rechten.all %}
-            <dl>
-                <dt>Naam</dt>
-                <dd>
-                    <a href="{% url "kadastraalsubject-detail" pk=recht.kadastraal_subject.id format='html' %}">{{ recht.kadastraal_subject.volledige_naam }}</a>
-                </dd>
-
-                <dt>Recht</dt>
-                <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
-                    {{ recht.aandeel_subject }}
-                    {{ recht.soort_recht.omschrijving }}
-                </a></dd>
-
-                <dt>Transactie</dt>
-                <dd>
-                    <a href="{% url "transactie-detail" pk=recht.transactie.id format='html' %}">{{ recht.transactie.registercode }}</a>
-                </dd>
-            </dl>
-        {% endfor %}
-    {% endif %}
+    {% include "akr/includes/rechten.html" with object_list=object.rechten.all %}
 
 </div>

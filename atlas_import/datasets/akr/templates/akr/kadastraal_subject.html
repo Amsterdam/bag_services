@@ -72,26 +72,6 @@
         {% include "akr/includes/adres.html" with adres=object.postadres %}
     {% endif %}
 
-    <h2>Gerelateerde Kadastrale Objecten</h2>
-    {% for recht in object.rechten.all %}
-        {% with ko=recht.kadastraal_object %}
-            <dl>
-            <dt>Kadastrale aanduiding</dt>
-            <dd><a href="{% url "kadastraalobject-detail" pk=ko.id format='html' %}">{{ ko.id }}</a></dd>
+    {% include "akr/includes/rechten.html" with object_list=object.rechten.all %}
 
-            <dt>Recht</dt>
-            <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
-                {{ recht.aandeel_subject }}
-                {{ recht.soort_recht.omschrijving }}
-            </a></dd>
-
-            <dt>Transactie</dt>
-            <dd><a href="{% url "transactie-detail" pk=recht.transactie.id format='html' %}">
-                {{ recht.transactie.registercode }}
-                {{ recht.transactie.soort_stuk.omschrijving }}
-            </a></dd>
-            </dl>
-        {% endwith %}
-
-    {% endfor %}
 </div>

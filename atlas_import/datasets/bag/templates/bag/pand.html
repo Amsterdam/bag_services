@@ -1,0 +1,28 @@
+{% load details %}
+
+<div>
+    <h2>Pand</h2>
+
+    <dl>
+        <dt>Identificatie</dt>
+        <dd>{{ object.identificatie|simple }}</dd>
+
+        <dt>Bouwjaar</dt>
+        <dd>{{ object.bouwjaar|simple }}</dd>
+
+        <dt>Laagste bouwlaag</dt>
+        <dd>{{ object.laagste_bouwlaag|simple }}</dd>
+
+        <dt>Hoogste bouwlaag</dt>
+        <dd>{{ object.hoogste_bouwlaag|simple }}</dd>
+
+        <dt>Pandnummer</dt>
+        <dd>{{ object.pandnummer|simple }}</dd>
+
+        <dt>Status</dt>
+        <dd>{{ object.status.omschrijving|simple }}</dd>
+    </dl>
+
+    {% include "bag/includes/verblijfsobjecten.html" with object_list=object.verblijfsobjecten.all %}
+
+</div>

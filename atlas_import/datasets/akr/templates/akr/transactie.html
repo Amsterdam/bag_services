@@ -36,26 +36,6 @@
         <dd>{{ object.belastingplichtige|simple }}</dd>
     </dl>
 
-    {% if object.rechten.all %}
-    <h2>Rechten</h2>
-        {% for recht in object.rechten.all %}
-            <dl>
-                <dt>Subject</dt>
-                <dd>
-                    <a href="{% url "kadastraalsubject-detail" pk=recht.kadastraal_subject.id format='html' %}">{{ recht.kadastraal_subject.volledige_naam }}</a>
-                </dd>
+    {% include "akr/includes/rechten.html" with object_list=object.rechten.all %}
 
-                <dt>Object</dt>
-                <dd>
-                    <a href="{% url "kadastraalobject-detail" pk=recht.kadastraal_object.id format='html' %}">{{ recht.kadastraal_object.id }}</a>
-                </dd>
-
-                <dt>Recht</dt>
-                <dd><a href="{% url "zakelijkrecht-detail" pk=recht.id format='html' %}">
-                    {{ recht.aandeel_subject }}
-                    {{ recht.soort_recht.omschrijving }}
-                </a></dd>
-            </dl>
-        {% endfor %}
-    {% endif %}
 </div>
