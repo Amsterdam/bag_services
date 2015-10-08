@@ -335,7 +335,7 @@ class ImportNumTest(TestCase):
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
         self.assertEquals(n.id, '03630000512845')
-        self.assertEquals(n.huisnummer, '26')
+        self.assertEquals(n.huisnummer, 26)
         self.assertEquals(n.huisletter, 'G')
         self.assertEquals(n.huisnummer_toevoeging, '')
         self.assertEquals(n.postcode, '1018DS')
