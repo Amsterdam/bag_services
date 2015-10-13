@@ -48,6 +48,4 @@ def from_kadastraal_object(ko):
 
         d.centroid = centroid.coords
 
-    d.adres = [vo.hoofdadres.adres() for vo in ko.verblijfsobjecten.all() if vo.hoofdadres]
-
     return d
