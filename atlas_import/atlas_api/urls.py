@@ -42,5 +42,6 @@ router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 urlpatterns = [
+    url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),
 ]
