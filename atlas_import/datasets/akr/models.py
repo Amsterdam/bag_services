@@ -146,6 +146,10 @@ class KadastraalSubject(mixins.ImportStatusMixin):
         verbose_name = "Kadastraal subject"
         verbose_name_plural = "Kadastrale subjecten"
 
+        permissions = (
+            ('view_sensitive_details', 'Kan privacy-gevoelige data inzien'),
+        )
+
     def natuurlijk_persoon(self):
         return not self.naam_niet_natuurlijke_persoon
 

@@ -8,6 +8,8 @@ djangorestframework==3.2.3
 djangorestframework-gis==0.9.4
 elasticsearch==1.6.0
 elasticsearch-dsl==0.0.8
+factory-boy==2.5.2
+fake-factory==0.5.3
 psycopg2==2.6.1
 pyslack-real==0.5.3
 python-dateutil==2.4.2
