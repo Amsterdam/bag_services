@@ -1,11 +1,13 @@
+import json
 from django.contrib.auth.models import User, Permission
 
 from django.test import TestCase
+from rest_framework.test import APITestCase
 
 from datasets.akr.tests import factories
 
 
-class SensitiveDetailsTestCase(TestCase):
+class SensitiveDetailsTestCase(APITestCase):
     def setUp(self):
         self.not_authorized = User.objects.create_user(username='not_authorized', password='pass')
         self.authorized = User.objects.create_user(username='authorized', password='pass')
@@ -48,7 +50,7 @@ class SensitiveDetailsTestCase(TestCase):
         self.assertContains(response, self.niet_natuurlijk.woonadres.straatnaam)
         self.assertContains(response, self.niet_natuurlijk.postadres.straatnaam)
 
-    def test_ingelogd_niet_geautoriseerd_geen_details_in_natuurlijk_persoon(self):
+    def test_ingelogd_niet_geautoriseerd_geen_details_in_natuurlijk_persoon_html(self):
         self.client.login(username='not_authorized', password='pass')
         response = self.client.get('/api/kadaster/subject/{}.html'.format(self.natuurlijk.pk))
 
@@ -56,11 +58,40 @@ class SensitiveDetailsTestCase(TestCase):
         self.assertNotContains(response, self.natuurlijk.woonadres.straatnaam)
         self.assertNotContains(response, self.natuurlijk.postadres.straatnaam)
 
-    def test_ingelogd_wel_geautoriseed_wel_details_in_natuurlijk_persoon(self):
+    def test_ingelogd_wel_geautoriseed_wel_details_in_natuurlijk_persoon_html(self):
         self.client.login(username='authorized', password='pass')
         response = self.client.get('/api/kadaster/subject/{}.html'.format(self.natuurlijk.pk))
 
         self.assertContains(response, self.kot.id)
         self.assertContains(response, self.natuurlijk.woonadres.straatnaam)
         self.assertContains(response, self.natuurlijk.postadres.straatnaam)
+
+    def test_niet_ingelogd_geen_details_in_natuurlijk_persoon_json(self):
+        response = self.client.get('/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk)).data
+        self.assertIsNone(response['rechten'])
+        self.assertIsNone(response['woonadres'])
+        self.assertIsNone(response['postadres'])
+
+    def test_niet_ingelogd_wel_details_in_niet_natuurlijk_persoon_json(self):
+        response = self.client.get('/api/kadaster/subject/{}.json'.format(self.niet_natuurlijk.pk)).data
+
+        self.assertIsNotNone(response['rechten'])
+        self.assertIsNotNone(response['woonadres'])
+        self.assertIsNotNone(response['postadres'])
+
+    def test_ingelogd_niet_geautoriseerd_geen_details_in_natuurlijk_json(self):
+        self.client.login(username='not_authorized', password='pass')
+        response = self.client.get('/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk)).data
+
+        self.assertIsNone(response['rechten'])
+        self.assertIsNone(response['woonadres'])
+        self.assertIsNone(response['postadres'])
+
+    def test_ingelogd_wel_geautoriseed_wel_details_in_natuurlijk_persoon_json(self):
+        self.client.login(username='authorized', password='pass')
+        response = self.client.get('/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk)).data
+
+        self.assertIsNotNone(response['rechten'])
+        self.assertIsNotNone(response['woonadres'])
+        self.assertIsNotNone(response['postadres'])
 
