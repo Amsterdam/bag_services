@@ -3,6 +3,8 @@ from rest_framework import routers
 from atlas_api import views
 import datasets.bag.views
 import datasets.akr.views
+import datasets.wkpb.views
+
 
 class DocumentedRouter(routers.DefaultRouter):
     """
@@ -43,4 +45,6 @@ router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^wkpd/beperking/(?P<kadastraal_object_akr>[0-9a-zA-Z]+)/$',
+        datasets.wkpb.views.BeperkingKadastraalObjectView.as_view(), name='wkpd-beperking'),
 ]

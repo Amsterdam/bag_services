@@ -4,9 +4,11 @@ import os
 import datetime
 
 from django.conf import settings
+from django.db.models import Q
 from datasets.generic import kadaster
 
 import datasets.lki.models as lki
+import datasets.akr.models as akr
 from . import models
 
 log = logging.getLogger(__name__)
@@ -162,23 +164,44 @@ class ImportWkpbBepKadTask(object):
 
     def process_row(self, r):
         aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
-        kadastraal_object_id = self.lki_cache.get(aanduiding)
         beperking_id = int(r[5])
 
         if beperking_id not in self.beperkingen_cache:
             log.warning('Non-existing Beperking: {0}'.format(beperking_id))
             return None
 
-        if not kadastraal_object_id:
-            log.warning("Unknown kadastraal object: %s", aanduiding)
-            return None
+        kadastraal_objecten = lki.KadastraalObject.objects.filter(aanduiding=aanduiding)
+        if not len(kadastraal_objecten):
+            if settings.IMPORT_USE_FAKE_DATA:
+                kadastraal_object_lki = lki.KadastraalObject.objects.filter(~Q(aanduiding=aanduiding))[0]
+                kadastraal_object_lki.aanduiding = aanduiding
+                kadastraal_object_lki.save()
+            else:
+                log.warning('kadastraal object not found in lki: %s' % aanduiding)
+                return
+        else:
+            if len(kadastraal_objecten) > 1:
+                log.warning('more than one lki kadastraal object found (%s)' % len(kadastraal_objecten))
+            kadastraal_object_lki = kadastraal_objecten[0]
+
+        try:
+            kadastraal_object_akr = akr.KadastraalObject.objects.get(id=aanduiding)
+        except akr.KadastraalObject.DoesNotExist:
+            if settings.IMPORT_USE_FAKE_DATA:
+                kadastraal_object_akr = akr.KadastraalObject.objects.filter(~Q(id=aanduiding))[0]
+                kadastraal_object_akr.id = aanduiding
+                kadastraal_object_akr.save()
+            else:
+                log.warning('kadastraal object not found in akr: %s' % aanduiding)
+                return
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)
 
         return models.BeperkingKadastraalObject(
             pk=uid,
             beperking_id=beperking_id,
-            kadastraal_object_id=kadastraal_object_id
+            kadastraal_object=kadastraal_object_lki,
+            kadastraal_object_akr=kadastraal_object_akr
         )
 
 

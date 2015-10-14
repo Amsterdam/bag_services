@@ -138,5 +138,7 @@ SECURE_BROWSER_XSS_FILTER = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
+IMPORT_USE_FAKE_DATA = False
+
 from .checks import *       # used for ./manage.py check
 

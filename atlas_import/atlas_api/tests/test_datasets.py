@@ -46,5 +46,3 @@ class BrowseDatasetsTestCase(APITestCase):
 
             self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))
             self.assertEqual(detail['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
-
-
