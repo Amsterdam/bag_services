@@ -10,7 +10,7 @@
         <dt>Natuurlijk persoon</dt>
         <dd>{{ object.natuurlijk_persoon|simple }}</dd>
 
-        <dt>objectnummer</dt>
+        <dt>Subjectnummer</dt>
         <dd>{{ object.objectnummer|simple }}</dd>
 
         {% if object.natuurlijk_persoon %}
@@ -64,14 +64,33 @@
 
     {% if object.woonadres %}
         <h3>Woonadres</h3>
-        {% include "akr/includes/adres.html" with adres=object.woonadres %}
+        {% if not object.natuurlijk_persoon or perms.akr.view_sensitive_details %}
+            {% include "akr/includes/adres.html" with adres=object.woonadres %}
+        {% else %}
+            <p>
+                Deze informatie is alleen beschikbaar voor geautoriseerde gebruikers
+            </p>
+        {% endif %}
     {% endif %}
 
     {% if object.postadres %}
         <h3>Postadres</h3>
-        {% include "akr/includes/adres.html" with adres=object.postadres %}
+        {% if not object.natuurlijk_persoon or perms.akr.view_sensitive_details %}
+            {% include "akr/includes/adres.html" with adres=object.postadres %}
+        {% else %}
+            <p>
+                Deze informatie is alleen beschikbaar voor geautoriseerde gebruikers
+            </p>
+        {% endif %}
     {% endif %}
 
-    {% include "akr/includes/rechten.html" with object_list=object.rechten.all %}
+    {% if not object.natuurlijk_persoon or perms.akr.view_sensitive_details %}
+        {% include "akr/includes/rechten.html" with object_list=object.rechten.all %}
+    {% else %}
+        <h2>Zakelijk recht</h2>
+        <p>
+        Deze informatie is alleen beschikbaar voor geautoriseerde gebruikers
+        </p>
+    {% endif %}
 
 </div>

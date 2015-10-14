@@ -123,6 +123,10 @@ ALLOWED_HOSTS = [
 
 REST_FRAMEWORK = dict(
     PAGE_SIZE=10,
+    DEFAULT_AUTHENTICATION_CLASSES=(
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
 )
 
 CORS_ORIGIN_REGEX_WHITELIST = (
@@ -139,6 +143,3 @@ CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
 IMPORT_USE_FAKE_DATA = False
-
-from .checks import *       # used for ./manage.py check
-

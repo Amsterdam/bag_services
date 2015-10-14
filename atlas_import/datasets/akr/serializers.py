@@ -65,6 +65,17 @@ class KadastraalSubject(rest.HALSerializer):
             'rechten',
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = self.context['request'].user
+
+        if not user.has_perm('akr.view_sensitive_details') and instance.natuurlijk_persoon():
+            data['woonadres'] = None
+            data['postadres'] = None
+            data['rechten'] = None
+
+        return data
+
 
 class SoortCultuurOnbebouwd(serializers.ModelSerializer):
     class Meta:
