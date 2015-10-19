@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
-
+from datasets.bag.tests import factories as bag_factories
+from datasets.akr.tests import factories as akr_factories
 
 class BrowseDatasetsTestCase(APITestCase):
     """
@@ -21,7 +22,16 @@ class BrowseDatasetsTestCase(APITestCase):
         'wkpb/beperking',
     ]
 
-    fixtures = ['dataset.json']
+    def setUp(self):
+        bag_factories.LigplaatsFactory.create()
+        bag_factories.StandplaatsFactory.create()
+        bag_factories.VerblijfsobjectFactory.create()
+        bag_factories.PandFactory.create()
+        bag_factories.NummeraanduidingFactory.create()
+        akr_factories.KadastraalObjectFactory.create()
+        akr_factories.NatuurlijkPersoonFactory.create()
+        akr_factories.TransactieFactory.create()
+        akr_factories.ZakelijkRechtFactory.create()
 
     def test_root(self):
         response = self.client.get('/api/')

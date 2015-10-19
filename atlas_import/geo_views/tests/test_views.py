@@ -1,9 +1,27 @@
 from django.db import connection
 from django.test import TestCase
 
+from datasets.bag.tests import factories as bag_factories
+from datasets.lki.tests import factories as lki_factories
+from datasets.wkpb.tests import factories as wkpb_factories
+
+
 
 class ViewsTest(TestCase):
-    fixtures = ['dataset.json']
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        bag_factories.LigplaatsFactory.create()
+        bag_factories.StandplaatsFactory.create()
+        bag_factories.VerblijfsobjectFactory.create()
+        bag_factories.PandFactory.create()
+        lki_factories.GemeenteFactory.create()
+        lki_factories.KadastraleGemeenteFactory.create()
+        lki_factories.KadastraalObjectFactory.create()
+        lki_factories.SectieFactory.create()
+        wkpb_factories.BeperkingKadastraalObjectFactory.create()
+
+
 
     def get_row(self, view_name):
         cursor = connection.cursor()
