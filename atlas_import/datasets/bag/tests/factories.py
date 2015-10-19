@@ -4,9 +4,9 @@ import factory
 from factory import fuzzy
 import faker
 
-f = faker.Factory.create(locale='nl_NL')
-
 from .. import models
+
+f = faker.Factory.create(locale='nl_NL')
 
 
 class LigplaatsFactory(factory.DjangoModelFactory):

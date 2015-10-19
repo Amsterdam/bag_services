@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 from datasets.bag.tests import factories as bag_factories
 from datasets.akr.tests import factories as akr_factories
+from datasets.wkpb.tests import factories as wkpb_factories
 
 class BrowseDatasetsTestCase(APITestCase):
     """
@@ -32,6 +33,7 @@ class BrowseDatasetsTestCase(APITestCase):
         akr_factories.NatuurlijkPersoonFactory.create()
         akr_factories.TransactieFactory.create()
         akr_factories.ZakelijkRechtFactory.create()
+        wkpb_factories.BeperkingKadastraalObjectFactory.create()
 
     def test_root(self):
         response = self.client.get('/api/')
