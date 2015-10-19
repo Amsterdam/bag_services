@@ -40,12 +40,13 @@ router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
 router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
 
+router.register(r'wkpb/beperking-kadastraal-object', datasets.wkpb.views.BeperkingKadastraalObjectView)
+router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
+
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),
-    url(r'^wkpd/beperking/(?P<kadastraal_object_akr>[0-9a-zA-Z]+)/$',
-        datasets.wkpb.views.BeperkingKadastraalObjectView.as_view(), name='wkpd-beperking'),
 ]

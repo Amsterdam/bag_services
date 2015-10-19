@@ -38,6 +38,11 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
     persoonsgegeven_afschermen = models.BooleanField(null=False)
     soort_besluit = models.CharField(max_length=60, null=True)
 
+    @property
+    def url(self):
+        base_url = 'http://diva.intranet.amsterdam.nl/Brondocumenten/Wkpb'
+        return '%s/%s' % (base_url, self.documentnaam)
+
     class Meta:
         verbose_name = "Brondocument"
         verbose_name_plural = "Brondocumenten"
@@ -86,7 +91,7 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=33, null=False, primary_key=True)
     beperking = models.ForeignKey(Beperking, null=False)
     kadastraal_object = models.ForeignKey(KadastraalObjectLki, null=False)
-    kadastraal_object_akr = models.ForeignKey(KadastraalObjectAkr, null=False)
+    kadastraal_object_akr = models.ForeignKey(KadastraalObjectAkr, null=False, related_name='beperkingen')
 
     def __str__(self):
         return "{}-{}-{}".format(self.beperking_id, self.kadastraal_object_id, self.kadastraal_object_akr_id)
