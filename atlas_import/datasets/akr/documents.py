@@ -5,7 +5,6 @@ from datasets.generic import analyzers
 
 class KadastraalObject(es.DocType):
     aanduiding = es.String(analyzer=analyzers.kadastrale_aanduiding)
-    adres = es.String(analyzer=analyzers.adres)
     centroid = es.GeoPoint()
 
     class Meta:
