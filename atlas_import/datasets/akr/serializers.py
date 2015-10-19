@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from . import models
 from datasets.generic import rest
+from datasets.wkpb.serializers import BeperkingKadastraalObject
 
 
 class NietNatuurlijkePersoon(serializers.ModelSerializer):
@@ -126,6 +127,7 @@ class ZakelijkRecht(rest.HALSerializer):
 class KadastraalObject(rest.HALSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
+    beperkingen = BeperkingKadastraalObject(many=True)
 
     class Meta:
         model = models.KadastraalObject
@@ -148,6 +150,7 @@ class KadastraalObject(rest.HALSerializer):
             'verblijfsobjecten',
             'rechten',
             'geometrie',
+            'beperkingen'
         )
 
 

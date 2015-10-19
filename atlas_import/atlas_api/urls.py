@@ -3,6 +3,8 @@ from rest_framework import routers
 from atlas_api import views
 import datasets.bag.views
 import datasets.akr.views
+import datasets.wkpb.views
+
 
 class DocumentedRouter(routers.DefaultRouter):
     """
@@ -41,6 +43,9 @@ router.register(r'kadaster/subject', datasets.akr.views.KadastraalSubjectViewSet
 router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
 router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
+
+router.register(r'wkpb/beperking-kadastraal-object', datasets.wkpb.views.BeperkingKadastraalObjectView)
+router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
 
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')

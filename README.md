@@ -17,6 +17,9 @@ User `docker-compose` to start a local database.
 
 	docker-compose start
 
+or
+
+	docker-compose up
 
 Create a new virtual env, and execute the following:
 

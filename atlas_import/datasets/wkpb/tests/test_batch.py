@@ -3,10 +3,14 @@ import datetime
 from django.test import TestCase
 
 from .. import models, batch
+from datasets.akr import batch as akr
+from datasets.generic import cache
 from datasets.lki import batch as lki
+from datasets.akr.models import KadastraalObject
 
 BEPERKINGEN = 'diva/beperkingen'
 KAD_LKI = 'diva/kadaster/lki'
+KAD_AKR = 'diva/kadaster/akr'
 
 
 class ImportBeperkingcode(TestCase):
@@ -71,15 +75,25 @@ class ImportBeperking(TestCase):
 
 class ImportWkpbBepKad(TestCase):
     def test_import(self):
+        c = cache.Cache()
         batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
         batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
         batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
         batch.ImportBeperkingTask(BEPERKINGEN).execute()
         lki.ImportKadastraalObjectTask(KAD_LKI).execute()
 
+        akr.ImportKotTask(KAD_AKR, c).execute()
+        c.flush()
+
+        # make sure one record has the id we're mapping
+        # TODO make sure we have good test data
+        kadastraal_object = KadastraalObject.objects.filter()[1]
+        kadastraal_object.id = 'ASD12P03580A0061'
+        kadastraal_object.save()
+
         task = batch.ImportWkpbBepKadTask(BEPERKINGEN)
         task.execute()
-
         bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
         self.assertEqual(bk.beperking.id, 1001730)
         self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')
+        self.assertEqual(bk.kadastraal_object_akr.id, 'ASD12P03580A0061')

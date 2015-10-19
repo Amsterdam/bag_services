@@ -4,14 +4,28 @@ import datasets.bag.batch
 import datasets.akr.batch
 from batch import batch
 
+from datasets.bag.tests import factories as bag_factories
+
 
 class QueryTest(APITestCase):
-
-    fixtures = ['dataset.json']
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+
+        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Anjeliersstraat")
+        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
+                                                     hoofdadres=True)
+        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
+                                                     hoofdadres=True)
+        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
+                                                     hoofdadres=True)
+        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
+
+        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Marnixkade")
+        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=36, huisletter='F',
+                                                     hoofdadres=True, postcode='1015XR')
+
         batch.execute(datasets.bag.batch.IndexJob())
         batch.execute(datasets.akr.batch.IndexKadasterJob())
         time.sleep(1)   # this is stupid
