@@ -4,9 +4,8 @@ import os
 import datetime
 
 from django.conf import settings
-from django.db.models import Q
-from datasets.generic import kadaster
 
+from datasets.generic import kadaster
 import datasets.lki.models as lki
 import datasets.akr.models as akr
 from . import models
@@ -172,28 +171,18 @@ class ImportWkpbBepKadTask(object):
 
         kadastraal_objecten = lki.KadastraalObject.objects.filter(aanduiding=aanduiding)
         if not len(kadastraal_objecten):
-            if settings.IMPORT_USE_FAKE_DATA:
-                kadastraal_object_lki = lki.KadastraalObject.objects.filter(~Q(aanduiding=aanduiding))[0]
-                kadastraal_object_lki.aanduiding = aanduiding
-                kadastraal_object_lki.save()
-            else:
-                log.warning('kadastraal object not found in lki: %s' % aanduiding)
-                return
-        else:
-            if len(kadastraal_objecten) > 1:
-                log.warning('more than one lki kadastraal object found (%s)' % len(kadastraal_objecten))
-            kadastraal_object_lki = kadastraal_objecten[0]
+            log.warning('kadastraal object not found in lki: %s' % aanduiding)
+            return
+
+        if len(kadastraal_objecten) > 1:
+            log.warning('more than one lki kadastraal object found (%s)' % len(kadastraal_objecten))
+        kadastraal_object_lki = kadastraal_objecten[0]
 
         try:
             kadastraal_object_akr = akr.KadastraalObject.objects.get(id=aanduiding)
         except akr.KadastraalObject.DoesNotExist:
-            if settings.IMPORT_USE_FAKE_DATA:
-                kadastraal_object_akr = akr.KadastraalObject.objects.filter(~Q(id=aanduiding))[0]
-                kadastraal_object_akr.id = aanduiding
-                kadastraal_object_akr.save()
-            else:
-                log.warning('kadastraal object not found in akr: %s' % aanduiding)
-                return
+            log.warning('kadastraal object not found in akr: %s' % aanduiding)
+            return
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)
 

@@ -67,3 +67,6 @@ class ZakelijkRechtFactory(factory.DjangoModelFactory):
         model = models.ZakelijkRecht
 
     id = fuzzy.FuzzyText()
+    kadastraal_subject = factory.SubFactory(NatuurlijkPersoonFactory)
+    kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
+    transactie = factory.SubFactory(TransactieFactory)

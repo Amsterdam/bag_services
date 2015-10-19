@@ -1,7 +1,6 @@
 import datetime
 
 from django.test import TestCase
-from django.conf import settings
 
 from .. import models, batch
 from datasets.akr import batch as akr
@@ -12,8 +11,6 @@ from datasets.akr.models import KadastraalObject
 BEPERKINGEN = 'diva/beperkingen'
 KAD_LKI = 'diva/kadaster/lki'
 KAD_AKR = 'diva/kadaster/akr'
-
-settings.IMPORT_USE_FAKE_DATA = False
 
 
 class ImportBeperkingcode(TestCase):
