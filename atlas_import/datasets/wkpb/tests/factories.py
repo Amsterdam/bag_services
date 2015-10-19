@@ -20,8 +20,8 @@ class BeperkingFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Beperking
 
-    id = fuzzy.FuzzyInteger(low=1)
-    inschrijfnummer = fuzzy.FuzzyInteger(low=1)
+    id = fuzzy.FuzzyInteger(low=1, high=99999)
+    inschrijfnummer = fuzzy.FuzzyInteger(low=1, high=99999)
     beperkingtype = factory.SubFactory(BeperkingCodeFactory)
     datum_in_werking = fuzzy.FuzzyDate(date.today())
 
