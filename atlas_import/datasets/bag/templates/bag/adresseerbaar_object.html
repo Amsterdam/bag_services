@@ -4,10 +4,12 @@
 
     <h2>Adres</h2>
     <dl>
-        <dt>Hoofdadres</dt>
-        <dd><a href="{% url "nummeraanduiding-detail" pk=object.hoofdadres.id format='html' %}">{{ object.hoofdadres.adres }}</a></dd>
-        <dt>Postcode</dt>
-        <dd>{{ object.hoofdadres.postcode }}</dd>
+        {% if object.hoofdadres %}
+            <dt>Hoofdadres</dt>
+            <dd><a href="{% url "nummeraanduiding-detail" pk=object.hoofdadres.id format='html' %}">{{ object.hoofdadres.adres }}</a></dd>
+            <dt>Postcode</dt>
+            <dd>{{ object.hoofdadres.postcode }}</dd>
+        {% endif %}
 
         {% for adres in object.nevenadressen %}
             <dt>Nevenadres</dt>
