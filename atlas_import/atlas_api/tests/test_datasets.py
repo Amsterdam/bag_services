@@ -19,7 +19,6 @@ class BrowseDatasetsTestCase(APITestCase):
         'kadaster/subject',
         'kadaster/transactie',
         'kadaster/zakelijk-recht',
-        'wkpb/beperking-kadastraal-object',
         'wkpb/beperking',
     ]
 

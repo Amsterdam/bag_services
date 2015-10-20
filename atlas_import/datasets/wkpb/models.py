@@ -65,6 +65,8 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
+    kadastrale_objecten = models.ManyToManyField(KadastraalObjectAkr, through='BeperkingKadastraalObject',
+                                                 related_name="beperkingen")
 
     @property
     def documenten(self):
@@ -91,7 +93,7 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=33, null=False, primary_key=True)
     beperking = models.ForeignKey(Beperking, null=False)
     kadastraal_object = models.ForeignKey(KadastraalObjectLki, null=False)
-    kadastraal_object_akr = models.ForeignKey(KadastraalObjectAkr, null=False, related_name='beperkingen')
+    kadastraal_object_akr = models.ForeignKey(KadastraalObjectAkr, null=False)
 
     def __str__(self):
         return "{}-{}-{}".format(self.beperking_id, self.kadastraal_object_id, self.kadastraal_object_akr_id)
