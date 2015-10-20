@@ -153,3 +153,17 @@ class BuurtViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all()
     serializer_class = serializers.Buurt
+
+
+class BouwblokViewSet(rest.AtlasViewSet):
+    """
+    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
+    grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
+    één gebouw staat.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Bouwblok.objects.all()
+    serializer_class = serializers.Bouwblok

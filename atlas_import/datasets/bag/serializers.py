@@ -87,7 +87,6 @@ class Buurt(BagMixin, rest.HALSerializer):
         model = models.Buurt
         fields = (
             '_links',
-            'id',
             'code',
 
             'naam',
@@ -95,13 +94,25 @@ class Buurt(BagMixin, rest.HALSerializer):
         )
 
 
-class Woonplaats(serializers.ModelSerializer):
+class Bouwblok(BagMixin, rest.HALSerializer):
+    buurt = Buurt()
+
+    class Meta:
+        model = models.Bouwblok
+        fields = (
+            '_links',
+            'code',
+            'buurt',
+        )
+
+
+class Woonplaats(BagMixin, rest.HALSerializer):
     gemeente = Gemeente()
 
     class Meta:
         model = models.Woonplaats
         fields = (
-            'id',
+            '_links',
             'code',
             'date_modified',
             'document_mutatie',
