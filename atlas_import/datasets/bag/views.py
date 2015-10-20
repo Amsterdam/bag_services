@@ -112,6 +112,20 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     template_name = "bag/openbare_ruimte.html"
 
 
+class WoonplaatsViewSet(rest.AtlasViewSet):
+    """
+    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorzien gedeelte
+    van het grondgebied van de gemeente. Vanaf 10 januari 2014 bestaat alleen nog de woonplaats Amsterdam met
+    Woonplaatsidentificatie 3594.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Woonplaats.objects.all()
+    serializer_class = serializers.Woonplaats
+
+
 class GemeenteViewSet(rest.AtlasViewSet):
     """
     Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van

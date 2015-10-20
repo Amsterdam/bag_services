@@ -17,6 +17,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/nummeraanduiding',
         'bag/openbareruimte',
         'bag/gemeente',
+        'bag/woonplaats',
         'bag/stadsdeel',
         'bag/buurt',
         'bag/bouwblok',
@@ -34,6 +35,7 @@ class BrowseDatasetsTestCase(APITestCase):
         bag_factories.PandFactory.create()
         bag_factories.NummeraanduidingFactory.create()
         bag_factories.GemeenteFactory.create()
+        bag_factories.WoonplaatsFactory.create()
         bag_factories.StadsdeelFactory.create()
         bag_factories.BuurtFactory.create()
         bag_factories.BouwblokFactory.create()
