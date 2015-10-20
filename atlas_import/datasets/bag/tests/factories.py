@@ -96,3 +96,10 @@ class BuurtFactory(factory.DjangoModelFactory):
     stadsdeel = factory.SubFactory(StadsdeelFactory)
 
 
+class BouwblokFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Bouwblok
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)

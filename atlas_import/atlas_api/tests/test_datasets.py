@@ -3,6 +3,7 @@ from datasets.bag.tests import factories as bag_factories
 from datasets.akr.tests import factories as akr_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
+
 class BrowseDatasetsTestCase(APITestCase):
     """
     Verifies that browsing the API works correctly.
@@ -18,6 +19,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/gemeente',
         'bag/stadsdeel',
         'bag/buurt',
+        'bag/bouwblok',
         'kadaster/object',
         'kadaster/subject',
         'kadaster/transactie',
@@ -34,6 +36,7 @@ class BrowseDatasetsTestCase(APITestCase):
         bag_factories.GemeenteFactory.create()
         bag_factories.StadsdeelFactory.create()
         bag_factories.BuurtFactory.create()
+        bag_factories.BouwblokFactory.create()
         akr_factories.KadastraalObjectFactory.create()
         akr_factories.NatuurlijkPersoonFactory.create()
         akr_factories.TransactieFactory.create()
