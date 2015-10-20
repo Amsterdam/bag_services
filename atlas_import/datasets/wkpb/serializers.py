@@ -34,16 +34,8 @@ class Beperking(rest.HALSerializer):
             'beperkingtype',
             'datum_in_werking',
             'datum_einde',
+            'kadastrale_objecten',
             'documenten'
         )
 
 
-class BeperkingKadastraalObject(rest.HALSerializer):
-    beperking = Beperking()
-
-    class Meta:
-        model = models.BeperkingKadastraalObject
-        fields = (
-            '_links',
-            'beperking',
-        )

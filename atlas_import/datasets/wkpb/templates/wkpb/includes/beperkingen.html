@@ -2,26 +2,26 @@
 
 {% if object_list %}
     <h2>Beperkingen</h2>
-    {% for beperking_kadastraal_object in beperkingen %}
+    {% for beperking in object_list %}
         <dl>
             <dt>Inschrijfnummer</dt>
-            <dd>{{ beperking_kadastraal_object.beperking.inschrijfnummer }}</dd>
+            <dd>{{ beperking.inschrijfnummer }}</dd>
 
             <dt>Beperkingtype</dt>
             <dd>
-                {{ beperking_kadastraal_object.beperking.beperkingtype.omschrijving }}
-                {{ beperking_kadastraal_object.beperking.beperkingtype.code }}
+                {{ beperking.beperkingtype.omschrijving }}
+                {{ beperking.beperkingtype.code }}
             </dd>
 
             <dt>Datum in werking</dt>
-            <dd>{{ beperking_kadastraal_object.beperking.datum_in_werking|simple }}</dd>
+            <dd>{{ beperking.datum_in_werking|simple }}</dd>
 
             <dt>Datum eind</dt>
-            <dd>{{ beperking_kadastraal_object.beperking.datum_einde|simple }}</dd>
+            <dd>{{ beperking.datum_einde|simple }}</dd>
 
-            {% if beperking_kadastraal_object.beperking.documenten %}
+            {% if beperking.documenten %}
                 <h3>Documenten</h3>
-                {% for document in beperking_kadastraal_object.beperking.documenten %}
+                {% for document in beperking.documenten %}
                     <p><a href="{{ document.url }}">{{ document.omschrijving }}</a></p>
                 {% endfor %}
             {% endif %}

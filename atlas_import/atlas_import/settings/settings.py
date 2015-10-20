@@ -35,6 +35,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_jenkins',
 
+    'oauth2_provider',
+
     'batch',
     'atlas',
 
@@ -124,6 +126,7 @@ ALLOWED_HOSTS = [
 REST_FRAMEWORK = dict(
     PAGE_SIZE=10,
     DEFAULT_AUTHENTICATION_CLASSES=(
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
@@ -141,3 +144,6 @@ SECURE_BROWSER_XSS_FILTER = True
 # CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
+
+# noinspection PyUnresolvedReferences
+from .checks import *  # used for ./manage.py check
