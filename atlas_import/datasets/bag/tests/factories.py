@@ -101,5 +101,5 @@ class BouwblokFactory(factory.DjangoModelFactory):
         model = models.Bouwblok
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
     buurt = factory.SubFactory(BuurtFactory)
