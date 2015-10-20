@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 from collections import OrderedDict
 import logging
 
@@ -73,13 +75,16 @@ class Cache(object):
         self.cache.clear()
 
 
-
 class AbstractCacheBasedTask(object):
+    class Meta:
+        __class__ = ABCMeta
+
     def __init__(self, cache):
         self.cache = cache
 
+    @abstractmethod
     def execute(self):
-        raise NotImplementedError()
+        pass
 
     def require(self, model):
         self.cache.require(model)

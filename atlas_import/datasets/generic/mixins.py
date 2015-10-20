@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.db import models
 
 
@@ -27,3 +28,14 @@ class CodeOmschrijvingMixin(models.Model):
         return "{}: {}".format(self.code, self.omschrijving)
 
 
+class GeoMultiPolygonMixin(object):
+    """
+    Ensure the gemoterics are returned as multipolygon
+    """
+    def get_multipoly(self, wkt):
+        geom = GEOSGeometry(wkt)
+
+        if geom and isinstance(geom, Polygon):
+            geom = MultiPolygon(geom)
+
+        return geom
