@@ -119,8 +119,6 @@ class ImportSdlTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
                                r['SDLGME/TijdvakRelatie/einddatumRelatie']):
             return
 
-        # print(model_pk_code_mapping[models.Stadsdeel.__name__.lower()])
-
         self.set_pk(models.Stadsdeel.__name__, r['Stadsdeelcode'], r['sleutelVerzendend'])
 
         self.create(models.Stadsdeel(
@@ -172,7 +170,7 @@ class ImportBbkTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
         buurt_id = self.foreign_key_id(models.Buurt, r['BBKBRT/BRT/sleutelVerzendend'])
 
         if not buurt_id:
-            log.warning('buurt voor bouwblok niet gevonden: %s' % r['Bouwbloknummer'])
+            log.warning('bouw voor bouwblok niet gevonden: %s' % r['Bouwbloknummer'])
             return
 
         self.set_pk(models.Bouwblok.__name__, r['Bouwbloknummer'], r['sleutelVerzendend'])
@@ -609,7 +607,6 @@ class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, c
         self.source = os.path.join(source_path, self.source_file)
 
     def execute(self):
-        # print(model_pk_code_mapping['buurt'])
         ds = DataSource(self.source)
         lyr = ds[0]
         [self.process_feature(feat) for feat in lyr]
@@ -617,7 +614,7 @@ class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, c
     def process_feature(self, feat):
         pk = self.get_pk(self.model.__name__, feat.get(self.lookup_field_feat))
         if not pk:
-            # log.warning('could not find "%s" for model: %s' % (feat.get(self.lookup_field_feat), self.model.__name__))
+            log.warning('could not find "%s" for model: %s' % (feat.get(self.lookup_field_feat), self.model.__name__))
             return
 
         self.merge_existing(self.model, pk, dict(
