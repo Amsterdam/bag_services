@@ -1,4 +1,4 @@
-Django==1.8.4
+Django==1.8.5
 Markdown==2.6.2
 coverage==4.0
 django-cors-headers==1.1.0
@@ -10,6 +10,7 @@ elasticsearch==1.6.0
 elasticsearch-dsl==0.0.8
 factory-boy==2.5.2
 fake-factory==0.5.3
+httplib2==0.9.2
 psycopg2==2.6.1
 pyslack-real==0.5.3
 python-dateutil==2.4.2
