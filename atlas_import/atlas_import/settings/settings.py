@@ -35,6 +35,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_jenkins',
 
+    'oauth2_provider',
+
     'batch',
     'atlas',
 
@@ -124,6 +126,7 @@ ALLOWED_HOSTS = [
 REST_FRAMEWORK = dict(
     PAGE_SIZE=10,
     DEFAULT_AUTHENTICATION_CLASSES=(
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
