@@ -50,65 +50,7 @@ class Toegang(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class Gemeente(BagMixin, rest.HALSerializer):
-    class Meta:
-        model = models.Gemeente
-        fields = (
-            '_links',
-            'id',
-            'code',
-            'date_modified',
-
-            'naam',
-            'verzorgingsgebied',
-        )
-
-
-class Stadsdeel(BagMixin, rest.HALSerializer):
-    gemeente = Gemeente()
-
-    class Meta:
-        model = models.Stadsdeel
-        fiels = (
-            '_links',
-            'id',
-            'code',
-            'date_modified',
-
-            'naam',
-            'gemeente',
-        )
-
-
-class Buurt(BagMixin, rest.HALSerializer):
-    stadsdeel = Stadsdeel()
-
-    class Meta:
-        model = models.Buurt
-        fields = (
-            '_links',
-            'code',
-
-            'naam',
-            'stadsdeel',
-        )
-
-
-class Bouwblok(BagMixin, rest.HALSerializer):
-    buurt = Buurt()
-
-    class Meta:
-        model = models.Bouwblok
-        fields = (
-            '_links',
-            'code',
-            'buurt',
-        )
-
-
 class Woonplaats(BagMixin, rest.HALSerializer):
-    gemeente = Gemeente()
-
     class Meta:
         model = models.Woonplaats
         fields = (
@@ -184,7 +126,6 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
 
 class Ligplaats(BagMixin, rest.HALSerializer):
     status = Status()
-    buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
         source='hoofdadres.id',
         view_name='nummeraanduiding-detail',
@@ -219,7 +160,6 @@ class Ligplaats(BagMixin, rest.HALSerializer):
 
 class Standplaats(BagMixin, rest.HALSerializer):
     status = Status()
-    buurt = Buurt()
     hoofdadres = serializers.HyperlinkedRelatedField(
         source='hoofdadres.id',
         view_name='nummeraanduiding-detail',
@@ -258,7 +198,6 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
 
 class Verblijfsobject(BagMixin, rest.HALSerializer):
     status = Status()
-    buurt = Buurt()
     eigendomsverhouding = Eigendomsverhouding()
     financieringswijze = Financieringswijze()
     gebruik = Gebruik()
@@ -359,4 +298,64 @@ class Pand(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
+        )
+
+
+class GebiedenMixin(rest.DataSetSerializerMixin):
+    dataset = 'gebieden'
+
+
+class Gemeente(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Gemeente
+        fields = (
+            '_links',
+            'id',
+            'code',
+            'date_modified',
+
+            'naam',
+            'verzorgingsgebied',
+        )
+
+
+class Stadsdeel(GebiedenMixin, rest.HALSerializer):
+    gemeente = Gemeente()
+
+    class Meta:
+        model = models.Stadsdeel
+        fiels = (
+            '_links',
+            'id',
+            'code',
+            'date_modified',
+
+            'naam',
+            'gemeente',
+        )
+
+
+class Buurt(GebiedenMixin, rest.HALSerializer):
+    stadsdeel = Stadsdeel()
+
+    class Meta:
+        model = models.Buurt
+        fields = (
+            '_links',
+            'code',
+
+            'naam',
+            'stadsdeel',
+        )
+
+
+class Bouwblok(GebiedenMixin, rest.HALSerializer):
+    buurt = Buurt()
+
+    class Meta:
+        model = models.Bouwblok
+        fields = (
+            '_links',
+            'code',
+            'buurt',
         )

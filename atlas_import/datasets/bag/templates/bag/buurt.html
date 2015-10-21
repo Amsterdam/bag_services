@@ -1,0 +1,23 @@
+{% load details %}
+
+<h2>Ligplaats</h2>
+
+<dl>
+    <dt>Identificatie</dt>
+    <dd>{{ object.identificatie|simple }}</dd>
+
+    <dt>Bron</dt>
+    <dd>{{ object.bron.omschrijving|simple }}</dd>
+
+    <dt>Status</dt>
+    <dd>{{ object.status.omschrijving|simple }}</dd>
+
+    <dt>Buurt</dt>
+    <dd>{{ object.buurt.naam|simple }}</dd>
+
+    <dt>Documentdatum mutatie</dt>
+    <dd>{{ object.document_mutatie|simple }}</dd>
+
+    <dt>Documentnummer mutatie</dt>
+    <dd>{{ object.document_nummer|simple }}</dd>
+</dl>

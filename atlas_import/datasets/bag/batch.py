@@ -12,6 +12,8 @@ from datasets.generic import uva2, cache, index, mixins
 from . import models, documents
 
 log = logging.getLogger(__name__)
+
+# TODO check task execution flow for possible memory leaks
 model_code_pk_mapping = {}
 stadsdeel_code_pk_mapping = {}
 

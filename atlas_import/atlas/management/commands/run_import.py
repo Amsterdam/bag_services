@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
