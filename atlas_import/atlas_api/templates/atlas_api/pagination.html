@@ -2,11 +2,15 @@
     {% if prev_url %}
         <li><a rel="start" href="{{ first_url }}">&laquo;</a></li>
         <li><a rel="previous" href="{{ prev_url }}">&lsaquo;</a></li>
+    {% else %}
+        <li></li><li></li>
     {% endif %}
     <li>{{ current_page }}/{{ total }}</li>
     {% if next_url %}
         <li><a rel="next" href="{{ next_url }}">&rsaquo;</a></li>
         <li><a rel="last" href="{{ last_url }}">&raquo;</a></li>
+    {% else %}
+        <li></li><li></li>
     {% endif %}
 </ul>
 
