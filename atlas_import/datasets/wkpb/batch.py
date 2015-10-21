@@ -57,46 +57,6 @@ class ImportWkpbBroncodeTask(object):
         )
 
 
-class ImportWkpbBrondocumentTask(object):
-    name = "import Wkpb Brondocument"
-
-    def __init__(self, source_path):
-        super().__init__()
-        self.source = os.path.join(source_path, 'wpb_brondocument.dat')
-        self.cache = set()
-
-    def execute(self):
-        try:
-            self.cache = set(models.Broncode.objects.values_list('pk', flat=True))
-
-            with open(self.source) as f:
-                rows = csv.reader(f, delimiter=';')
-                objects = (self.process_row(r) for r in rows)
-                object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
-
-            models.Brondocument.objects.all().delete()
-            models.Brondocument.objects.bulk_create(object_dict.values())
-
-        finally:
-            self.cache.clear()
-
-    def process_row(self, r):
-        if r[4] == '0':
-            pers_afsch = False
-        else:
-            pers_afsch = True
-
-        bron_id = r[2] if r[2] in self.cache else None
-        return models.Brondocument(
-            pk=r[0],
-            documentnummer=r[0],
-            bron_id=bron_id,
-            documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
-            persoonsgegeven_afschermen=pers_afsch,
-            soort_besluit=r[5],
-        )
-
-
 class ImportBeperkingTask(object):
     name = "import Beperking"
 
@@ -133,6 +93,49 @@ class ImportBeperkingTask(object):
             beperkingtype_id=code_id,
             datum_in_werking=self.get_date(r[3]),
             datum_einde=self.get_date(r[4]),
+        )
+
+
+class ImportWkpbBrondocumentTask(object):
+    name = "import Wkpb Brondocument"
+
+    def __init__(self, source_path):
+        super().__init__()
+        self.source = os.path.join(source_path, 'wpb_brondocument.dat')
+        self.cache = set()
+
+    def execute(self):
+        try:
+            self.cache = set(models.Broncode.objects.values_list('pk', flat=True))
+            self.cache_beperking = set(models.Beperking.objects.values_list('pk', flat=True))
+
+            with open(self.source) as f:
+                rows = csv.reader(f, delimiter=';')
+                objects = (self.process_row(r) for r in rows)
+                object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
+
+            models.Brondocument.objects.all().delete()
+            models.Brondocument.objects.bulk_create(object_dict.values())
+
+        finally:
+            self.cache.clear()
+
+    def process_row(self, r):
+        if r[4] == '0':
+            pers_afsch = False
+        else:
+            pers_afsch = True
+
+        bron_id = r[2] if r[2] in self.cache else None
+        beperking_id = r[0] if r[0] in self.cache_beperking else None
+        return models.Brondocument(
+            pk=r[0],
+            documentnummer=r[0],
+            bron_id=bron_id,
+            documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
+            persoonsgegeven_afschermen=pers_afsch,
+            soort_besluit=r[5],
+            beperking_id=beperking_id
         )
 
 
