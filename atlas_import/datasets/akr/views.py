@@ -1,5 +1,3 @@
-from rest_framework import viewsets
-
 from . import models, serializers
 from datasets.generic import rest
 
@@ -16,7 +14,15 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
     """
-    queryset = models.KadastraalSubject.objects.all()
+    queryset = (models.KadastraalSubject.objects
+                .prefetch_related('rechten')
+                .prefetch_related('rechten__kadastraal_object')
+                .prefetch_related('rechten__kadastraal_subject')
+                .prefetch_related('rechten__transactie')
+                .prefetch_related('rechten__soort_recht')
+                .select_related('soort_niet_natuurlijke_persoon')
+                .select_related('woonadres')
+                .select_related('postadres'))
     serializer_class = serializers.KadastraalSubject
     template_name = "akr/kadastraal_subject.html"
 

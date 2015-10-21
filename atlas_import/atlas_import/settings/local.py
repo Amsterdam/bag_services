@@ -64,3 +64,5 @@ if not os.path.exists(DIVA_DIR):
     print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
 
 DEBUG = True
+
+INSTALLED_APPS += ('debug_toolbar', )

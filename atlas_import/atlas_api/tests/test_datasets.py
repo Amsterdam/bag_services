@@ -26,6 +26,8 @@ class BrowseDatasetsTestCase(APITestCase):
         'kadaster/transactie',
         'kadaster/zakelijk-recht',
         'wkpb/beperking',
+        'wkpb/brondocument',
+        'wkpb/broncode',
     ]
 
     def setUp(self):
@@ -44,6 +46,7 @@ class BrowseDatasetsTestCase(APITestCase):
         akr_factories.TransactieFactory.create()
         akr_factories.ZakelijkRechtFactory.create()
         wkpb_factories.BeperkingKadastraalObjectFactory.create()
+        wkpb_factories.BrondocumentFactory.create()
 
     def test_root(self):
         response = self.client.get('/api/')
@@ -70,3 +73,12 @@ class BrowseDatasetsTestCase(APITestCase):
 
             self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))
             self.assertEqual(detail['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
+
+    # def test_html(self):
+    #     for url in self.datasets:
+    #         response = self.client.get('/api/{}/'.format(url))
+    #         url = response.data['results'][0]['_links']['text/html']['href']
+    #         detail = self.client.get(url)
+    #
+    #         self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))
+    #         self.assertEqual(detail['Content-Type'], 'text/html; charset=utf-8', 'Wrong Content-Type for {}'.format(url))

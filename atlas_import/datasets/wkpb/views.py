@@ -10,6 +10,7 @@ class BroncodeView(AtlasViewSet):
     """
     serializer_class = serializers.Broncode
     queryset = models.Broncode.objects.all()
+    template_name = "wkpb/broncode.html"
 
 
 class BeperkingView(AtlasViewSet):
@@ -37,3 +38,4 @@ class BrondocumentView(AtlasViewSet):
     """
     serializer_class = serializers.Brondocument
     queryset = models.Brondocument.objects.all()
+    template_name = "wkpb/brondocument.html"

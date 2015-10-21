@@ -15,6 +15,8 @@ class BeperkingCodeFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Beperkingcode
 
+    code = fuzzy.FuzzyText(length=4)
+
 
 class BeperkingFactory(factory.DjangoModelFactory):
     class Meta:
@@ -34,3 +36,22 @@ class BeperkingKadastraalObjectFactory(factory.DjangoModelFactory):
     beperking = factory.SubFactory(BeperkingFactory)
     kadastraal_object = factory.SubFactory(lki_factories.KadastraalObjectFactory)
     kadastraal_object_akr = factory.SubFactory(akr_factories.KadastraalObjectFactory)
+
+
+class BroncodeFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Broncode
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=150)
+
+
+class BrondocumentFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Brondocument
+
+    id = fuzzy.FuzzyInteger(low=1, high=99999)
+    bron = factory.SubFactory(BroncodeFactory)
+    documentnummer = fuzzy.FuzzyInteger(low=1, high=99999)
+    documentnaam = fuzzy.FuzzyText(length=21)
+    persoonsgegeven_afschermen = fuzzy.FuzzyChoice([True, False])

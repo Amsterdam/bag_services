@@ -15,8 +15,6 @@ class Broncode(rest.HALSerializer):
 
 
 class Brondocument(rest.HALSerializer):
-    bron = Broncode()
-
     class Meta:
         model = models.Brondocument
         fields = (
@@ -42,7 +40,6 @@ class Beperkingcode(serializers.ModelSerializer):
 
 class Beperking(rest.HALSerializer):
     beperkingtype = Beperkingcode()
-    documenten = Brondocument(many=True)
 
     class Meta:
         model = models.Beperking
