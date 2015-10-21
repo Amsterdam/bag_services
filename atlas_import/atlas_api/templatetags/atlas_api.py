@@ -14,7 +14,7 @@ def get_current_page(request):
 
 
 def should_paginate(queryset):
-    return len(queryset) > PAGE_SIZE
+    return queryset.count() > PAGE_SIZE
 
 
 @register.filter
@@ -34,7 +34,7 @@ def api_pagination(context, queryset):
     if not should_paginate(queryset):
         return ""
 
-    size = len(queryset)
+    size = queryset.count()
     max_page = math.ceil(float(size) / PAGE_SIZE)
 
     page = get_current_page(context.request) + 1
