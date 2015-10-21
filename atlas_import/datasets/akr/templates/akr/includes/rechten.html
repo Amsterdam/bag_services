@@ -1,6 +1,8 @@
+{% load atlas_api %}
+
 {% if object_list %}
     <h2>Zakelijk recht</h2>
-    {% for recht in object_list %}
+    {% for recht in object_list|api_paginate:request %}
         <dl>
             <dt>Kadastraal Subject</dt>
             <dd>
@@ -24,4 +26,5 @@
             </dd>
         </dl>
     {% endfor %}
+    {% api_pagination object_list %}
 {% endif %}
