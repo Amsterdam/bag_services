@@ -46,6 +46,8 @@ router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
 router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
 router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
+router.register(r'wkpb/brondocument', datasets.wkpb.views.BrondocumentView)
+router.register(r'wkpb/broncode', datasets.wkpb.views.BroncodeView)
 
 router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead')
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')

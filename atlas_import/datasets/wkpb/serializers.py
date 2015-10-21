@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from . import models
 from datasets.generic import rest
 
@@ -24,15 +26,15 @@ class Brondocument(rest.HALSerializer):
             'documentnaam',
             'persoonsgegeven_afschermen',
             'soort_besluit',
-            'url'
+            'url',
+            'beperking'
         )
 
 
-class Beperkingcode(rest.HALSerializer):
+class Beperkingcode(serializers.ModelSerializer):
     class Meta:
         model = models.Beperkingcode
         fields = (
-            '_links',
             'code',
             'omschrijving',
         )
