@@ -320,8 +320,6 @@ class Gemeente(GebiedenMixin, rest.HALSerializer):
 
 
 class Stadsdeel(GebiedenMixin, rest.HALSerializer):
-    gemeente = Gemeente()
-
     class Meta:
         model = models.Stadsdeel
         fiels = (
@@ -336,8 +334,6 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
 
 
 class Buurt(GebiedenMixin, rest.HALSerializer):
-    stadsdeel = Stadsdeel()
-
     class Meta:
         model = models.Buurt
         fields = (
@@ -350,8 +346,6 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
 
 
 class Bouwblok(GebiedenMixin, rest.HALSerializer):
-    buurt = Buurt()
-
     class Meta:
         model = models.Bouwblok
         fields = (
