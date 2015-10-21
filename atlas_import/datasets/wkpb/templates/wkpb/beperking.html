@@ -1,0 +1,26 @@
+{% load details %}
+
+<h2>Beperking</h2>
+<dl>
+    <dt>Inschrijfnummer</dt>
+    <dd>{{ object.inschrijfnummer }}</dd>
+
+    <dt>Type beperking</dt>
+    <dd>
+        {{ object.beperkingtype.omschrijving }}
+        {{ object.beperkingtype.code }}
+    </dd>
+
+    <dt>Datum in werking</dt>
+    <dd>{{ object.datum_in_werking|simple }}</dd>
+
+    <dt>Datum eind</dt>
+    <dd>{{ object.datum_einde|simple }}</dd>
+
+    {% if object.documenten %}
+        <h3>Documenten</h3>
+        {% for document in object.documenten %}
+            <p><a href="{{ document.url }}">{{ document.omschrijving }}</a></p>
+        {% endfor %}
+    {% endif %}
+</dl>

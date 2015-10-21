@@ -14,3 +14,4 @@ class BeperkingView(AtlasViewSet):
     """
     serializer_class = serializers.Beperking
     queryset = models.Beperking.objects.all()
+    template_name = "wkpb/beperking.html"
