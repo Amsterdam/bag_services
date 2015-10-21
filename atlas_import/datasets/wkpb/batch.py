@@ -107,7 +107,6 @@ class ImportWkpbBrondocumentTask(object):
     def execute(self):
         try:
             self.cache = set(models.Broncode.objects.values_list('pk', flat=True))
-            self.cache_beperking = set(models.Beperking.objects.values_list('pk', flat=True))
 
             with open(self.source) as f:
                 rows = csv.reader(f, delimiter=';')
@@ -127,7 +126,13 @@ class ImportWkpbBrondocumentTask(object):
             pers_afsch = True
 
         bron_id = r[2] if r[2] in self.cache else None
-        beperking_id = r[0] if r[0] in self.cache_beperking else None
+
+        try:
+            beperking = models.Beperking.objects.get(inschrijfnummer=r[0])
+            beperking_id = beperking.id
+        except models.Beperking.DoesNotExist:
+            beperking_id = None
+
         return models.Brondocument(
             pk=r[0],
             documentnummer=r[0],
@@ -146,12 +151,10 @@ class ImportWkpbBepKadTask(object):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
         self.beperkingen_cache = set()
-        self.lki_cache = dict()
 
     def execute(self):
         try:
             self.beperkingen_cache = set(models.Beperking.objects.values_list('pk', flat=True))
-            self.lki_cache = dict(lki.KadastraalObject.objects.values_list('aanduiding', 'pk'))
 
             with open(self.source) as f:
                 rows = csv.reader(f, delimiter=';')
@@ -162,7 +165,6 @@ class ImportWkpbBepKadTask(object):
 
         finally:
             self.beperkingen_cache.clear()
-            self.lki_cache.clear()
 
     def process_row(self, r):
         aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
@@ -211,7 +213,7 @@ class ImportWkpbJob(object):
         return [
             ImportBeperkingcodeTask(self.beperkingen),
             ImportWkpbBroncodeTask(self.beperkingen),
-            ImportWkpbBrondocumentTask(self.beperkingen),
             ImportBeperkingTask(self.beperkingen),
+            ImportWkpbBrondocumentTask(self.beperkingen),
             ImportWkpbBepKadTask(self.beperkingen),
         ]
