@@ -3,13 +3,11 @@ import os
 from django.conf import settings
 from django.contrib.gis.gdal import DataSource
 
-from django.contrib.gis.geos import GEOSGeometry
-
 from . import models
-from datasets.generic import kadaster
+from datasets.generic import kadaster, mixins
 
 
-class ImportGemeenteTask(object):
+class ImportGemeenteTask(mixins.GeoMultiPolygonMixin):
     name = "import Gemeente"
 
     def __init__(self, source_path):
@@ -30,11 +28,11 @@ class ImportGemeenteTask(object):
             pk=feat.get('DIVA_ID'),
             gemeentecode=feat.get('GEM_CODE'),
             gemeentenaam=feat.get('GEM_NAAM'),
-            geometrie=GEOSGeometry(feat.geom.wkt)
+            geometrie=self.get_multipoly(feat.geom.wkt)
         )
 
 
-class ImportKadastraleGemeenteTask(object):
+class ImportKadastraleGemeenteTask(mixins.GeoMultiPolygonMixin):
     name = "import Kadastrale gemeente"
 
     def __init__(self, source_path):
@@ -50,22 +48,15 @@ class ImportKadastraleGemeenteTask(object):
         models.KadastraleGemeente.objects.bulk_create(objects)
 
     def process_feature(self, feat):
-        wkt = feat.geom.wkt
-
-        # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
-        if 'MULTIPOLYGON' not in wkt:
-            wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
-            wkt += ')'
-
         return models.KadastraleGemeente(
             pk=(feat.get('DIVA_ID')),
             code=feat.get('KAD_GEM'),
             ingang_cyclus=feat.get('INGANG_CYC'),
-            geometrie=GEOSGeometry(wkt)
+            geometrie=self.get_multipoly(feat.geom.wkt)
         )
 
 
-class ImportSectieTask(object):
+class ImportSectieTask(mixins.GeoMultiPolygonMixin):
     name = "import Sectie"
 
     def __init__(self, source_path):
@@ -81,23 +72,16 @@ class ImportSectieTask(object):
         models.Sectie.objects.bulk_create(objects)
 
     def process_feature(self, feat):
-        wkt = feat.geom.wkt
-
-        # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
-        if 'MULTIPOLYGON' not in wkt:
-            wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
-            wkt += ')'
-
         return models.Sectie(
             pk=feat.get('DIVA_ID'),
             kadastrale_gemeente_code=feat.get('KAD_GEM'),
             code=feat.get('SECTIE'),
             ingang_cyclus=feat.get('INGANG_CYC'),
-            geometrie=GEOSGeometry(wkt)
+            geometrie=self.get_multipoly(feat.geom.wkt)
         )
 
 
-class ImportKadastraalObjectTask(object):
+class ImportKadastraalObjectTask(mixins.GeoMultiPolygonMixin):
     name = "import Kadastraal Object"
 
     def __init__(self, source_path):
@@ -113,13 +97,6 @@ class ImportKadastraalObjectTask(object):
         models.KadastraalObject.objects.bulk_create(objects)
 
     def process_feature(self, feat):
-
-        # zorgen dat het een multipolygon wordt. Superlelijk! :( TODO!!
-        wkt = feat.geom.wkt
-        if 'MULTIPOLYGON' not in wkt:
-            wkt = wkt.replace('POLYGON ', 'MULTIPOLYGON (')
-            wkt += ')'
-
         return models.KadastraalObject(
             pk=feat.get('DIVA_ID'),
             kadastrale_gemeente_code=feat.get('KAD_GEM'),
@@ -131,7 +108,7 @@ class ImportKadastraalObjectTask(object):
             ingang_cyclus=feat.get('INGANG_CYC'),
             aanduiding=kadaster.get_aanduiding(feat.get('KAD_GEM'), feat.get('SECTIE'), feat.get('PERCEELNR'),
                                                feat.get('IDX_LETTER'), feat.get('IDX_NUMMER')),
-            geometrie=GEOSGeometry(wkt)
+            geometrie=self.get_multipoly(feat.geom.wkt)
         )
 
 

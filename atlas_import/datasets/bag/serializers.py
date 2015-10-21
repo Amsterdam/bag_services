@@ -50,10 +50,11 @@ class Toegang(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class Gemeente(serializers.ModelSerializer):
+class Gemeente(BagMixin, rest.HALSerializer):
     class Meta:
         model = models.Gemeente
         fields = (
+            '_links',
             'id',
             'code',
             'date_modified',
@@ -63,12 +64,13 @@ class Gemeente(serializers.ModelSerializer):
         )
 
 
-class Stadsdeel(serializers.ModelSerializer):
+class Stadsdeel(BagMixin, rest.HALSerializer):
     gemeente = Gemeente()
 
     class Meta:
         model = models.Stadsdeel
         fiels = (
+            '_links',
             'id',
             'code',
             'date_modified',
@@ -78,13 +80,13 @@ class Stadsdeel(serializers.ModelSerializer):
         )
 
 
-class Buurt(serializers.ModelSerializer):
+class Buurt(BagMixin, rest.HALSerializer):
     stadsdeel = Stadsdeel()
 
     class Meta:
         model = models.Buurt
         fields = (
-            'id',
+            '_links',
             'code',
 
             'naam',
@@ -92,13 +94,25 @@ class Buurt(serializers.ModelSerializer):
         )
 
 
-class Woonplaats(serializers.ModelSerializer):
+class Bouwblok(BagMixin, rest.HALSerializer):
+    buurt = Buurt()
+
+    class Meta:
+        model = models.Bouwblok
+        fields = (
+            '_links',
+            'code',
+            'buurt',
+        )
+
+
+class Woonplaats(BagMixin, rest.HALSerializer):
     gemeente = Gemeente()
 
     class Meta:
         model = models.Woonplaats
         fields = (
-            'id',
+            '_links',
             'code',
             'date_modified',
             'document_mutatie',

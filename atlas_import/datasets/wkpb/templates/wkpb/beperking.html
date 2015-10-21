@@ -16,11 +16,37 @@
 
     <dt>Datum eind</dt>
     <dd>{{ object.datum_einde|simple }}</dd>
-
-    {% if object.documenten %}
-        <h3>Documenten</h3>
-        {% for document in object.documenten %}
-            <p><a href="{{ document.url }}">{{ document.omschrijving }}</a></p>
-        {% endfor %}
-    {% endif %}
 </dl>
+
+{% if object.documenten.all.count %}
+    <h3>Documenten</h3>
+    {% for document in object.documenten.all %}
+        <dl>
+            <dt>Documentnummer</dt>
+            <dd>{{ document.documentnummer|simple }}</dd>
+
+            <dt>Soort besluit</dt>
+            <dd>{{ document.soort_besluit|simple }}</dd>
+
+            <dt>Documentnaam</dt>
+            <dd><a href="{{ document.url }}">{{ document.documentnaam }}</a></dd>
+
+            <dt>Persoonsgegevens afschermen</dt>
+            <dd>{{ document.persoonsgegeven_afschermen|simple }}</dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+{% if object.kadastrale_objecten.all.count %}
+    <h3>Kadastrale objecten</h3>
+    {% for kadastraal_object in object.kadastrale_objecten.all %}
+        <dl>
+        <dt>Kadastraal object</dt>
+        <dd>
+            <a href="{% url "kadastraalobject-detail" pk=kadastraal_object.id format='html' %}">{{ kadastraal_object.id }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+

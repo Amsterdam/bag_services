@@ -1,15 +1,19 @@
 import csv
 import logging
 import os
+from abc import ABCMeta, abstractmethod
 
 from django.conf import settings
 
 from django.contrib.gis.geos import Point, GEOSGeometry
+from django.contrib.gis.gdal import DataSource
 
-from datasets.generic import uva2, cache, index
+from datasets.generic import uva2, cache, index, mixins
 from . import models, documents
 
 log = logging.getLogger(__name__)
+model_code_pk_mapping = {}
+stadsdeel_code_pk_mapping = {}
 
 
 class CodeOmschrijvingUvaTask(uva2.AbstractUvaTask):
@@ -92,7 +96,18 @@ class ImportGmeTask(uva2.AbstractUvaTask):
         ))
 
 
-class ImportSdlTask(uva2.AbstractUvaTask):
+class GeoModelCodePkMappingMixin(object):
+    def get_pk(self, name, code):
+        try:
+            return model_code_pk_mapping[('%s-%s' % (name.lower(), code.lower()))]
+        except KeyError:
+            return
+
+    def set_pk(self, name, code, pk):
+        model_code_pk_mapping['%s-%s' % (name.lower(), code.lower())] = pk
+
+
+class ImportSdlTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
     name = "import SDL"
     code = "SDL"
 
@@ -105,6 +120,9 @@ class ImportSdlTask(uva2.AbstractUvaTask):
                                r['SDLGME/TijdvakRelatie/einddatumRelatie']):
             return
 
+        self.set_pk(models.Stadsdeel.__name__, r['Stadsdeelcode'], r['sleutelVerzendend'])
+        stadsdeel_code_pk_mapping[r['Stadsdeelcode']] = r['sleutelVerzendend']
+
         self.create(models.Stadsdeel(
             pk=(r['sleutelVerzendend']),
             code=r['Stadsdeelcode'],
@@ -114,7 +132,7 @@ class ImportSdlTask(uva2.AbstractUvaTask):
         ))
 
 
-class ImportBrtTask(uva2.AbstractUvaTask):
+class ImportBrtTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
     name = "import BRT"
     code = "BRT"
 
@@ -127,12 +145,42 @@ class ImportBrtTask(uva2.AbstractUvaTask):
                                r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
             return
 
+        self.set_pk(models.Buurt.__name__, r['Buurtcode'], r['sleutelVerzendend'])
+
         self.create(models.Buurt(
             pk=r['sleutelVerzendend'],
             code=r['Buurtcode'],
             naam=r['Buurtnaam'],
             stadsdeel_id=self.foreign_key_id(models.Stadsdeel, r['BRTSDL/SDL/sleutelVerzendend']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+        ))
+
+
+class ImportBbkTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
+    name = "import BBK"
+    code = "BBK"
+
+    def process_row(self, r):
+        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+            return
+
+        if not uva2.uva_geldig(r['BBKBRT/TijdvakRelatie/begindatumRelatie'],
+                               r['BBKBRT/TijdvakRelatie/einddatumRelatie']):
+            return
+
+        buurt_id = self.foreign_key_id(models.Buurt, r['BBKBRT/BRT/sleutelVerzendend'])
+
+        if not buurt_id:
+            log.warning('bouw voor bouwblok niet gevonden: %s' % r['Bouwbloknummer'])
+            return
+
+        self.set_pk(models.Bouwblok.__name__, r['Bouwbloknummer'], r['sleutelVerzendend'])
+
+        self.create(models.Bouwblok(
+            pk=r['sleutelVerzendend'],
+            code=r['Bouwbloknummer'],
+            buurt_id=buurt_id
         ))
 
 
@@ -545,6 +593,188 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
         return documents.from_openbare_ruimte(obj)
 
 
+# geodata gebieden (shp files)
+class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, cache.AbstractCacheBasedTask):
+    """
+    Abstract task for processing shp files
+    """
+
+    source_file = None
+    model = None
+    lookup_field_feat = 'CODE'
+
+    def __init__(self, source_path, cache):
+        super().__init__(cache)
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        ds = DataSource(self.source, encoding='ISO-8859-1')
+        lyr = ds[0]
+        [self.process_feature(feat) for feat in lyr]
+
+    def process_feature(self, feat):
+        pk = self.get_pk(self.model.__name__, feat.get(self.lookup_field_feat))
+        if not pk:
+            log.warning('could not find %s "%s" for model: %s' % (
+                self.lookup_field_feat, feat.get(self.lookup_field_feat), self.model.__name__
+            ))
+            return
+
+        self.merge_existing(self.model, pk, dict(
+            geometrie=self.get_multipoly(feat.geom.wkt),
+        ))
+
+    class Meta:
+        __class__ = ABCMeta
+
+
+class ImportSdlGeoTask(AbstractShpTask):
+    """
+    layer.fields:
+
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    """
+
+    name = "import GBD SDL"
+    source_file = "GBD_Stadsdeel.shp"
+    model = models.Stadsdeel
+
+
+class ImportBrtGeoTask(AbstractShpTask):
+    """
+    layer.fields:
+
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    """
+
+    name = "import GBD BRT"
+    source_file = "GBD_Buurt.shp"
+    model = models.Buurt
+
+
+class ImportBbkGeoTask(AbstractShpTask):
+    """
+    layer.fields:
+
+    ['ID', 'CODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    """
+
+    name = "import GBD BBK"
+    source_file = "GBD_Bouwblok.shp"
+    model = models.Bouwblok
+
+
+# these files don't have a UVA file
+class AbstractShpModelTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin):
+    """
+    Abstract task for processing shp files without a uva file (create models)
+    """
+
+    source_file = None
+    model = None
+
+    def __init__(self, source_path):
+        self.source = os.path.join(source_path, self.source_file)
+
+    def execute(self):
+        ds = DataSource(self.source, encoding='ISO-8859-1')
+        lyr = ds[0]
+        objects = [self.process_feature(feat) for feat in lyr]
+
+        self.model.objects.bulk_create(objects)
+
+    @abstractmethod
+    def process_feature(self, feat):
+        pass
+
+    class Meta:
+        __class__ = ABCMeta
+
+
+class ImportBuurtcombinatieTask(AbstractShpModelTask):
+    """
+    layer.fields:
+
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    """
+
+    name = "import GBD Buurtcombinatie"
+    source_file = "GBD_Buurtcombinatie.shp"
+    model = models.Buurtcombinatie
+
+    def process_feature(self, feat):
+        return self.model(
+            naam=feat.get('NAAM').encode('utf-8'),
+            code=feat.get('CODE').encode('utf-8'),
+            vollcode=feat.get('VOLLCODE').encode('utf-8'),
+            geometrie=self.get_multipoly(feat.geom.wkt),
+        )
+
+
+class ImportGebiedsgerichtwerkenTask(AbstractShpModelTask):
+    """
+    layer.fields:
+
+    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    """
+
+    name = "import GBD Gebiedsgerichtwerken"
+    source_file = "GBD_gebiedsgerichtwerken.shp"
+    model = models.Gebiedsgerichtwerken
+
+    def process_feature(self, feat):
+        try:
+            pk_stadsdeel = stadsdeel_code_pk_mapping[feat.get('STADSDEEL')]
+
+            return self.model(
+                naam=feat.get('NAAM').encode('utf-8'),
+                code=feat.get('CODE').encode('utf-8'),
+                stadsdeel_id=pk_stadsdeel,
+                geometrie=self.get_multipoly(feat.geom.wkt),
+            )
+        except KeyError:
+            log.warning('stadsdeel %s not found for Gebiedsgerichtwerken code: %s' % (
+                feat.get('STADSDEEL'), feat.get('CODE')
+            ))
+            return
+
+
+class ImportGrootstedelijkProjectTask(AbstractShpModelTask):
+    """
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    name = "import GBD Grootstedelijk project"
+    source_file = "GBD_grootstedelijke_projecten.shp"
+    model = models.GrootstedelijkProject
+
+    def process_feature(self, feat):
+        return self.model(
+            naam=feat.get('NAAM').encode('utf-8'),
+            geometrie=self.get_multipoly(feat.geom.wkt),
+        )
+
+
+class ImportUnescoTask(AbstractShpModelTask):
+    """
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    name = "import GBD Grootstedelijk project"
+    source_file = "GBD_unesco.shp"
+    model = models.Unesco
+
+    def process_feature(self, feat):
+        return self.model(
+            naam=feat.get('NAAM').encode('utf-8'),
+            geometrie=self.get_multipoly(feat.geom.wkt),
+        )
+
+
 class ImportBagJob(object):
     name = "Import BAG"
 
@@ -556,6 +786,7 @@ class ImportBagJob(object):
         self.bag = os.path.join(diva, 'bag')
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
+        self.gebieden_shp = os.path.join(diva, 'gebieden_shp')
         self.cache = cache.Cache()
 
     def tasks(self):
@@ -574,6 +805,7 @@ class ImportBagJob(object):
             ImportWplTask(self.bag, self.cache),
             ImportSdlTask(self.gebieden, self.cache),
             ImportBrtTask(self.gebieden, self.cache),
+            ImportBbkTask(self.gebieden, self.cache),
             ImportOprTask(self.bag, self.cache),
 
             ImportLigTask(self.bag, self.cache),
@@ -594,7 +826,17 @@ class ImportBagJob(object):
             ImportPndGeoTask(self.bag_wkt, self.cache),
             ImportPndVboTask(self.bag, self.cache),
 
+            ImportSdlGeoTask(self.gebieden_shp, self.cache),
+            ImportBrtGeoTask(self.gebieden_shp, self.cache),
+            ImportBbkGeoTask(self.gebieden_shp, self.cache),
+
             cache.FlushCacheTask(self.cache),
+
+            ImportBuurtcombinatieTask(self.gebieden_shp),
+            ImportGebiedsgerichtwerkenTask(self.gebieden_shp),
+            ImportGrootstedelijkProjectTask(self.gebieden_shp),
+            ImportUnescoTask(self.gebieden_shp),
+
         ]
 
 

@@ -110,3 +110,74 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     queryset = models.OpenbareRuimte.objects.all()
     serializer_class = serializers.OpenbareRuimte
     template_name = "bag/openbare_ruimte.html"
+
+
+class WoonplaatsViewSet(rest.AtlasViewSet):
+    """
+    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorzien gedeelte
+    van het grondgebied van de gemeente. Vanaf 10 januari 2014 bestaat alleen nog de woonplaats Amsterdam met
+    Woonplaatsidentificatie 3594.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Woonplaats.objects.all()
+    serializer_class = serializers.Woonplaats
+
+
+class GemeenteViewSet(rest.AtlasViewSet):
+    """
+    Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
+    de Grondwet.
+
+    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en is onderdeel van de staat. Zij staat onder bestuur van
+    een raad, een burgemeester en wethouders.
+
+    De gemeentegrens wordt door de centrale overheid vastgesteld, en door het Kadaster vastgelegd.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Gemeente.objects.all()
+    serializer_class = serializers.Gemeente
+
+
+class StadsdeelViewSet(rest.AtlasViewSet):
+    """
+    Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Stadsdeel.objects.all()
+    serializer_class = serializers.Stadsdeel
+
+
+class BuurtViewSet(rest.AtlasViewSet):
+    """
+    Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
+    elementen.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Buurt.objects.all()
+    serializer_class = serializers.Buurt
+
+
+class BouwblokViewSet(rest.AtlasViewSet):
+    """
+    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
+    grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
+    één gebouw staat.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Bouwblok.objects.all()
+    serializer_class = serializers.Bouwblok

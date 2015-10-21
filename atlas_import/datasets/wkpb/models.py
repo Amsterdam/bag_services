@@ -26,31 +26,6 @@ class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Mo
         verbose_name_plural = "Broncodes"
 
 
-class Brondocument(mixins.ImportStatusMixin, models.Model):
-    """
-    Het document dat aan de beperking ten grondslag ligt.
-    """
-
-    id = models.IntegerField(null=False, primary_key=True)  # beperking id
-    documentnummer = models.IntegerField(null=False)
-    bron = models.ForeignKey(Broncode, null=True)
-    documentnaam = models.CharField(max_length=21, null=False)
-    persoonsgegeven_afschermen = models.BooleanField(null=False)
-    soort_besluit = models.CharField(max_length=60, null=True)
-
-    @property
-    def url(self):
-        base_url = 'http://diva.intranet.amsterdam.nl/Brondocumenten/Wkpb'
-        return '%s/%s' % (base_url, self.documentnaam)
-
-    class Meta:
-        verbose_name = "Brondocument"
-        verbose_name_plural = "Brondocumenten"
-
-    def __str__(self):
-        return "{}".format(self.documentnummer)
-
-
 class Beperking(mixins.ImportStatusMixin, models.Model):
     """
     Beperking van de eigendom, zoals door een publiekrechtelijke beperking als beschermd monument of een
@@ -68,21 +43,38 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     kadastrale_objecten = models.ManyToManyField(KadastraalObjectAkr, through='BeperkingKadastraalObject',
                                                  related_name="beperkingen")
 
-    @property
-    def documenten(self):
-        return Brondocument.objects.filter(id=self.id)
-
-    @property
-    def document_links(self):
-        base_url = 'http://diva.intranet.amsterdam.nl/Brondocumenten/Wkpb'
-        return ['%s/%s' % (base_url, d.documentnaam) for d in self.documenten]
-
     class Meta:
         verbose_name = "Beperking"
         verbose_name_plural = "Beperkingen"
 
     def __str__(self):
         return "Beperking({})".format(self.id)
+
+
+class Brondocument(mixins.ImportStatusMixin, models.Model):
+    """
+    Het document dat aan de beperking ten grondslag ligt.
+    """
+
+    id = models.IntegerField(null=False, primary_key=True)  # beperking id
+    documentnummer = models.IntegerField(null=False)
+    bron = models.ForeignKey(Broncode, null=True)
+    documentnaam = models.CharField(max_length=21, null=False)
+    persoonsgegeven_afschermen = models.BooleanField(null=False)
+    soort_besluit = models.CharField(max_length=60, null=True)
+    beperking = models.ForeignKey(Beperking, related_name='documenten', null=True)
+
+    @property
+    def url(self):
+        base_url = 'http://diva.intranet.amsterdam.nl/Brondocumenten/Wkpb'
+        return '%s/%s' % (base_url, self.documentnaam)
+
+    class Meta:
+        verbose_name = "Brondocument"
+        verbose_name_plural = "Brondocumenten"
+
+    def __str__(self):
+        return "{}".format(self.documentnummer)
 
 
 class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
