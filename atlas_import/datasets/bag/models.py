@@ -89,7 +89,22 @@ class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mo
         return "{}: {}".format(self.code, self.naam)
 
 
-class Stadsdeel(mixins.ImportStatusMixin, models.Model):
+class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
+    """
+    De hoofdklasse is een abstracte klasse waar sommige andere gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
+    Deze afstammelingen erven alle kenmerken over van deze hoofdklasse. Het kenmerk 'diva_id' komt bijvoorbeeld voor
+    bij alle gebieden.
+    """
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        abstract = True
+
+
+class Stadsdeel(Hoofdklasse):
     """
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
@@ -109,7 +124,7 @@ class Stadsdeel(mixins.ImportStatusMixin, models.Model):
         return "{}: {}".format(self.code, self.naam)
 
 
-class Buurt(mixins.ImportStatusMixin, models.Model):
+class Buurt(Hoofdklasse):
     """
     Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
     elementen.
@@ -128,6 +143,26 @@ class Buurt(mixins.ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "{}: {}".format(self.code, self.naam)
+
+
+class Bouwblok(Hoofdklasse):
+    """
+    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
+    grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
+    één gebouw staat.
+
+    https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/
+    """
+    id = models.CharField(max_length=14, primary_key=True)
+    code = models.CharField(max_length=4, unique=True)  # Bouwbloknummer
+    buurt = models.ForeignKey(Buurt)
+
+    class Meta:
+        verbose_name = "Bouwblok"
+        verbose_name_plural = "Bouwblokken"
+
+    def __str__(self):
+        return "{}".format(self.code)
 
 
 class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
@@ -394,3 +429,99 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "Pand-Verblijfsobject({}-{})".format(self.pand.id, self.verblijfsobject.id)
+
+
+class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    """
+
+    naam = models.CharField(max_length=100)
+    code = models.CharField(max_length=2)
+    vollcode = models.CharField(max_length=3)
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Buurtcombinatie"
+        verbose_name_plural = "Buurtcombinaties"
+
+    def __str__(self):
+        return "{}".format(self.code)
+
+
+class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    """
+
+    naam = models.CharField(max_length=100)
+    code = models.CharField(max_length=4)
+    stadsdeel = models.ForeignKey(Stadsdeel)
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Gebiedsgerichtwerken"
+        verbose_name_plural = "Gebiedsgerichtwerken"
+
+    def __str__(self):
+        return "{}".format(self.code)
+
+
+class GrootstedelijkProject(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    naam = models.CharField(max_length=100)
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Grootstedelijk project"
+        verbose_name_plural = "Grootstedelijk projecten"
+
+    def __str__(self):
+        return "{}".format(self.naam)
+
+
+class Unesco(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    naam = models.CharField(max_length=100)
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Unesco"
+        verbose_name_plural = "Unesco"
+
+    def __str__(self):
+        return "{}".format(self.naam)

@@ -76,3 +76,30 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     huisnummer = factory.LazyAttribute(lambda o: f.building_number())
     openbare_ruimte = factory.SubFactory(OpenbareRuimteFactory)
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
+
+
+class StadsdeelFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Stadsdeel
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    gemeente = factory.SubFactory(GemeenteFactory)
+
+
+class BuurtFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Buurt
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    stadsdeel = factory.SubFactory(StadsdeelFactory)
+
+
+class BouwblokFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Bouwblok
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)
