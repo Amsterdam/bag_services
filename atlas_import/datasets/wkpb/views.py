@@ -1,3 +1,5 @@
+from django.db.models import Prefetch
+
 from . import models, serializers
 from datasets.generic.rest import AtlasViewSet
 
@@ -26,7 +28,12 @@ class BeperkingView(AtlasViewSet):
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/)
     """
     serializer_class = serializers.Beperking
-    queryset = models.Beperking.objects.all()
+    queryset = (models.Beperking.objects
+                .prefetch_related(Prefetch('documenten',
+                                           queryset=models.Brondocument.objects.select_related('bron')
+                                           ))
+                .select_related('beperkingtype')
+                )
     template_name = "wkpb/beperking.html"
 
 
