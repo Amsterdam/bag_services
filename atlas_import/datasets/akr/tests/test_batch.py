@@ -159,7 +159,7 @@ class ImportZrtTest(TaskTestCase):
         self.run_task()
 
         imported = models.ZakelijkRecht.objects.all()
-        self.assertEqual(len(imported), 399)
+        self.assertEqual(len(imported), 400)
 
         zrt = models.ZakelijkRecht.objects.get(pk='1397395')
 
