@@ -1,4 +1,6 @@
 {% load details %}
+{% load atlas_api %}
+
 
 <h2>Beperking</h2>
 <dl>
@@ -39,14 +41,18 @@
 
 {% if object.kadastrale_objecten.all.count %}
     <h3>Kadastrale objecten</h3>
-    {% for kadastraal_object in object.kadastrale_objecten.all %}
-        <dl>
-        <dt>Kadastraal object</dt>
-        <dd>
-            <a href="{% url "kadastraalobject-detail" pk=kadastraal_object.id format='html' %}">{{ kadastraal_object.id }}</a>
-        </dd>
-        </dl>
-    {% endfor %}
+    {% with object_list=object.kadastrale_objecten.all %}
+        {% for kadastraal_object in object_list|api_paginate:request %}
+            <dl>
+                <dt>Kadastraal object</dt>
+                <dd>
+                    <a href="{% url "kadastraalobject-detail" pk=kadastraal_object.id format='html' %}">{{ kadastraal_object.id }}</a>
+                </dd>
+            </dl>
+        {% endfor %}
+        {% api_pagination object_list %}
+    {% endwith %}
+
 {% endif %}
 
 

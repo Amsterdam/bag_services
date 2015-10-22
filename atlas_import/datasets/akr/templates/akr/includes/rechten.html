@@ -1,6 +1,6 @@
 {% load atlas_api %}
 
-{% if object_list %}
+{% if object_list.count %}
     <h2>Zakelijk recht</h2>
     {% for recht in object_list|api_paginate:request %}
         <dl>

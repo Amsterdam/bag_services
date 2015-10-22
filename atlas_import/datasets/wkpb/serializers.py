@@ -53,4 +53,9 @@ class Beperking(rest.HALSerializer):
             'documenten'
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.context.get('format') == 'html':
+            self.fields.pop('kadastrale_objecten')
+
 

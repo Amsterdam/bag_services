@@ -164,6 +164,12 @@ class KadastraalSubject(mixins.ImportStatusMixin):
                                            self.voorvoegsel,
                                            self.geslachtsnaam) if part])
 
+    def rechten_lazy(self):
+        return self.rechten.select_related('kadastraal_object',
+                                           'kadastraal_subject',
+                                           'transactie',
+                                           'soort_recht')
+
 
 class SoortStuk(models.Model):
     code = models.CharField(max_length=3, primary_key=True)
