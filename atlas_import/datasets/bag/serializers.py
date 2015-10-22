@@ -355,6 +355,17 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
         )
 
 
+class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Buurtcombinatie
+        fields = (
+            '_links',
+            'naam',
+            'code',
+            'vollcode',
+        )
+
+
 class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Gebiedsgerichtwerken
@@ -364,3 +375,23 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
             'code',
             'stadsdeel',
         )
+
+
+class Grootstedelijkgebied(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Grootstedelijkgebied
+        fields = (
+            '_links',
+            'naam',
+        )
+
+
+class Unesco(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Unesco
+        fields = (
+            '_links',
+            'naam',
+        )
+
+

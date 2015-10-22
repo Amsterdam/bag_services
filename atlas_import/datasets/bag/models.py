@@ -481,7 +481,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
         return "{}".format(self.code)
 
 
-class GrootstedelijkProject(mixins.ImportStatusMixin, models.Model):
+class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
     """
     model for data from shp files
 
@@ -497,8 +497,8 @@ class GrootstedelijkProject(mixins.ImportStatusMixin, models.Model):
     objects = geo.GeoManager()
 
     class Meta:
-        verbose_name = "Grootstedelijk project"
-        verbose_name_plural = "Grootstedelijk projecten"
+        verbose_name = "Grootstedelijkgebied"
+        verbose_name_plural = "Grootstedelijke gebieden"
 
     def __str__(self):
         return "{}".format(self.naam)

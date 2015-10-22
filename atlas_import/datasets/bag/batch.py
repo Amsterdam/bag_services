@@ -743,16 +743,16 @@ class ImportGebiedsgerichtwerkenTask(AbstractShpModelTask):
             return
 
 
-class ImportGrootstedelijkProjectTask(AbstractShpModelTask):
+class ImportGrootstedelijkgebiedTask(AbstractShpModelTask):
     """
     layer.fields:
 
     ['NAAM']
     """
 
-    name = "import GBD Grootstedelijk project"
+    name = "import GBD Grootstedelijkgebied"
     source_file = "GBD_grootstedelijke_projecten.shp"
-    model = models.GrootstedelijkProject
+    model = models.Grootstedelijkgebied
 
     def process_feature(self, feat):
         return self.model(
@@ -768,7 +768,7 @@ class ImportUnescoTask(AbstractShpModelTask):
     ['NAAM']
     """
 
-    name = "import GBD Grootstedelijk project"
+    name = "import GBD unesco"
     source_file = "GBD_unesco.shp"
     model = models.Unesco
 
@@ -838,7 +838,7 @@ class ImportBagJob(object):
 
             ImportBuurtcombinatieTask(self.gebieden_shp),
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp),
-            ImportGrootstedelijkProjectTask(self.gebieden_shp),
+            ImportGrootstedelijkgebiedTask(self.gebieden_shp),
             ImportUnescoTask(self.gebieden_shp),
 
         ]

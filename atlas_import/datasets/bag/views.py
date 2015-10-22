@@ -188,13 +188,52 @@ class BouwblokViewSet(rest.AtlasViewSet):
     template_name = "gebieden/bouwblok.html"
 
 
+class BuurtcombinatieViewSet(rest.AtlasViewSet):
+    """
+    Een aaneengesloten gedeelte van het grondgebied van een gemeente, waarvan de grenzen zo veel mogelijk zijn
+    gebaseerd op sociaal-geografische kenmerken.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurtcombinatie/)
+    """
+    metadata_class = ExpansionMetadata
+    queryset = models.Buurtcombinatie.objects.all()
+    serializer_class = serializers.Buurtcombinatie
+
+
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     """
+    Gebiedsgericht werken is een manier van werken om samenwerken in de stad te verbeteren. De samenwerking betreft
+    gemeente, bewoners, ondernemers, (lokale) partners en maatschappelijke organisaties.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/gebiedsgericht/)
     """
 
     metadata_class = ExpansionMetadata
     queryset = models.Gebiedsgerichtwerken.objects.all()
     serializer_class = serializers.Gebiedsgerichtwerken
     template_name = "gebieden/gebiedsgerichtwerken.html"
+
+
+class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
+    """
+    Grootstedelijke gebieden zijn gebieden binnen de gemeente Amsterdam, waar de gemeenteraad, het college van
+    burgemeester en wethouders of de burgemeester bevoegd is.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
+    """
+    metadata_class = ExpansionMetadata
+    queryset = models.Grootstedelijkgebied.objects.all()
+    serializer_class = serializers.Grootstedelijkgebied
+
+
+class UnescoViewSet(rest.AtlasViewSet):
+    """
+    De Amsterdamse grachtengordel staat op de UNESCO Werelderfgoedlijst, wat betekent dat er internationale erkenning
+    is van het bijzondere karakter van dit deel van de historische binnenstad. Het aanwijzen van cultureel erfgoed is
+    bedoeld om het beter te kunnen bewaren voor toekomstige generaties.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/unesco-werelderfgoed/)
+    """
+    metadata_class = ExpansionMetadata
+    queryset = models.Unesco.objects.all()
+    serializer_class = serializers.Unesco

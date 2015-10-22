@@ -28,8 +28,8 @@ class Migration(migrations.Migration):
                            sql="SELECT id, vollcode, naam, geometrie FROM bag_buurtcombinatie"),
         migrate.ManageView(view_name="geo_bag_gebiedsgerichtwerken",
                            sql="SELECT id, code, naam, geometrie FROM bag_gebiedsgerichtwerken"),
-        migrate.ManageView(view_name="geo_bag_grootstedelijkproject",
-                           sql="SELECT id, naam, geometrie FROM bag_grootstedelijkproject"),
+        migrate.ManageView(view_name="geo_bag_grootstedelijkgebied",
+                           sql="SELECT id, naam, geometrie FROM bag_grootstedelijkgebied"),
         migrate.ManageView(view_name="geo_bag_unesco",
                            sql="SELECT id, naam, geometrie FROM bag_unesco"),
     ]
