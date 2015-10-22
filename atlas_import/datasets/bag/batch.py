@@ -679,6 +679,8 @@ class AbstractShpModelTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMix
         self.source = os.path.join(source_path, self.source_file)
 
     def execute(self):
+        self.model.objects.all().delete()
+
         ds = DataSource(self.source, encoding='ISO-8859-1')
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]

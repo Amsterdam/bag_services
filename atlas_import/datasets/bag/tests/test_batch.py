@@ -9,6 +9,7 @@ from datasets.generic import cache
 BAG = 'diva/bag'
 BAG_WKT = 'diva/bag_wkt'
 GEBIEDEN = 'diva/gebieden'
+GEBIEDEN_SHP = 'diva/gebieden_shp'
 
 
 class ImportAvrTest(TestCase):
@@ -150,6 +151,7 @@ class ImportStsTest(TestCase):
         self.assertEqual(s.omschrijving, 'Buitengebruik i.v.m. renovatie')
 
 
+# gebieden
 class ImportGmeTest(TestCase):
     def test_import(self):
         c = cache.Cache()
@@ -215,6 +217,84 @@ class ImportBrtTest(TestCase):
         self.assertEquals(b.stadsdeel.id, '03630011872038')
 
 
+class ImportBbkTest(TestCase):
+    def test_import(self):
+        c = cache.Cache()
+
+        batch.ImportGmeTask(GEBIEDEN, c).execute()
+        batch.ImportSdlTask(GEBIEDEN, c).execute()
+        batch.ImportBrtTask(GEBIEDEN, c).execute()
+
+        task = batch.ImportBbkTask(GEBIEDEN, c)
+        task.execute()
+        c.flush()
+
+        imported = models.Buurt.objects.all()
+        self.assertEqual(len(imported), 481)
+
+        b = models.Bouwblok.objects.get(pk='03630012094871')
+
+        self.assertEquals(b.id, '03630012094871')
+        self.assertEquals(b.code, 'PB32')
+        self.assertEquals(b.buurt.id, '03630000000656')
+
+
+# gebieden shp
+class ImportBuurtcombinatieTest(TestCase):
+    def test_import(self):
+        batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP).execute()
+
+        imported = models.Buurtcombinatie.objects.all()
+        self.assertEqual(len(imported), 99)
+
+        b = models.Buurtcombinatie.objects.get(code='14')
+
+        self.assertEquals(b.vollcode, 'E14')
+
+
+class ImportGebiedsgerichtwerkenTest(TestCase):
+    def test_import(self):
+        c = cache.Cache()
+
+        batch.ImportGmeTask(GEBIEDEN, c).execute()
+        batch.ImportSdlTask(GEBIEDEN, c).execute()
+        c.flush()
+
+        batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP).execute()
+
+        imported = models.Gebiedsgerichtwerken.objects.all()
+        self.assertEqual(len(imported), 23)
+
+        b = models.Gebiedsgerichtwerken.objects.get(code='DX06')
+
+        self.assertEquals(b.stadsdeel.id, '03630011872037')
+
+
+class ImportGrootstedelijkProjectTest(TestCase):
+    def test_import(self):
+        batch.ImportGrootstedelijkProjectTask(GEBIEDEN_SHP).execute()
+
+        imported = models.GrootstedelijkProject.objects.all()
+        self.assertEqual(len(imported), 15)
+
+        b = models.GrootstedelijkProject.objects.get(naam='Overamstel')
+
+        self.assertIsInstance(b, models.GrootstedelijkProject)
+
+
+class ImportUnescoTest(TestCase):
+    def test_import(self):
+        batch.ImportUnescoTask(GEBIEDEN_SHP).execute()
+
+        imported = models.Unesco.objects.all()
+        self.assertEqual(len(imported), 2)
+
+        b = models.Unesco.objects.get(naam='Kernzone')
+
+        self.assertIsInstance(b, models.Unesco)
+
+
+# bag
 class ImportLigTest(TestCase):
     def test_import(self):
         c = cache.Cache()
