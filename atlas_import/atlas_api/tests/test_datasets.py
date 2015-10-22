@@ -8,7 +8,6 @@ class BrowseDatasetsTestCase(APITestCase):
     """
     Verifies that browsing the API works correctly.
     """
-
     datasets = [
         'bag/ligplaats',
         'bag/standplaats',
@@ -16,11 +15,11 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/pand',
         'bag/nummeraanduiding',
         'bag/openbareruimte',
-        'bag/gemeente',
         'bag/woonplaats',
-        'bag/stadsdeel',
-        'bag/buurt',
-        'bag/bouwblok',
+        'gebieden/gemeente',
+        'gebieden/stadsdeel',
+        'gebieden/buurt',
+        'gebieden/bouwblok',
         'kadaster/object',
         'kadaster/subject',
         'kadaster/transactie',
@@ -29,6 +28,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'wkpb/brondocument',
         'wkpb/broncode',
     ]
+
 
     def setUp(self):
         bag_factories.LigplaatsFactory.create()
