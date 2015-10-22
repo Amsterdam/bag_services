@@ -270,16 +270,16 @@ class ImportGebiedsgerichtwerkenTest(TestCase):
         self.assertEquals(b.stadsdeel.id, '03630011872037')
 
 
-class ImportGrootstedelijkProjectTest(TestCase):
+class ImportGrootstedelijkgebiedTest(TestCase):
     def test_import(self):
-        batch.ImportGrootstedelijkProjectTask(GEBIEDEN_SHP).execute()
+        batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP).execute()
 
-        imported = models.GrootstedelijkProject.objects.all()
+        imported = models.Grootstedelijkgebied.objects.all()
         self.assertEqual(len(imported), 15)
 
-        b = models.GrootstedelijkProject.objects.get(naam='Overamstel')
+        b = models.Grootstedelijkgebied.objects.get(naam='Overamstel')
 
-        self.assertIsInstance(b, models.GrootstedelijkProject)
+        self.assertIsInstance(b, models.Grootstedelijkgebied)
 
 
 class ImportUnescoTest(TestCase):
