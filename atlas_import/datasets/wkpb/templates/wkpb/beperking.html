@@ -41,7 +41,7 @@
 
 {% if object.kadastrale_objecten.all.count %}
     <h3>Kadastrale objecten</h3>
-    {% with object_list = object.kadastrale_objecten.all %}
+    {% with object_list=object.kadastrale_objecten.all %}
         {% for kadastraal_object in object_list|api_paginate:request %}
             <dl>
                 <dt>Kadastraal object</dt>
