@@ -79,7 +79,7 @@ class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mo
     naam = models.CharField(max_length=80)
     naam_ptt = models.CharField(max_length=18, null=True)
     vervallen = models.BooleanField(default=False)
-    gemeente = models.ForeignKey(Gemeente)
+    gemeente = models.ForeignKey(Gemeente, related_name='woonplaatsen')
 
     class Meta:
         verbose_name = "Woonplaats"
@@ -114,7 +114,7 @@ class Stadsdeel(Hoofdklasse):
     code = models.CharField(max_length=3, unique=True)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
-    gemeente = models.ForeignKey(Gemeente)
+    gemeente = models.ForeignKey(Gemeente, related_name='stadsdelen')
 
     class Meta:
         verbose_name = "Stadsdeel"
@@ -135,7 +135,7 @@ class Buurt(Hoofdklasse):
     code = models.CharField(max_length=3, unique=True)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
-    stadsdeel = models.ForeignKey(Stadsdeel)
+    stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
 
     class Meta:
         verbose_name = "Buurt"
@@ -155,7 +155,7 @@ class Bouwblok(Hoofdklasse):
     """
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)  # Bouwbloknummer
-    buurt = models.ForeignKey(Buurt)
+    buurt = models.ForeignKey(Buurt, related_name='bouwblokken')
 
     class Meta:
         verbose_name = "Bouwblok"
@@ -295,7 +295,7 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mod
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    buurt = models.ForeignKey(Buurt, null=True)
+    buurt = models.ForeignKey(Buurt, null=True, related_name='ligplaatsen')
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()
@@ -322,7 +322,7 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.M
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    buurt = models.ForeignKey(Buurt, null=True)
+    buurt = models.ForeignKey(Buurt, null=True, related_name='standplaatsen')
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()
@@ -368,7 +368,7 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mode
     ligging = models.ForeignKey(Ligging, null=True)
     toegang = models.ForeignKey(Toegang, null=True)
     status = models.ForeignKey(Status, null=True)
-    buurt = models.ForeignKey(Buurt, null=True)
+    buurt = models.ForeignKey(Buurt, null=True, related_name='verblijfsobjecten')
 
     panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten', through='VerblijfsobjectPandRelatie')
 
@@ -467,7 +467,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
 
     naam = models.CharField(max_length=100)
     code = models.CharField(max_length=4)
-    stadsdeel = models.ForeignKey(Stadsdeel)
+    stadsdeel = models.ForeignKey(Stadsdeel, related_name='gebiedsgerichtwerken')
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 

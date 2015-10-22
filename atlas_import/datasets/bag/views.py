@@ -126,6 +126,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Woonplaats
 
 
+# gebieden
 class GemeenteViewSet(rest.AtlasViewSet):
     """
     Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
@@ -142,6 +143,7 @@ class GemeenteViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Gemeente.objects.all()
     serializer_class = serializers.Gemeente
+    template_name = "gebieden/gemeente.html"
 
 
 class StadsdeelViewSet(rest.AtlasViewSet):
@@ -154,6 +156,7 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Stadsdeel.objects.all()
     serializer_class = serializers.Stadsdeel
+    template_name = "gebieden/stadsdeel.html"
 
 
 class BuurtViewSet(rest.AtlasViewSet):
@@ -167,6 +170,7 @@ class BuurtViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all()
     serializer_class = serializers.Buurt
+    template_name = "gebieden/buurt.html"
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
@@ -181,3 +185,16 @@ class BouwblokViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Bouwblok.objects.all()
     serializer_class = serializers.Bouwblok
+    template_name = "gebieden/bouwblok.html"
+
+
+class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
+    """
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.Gebiedsgerichtwerken.objects.all()
+    serializer_class = serializers.Gebiedsgerichtwerken
+    template_name = "gebieden/gebiedsgerichtwerken.html"

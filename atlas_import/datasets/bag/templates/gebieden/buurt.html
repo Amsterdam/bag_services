@@ -1,0 +1,66 @@
+{% load details %}
+
+<h2>Buurt</h2>
+
+<dl>
+    <dt>Code</dt>
+    <dd>{{ object.code|simple }}</dd>
+
+    <dt>Naam</dt>
+    <dd>{{ object.naam|simple }}</dd>
+
+    <dt>Vervallen</dt>
+    <dd>{{ object.vervallen|simple }}</dd>
+
+    <dt>Stadsdeel</dt>
+    <dd><a href="{% url "stadsdeel-detail" pk=object.stadsdeel.pk format='html' %}">{{ object.stadsdeel }}</a></dd>
+
+</dl>
+
+{% if object.ligplaatsen.all.count %}
+    <h3>Ligplaatsen</h3>
+    {% for ligplaats in object.ligplaatsen.all %}
+        <dl>
+        <dt>Ligplaats</dt>
+        <dd>
+            <a href="{% url "ligplaats-detail" pk=ligplaats.id format='html' %}">{{ ligplaats.identificatie|simple }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+{% if object.standplaatsen.all.count %}
+    <h3>Standplaatsen</h3>
+    {% for standplaats in object.standplaatsen.all %}
+        <dl>
+        <dt>Standplaats</dt>
+        <dd>
+            <a href="{% url "standplaats-detail" pk=standplaats.id format='html' %}">{{ standplaats.identificatie|simple }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+{% if object.verblijfsobjecten.all.count %}
+    <h3>Verblijfsobjecten</h3>
+    {% for verblijfsobject in object.verblijfsobjecten.all %}
+        <dl>
+        <dt>Verblijfsobject</dt>
+        <dd>
+            <a href="{% url "verblijfsobject-detail" pk=verblijfsobject.id format='html' %}">{{ verblijfsobject.identificatie|simple }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+{% if object.bouwblokken.all.count %}
+    <h3>Bouwblokken</h3>
+    {% for bouwblok in object.bouwblokken.all %}
+        <dl>
+        <dt>Bouwblok</dt>
+        <dd>
+            <a href="{% url "bouwblok-detail" pk=bouwblok.id format='html' %}">{{ bouwblok.code|simple }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}

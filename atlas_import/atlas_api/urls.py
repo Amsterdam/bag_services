@@ -36,6 +36,7 @@ router.register(r'bag/openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
 router.register(r'bag/nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 router.register(r'bag/pand', datasets.bag.views.PandViewSet)
 router.register(r'bag/woonplaats', datasets.bag.views.WoonplaatsViewSet)
+router.register(r'bag/gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
 
 router.register(r'gebieden/gemeente', datasets.bag.views.GemeenteViewSet)
 router.register(r'gebieden/stadsdeel', datasets.bag.views.StadsdeelViewSet)
