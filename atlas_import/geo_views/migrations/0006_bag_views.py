@@ -13,8 +13,7 @@ class Migration(migrations.Migration):
     Bij bouwblok: code
     """
     dependencies = [
-        ('geo_views', '0004_lki_views'),
-        ('bag', '0010_buurtcombinatie_gebiedsgerichtwerken_grootstedelijkproject_unesco')
+        ('geo_views', '0005_bag_views'),
     ]
 
     operations = [
