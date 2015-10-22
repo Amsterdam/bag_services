@@ -1,0 +1,40 @@
+{% load details %}
+
+<h2>Gemeente</h2>
+
+<dl>
+    <dt>Code</dt>
+    <dd>{{ object.code|simple }}</dd>
+
+    <dt>Naam</dt>
+    <dd>{{ object.naam|simple }}</dd>
+
+    <dt>Verzorgingsgebied</dt>
+    <dd>{{ object.naam|simple }}</dd>
+
+    <dt>Vervallen</dt>
+    <dd>{{ object.vervallen|simple }}</dd>
+
+</dl>
+
+{% if object.stadsdelen.all.count %}
+    <h3>Stadsdelen</h3>
+    {% for stadsdeel in object.stadsdelen.all %}
+        <dl>
+        <dt>Stadsdeel</dt>
+        <dd>
+            <a href="{% url "stadsdeel-detail" pk=stadsdeel.id format='html' %}">{{ stadsdeel.naam|simple }}</a>
+        </dd>
+        </dl>
+    {% endfor %}
+{% endif %}
+
+{% if object.woonplaatsen.all.count %}
+    <h3>Woonplaatsen</h3>
+    {% for woonplaats in object.woonplaatsen.all %}
+        <dl>
+        <dt>Woonplaats</dt>
+        <dd>{{ woonplaats.naam|simple }}</dd>
+        </dl>
+    {% endfor %}
+{% endif %}

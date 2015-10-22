@@ -15,7 +15,7 @@
         <dd>{{ object.status.omschrijving|simple }}</dd>
 
         <dt>Buurt</dt>
-        <dd>{{ object.buurt.naam|simple }}</dd>
+        <dd><a href="{% url "buurt-detail" pk=object.buurt.pk format='html' %}">{{ object.buurt }}</a></dd>
 
         <dt>Documentdatum mutatie</dt>
         <dd>{{ object.document_mutatie|simple }}</dd>

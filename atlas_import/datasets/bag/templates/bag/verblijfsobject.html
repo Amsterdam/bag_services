@@ -41,10 +41,10 @@
         <dd>{{ object.ligging.omschrijving|simple }}</dd>
 
         <dt>Buurt</dt>
-        <dd>{{ object.buurt.naam }} [{{ object.buurt.code }}]</dd>
+        <dd><a href="{% url "buurt-detail" pk=object.buurt.pk format='html' %}">{{ object.buurt }}</a></dd>
 
         <dt>Stadsdeel</dt>
-        <dd>{{ object.buurt.stadsdeel.naam|simple }}</dd>
+        <dd><a href="{% url "stadsdeel-detail" pk=object.buurt.stadsdeel.pk format='html' %}">{{ object.buurt.stadsdeel }}</a></dd>
 
         <dt>Geometrie</dt>
         <dd>{{ object.geometrie|simple }}</dd>

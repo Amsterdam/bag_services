@@ -353,3 +353,14 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
             'code',
             'buurt',
         )
+
+
+class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Gebiedsgerichtwerken
+        fields = (
+            '_links',
+            'naam',
+            'code',
+            'stadsdeel',
+        )
