@@ -174,7 +174,7 @@ class ImportBbkTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
         buurt_id = self.foreign_key_id(models.Buurt, r['BBKBRT/BRT/sleutelVerzendend'])
 
         if not buurt_id:
-            log.warning('bouw voor bouwblok niet gevonden: %s' % r['Bouwbloknummer'])
+            log.warning('buurt voor bouwblok niet gevonden: %s' % r['Bouwbloknummer'])
             return
 
         self.set_pk(models.Bouwblok.__name__, r['Bouwbloknummer'], r['sleutelVerzendend'])
