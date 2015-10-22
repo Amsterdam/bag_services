@@ -21,7 +21,7 @@
 
             {% if beperking.documenten %}
                 <h3>Documenten</h3>
-                {% for document in beperking.documenten %}
+                {% for document in beperking.documenten.all %}
                     <p><a href="{{ document.url }}">{{ document.omschrijving }}</a></p>
                 {% endfor %}
             {% endif %}

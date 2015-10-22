@@ -55,3 +55,4 @@ class BrondocumentFactory(factory.DjangoModelFactory):
     documentnummer = fuzzy.FuzzyInteger(low=1, high=99999)
     documentnaam = fuzzy.FuzzyText(length=21)
     persoonsgegeven_afschermen = fuzzy.FuzzyChoice([True, False])
+    beperking = factory.SubFactory(BeperkingFactory)
