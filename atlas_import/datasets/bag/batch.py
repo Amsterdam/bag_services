@@ -615,7 +615,11 @@ class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, c
         [self.process_feature(feat) for feat in lyr]
 
     def process_feature(self, feat):
-        pk = self.get_pk(self.model.__name__, feat.get(self.lookup_field_feat))
+        key = feat.get(self.lookup_field_feat)
+        if self.model.__name__ == 'Buurt':
+            key = key[1:]
+
+        pk = self.get_pk(self.model.__name__, key)
         if not pk:
             log.warning('could not find %s "%s" for model: %s' % (
                 self.lookup_field_feat, feat.get(self.lookup_field_feat), self.model.__name__
@@ -652,6 +656,7 @@ class ImportBrtGeoTask(AbstractShpTask):
     name = "import GBD BRT"
     source_file = "GBD_Buurt.shp"
     model = models.Buurt
+    lookup_field_feat = 'VOLLCODE'
 
 
 class ImportBbkGeoTask(AbstractShpTask):
