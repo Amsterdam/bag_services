@@ -114,6 +114,9 @@ class Stadsdeel(Hoofdklasse):
     code = models.CharField(max_length=3, unique=True)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
+    ingang_cyclus = models.DateField(null=True)
+    brondocument_naam = models.CharField(max_length=100, null=True)
+    brondocument_datum = models.DateField(null=True)
     gemeente = models.ForeignKey(Gemeente, related_name='stadsdelen')
 
     class Meta:
@@ -135,6 +138,9 @@ class Buurt(Hoofdklasse):
     code = models.CharField(max_length=3, unique=True)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
+    ingang_cyclus = models.DateField(null=True)
+    brondocument_naam = models.CharField(max_length=100, null=True)
+    brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
 
     class Meta:
@@ -156,6 +162,7 @@ class Bouwblok(Hoofdklasse):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)  # Bouwbloknummer
     buurt = models.ForeignKey(Buurt, related_name='bouwblokken')
+    ingang_cyclus = models.DateField(null=True)
 
     class Meta:
         verbose_name = "Bouwblok"
@@ -443,6 +450,9 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
     naam = models.CharField(max_length=100)
     code = models.CharField(max_length=2)
     vollcode = models.CharField(max_length=3)
+    brondocument_naam = models.CharField(max_length=100, null=True)
+    brondocument_datum = models.DateField(null=True)
+    ingang_cyclus = models.DateField(null=True)
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 

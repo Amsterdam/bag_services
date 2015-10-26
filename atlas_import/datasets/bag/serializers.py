@@ -301,11 +301,7 @@ class Pand(BagMixin, rest.HALSerializer):
         )
 
 
-class GebiedenMixin(rest.DataSetSerializerMixin):
-    dataset = 'gebieden'
-
-
-class Gemeente(GebiedenMixin, rest.HALSerializer):
+class Gemeente(BagMixin, rest.HALSerializer):
     class Meta:
         model = models.Gemeente
         fields = (
@@ -319,6 +315,10 @@ class Gemeente(GebiedenMixin, rest.HALSerializer):
         )
 
 
+class GebiedenMixin(rest.DataSetSerializerMixin):
+    dataset = 'gebieden'
+
+
 class Stadsdeel(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Stadsdeel
@@ -330,6 +330,10 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
 
             'naam',
             'gemeente',
+            'ingang_cyclus',
+            'brondocument_naam',
+            'brondocument_datum',
+            'geometrie',
         )
 
 
@@ -342,6 +346,10 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
 
             'naam',
             'stadsdeel',
+            'ingang_cyclus',
+            'brondocument_naam',
+            'brondocument_datum',
+            'geometrie',
         )
 
 
@@ -352,6 +360,8 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
             '_links',
             'code',
             'buurt',
+            'ingang_cyclus',
+            'geometrie',
         )
 
 
@@ -363,6 +373,10 @@ class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
             'naam',
             'code',
             'vollcode',
+            'brondocument_naam',
+            'brondocument_datum',
+            'ingang_cyclus',
+            'geometrie',
         )
 
 
@@ -374,6 +388,7 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
             'naam',
             'code',
             'stadsdeel',
+            'geometrie',
         )
 
 
@@ -383,6 +398,7 @@ class Grootstedelijkgebied(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             'naam',
+            'geometrie',
         )
 
 
@@ -392,6 +408,7 @@ class Unesco(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             'naam',
+            'geometrie',
         )
 
 

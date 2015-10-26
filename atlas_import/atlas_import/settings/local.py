@@ -35,7 +35,12 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
-        }
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'batch.log',
+        },
     },
     'root': {
         'level': 'WARNING',
@@ -43,7 +48,7 @@ LOGGING = {
     },
     'loggers': {
         'batch': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': False,
         },

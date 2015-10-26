@@ -11,7 +11,7 @@ from django.contrib.gis.gdal import DataSource
 from datasets.generic import uva2, cache, index, mixins
 from . import models, documents
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('batch')
 
 # TODO check task execution flow for possible memory leaks
 model_code_pk_mapping = {}
@@ -129,6 +129,9 @@ class ImportSdlTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
             pk=(r['sleutelVerzendend']),
             code=r['Stadsdeelcode'],
             naam=r['Stadsdeelnaam'],
+            brondocument_naam=r['Brondocumentverwijzing'],
+            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
+            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             gemeente_id=(self.foreign_key_id(models.Gemeente, r['SDLGME/GME/sleutelVerzendend'])),
         ))
@@ -153,6 +156,9 @@ class ImportBrtTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
             pk=r['sleutelVerzendend'],
             code=r['Buurtcode'],
             naam=r['Buurtnaam'],
+            brondocument_naam=r['Brondocumentverwijzing'],
+            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
+            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             stadsdeel_id=self.foreign_key_id(models.Stadsdeel, r['BRTSDL/SDL/sleutelVerzendend']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
         ))
@@ -182,6 +188,7 @@ class ImportBbkTask(GeoModelCodePkMappingMixin, uva2.AbstractUvaTask):
         self.create(models.Bouwblok(
             pk=r['sleutelVerzendend'],
             code=r['Bouwbloknummer'],
+            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             buurt_id=buurt_id
         ))
 
@@ -615,9 +622,7 @@ class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, c
         [self.process_feature(feat) for feat in lyr]
 
     def process_feature(self, feat):
-        key = feat.get(self.lookup_field_feat)
-        if self.model.__name__ == 'Buurt':
-            key = key[1:]
+        key = self.transform_key(feat.get(self.lookup_field_feat))
 
         pk = self.get_pk(self.model.__name__, key)
         if not pk:
@@ -629,6 +634,9 @@ class AbstractShpTask(mixins.GeoMultiPolygonMixin, GeoModelCodePkMappingMixin, c
         self.merge_existing(self.model, pk, dict(
             geometrie=self.get_multipoly(feat.geom.wkt),
         ))
+
+    def transform_key(self, key):
+        return key
 
     class Meta:
         __class__ = ABCMeta
@@ -657,6 +665,10 @@ class ImportBrtGeoTask(AbstractShpTask):
     source_file = "GBD_Buurt.shp"
     model = models.Buurt
     lookup_field_feat = 'VOLLCODE'
+
+    # override this, the code is prepended with a letter
+    def transform_key(self, key):
+        return key[1:]
 
 
 class ImportBbkGeoTask(AbstractShpTask):
@@ -716,6 +728,9 @@ class ImportBuurtcombinatieTask(AbstractShpModelTask):
             naam=feat.get('NAAM').encode('utf-8'),
             code=feat.get('CODE').encode('utf-8'),
             vollcode=feat.get('VOLLCODE').encode('utf-8'),
+            brondocument_naam=feat.get('DOCNR').encode('utf-8'),
+            brondocument_datum=feat.get('DOCDATUM'),
+            ingang_cyclus=feat.get('INGSDATUM'),
             geometrie=self.get_multipoly(feat.geom.wkt),
         )
 
