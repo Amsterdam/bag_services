@@ -113,3 +113,17 @@ class AbstractUvaTask(AbstractCacheBasedTask):
 
     def process_row(self, r):
         raise NotImplementedError()
+
+
+def process_uva2(path, file_code, process_row_callback):
+    """
+    Process a UVA2 file
+
+    :param path: path containing the UVA2 file
+    :param file_code: three-letter code identifying the file
+    :param process_row_callback: function taking one parameter that is called on every row
+    :return: an iterable over the results of process_row_callback
+    """
+    source = resolve_file(path, file_code)
+    with uva_reader(source) as rows:
+        return [result for result in (process_row_callback(r) for r in rows) if result]
