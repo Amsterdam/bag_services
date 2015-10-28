@@ -431,11 +431,11 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.pand and self.verblijfsobject:
-            self.id = self.pand_id + '_' + self.verblijfsobject.id
+        if self.pand_id and self.verblijfsobject_id:
+            self.id = self.pand_id + '_' + self.verblijfsobject_id
 
     def __str__(self):
-        return "Pand-Verblijfsobject({}-{})".format(self.pand.id, self.verblijfsobject.id)
+        return "Pand-Verblijfsobject({}-{})".format(self.pand_id, self.verblijfsobject_id)
 
 
 class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):

@@ -1193,7 +1193,6 @@ class ImportBagJob(object):
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp),
             ImportUnescoTask(self.gebieden_shp),
-
         ]
 
 
