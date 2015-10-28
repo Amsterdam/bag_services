@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 
 from batch import batch
-from datasets.generic import uva2, cache, kadaster, index, database
+from datasets.generic import uva2, kadaster, index, database
 from datasets.bag import models as bag
 from . import models, documents
 
@@ -451,7 +451,6 @@ class ImportKadasterJob(object):
             raise ValueError("DIVA_DIR not found: {}".format(diva))
 
         self.akr = os.path.join(diva, 'kadaster', 'akr')
-        self.cache = cache.Cache()
 
     def tasks(self):
         return [

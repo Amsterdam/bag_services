@@ -1,10 +1,8 @@
 import datetime
 
-from django.test import TestCase
-
 from .. import models, batch
+from batch.test import TaskTestCase
 from datasets.akr import batch as akr
-from datasets.generic import cache
 from datasets.lki import batch as lki
 from datasets.akr.models import KadastraalObject
 
@@ -13,10 +11,12 @@ KAD_LKI = 'diva/kadaster/lki'
 KAD_AKR = 'diva/kadaster/akr'
 
 
-class ImportBeperkingcode(TestCase):
+class ImportBeperkingcode(TaskTestCase):
+    def task(self):
+        return batch.ImportBeperkingcodeTask(BEPERKINGEN)
+
     def test_import(self):
-        task = batch.ImportBeperkingcodeTask(BEPERKINGEN)
-        task.execute()
+        self.run_task()
 
         imported = models.Beperkingcode.objects.all()
         self.assertEqual(len(imported), 20)
@@ -25,10 +25,12 @@ class ImportBeperkingcode(TestCase):
         self.assertEqual(a.omschrijving, 'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
 
 
-class ImportWkpbBroncode(TestCase):
+class ImportWkpbBroncode(TaskTestCase):
+    def task(self):
+        return batch.ImportWkpbBroncodeTask(BEPERKINGEN)
+
     def test_import(self):
-        task = batch.ImportWkpbBroncodeTask(BEPERKINGEN)
-        task.execute()
+        self.run_task()
 
         imported = models.Broncode.objects.all()
         self.assertEqual(len(imported), 6)
@@ -37,12 +39,17 @@ class ImportWkpbBroncode(TestCase):
         self.assertEqual(a.omschrijving, 'Dagelijks Bestuur')
 
 
-class ImportWkpbBrondocument(TestCase):
-    def test_import(self):
-        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
+class ImportWkpbBrondocument(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
+        ]
 
-        task = batch.ImportWkpbBrondocumentTask(BEPERKINGEN)
-        task.execute()
+    def task(self):
+        return batch.ImportWkpbBrondocumentTask(BEPERKINGEN)
+
+    def test_import(self):
+        self.run_task()
 
         imported = models.Brondocument.objects.all()
         self.assertEqual(len(imported), 48)
@@ -54,14 +61,19 @@ class ImportWkpbBrondocument(TestCase):
         self.assertEqual(a.persoonsgegeven_afschermen, False)
 
 
-class ImportBeperking(TestCase):
-    def test_import(self):
-        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
+class ImportBeperking(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
+            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
+            batch.ImportBeperkingcodeTask(BEPERKINGEN),
+        ]
 
-        task = batch.ImportBeperkingTask(BEPERKINGEN)
-        task.execute()
+    def task(self):
+        return batch.ImportBeperkingTask(BEPERKINGEN)
+
+    def test_import(self):
+        self.run_task()
 
         imported = models.Beperking.objects.all()
         self.assertEqual(len(imported), 50)
@@ -73,24 +85,28 @@ class ImportBeperking(TestCase):
         self.assertEqual(b.datum_einde, None)
 
 
-class ImportWkpbBepKad(TestCase):
+class ImportWkpbBepKad(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
+            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
+            batch.ImportBeperkingcodeTask(BEPERKINGEN),
+            batch.ImportBeperkingTask(BEPERKINGEN),
+            lki.ImportKadastraalObjectTask(KAD_LKI),
+            akr.ImportKotTask(KAD_AKR),
+        ]
+
+    def task(self):
+        return batch.ImportWkpbBepKadTask(BEPERKINGEN)
+
     def test_import(self):
-        batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
-        batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
-        batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
-        batch.ImportBeperkingTask(BEPERKINGEN).execute()
-        lki.ImportKadastraalObjectTask(KAD_LKI).execute()
-
-        akr.ImportKotTask(KAD_AKR).execute()
-
         # make sure one record has the id we're mapping
         # TODO make sure we have good test data
         kadastraal_object = KadastraalObject.objects.filter()[1]
         kadastraal_object.id = 'ASD12P03580A0061'
         kadastraal_object.save()
 
-        task = batch.ImportWkpbBepKadTask(BEPERKINGEN)
-        task.execute()
+        self.run_task()
         bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
         self.assertEqual(bk.beperking.id, 1001730)
         self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')
