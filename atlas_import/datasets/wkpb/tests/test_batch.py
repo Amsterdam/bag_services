@@ -75,15 +75,13 @@ class ImportBeperking(TestCase):
 
 class ImportWkpbBepKad(TestCase):
     def test_import(self):
-        c = cache.Cache()
         batch.ImportWkpbBroncodeTask(BEPERKINGEN).execute()
         batch.ImportWkpbBrondocumentTask(BEPERKINGEN).execute()
         batch.ImportBeperkingcodeTask(BEPERKINGEN).execute()
         batch.ImportBeperkingTask(BEPERKINGEN).execute()
         lki.ImportKadastraalObjectTask(KAD_LKI).execute()
 
-        akr.ImportKotTask(KAD_AKR, c).execute()
-        c.flush()
+        akr.ImportKotTask(KAD_AKR).execute()
 
         # make sure one record has the id we're mapping
         # TODO make sure we have good test data

@@ -1,6 +1,9 @@
 from django.db import connection
 
 
+BATCH_SIZE = 50000
+
+
 def clear_models(*models):
     """
     Truncates the table associated with ``model`` and all related tables.

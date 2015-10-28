@@ -27,7 +27,7 @@ class CodeOmschrijvingUvaTask(batch.BasicTask):
 
     def process(self):
         avrs = uva2.process_uva2(self.path, self.code, self.process_row)
-        self.model.objects.bulk_create(avrs)
+        self.model.objects.bulk_create(avrs, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         # noinspection PyCallingNonCallable
@@ -102,7 +102,7 @@ class ImportGmeTask(batch.BasicTask):
 
     def process(self):
         gemeentes = uva2.process_uva2(self.path, "GME", self.process_row)
-        models.Gemeente.objects.bulk_create(gemeentes)
+        models.Gemeente.objects.bulk_create(gemeentes, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -138,7 +138,7 @@ class ImportSdlTask(batch.BasicTask):
         self.stadsdelen = dict(uva2.process_uva2(self.bag_path, "SDL", self.process_row))
         geo.process_shp(self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
 
-        models.Stadsdeel.objects.bulk_create(self.stadsdelen.values())
+        models.Stadsdeel.objects.bulk_create(self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -198,7 +198,7 @@ class ImportBrtTask(batch.BasicTask):
         self.buurten = dict(uva2.process_uva2(self.uva_path, "BRT", self.process_row))
         geo.process_shp(self.shp_path, "GBD_Buurt.shp", self.process_feature)
 
-        models.Buurt.objects.bulk_create(self.buurten.values())
+        models.Buurt.objects.bulk_create(self.buurten.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -257,7 +257,7 @@ class ImportBbkTask(batch.BasicTask):
         self.bouwblokken = dict(uva2.process_uva2(self.uva_path, "BBK", self.process_row))
         geo.process_shp(self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
 
-        models.Bouwblok.objects.bulk_create(self.bouwblokken.values())
+        models.Bouwblok.objects.bulk_create(self.bouwblokken.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -307,7 +307,7 @@ class ImportWplTask(batch.BasicTask):
 
     def process(self):
         woonplaatsen = uva2.process_uva2(self.path, "WPL", self.process_row)
-        models.Woonplaats.objects.bulk_create(woonplaatsen)
+        models.Woonplaats.objects.bulk_create(woonplaatsen, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -356,7 +356,7 @@ class ImportOprTask(batch.BasicTask):
 
     def process(self):
         openbare_ruimtes = uva2.process_uva2(self.path, "OPR", self.process_row)
-        models.OpenbareRuimte.objects.bulk_create(openbare_ruimtes)
+        models.OpenbareRuimte.objects.bulk_create(openbare_ruimtes, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -442,7 +442,7 @@ class ImportNumTask(batch.BasicTask):
         uva2.process_uva2(self.path, "NUMVBOHFD", self.process_numvbo_row)
         uva2.process_uva2(self.path, "NUMVBONVN", self.process_numvbonvn_row)
 
-        models.Nummeraanduiding.objects.bulk_create(self.nummeraanduidingen.values(), batch_size=50000)
+        models.Nummeraanduiding.objects.bulk_create(self.nummeraanduidingen.values(), batch_size=database.BATCH_SIZE)
 
     def process_num_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -608,7 +608,7 @@ class ImportLigTask(batch.BasicTask):
         self.ligplaatsen = dict(uva2.process_uva2(self.bag_path, "LIG", self.process_row))
         geo.process_wkt(self.wkt_path, 'BAG_LIGPLAATS_GEOMETRIE.dat', self.process_wkt_row)
 
-        models.Ligplaats.objects.bulk_create(self.ligplaatsen.values())
+        models.Ligplaats.objects.bulk_create(self.ligplaatsen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -682,7 +682,7 @@ class ImportStaTask(batch.BasicTask):
         self.standplaatsen = dict(uva2.process_uva2(self.bag_path, "STA", self.process_row))
         geo.process_wkt(self.wkt_path, "BAG_STANDPLAATS_GEOMETRIE.dat", self.process_wkt_row)
 
-        models.Standplaats.objects.bulk_create(self.standplaatsen.values())
+        models.Standplaats.objects.bulk_create(self.standplaatsen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -771,7 +771,7 @@ class ImportVboTask(batch.BasicTask):
 
     def process(self):
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
-        models.Verblijfsobject.objects.bulk_create(verblijfsobjecten)
+        models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -897,7 +897,7 @@ class ImportPndTask(batch.BasicTask):
         self.panden = dict(uva2.process_uva2(self.bag_path, "PND", self.process_row))
         geo.process_wkt(self.wkt_path, "BAG_PAND_GEOMETRIE.dat", self.process_wkt_row)
 
-        models.Pand.objects.bulk_create(self.panden.values())
+        models.Pand.objects.bulk_create(self.panden.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -955,7 +955,7 @@ class ImportPndVboTask(batch.BasicTask):
 
     def process(self):
         relaties = frozenset(uva2.process_uva2(self.path, "PNDVBO", self.process_row))
-        models.VerblijfsobjectPandRelatie.objects.bulk_create(relaties, batch_size=50000)
+        models.VerblijfsobjectPandRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -1039,7 +1039,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
 
     def process(self):
         bcs = geo.process_shp(self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
-        models.Buurtcombinatie.objects.bulk_create(bcs)
+        models.Buurtcombinatie.objects.bulk_create(bcs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.Buurtcombinatie(
@@ -1074,7 +1074,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
 
     def process(self):
         ggws = geo.process_shp(self.shp_path, "GBD_gebiedsgerichtwerken.shp", self.process_feature)
-        models.Gebiedsgerichtwerken.objects.bulk_create(ggws)
+        models.Gebiedsgerichtwerken.objects.bulk_create(ggws, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         code = feat.get('STADSDEEL')
@@ -1110,7 +1110,7 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
 
     def process(self):
         ggbs = geo.process_shp(self.shp_path, "GBD_grootstedelijke_projecten.shp", self.process_feature)
-        models.Grootstedelijkgebied.objects.bulk_create(ggbs)
+        models.Grootstedelijkgebied.objects.bulk_create(ggbs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.Grootstedelijkgebied(
@@ -1139,7 +1139,7 @@ class ImportUnescoTask(batch.BasicTask):
 
     def process(self):
         unesco = geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature)
-        models.Unesco.objects.bulk_create(unesco)
+        models.Unesco.objects.bulk_create(unesco, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.Unesco(

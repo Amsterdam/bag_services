@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.gis.gdal import DataSource
 
 from . import models
-from datasets.generic import kadaster, mixins
+from datasets.generic import kadaster, mixins, database
 
 
 class ImportGemeenteTask(mixins.GeoMultiPolygonMixin):
@@ -21,7 +21,7 @@ class ImportGemeenteTask(mixins.GeoMultiPolygonMixin):
         lyr = ds[0]
         objects = [self.process_feature(feat) for feat in lyr]
 
-        models.Gemeente.objects.bulk_create(objects)
+        models.Gemeente.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.Gemeente(
@@ -45,7 +45,7 @@ class ImportKadastraleGemeenteTask(mixins.GeoMultiPolygonMixin):
         objects = [self.process_feature(feat) for feat in lyr]
 
         models.KadastraleGemeente.objects.all().delete()
-        models.KadastraleGemeente.objects.bulk_create(objects)
+        models.KadastraleGemeente.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.KadastraleGemeente(
@@ -69,7 +69,7 @@ class ImportSectieTask(mixins.GeoMultiPolygonMixin):
         objects = [self.process_feature(feat) for feat in lyr]
 
         models.Sectie.objects.all().delete()
-        models.Sectie.objects.bulk_create(objects)
+        models.Sectie.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.Sectie(
@@ -94,7 +94,7 @@ class ImportKadastraalObjectTask(mixins.GeoMultiPolygonMixin):
         objects = [self.process_feature(feat) for feat in lyr]
 
         models.KadastraalObject.objects.all().delete()
-        models.KadastraalObject.objects.bulk_create(objects)
+        models.KadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         return models.KadastraalObject(

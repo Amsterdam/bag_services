@@ -5,7 +5,7 @@ import datetime
 
 from django.conf import settings
 
-from datasets.generic import kadaster
+from datasets.generic import kadaster, database
 import datasets.lki.models as lki
 import datasets.akr.models as akr
 from . import models
@@ -26,7 +26,7 @@ class ImportBeperkingcodeTask(object):
             objects = [self.process_row(row) for row in rows]
 
         models.Beperkingcode.objects.all().delete()
-        models.Beperkingcode.objects.bulk_create(objects)
+        models.Beperkingcode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Beperkingcode(
@@ -48,7 +48,7 @@ class ImportWkpbBroncodeTask(object):
             objects = [self.process_row(r) for r in rows]
 
         models.Broncode.objects.all().delete()
-        models.Broncode.objects.bulk_create(objects)
+        models.Broncode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Broncode(
@@ -74,7 +74,7 @@ class ImportBeperkingTask(object):
                 objects = [self.process_row(r) for r in rows]
 
             models.Beperking.objects.all().delete()
-            models.Beperking.objects.bulk_create(objects)
+            models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
         finally:
             self.cache.clear()
@@ -114,7 +114,7 @@ class ImportWkpbBrondocumentTask(object):
                 object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
 
             models.Brondocument.objects.all().delete()
-            models.Brondocument.objects.bulk_create(object_dict.values())
+            models.Brondocument.objects.bulk_create(object_dict.values(), batch_size=database.BATCH_SIZE)
 
         finally:
             self.cache.clear()
@@ -161,7 +161,7 @@ class ImportWkpbBepKadTask(object):
                 objects = [o for o in (self.process_row(r) for r in rows) if o]
 
             models.BeperkingKadastraalObject.objects.all().delete()
-            models.BeperkingKadastraalObject.objects.bulk_create(objects)
+            models.BeperkingKadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
         finally:
             self.beperkingen_cache.clear()

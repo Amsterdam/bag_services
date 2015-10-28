@@ -32,7 +32,7 @@ class ImportKotTask(batch.BasicTask):
 
     def process(self):
         kadastrale_objecten = uva2.process_uva2(self.path, "KOT", self.process_row)
-        models.KadastraalObject.objects.bulk_create(kadastrale_objecten)
+        models.KadastraalObject.objects.bulk_create(kadastrale_objecten, batch_size=database.BATCH_SIZE)
 
     def get_soort_cultuur_onbebouwd(self, r):
         scod_code = r['SoortCultuurOnbebouwdDomein']
@@ -138,11 +138,11 @@ class ImportKstTask(batch.BasicTask):
     def process(self):
         ksts = uva2.process_uva2(self.path, "KST", self.process_row)
 
-        models.Land.objects.bulk_create(self.landen.values())
-        models.Adres.objects.bulk_create(self.adressen.values())
-        models.Titel.objects.bulk_create(self.titels.values())
-        models.NietNatuurlijkePersoon.objects.bulk_create(self.nnps.values())
-        models.KadastraalSubject.objects.bulk_create(ksts)
+        models.Land.objects.bulk_create(self.landen.values(), batch_size=database.BATCH_SIZE)
+        models.Adres.objects.bulk_create(self.adressen.values(), batch_size=database.BATCH_SIZE)
+        models.Titel.objects.bulk_create(self.titels.values(), batch_size=database.BATCH_SIZE)
+        models.NietNatuurlijkePersoon.objects.bulk_create(self.nnps.values(), batch_size=database.BATCH_SIZE)
+        models.KadastraalSubject.objects.bulk_create(ksts, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -272,8 +272,8 @@ class ImportTteTask(batch.BasicTask):
     def process(self):
         transacties = uva2.process_uva2(self.path, "TTE", self.process_row)
 
-        models.SoortStuk.objects.bulk_create(self.stukken.values())
-        models.Transactie.objects.bulk_create(transacties)
+        models.SoortStuk.objects.bulk_create(self.stukken.values(), batch_size=database.BATCH_SIZE)
+        models.Transactie.objects.bulk_create(transacties, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -331,8 +331,8 @@ class ImportZrtTask(batch.BasicTask):
     def process(self):
         zrts = uva2.process_uva2(self.path, "ZRT", self.process_row)
 
-        models.SoortRecht.objects.bulk_create(self.soorten_recht.values())
-        models.ZakelijkRecht.objects.bulk_create(zrts)
+        models.SoortRecht.objects.bulk_create(self.soorten_recht.values(), batch_size=database.BATCH_SIZE)
+        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -408,7 +408,7 @@ class ImportKotVboTask(batch.BasicTask):
 
     def process(self):
         kovs = uva2.process_uva2(self.path, "KOTVBO", self.process_row)
-        models.KadastraalObjectVerblijfsobject.objects.bulk_create(kovs)
+        models.KadastraalObjectVerblijfsobject.objects.bulk_create(kovs, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -455,13 +455,11 @@ class ImportKadasterJob(object):
 
     def tasks(self):
         return [
-            ImportKotTask(self.akr),
+            # ImportKotTask(self.akr),
             ImportKstTask(self.akr),
-            ImportTteTask(self.akr, self.cache),
-            ImportZrtTask(self.akr, self.cache),
+            ImportTteTask(self.akr),
+            ImportZrtTask(self.akr),
             ImportKotVboTask(self.akr),
-
-            cache.FlushCacheTask(self.cache),
         ]
 
 
