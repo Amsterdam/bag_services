@@ -4,23 +4,73 @@ import os
 import uuid
 
 from django.conf import settings
+
 from django.contrib.gis.geos import Point
 
-from datasets.generic import uva2, cache, kadaster, index
+from batch import batch
+from datasets.generic import uva2, cache, kadaster, index, database
 from datasets.bag import models as bag
 from . import models, documents
 
 log = logging.getLogger(__name__)
 
 
-class ImportKotTask(uva2.AbstractUvaTask):
-    name = "import KOT"
-    code = "KOT"
+class ImportKotTask(batch.BasicTask):
+    name = "Import KOT"
 
-    def execute(self):
-        self.require(models.SoortCultuurOnbebouwd)
-        self.require(models.Bebouwingscode)
-        super().execute()
+    def __init__(self, path):
+        self.path = path
+        self.cultuur = dict()
+        self.bebouwing = dict()
+
+    def before(self):
+        database.clear_models(models.KadastraalObject)
+
+    def after(self):
+        self.cultuur.clear()
+        self.bebouwing.clear()
+
+    def process(self):
+        kadastrale_objecten = uva2.process_uva2(self.path, "KOT", self.process_row)
+        models.KadastraalObject.objects.bulk_create(kadastrale_objecten)
+
+    def get_soort_cultuur_onbebouwd(self, r):
+        scod_code = r['SoortCultuurOnbebouwdDomein']
+        if not scod_code:
+            return None
+
+        scod = self.cultuur.get(scod_code)
+        if scod:
+            return scod
+
+        scod = models.SoortCultuurOnbebouwd(
+            code=scod_code,
+            omschrijving=r['OmschrijvingSoortCultuurOnbebouwdDomein']
+        )
+
+        # no bulk create because there are only a few instances, and this would make the code more complex
+        scod.save()
+        self.cultuur[scod_code] = scod
+        return scod
+
+    def get_bebouwingscode(self, r):
+        bd_code = r['BebouwingscodeDomein']
+        if not bd_code:
+            return None
+
+        bd = self.bebouwing.get(bd_code)
+        if bd:
+            return bd
+
+        bd = models.Bebouwingscode(
+            code=bd_code,
+            omschrijving=r['OmschrijvingBebouwingscodeDomein']
+        )
+
+        # no bulk create because there are only a few Bebouwingscodes, and this would make the code more complex
+        bd.save()
+        self.bebouwing[bd_code] = bd
+        return bd
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -43,7 +93,7 @@ class ImportKotTask(uva2.AbstractUvaTask):
         else:
             geo = None
 
-        self.create(models.KadastraalObject(
+        return models.KadastraalObject(
             id=aanduiding,
             gemeentecode=gemeente,
             sectie=sectie,
@@ -61,46 +111,38 @@ class ImportKotTask(uva2.AbstractUvaTask):
             ruitnummer=uva2.uva_nummer(r['Ruitnummer']),
             omschrijving_deelperceel=r['OmschrijvingDeelperceel'],
             geometrie=geo,
-        ))
-
-    def get_soort_cultuur_onbebouwd(self, r):
-        scod_code = r['SoortCultuurOnbebouwdDomein']
-        if not scod_code:
-            return None
-
-        scod = self.get(models.SoortCultuurOnbebouwd, scod_code)
-        if scod:
-            return scod
-
-        scod = models.SoortCultuurOnbebouwd(code=scod_code,
-                                            omschrijving=r['OmschrijvingSoortCultuurOnbebouwdDomein'])
-        self.create(scod)
-        return scod
-
-    def get_bebouwingscode(self, r):
-        bd_code = r['BebouwingscodeDomein']
-        if not bd_code:
-            return None
-
-        bd = self.get(models.Bebouwingscode, bd_code)
-        if bd:
-            return bd
-
-        return self.create(models.Bebouwingscode(code=bd_code,
-                                                 omschrijving=r['OmschrijvingBebouwingscodeDomein']))
+        )
 
 
-class ImportKstTask(uva2.AbstractUvaTask):
-    name = "import KST"
-    code = "KST"
+class ImportKstTask(batch.BasicTask):
+    name = "Import KST"
 
-    def execute(self):
-        self.require(models.Land)
-        self.require(models.Titel)
-        self.require(models.NietNatuurlijkePersoon)
-        self.require(models.Adres)
+    def __init__(self, path):
+        self.path = path
 
-        super().execute()
+        self.adressen = dict()
+        self.titels = dict()
+        self.nnps = dict()
+        self.landen = dict()
+
+    def before(self):
+        database.clear_models(models.KadastraalSubject, models.Land, models.Adres, models.Titel,
+                              models.NietNatuurlijkePersoon)
+
+    def after(self):
+        self.adressen.clear()
+        self.titels.clear()
+        self.nnps.clear()
+        self.landen.clear()
+
+    def process(self):
+        ksts = uva2.process_uva2(self.path, "KST", self.process_row)
+
+        models.Land.objects.bulk_create(self.landen.values())
+        models.Adres.objects.bulk_create(self.adressen.values())
+        models.Titel.objects.bulk_create(self.titels.values())
+        models.NietNatuurlijkePersoon.objects.bulk_create(self.nnps.values())
+        models.KadastraalSubject.objects.bulk_create(ksts)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -120,7 +162,7 @@ class ImportKstTask(uva2.AbstractUvaTask):
         postadres = self.get_adres(r, 'Postadres')
         postadres_id = postadres.id if postadres else None
 
-        self.create(models.KadastraalSubject(
+        return models.KadastraalSubject(
             id=r['sleutelVerzendend'],
             subjectnummer=r['Subjectnummer'],
             titel_of_predikaat=self.get_titel_of_predikaat(r),
@@ -141,32 +183,27 @@ class ImportKstTask(uva2.AbstractUvaTask):
             woonadres_id=woonadres_id,
             postadres_id=postadres_id,
             a_nummer=uva2.uva_nummer(r['A-nummer']),
-        ))
+        )
 
     def get_titel_of_predikaat(self, r):
         top_code = r['AdellijkeTitelOfPredikaatDomein']
         if not top_code:
             return None
 
-        top = self.get(models.Titel, top_code)
-        if top:
-            return top
-
-        return self.create(models.Titel(code=top_code,
-                                        omschrijving=r['OmschrijvingAdellijkeTitelOfPredikaatDomein']))
+        return self.titels.setdefault(top_code, models.Titel(
+            code=top_code,
+            omschrijving=r['OmschrijvingAdellijkeTitelOfPredikaatDomein']
+        ))
 
     def get_soort_niet_natuurlijke_persoon(self, r):
         soort_code = r['SoortNietNatuurlijkePersoonDomein']
         if not soort_code:
             return None
 
-        soort = self.get(models.NietNatuurlijkePersoon, soort_code)
-        if soort:
-            return soort
-
-        return self.create(
-            models.NietNatuurlijkePersoon(code=soort_code,
-                                          omschrijving=r['OmschrijvingSoortNietNatuurlijkePersoonDomein']))
+        return self.nnps.setdefault(soort_code, models.NietNatuurlijkePersoon(
+            code=soort_code,
+            omschrijving=r['OmschrijvingSoortNietNatuurlijkePersoonDomein'],
+        ))
 
     def get_adres(self, r, adres_type):
         aanduiding = r['AanduidingBijHuisnummer{}'.format(adres_type)]
@@ -196,11 +233,7 @@ class ImportKstTask(uva2.AbstractUvaTask):
             m.update(str(v).encode('utf-8'))
         adres_id = m.hexdigest()
 
-        adres = self.get(models.Adres, adres_id)
-        if adres:
-            return adres
-
-        return self.create(models.Adres(
+        return self.adressen.setdefault(adres_id, models.Adres(
             id=adres_id,
             aanduiding=aanduiding,
             adresregel_1=adresregel_1,
@@ -220,20 +253,27 @@ class ImportKstTask(uva2.AbstractUvaTask):
         if not land_code:
             return None
 
-        land = self.get(models.Land, land_code)
-        if land:
-            return land
-
-        return self.create(models.Land(code=land_code, omschrijving=land_omschrijving))
+        return self.landen.setdefault(land_code, models.Land(code=land_code, omschrijving=land_omschrijving))
 
 
-class ImportTteTask(uva2.AbstractUvaTask):
-    name = "import TTE"
-    code = "TTE"
+class ImportTteTask(batch.BasicTask):
+    name = "Import TTE"
 
-    def execute(self):
-        self.require(models.SoortStuk)
-        super().execute()
+    def __init__(self, path):
+        self.path = path
+        self.stukken = dict()
+
+    def before(self):
+        database.clear_models(models.Transactie, models.SoortStuk)
+
+    def after(self):
+        self.stukken.clear()
+
+    def process(self):
+        transacties = uva2.process_uva2(self.path, "TTE", self.process_row)
+
+        models.SoortStuk.objects.bulk_create(self.stukken.values())
+        models.Transactie.objects.bulk_create(transacties)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -244,7 +284,7 @@ class ImportTteTask(uva2.AbstractUvaTask):
 
         soort = self.get_soort_stuk(r['SoortStukDomein'], r['OmschrijvingSoortStukDomein'])
 
-        self.create(models.Transactie(
+        return models.Transactie(
             id=r['sleutelVerzendend'],
             registercode=r['RegistercodeDomein'],
             stukdeel_1=r['Stukdeel1'],
@@ -257,26 +297,42 @@ class ImportTteTask(uva2.AbstractUvaTask):
             koopjaar=uva2.uva_nummer(r['Koopjaar']),
             koopsom=uva2.uva_nummer(r['Koopsom']),
             belastingplichtige=uva2.uva_indicatie(r['IndicatieBelastingplichtige']),
-        ))
+        )
 
     def get_soort_stuk(self, code, omschrijving):
         if not code:
             return None
 
-        soort = self.get(models.SoortStuk, code)
-        if soort:
-            return soort
-
-        return self.create(models.SoortStuk(code=code, omschrijving=omschrijving))
+        return self.stukken.setdefault(code, models.SoortStuk(code=code, omschrijving=omschrijving))
 
 
-class ImportZrtTask(uva2.AbstractUvaTask):
-    name = "import ZRT"
-    code = "ZRT"
+class ImportZrtTask(batch.BasicTask):
+    name = "Import ZRT"
 
-    def execute(self):
-        self.require(models.SoortRecht)
-        super().execute()
+    def __init__(self, path):
+        self.path = path
+        self.soorten_recht = dict()
+        self.kot_ids = set()
+        self.kst_ids = set()
+        self.tte_ids = set()
+
+    def before(self):
+        database.clear_models(models.ZakelijkRecht, models.SoortRecht)
+        self.kot_ids = set(models.KadastraalObject.objects.values_list("id", flat=True))
+        self.kst_ids = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.tte_ids = set(models.Transactie.objects.values_list("id", flat=True))
+
+    def after(self):
+        self.soorten_recht.clear()
+        self.kot_ids.clear()
+        self.kst_ids.clear()
+        self.tte_ids.clear()
+
+    def process(self):
+        zrts = uva2.process_uva2(self.path, "ZRT", self.process_row)
+
+        models.SoortRecht.objects.bulk_create(self.soorten_recht.values())
+        models.ZakelijkRecht.objects.bulk_create(zrts)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -287,31 +343,31 @@ class ImportZrtTask(uva2.AbstractUvaTask):
 
         soort = self.get_soort_recht(r['SoortRechtDomein'], r['OmschrijvingSoortRechtDomein'])
 
-        aanduiding = kadaster.get_aanduiding(
+        pk = r['sleutelVerzendend']
+        kot_id = kadaster.get_aanduiding(
             r['ZRTKOT/KOT/KadastraleGemeentecodeDomein'],
             r['ZRTKOT/KOT/Sectie'],
             r['ZRTKOT/KOT/Perceelnummer'],
             r['ZRTKOT/KOT/ObjectindexletterDomein'],
             r['ZRTKOT/KOT/Objectindexnummer']
         )
+        kst_id = r['ZRTKST/KST/sleutelVerzendend']
+        tte_id = r['ZRTTTE/TTE/sleutelVerzendend']
 
-        kot_id = self.foreign_key_id(models.KadastraalObject, aanduiding)
-        if not kot_id:
-            log.warning("Onbekend object: %s", r['ZRTKOT/KOT/sleutelVerzendend'])
+        if kot_id not in self.kot_ids:
+            log.warn("ZakelijkRecht {} references non-existing KOT {}; skipping".format(pk, kot_id))
             return
 
-        kst_id = self.foreign_key_id(models.KadastraalSubject, r['ZRTKST/KST/sleutelVerzendend'])
-        if not kst_id:
-            log.warning("Onbekend subject: %s", r['ZRTKST/KST/sleutelVerzendend'])
+        if kst_id not in self.kst_ids:
+            log.warn("ZakelijkRecht {} references non-existing KST {}; skipping".format(pk, kst_id))
             return
 
-        tte_id = self.foreign_key_id(models.Transactie, r['ZRTTTE/TTE/sleutelVerzendend'])
-        if not tte_id:
-            log.warning("Onbekende transactie: %s", r['ZRTTTE/TTE/sleutelVerzendend'])
+        if tte_id not in self.tte_ids:
+            log.warn("ZakelijkRecht {} references non-existing TTE {}; skipping".format(pk, tte_id))
             return
 
-        self.create(models.ZakelijkRecht(
-            id=r['sleutelVerzendend'],
+        return models.ZakelijkRecht(
+            id=pk,
             identificatie=r['ZakelijkRechtidentificatie'],
             soort_recht=soort,
             volgnummer=uva2.uva_nummer(r['ZakelijkRechtVolgnummer']),
@@ -322,33 +378,37 @@ class ImportZrtTask(uva2.AbstractUvaTask):
             kadastraal_object_id=kot_id,
             kadastraal_subject_id=kst_id,
             transactie_id=tte_id,
-        ))
+        )
 
     def get_soort_recht(self, code, omschrijving):
         if not code:
             return None
-        soort = self.get(models.SoortRecht, code)
-        if soort:
-            return soort
 
-        return self.create(models.SoortRecht(code=code, omschrijving=omschrijving))
+        return self.soorten_recht.setdefault(code, models.SoortRecht(code=code, omschrijving=omschrijving))
 
 
-class ImportKotVboTask(uva2.AbstractUvaTask):
-    name = "import KOTVBO"
-    code = "KOTVBO"
+class ImportKotVboTask(batch.BasicTask):
+    name = "Import KOTVBO"
 
-    def __init__(self, source, cache):
-        super().__init__(source, cache)
-        self.valid_vbo_ids = []
+    def __init__(self, path):
+        self.path = path
+        self.vbo_ids = set()
+        self.kot_ids = set()
 
-    def execute(self):
-        if not self.valid_vbo_ids:
-            self.valid_vbo_ids = set(bag.Verblijfsobject.objects.values_list('id', flat=True))
-        try:
-            super().execute()
-        finally:
-            self.valid_vbo_ids = []
+    def before(self):
+        # database.clear_models(models.KadastraalObjectVerblijfsobject)
+        if not self.vbo_ids:
+            self.vbo_ids = set(bag.Verblijfsobject.objects.values_list('id', flat=True))
+
+        self.kot_ids = set(models.KadastraalObject.objects.values_list('id', flat=True))
+
+    def after(self):
+        self.vbo_ids.clear()
+        self.kot_ids.clear()
+
+    def process(self):
+        kovs = uva2.process_uva2(self.path, "KOTVBO", self.process_row)
+        models.KadastraalObjectVerblijfsobject.objects.bulk_create(kovs)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -357,12 +417,9 @@ class ImportKotVboTask(uva2.AbstractUvaTask):
         if not uva2.geldige_relatie(r, "KOTVBO"):
             return
 
+        pk = r['sleutelverzendend']
         vbo_id = r['KOTVBO/VBO/Verblijfsobjectidentificatie']
-        if vbo_id not in self.valid_vbo_ids:
-            log.warning("Unknown VBO: {}".format(vbo_id))
-            return
-
-        aanduiding = kadaster.get_aanduiding(
+        kot_id = kadaster.get_aanduiding(
             r['KadastraleGemeentecodeDomein'],
             r['Sectie'],
             r['Perceelnummer'],
@@ -370,11 +427,19 @@ class ImportKotVboTask(uva2.AbstractUvaTask):
             r['Objectindexnummer'],
         )
 
-        self.create(models.KadastraalObjectVerblijfsobject(
+        if vbo_id not in self.vbo_ids:
+            log.warn("KOTVBO {} references non-existing verblijfsobject {}; skipping".format(pk, vbo_id))
+            return
+
+        if kot_id not in self.kot_ids:
+            log.warn("KOTVBO {} references non-existing kadastraal object {}; skipping".format(pk, kot_id))
+            return
+
+        return models.KadastraalObjectVerblijfsobject(
             id=uuid.uuid4(),
-            kadastraal_object_id=self.foreign_key_id(models.KadastraalObject, aanduiding),
+            kadastraal_object_id=kot_id,
             verblijfsobject_id=vbo_id,
-        ))
+        )
 
 
 class ImportKadasterJob(object):
@@ -390,11 +455,11 @@ class ImportKadasterJob(object):
 
     def tasks(self):
         return [
-            ImportKotTask(self.akr, self.cache),
-            ImportKstTask(self.akr, self.cache),
+            ImportKotTask(self.akr),
+            ImportKstTask(self.akr),
             ImportTteTask(self.akr, self.cache),
             ImportZrtTask(self.akr, self.cache),
-            ImportKotVboTask(self.akr, self.cache),
+            ImportKotVboTask(self.akr),
 
             cache.FlushCacheTask(self.cache),
         ]

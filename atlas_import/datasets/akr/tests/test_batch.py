@@ -3,13 +3,14 @@ from django.contrib.gis import geos
 
 from batch.test import TaskTestCase
 from .. import batch, models
+from datasets.bag.tests import factories as bag_factories
 
 AKR = 'diva/kadaster/akr'
 
 
 class ImportKotTest(TaskTestCase):
     def task(self):
-        return batch.ImportKotTask(AKR, self.cache)
+        return batch.ImportKotTask(AKR)
 
     def test_import(self):
         self.run_task()
@@ -42,7 +43,7 @@ class ImportKotTest(TaskTestCase):
 
 class ImportKstTest(TaskTestCase):
     def task(self):
-        return batch.ImportKstTask(AKR, self.cache)
+        return batch.ImportKstTask(AKR)
 
     def test_import(self):
         self.run_task()
@@ -120,7 +121,7 @@ class ImportKstTest(TaskTestCase):
 
 class ImportTteTest(TaskTestCase):
     def task(self):
-        return batch.ImportTteTask(AKR, self.cache)
+        return batch.ImportTteTask(AKR)
 
     def test_import(self):
         self.run_task()
@@ -147,13 +148,13 @@ class ImportTteTest(TaskTestCase):
 class ImportZrtTest(TaskTestCase):
     def requires(self):
         return [
-            batch.ImportKotTask(AKR, self.cache),
-            batch.ImportKstTask(AKR, self.cache),
-            batch.ImportTteTask(AKR, self.cache),
+            batch.ImportKotTask(AKR),
+            batch.ImportKstTask(AKR),
+            batch.ImportTteTask(AKR),
         ]
 
     def task(self):
-        return batch.ImportZrtTask(AKR, self.cache)
+        return batch.ImportZrtTask(AKR)
 
     def test_import(self):
         self.run_task()
@@ -177,17 +178,24 @@ class ImportZrtTest(TaskTestCase):
 
 
 class ImportKotVboTest(TaskTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        vbos = ['03630001003914', '03630001002802', '03630001002807', '03630001002808',
+                '03630001002812', '03630001008765', '03630001008766', '03630001008767',
+                '03630001008768', '03630001008769', ]
+
+        for vbo in vbos:
+            bag_factories.VerblijfsobjectFactory.create(id=vbo)
+
     def requires(self):
         return [
-            batch.ImportKotTask(AKR, self.cache)
+            batch.ImportKotTask(AKR)
         ]
 
     def task(self):
-        task = batch.ImportKotVboTask(AKR, self.cache)
-        task.valid_vbo_ids = {'03630001003914', '03630001002802', '03630001002807', '03630001002808',
-                              '03630001002812', '03630001008765', '03630001008766', '03630001008767',
-                              '03630001008768', '03630001008769',}
-        return task
+        return batch.ImportKotVboTask(AKR)
 
     def test_import(self):
         self.run_task()
