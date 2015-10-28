@@ -455,7 +455,7 @@ class ImportKadasterJob(object):
 
     def tasks(self):
         return [
-            # ImportKotTask(self.akr),
+            ImportKotTask(self.akr),
             ImportKstTask(self.akr),
             ImportTteTask(self.akr),
             ImportZrtTask(self.akr),

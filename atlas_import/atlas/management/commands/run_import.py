@@ -12,7 +12,10 @@ class Command(BaseCommand):
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
-        kadaster=[datasets.akr.batch.ImportKadasterJob, datasets.lki.batch.ImportKadasterJob],
+        kadaster=[
+            datasets.akr.batch.ImportKadasterJob,
+            datasets.lki.batch.ImportKadasterJob
+        ],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
     )
 
