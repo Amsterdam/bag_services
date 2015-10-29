@@ -1,0 +1,5 @@
+.idea
+*.iml
+docker-compose/
+docker-compose.yml
+*/__pycache__
