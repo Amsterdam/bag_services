@@ -130,6 +130,13 @@ REST_FRAMEWORK = dict(
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
+    DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
+    DEFAULT_PARSER_CLASSES=('drf_hal_json.parsers.JsonHalParser',),
+    DEFAULT_RENDERER_CLASSES=(
+        'drf_hal_json.renderers.JsonHalRenderer',
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    ),
 )
 
 CORS_ORIGIN_REGEX_WHITELIST = (
