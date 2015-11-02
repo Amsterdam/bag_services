@@ -3,8 +3,6 @@ import csv
 import datetime
 import os
 
-from datasets.generic.cache import AbstractCacheBasedTask
-
 __author__ = 'yigalduppen'
 
 
@@ -96,20 +94,15 @@ def geldige_relaties(row, *relaties):
     return True
 
 
-class AbstractUvaTask(AbstractCacheBasedTask):
+def process_uva2(path, file_code, process_row_callback):
     """
-    Basic task for processing UVA2 files
+    Process a UVA2 file
+
+    :param path: path containing the UVA2 file
+    :param file_code: three-letter code identifying the file
+    :param process_row_callback: function taking one parameter that is called on every row
+    :return: an iterable over the results of process_row_callback
     """
-    code = ""
-
-    def __init__(self, source, cache):
-        super().__init__(cache)
-        self.source = resolve_file(source, self.code)
-
-    def execute(self):
-        with uva_reader(self.source) as rows:
-            for r in rows:
-                self.process_row(r)
-
-    def process_row(self, r):
-        raise NotImplementedError()
+    source = resolve_file(path, file_code)
+    with uva_reader(source) as rows:
+        return [result for result in (process_row_callback(r) for r in rows) if result]

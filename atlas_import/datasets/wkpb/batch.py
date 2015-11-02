@@ -5,7 +5,8 @@ import datetime
 
 from django.conf import settings
 
-from datasets.generic import kadaster
+from batch import batch
+from datasets.generic import kadaster, database
 import datasets.lki.models as lki
 import datasets.akr.models as akr
 from . import models
@@ -13,20 +14,25 @@ from . import models
 log = logging.getLogger(__name__)
 
 
-class ImportBeperkingcodeTask(object):
-    name = "import Beperkingcode"
+class ImportBeperkingcodeTask(batch.BasicTask):
+    name = "Import Beperkingcode"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
 
-    def execute(self):
+    def before(self):
+        database.clear_models(models.Beperkingcode)
+
+    def after(self):
+        pass
+
+    def process(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             objects = [self.process_row(row) for row in rows]
 
-        models.Beperkingcode.objects.all().delete()
-        models.Beperkingcode.objects.bulk_create(objects)
+        models.Beperkingcode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Beperkingcode(
@@ -35,20 +41,26 @@ class ImportBeperkingcodeTask(object):
         )
 
 
-class ImportWkpbBroncodeTask(object):
-    name = "import Wkpb Broncode"
+class ImportWkpbBroncodeTask(batch.BasicTask):
+    name = "Import Wkpb Broncode"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_broncode.dat')
 
-    def execute(self):
+    def before(self):
+        database.clear_models(models.Broncode)
+
+    def after(self):
+        pass
+
+    def process(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             objects = [self.process_row(r) for r in rows]
 
         models.Broncode.objects.all().delete()
-        models.Broncode.objects.bulk_create(objects)
+        models.Broncode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Broncode(
@@ -57,27 +69,27 @@ class ImportWkpbBroncodeTask(object):
         )
 
 
-class ImportBeperkingTask(object):
-    name = "import Beperking"
+class ImportBeperkingTask(batch.BasicTask):
+    name = "Import Beperking"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_belemmering.dat')
-        self.cache = set()
+        self.codes = set()
 
-    def execute(self):
-        try:
-            self.cache = set(models.Beperkingcode.objects.values_list('pk', flat=True))
+    def before(self):
+        database.clear_models(models.Beperking)
+        self.codes = set(models.Beperkingcode.objects.values_list('pk', flat=True))
 
-            with open(self.source) as f:
-                rows = csv.reader(f, delimiter=';')
-                objects = [self.process_row(r) for r in rows]
+    def after(self):
+        self.codes.clear()
 
-            models.Beperking.objects.all().delete()
-            models.Beperking.objects.bulk_create(objects)
+    def process(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            objects = [self.process_row(r) for r in rows]
 
-        finally:
-            self.cache.clear()
+        models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def get_date(self, s):
         if s:
@@ -86,7 +98,7 @@ class ImportBeperkingTask(object):
             return None
 
     def process_row(self, r):
-        code_id = r[2] if r[2] in self.cache else None
+        code_id = r[2] if r[2] in self.codes else None
         return models.Beperking(
             pk=r[0],
             inschrijfnummer=r[1],
@@ -96,28 +108,31 @@ class ImportBeperkingTask(object):
         )
 
 
-class ImportWkpbBrondocumentTask(object):
-    name = "import Wkpb Brondocument"
+class ImportWkpbBrondocumentTask(batch.BasicTask):
+    name = "Import Wkpb Brondocument"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_brondocument.dat')
-        self.cache = set()
+        self.codes = set()
+        self.beperkingen = dict()
 
-    def execute(self):
-        try:
-            self.cache = set(models.Broncode.objects.values_list('pk', flat=True))
+    def before(self):
+        database.clear_models(models.Brondocument)
+        self.codes = set(models.Broncode.objects.values_list('pk', flat=True))
+        self.beperkingen = dict(models.Beperking.objects.values_list('inschrijfnummer', 'pk'))
 
-            with open(self.source) as f:
-                rows = csv.reader(f, delimiter=';')
-                objects = (self.process_row(r) for r in rows)
-                object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
+    def after(self):
+        self.codes.clear()
+        self.beperkingen.clear()
 
-            models.Brondocument.objects.all().delete()
-            models.Brondocument.objects.bulk_create(object_dict.values())
+    def process(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            objects = (self.process_row(r) for r in rows)
+            object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
 
-        finally:
-            self.cache.clear()
+        models.Brondocument.objects.bulk_create(object_dict.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if r[4] == '0':
@@ -125,17 +140,18 @@ class ImportWkpbBrondocumentTask(object):
         else:
             pers_afsch = True
 
-        bron_id = r[2] if r[2] in self.cache else None
+        bron_id = r[2] if r[2] in self.codes else None
 
-        try:
-            beperking = models.Beperking.objects.get(inschrijfnummer=r[0])
-            beperking_id = beperking.id
-        except models.Beperking.DoesNotExist:
-            beperking_id = None
+        inschrijfnummer = r[0]
+        beperking_id = self.beperkingen.get(inschrijfnummer)
+
+        if not beperking_id:
+            log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
+                                                                                                inschrijfnummer))
 
         return models.Brondocument(
-            pk=r[0],
-            documentnummer=r[0],
+            pk=inschrijfnummer,
+            documentnummer=inschrijfnummer,
             bron_id=bron_id,
             documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
             persoonsgegeven_afschermen=pers_afsch,
@@ -144,58 +160,58 @@ class ImportWkpbBrondocumentTask(object):
         )
 
 
-class ImportWkpbBepKadTask(object):
+class ImportWkpbBepKadTask(batch.BasicTask):
     name = "import Beperking-Percelen"
 
     def __init__(self, source_path):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
-        self.beperkingen_cache = set()
+        self.beperkingen = set()
+        self.lki_kots = dict()
+        self.akr_kots = set()
 
-    def execute(self):
-        try:
-            self.beperkingen_cache = set(models.Beperking.objects.values_list('pk', flat=True))
+    def before(self):
+        database.clear_models(models.BeperkingKadastraalObject)
+        self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
+        self.lki_kots = dict(lki.KadastraalObject.objects.values_list('aanduiding', 'pk'))
+        self.akr_kots = set(akr.KadastraalObject.objects.values_list('pk', flat=True))
 
-            with open(self.source) as f:
-                rows = csv.reader(f, delimiter=';')
-                objects = [o for o in (self.process_row(r) for r in rows) if o]
+    def after(self):
+        self.beperkingen.clear()
+        self.lki_kots.clear()
+        self.akr_kots.clear()
 
-            models.BeperkingKadastraalObject.objects.all().delete()
-            models.BeperkingKadastraalObject.objects.bulk_create(objects)
+    def process(self):
+        with open(self.source) as f:
+            rows = csv.reader(f, delimiter=';')
+            objects = [o for o in (self.process_row(r) for r in rows) if o]
 
-        finally:
-            self.beperkingen_cache.clear()
+        models.BeperkingKadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
         beperking_id = int(r[5])
 
-        if beperking_id not in self.beperkingen_cache:
-            log.warning('Non-existing Beperking: {0}'.format(beperking_id))
+        if beperking_id not in self.beperkingen:
+            log.warning('WPB references non-existing beperking {}; skipping'.format(beperking_id))
             return None
 
-        kadastraal_objecten = lki.KadastraalObject.objects.filter(aanduiding=aanduiding)
-        if not len(kadastraal_objecten):
-            log.warning('kadastraal object not found in lki: %s' % aanduiding)
-            return
+        kadastraal_object_lki = self.lki_kots.get(aanduiding)
+        if not kadastraal_object_lki:
+            log.warning('Beperking {} references non-existing LKI object {}; skipping'.format(beperking_id, aanduiding))
+            return None
 
-        if len(kadastraal_objecten) > 1:
-            log.warning('more than one lki kadastraal object found (%s)' % len(kadastraal_objecten))
-        kadastraal_object_lki = kadastraal_objecten[0]
-
-        try:
-            kadastraal_object_akr = akr.KadastraalObject.objects.get(id=aanduiding)
-        except akr.KadastraalObject.DoesNotExist:
-            log.warning('kadastraal object not found in akr: %s' % aanduiding)
-            return
+        if aanduiding not in self.akr_kots:
+            log.warning('Beperking {} references non-existing AKR object {}; skipping'.format(beperking_id, aanduiding))
+            return None
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)
 
         return models.BeperkingKadastraalObject(
             pk=uid,
             beperking_id=beperking_id,
-            kadastraal_object=kadastraal_object_lki,
-            kadastraal_object_akr=kadastraal_object_akr
+            kadastraal_object_id=kadastraal_object_lki,
+            kadastraal_object_akr_id=aanduiding
         )
 
 

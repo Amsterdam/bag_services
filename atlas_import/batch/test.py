@@ -1,11 +1,11 @@
-from django.test import TestCase
-from datasets.generic import cache
+from django.test import TransactionTestCase
 
 
-class TaskTestCase(TestCase):
+class TaskTestCase(TransactionTestCase):
 
     def setUp(self):
-        self.cache = cache.Cache()
+        for r in self.requires():
+            r.execute()
 
     def requires(self):
         return []
@@ -13,11 +13,20 @@ class TaskTestCase(TestCase):
     def task(self):
         raise NotImplementedError()
 
-    def test_task_attributes(self):
-        try:
-            t = self.task()
-        except NotImplementedError:
+    def test_run_twice(self):
+        if self.__class__ == TaskTestCase:
+            # only run this on subclasses
             return
+
+        self.run_task()
+        self.run_task()
+
+    def test_task_attributes(self):
+        if self.__class__ == TaskTestCase:
+            # only run this on subclasses
+            return
+
+        t = self.task()
 
         if not hasattr(t, "name"):
             self.fail("No 'name' attribute for {}".format(type(t)))
@@ -26,8 +35,4 @@ class TaskTestCase(TestCase):
             self.fail("No 'execute' method for {}".format(type(t)))
 
     def run_task(self):
-        for r in self.requires():
-            r.execute()
-
         self.task().execute()
-        self.cache.flush()

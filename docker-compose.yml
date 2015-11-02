@@ -1,4 +1,4 @@
-postgres:
+database:
   build: docker-compose/postgres
   ports:
     - "5434:5432"
@@ -11,3 +11,13 @@ elasticsearch:
   ports:
     - "9200:9200"
     - "9300:9300"
+
+atlas:
+  build: .
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  ports:
+    - "8080:8080"
+  environment:
+    DJANGO_SECRET_KEY: 893ufuih328hc82o3jfioh23o8jfi23bf32hvoh32fho23ury82o3hkj2

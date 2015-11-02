@@ -100,7 +100,10 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.naam = o.naam
-    postcodes = [p for p in o.adressen.values_list("postcode", flat=True).distinct() if p]
-    d.postcode = postcodes
+    postcodes = set()
+    for a in o.adressen.all():
+        postcodes.add(a.postcode)
+
+    d.postcode = list(postcodes)
 
     return d

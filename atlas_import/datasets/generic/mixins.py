@@ -27,15 +27,3 @@ class CodeOmschrijvingMixin(models.Model):
     def __str__(self):
         return "{}: {}".format(self.code, self.omschrijving)
 
-
-class GeoMultiPolygonMixin(object):
-    """
-    Ensure the gemoterics are returned as multipolygon
-    """
-    def get_multipoly(self, wkt):
-        geom = GEOSGeometry(wkt)
-
-        if geom and isinstance(geom, Polygon):
-            geom = MultiPolygon(geom)
-
-        return geom

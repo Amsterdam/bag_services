@@ -1,10 +1,9 @@
 import datetime
 
 from django.contrib.gis.geos import Point
-from django.test import TestCase
 
 from .. import models, batch
-from datasets.generic import cache
+from batch.test import TaskTestCase
 
 BAG = 'diva/bag'
 BAG_WKT = 'diva/bag_wkt'
@@ -12,13 +11,12 @@ GEBIEDEN = 'diva/gebieden'
 GEBIEDEN_SHP = 'diva/gebieden_shp'
 
 
-class ImportAvrTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportAvrTest(TaskTestCase):
+    def task(self):
+        return batch.ImportAvrTask(BAG)
 
-        task = batch.ImportAvrTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.RedenAfvoer.objects.all()
         self.assertEqual(len(imported), 44)
@@ -27,13 +25,12 @@ class ImportAvrTest(TestCase):
         self.assertEqual(a.omschrijving, 'Geconstateerd adres')
 
 
-class ImportBrnTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportBrnTest(TaskTestCase):
+    def task(self):
+        return batch.ImportBrnTask(BAG)
 
-        task = batch.ImportBrnTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Bron.objects.all()
         self.assertEqual(len(imported), 100)
@@ -44,13 +41,12 @@ class ImportBrnTest(TestCase):
         self.assertEqual(b.omschrijving, 'Stadsdeel Zuideramstel (13)')
 
 
-class ImportEgmTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportEgmTest(TaskTestCase):
+    def task(self):
+        return batch.ImportEgmTask(BAG)
 
-        task = batch.ImportEgmTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Eigendomsverhouding.objects.all()
         self.assertEqual(len(imported), 2)
@@ -59,13 +55,12 @@ class ImportEgmTest(TestCase):
         self.assertEqual(a.omschrijving, 'Huur')
 
 
-class ImportFngTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportFngTest(TaskTestCase):
+    def task(self):
+        return batch.ImportFngTask(BAG)
 
-        task = batch.ImportFngTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Financieringswijze.objects.all()
         self.assertEqual(len(imported), 19)
@@ -74,13 +69,12 @@ class ImportFngTest(TestCase):
         self.assertEqual(a.omschrijving, 'Premiehuur Profit (200)')
 
 
-class ImportLggTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportLggTest(TaskTestCase):
+    def task(self):
+        return batch.ImportLggTask(BAG)
 
-        task = batch.ImportLggTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Ligging.objects.all()
         self.assertEqual(len(imported), 6)
@@ -89,13 +83,12 @@ class ImportLggTest(TestCase):
         self.assertEqual(a.omschrijving, 'Tussengebouw')
 
 
-class ImportGbkTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportGbkTest(TaskTestCase):
+    def task(self):
+        return batch.ImportGbkTask(BAG)
 
-        task = batch.ImportGbkTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Gebruik.objects.all()
         self.assertEqual(len(imported), 320)
@@ -104,13 +97,12 @@ class ImportGbkTest(TestCase):
         self.assertEqual(a.omschrijving, 'ZZ-BEDRIJF EN WONING')
 
 
-class ImportLocTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportLocTest(TaskTestCase):
+    def task(self):
+        return batch.ImportLocTask(BAG)
 
-        task = batch.ImportLocTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.LocatieIngang.objects.all()
         self.assertEqual(len(imported), 5)
@@ -119,13 +111,12 @@ class ImportLocTest(TestCase):
         self.assertEqual(a.omschrijving, 'L-zijde')
 
 
-class ImportTggTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportTggTest(TaskTestCase):
+    def task(self):
+        return batch.ImportTggTask(BAG)
 
-        task = batch.ImportTggTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Toegang.objects.all()
         self.assertEqual(len(imported), 9)
@@ -134,13 +125,12 @@ class ImportTggTest(TestCase):
         self.assertEqual(a.omschrijving, 'Begane grond (08)')
 
 
-class ImportStsTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportStsTest(TaskTestCase):
+    def task(self):
+        return batch.ImportStsTask(BAG)
 
-        task = batch.ImportStsTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Status.objects.all()
         self.assertEqual(len(imported), 43)
@@ -152,13 +142,12 @@ class ImportStsTest(TestCase):
 
 
 # gebieden
-class ImportGmeTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
+class ImportGmeTest(TaskTestCase):
+    def task(self):
+        return batch.ImportGmeTask(GEBIEDEN)
 
-        task = batch.ImportGmeTask(GEBIEDEN, c)
-        task.execute()
-        c.flush()
+    def test_import(self):
+        self.run_task()
 
         imported = models.Gemeente.objects.all()
         self.assertEqual(len(imported), 1)
@@ -172,15 +161,17 @@ class ImportGmeTest(TestCase):
         self.assertFalse(g.vervallen)
 
 
-class ImportSdlTest(TestCase):
+class ImportSdlTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN)
+        ]
+
+    def task(self):
+        return batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-
-        task = batch.ImportSdlTask(GEBIEDEN, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Stadsdeel.objects.all()
         self.assertEqual(len(imported), 8)
@@ -193,17 +184,25 @@ class ImportSdlTest(TestCase):
         self.assertEquals(s.vervallen, False)
         self.assertEquals(s.gemeente.id, '03630000000000')
 
+    def test_import_geo(self):
+        self.run_task()
 
-class ImportBrtTest(TestCase):
+        s = models.Stadsdeel.objects.get(pk='03630011872037')
+        self.assertIsNotNone(s.geometrie)
+
+
+class ImportBrtTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+        ]
+
+    def task(self):
+        return batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportSdlTask(GEBIEDEN, c).execute()
-
-        task = batch.ImportBrtTask(GEBIEDEN, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Buurt.objects.all()
         self.assertEqual(len(imported), 481)
@@ -215,19 +214,22 @@ class ImportBrtTest(TestCase):
         self.assertEquals(b.naam, 'Westlandgrachtbuurt')
         self.assertEquals(b.vervallen, False)
         self.assertEquals(b.stadsdeel.id, '03630011872038')
+        self.assertIsNotNone(b.geometrie)
 
 
-class ImportBbkTest(TestCase):
+class ImportBbkTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
+        ]
+
+    def task(self):
+        return batch.ImportBbkTask(GEBIEDEN, GEBIEDEN_SHP)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportSdlTask(GEBIEDEN, c).execute()
-        batch.ImportBrtTask(GEBIEDEN, c).execute()
-
-        task = batch.ImportBbkTask(GEBIEDEN, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Buurt.objects.all()
         self.assertEqual(len(imported), 481)
@@ -237,12 +239,16 @@ class ImportBbkTest(TestCase):
         self.assertEquals(b.id, '03630012094871')
         self.assertEquals(b.code, 'PB32')
         self.assertEquals(b.buurt.id, '03630000000656')
+        self.assertIsNotNone(b.geometrie)
 
 
 # gebieden shp
-class ImportBuurtcombinatieTest(TestCase):
+class ImportBuurtcombinatieTest(TaskTestCase):
+    def task(self):
+        return batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP)
+
     def test_import(self):
-        batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP).execute()
+        self.run_task()
 
         imported = models.Buurtcombinatie.objects.all()
         self.assertEqual(len(imported), 99)
@@ -252,15 +258,18 @@ class ImportBuurtcombinatieTest(TestCase):
         self.assertEquals(b.vollcode, 'E14')
 
 
-class ImportGebiedsgerichtwerkenTest(TestCase):
+class ImportGebiedsgerichtwerkenTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+        ]
+
+    def task(self):
+        return batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportSdlTask(GEBIEDEN, c).execute()
-        c.flush()
-
-        batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP).execute()
+        self.run_task()
 
         imported = models.Gebiedsgerichtwerken.objects.all()
         self.assertEqual(len(imported), 23)
@@ -270,9 +279,12 @@ class ImportGebiedsgerichtwerkenTest(TestCase):
         self.assertEquals(b.stadsdeel.id, '03630011872037')
 
 
-class ImportGrootstedelijkgebiedTest(TestCase):
+class ImportGrootstedelijkgebiedTest(TaskTestCase):
+    def task(self):
+        return batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP)
+
     def test_import(self):
-        batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP).execute()
+        self.run_task()
 
         imported = models.Grootstedelijkgebied.objects.all()
         self.assertEqual(len(imported), 15)
@@ -282,9 +294,12 @@ class ImportGrootstedelijkgebiedTest(TestCase):
         self.assertIsInstance(b, models.Grootstedelijkgebied)
 
 
-class ImportUnescoTest(TestCase):
+class ImportUnescoTest(TaskTestCase):
+    def task(self):
+        return batch.ImportUnescoTask(GEBIEDEN_SHP)
+
     def test_import(self):
-        batch.ImportUnescoTask(GEBIEDEN_SHP).execute()
+        self.run_task()
 
         imported = models.Unesco.objects.all()
         self.assertEqual(len(imported), 2)
@@ -295,20 +310,22 @@ class ImportUnescoTest(TestCase):
 
 
 # bag
-class ImportLigTest(TestCase):
+class ImportLigTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportBrnTask(BAG),
+            batch.ImportStsTask(BAG),
+
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
+        ]
+
+    def task(self):
+        return batch.ImportLigTask(BAG, BAG_WKT)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportBrnTask(BAG, c).execute()
-        batch.ImportStsTask(BAG, c).execute()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportSdlTask(GEBIEDEN, c).execute()
-        batch.ImportBrtTask(GEBIEDEN, c).execute()
-
-        task = batch.ImportLigTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Ligplaats.objects.all()
         self.assertEqual(len(imported), 60)
@@ -322,17 +339,8 @@ class ImportLigTest(TestCase):
         self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEquals(l.document_nummer, 'GV00000407')
 
-
-class ImportLigGeoTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportLigTask(BAG, c).execute()
-
-        task = batch.ImportLigGeoTask(BAG_WKT, c)
-        task.execute()
-        c.flush()
+    def test_import_geo(self):
+        self.run_task()
 
         imported = models.Ligplaats.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 60)
@@ -341,15 +349,17 @@ class ImportLigGeoTest(TestCase):
         self.assertIsNotNone(l.geometrie)
 
 
-class ImportWplTest(TestCase):
+class ImportWplTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+        ]
+
+    def task(self):
+        return batch.ImportWplTask(BAG)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-
-        task = batch.ImportWplTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Woonplaats.objects.all()
         self.assertEqual(len(imported), 1)
@@ -365,18 +375,20 @@ class ImportWplTest(TestCase):
         self.assertEquals(w.gemeente.id, '03630000000000')
 
 
-class ImportOprTest(TestCase):
+class ImportOprTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportBrnTask(BAG),
+            batch.ImportStsTask(BAG),
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportWplTask(BAG),
+        ]
+
+    def task(self):
+        return batch.ImportOprTask(BAG)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportBrnTask(BAG, c).execute()
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-
-        task = batch.ImportOprTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.OpenbareRuimte.objects.all()
         self.assertEqual(len(imported), 97)
@@ -397,69 +409,17 @@ class ImportOprTest(TestCase):
         self.assertEquals(o.woonplaats.id, '03630022796658')
 
 
-class ImportNumTest(TestCase):
+class ImportStaTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportStsTask(BAG),
+        ]
+
+    def task(self):
+        return batch.ImportStaTask(BAG, BAG_WKT)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-        batch.ImportOprTask(BAG, c).execute()
-
-        task = batch.ImportNumTask(BAG, c)
-        task.execute()
-        c.flush()
-
-        imported = models.Nummeraanduiding.objects.all()
-        self.assertEqual(len(imported), 207)
-
-        n = models.Nummeraanduiding.objects.get(pk='03630000512845')
-        self.assertEquals(n.id, '03630000512845')
-        self.assertEquals(n.huisnummer, 26)
-        self.assertEquals(n.huisletter, 'G')
-        self.assertEquals(n.huisnummer_toevoeging, '')
-        self.assertEquals(n.postcode, '1018DS')
-        self.assertEquals(n.document_mutatie, datetime.date(2005, 5, 25))
-        self.assertEquals(n.document_nummer, 'GV00000403')
-        self.assertEquals(n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
-        self.assertEquals(n.vervallen, False)
-        self.assertIsNone(n.bron)
-        self.assertEquals(n.status.code, '16')
-        self.assertEquals(n.openbare_ruimte.id, '03630000003910')
-
-
-class ImportNumLigHfdTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-        batch.ImportOprTask(BAG, c).execute()
-        batch.ImportNumTask(BAG, c).execute()
-        batch.ImportLigTask(BAG, c).execute()
-
-        task = batch.ImportNumLigHfdTask(BAG, c)
-        task.execute()
-        c.flush()
-
-        n = models.Nummeraanduiding.objects.get(pk='03630000520671')
-        l = models.Ligplaats.objects.get(pk='03630001035885')
-
-        self.assertEquals(n.ligplaats.id, l.id)
-        self.assertEquals(l.hoofdadres.id, n.id)
-        self.assertIn(n.id, [a.id for a in l.adressen.all()])
-
-
-class ImportStaTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-
-        task = batch.ImportStaTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Standplaats.objects.all()
         self.assertEqual(len(imported), 51)
@@ -473,17 +433,8 @@ class ImportStaTest(TestCase):
         self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEquals(l.document_nummer, 'GV00000407')
 
-
-class ImportStaGeoTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportStaTask(BAG, c).execute()
-
-        task = batch.ImportStaGeoTask(BAG_WKT, c)
-        task.execute()
-        c.flush()
+    def test_import_geo(self):
+        self.run_task()
 
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 51)
@@ -492,44 +443,23 @@ class ImportStaGeoTest(TestCase):
         self.assertIsNotNone(l.geometrie)
 
 
-class ImportNumStaHfdTest(TestCase):
+class ImportVboTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportEgmTask(BAG),
+            batch.ImportFngTask(BAG),
+            batch.ImportGbkTask(BAG),
+            batch.ImportLocTask(BAG),
+            batch.ImportStsTask(BAG),
+            batch.ImportLggTask(BAG),
+            batch.ImportTggTask(BAG),
+        ]
+
+    def task(self):
+        return batch.ImportVboTask(BAG)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-        batch.ImportOprTask(BAG, c).execute()
-        batch.ImportNumTask(BAG, c).execute()
-        batch.ImportStaTask(BAG, c).execute()
-
-        task = batch.ImportNumStaHfdTask(BAG, c)
-        task.execute()
-        c.flush()
-
-        n = models.Nummeraanduiding.objects.get(pk='03630000398621')
-        s = models.Standplaats.objects.get(pk='03630000717733')
-
-        self.assertEquals(n.standplaats.id, s.id)
-        self.assertEquals(s.hoofdadres.id, n.id)
-        self.assertIn(n.id, [a.id for a in s.adressen.all()])
-
-
-class ImportVboTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportEgmTask(BAG, c).execute()
-        batch.ImportFngTask(BAG, c).execute()
-        batch.ImportGbkTask(BAG, c).execute()
-        batch.ImportLocTask(BAG, c).execute()
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportLggTask(BAG, c).execute()
-        batch.ImportTggTask(BAG, c).execute()
-
-        task = batch.ImportVboTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Verblijfsobject.objects.all()
         self.assertEqual(len(imported), 96)
@@ -564,20 +494,63 @@ class ImportVboTest(TestCase):
         self.assertIsNone(v.buurt)
 
 
-class ImportNumVboHfdTest(TestCase):
+class ImportNumTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportStsTask(BAG),
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportWplTask(BAG),
+            batch.ImportOprTask(BAG),
+            batch.ImportLigTask(BAG, BAG_WKT),
+            batch.ImportStaTask(BAG, BAG_WKT),
+            batch.ImportVboTask(BAG),
+        ]
+
+    def task(self):
+        return batch.ImportNumTask(BAG)
+
     def test_import(self):
-        c = cache.Cache()
+        self.run_task()
 
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-        batch.ImportOprTask(BAG, c).execute()
-        batch.ImportNumTask(BAG, c).execute()
-        batch.ImportVboTask(BAG, c).execute()
+        imported = models.Nummeraanduiding.objects.all()
+        self.assertEqual(len(imported), 207)
 
-        task = batch.ImportNumVboHfdTask(BAG, c)
-        task.execute()
-        c.flush()
+        n = models.Nummeraanduiding.objects.get(pk='03630000512845')
+        self.assertEquals(n.id, '03630000512845')
+        self.assertEquals(n.huisnummer, 26)
+        self.assertEquals(n.huisletter, 'G')
+        self.assertEquals(n.huisnummer_toevoeging, '')
+        self.assertEquals(n.postcode, '1018DS')
+        self.assertEquals(n.document_mutatie, datetime.date(2005, 5, 25))
+        self.assertEquals(n.document_nummer, 'GV00000403')
+        self.assertEquals(n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
+        self.assertEquals(n.vervallen, False)
+        self.assertIsNone(n.bron)
+        self.assertEquals(n.status.code, '16')
+        self.assertEquals(n.openbare_ruimte.id, '03630000003910')
+
+    def test_num_lig_hfd_import(self):
+        self.run_task()
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000520671')
+        l = models.Ligplaats.objects.get(pk='03630001035885')
+
+        self.assertEquals(n.ligplaats.id, l.id)
+        self.assertEquals(l.hoofdadres.id, n.id)
+        self.assertIn(n.id, [a.id for a in l.adressen.all()])
+
+    def test_num_sta_hfd_import(self):
+        self.run_task()
+
+        n = models.Nummeraanduiding.objects.get(pk='03630000398621')
+        s = models.Standplaats.objects.get(pk='03630000717733')
+
+        self.assertEquals(n.standplaats.id, s.id)
+        self.assertEquals(s.hoofdadres.id, n.id)
+        self.assertIn(n.id, [a.id for a in s.adressen.all()])
+
+    def test_num_vbo_hfd_import(self):
+        self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
         v = models.Verblijfsobject.objects.get(pk='03630000721053')
@@ -586,21 +559,8 @@ class ImportNumVboHfdTest(TestCase):
         self.assertEquals(v.hoofdadres.id, n.id)
         self.assertIn(n.id, [n.id for n in v.adressen.all()])
 
-
-class ImportNumVboNvnTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportGmeTask(GEBIEDEN, c).execute()
-        batch.ImportWplTask(BAG, c).execute()
-        batch.ImportOprTask(BAG, c).execute()
-        batch.ImportNumTask(BAG, c).execute()
-        batch.ImportVboTask(BAG, c).execute()
-
-        task = batch.ImportNumVboNvnTask(BAG, c)
-        task.execute()
-        c.flush()
+    def test_num_vbo_nvn_import(self):
+        self.run_task()
 
         v = models.Verblijfsobject.objects.get(pk='03630000643306')
         n1 = models.Nummeraanduiding.objects.get(pk='03630000087815')
@@ -612,15 +572,17 @@ class ImportNumVboNvnTest(TestCase):
         self.assertEquals(n2.verblijfsobject.id, v.id)
 
 
-class ImportPndTest(TestCase):
+class ImportPndTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportStsTask(BAG),
+        ]
+
+    def task(self):
+        return batch.ImportPndTask(BAG, BAG_WKT)
+
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-
-        task = batch.ImportPndTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.Pand.objects.all()
         self.assertEquals(len(imported), 79)
@@ -636,33 +598,26 @@ class ImportPndTest(TestCase):
         self.assertEqual(p.vervallen, False)
         self.assertEqual(p.status.code, '31')
 
-
-class ImportPndWktTest(TestCase):
-    def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportPndTask(BAG, c).execute()
-
-        task = batch.ImportPndGeoTask(BAG_WKT, c)
-        task.execute()
-        c.flush()
+    def test_import_geo(self):
+        self.run_task()
 
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
         self.assertEquals(len(imported), 79)
 
 
-class ImportVboPndTask(TestCase):
+class ImportVboPndTask(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportStsTask(BAG),
+            batch.ImportVboTask(BAG),
+            batch.ImportPndTask(BAG, BAG_WKT),
+        ]
+
+    def task(self):
+        return batch.ImportPndVboTask(BAG)
+    
     def test_import(self):
-        c = cache.Cache()
-
-        batch.ImportStsTask(BAG, c).execute()
-        batch.ImportVboTask(BAG, c).execute()
-        batch.ImportPndTask(BAG, c).execute()
-
-        task = batch.ImportPndVboTask(BAG, c)
-        task.execute()
-        c.flush()
+        self.run_task()
 
         imported = models.VerblijfsobjectPandRelatie.objects.all()
         self.assertEquals(len(imported), 96)
