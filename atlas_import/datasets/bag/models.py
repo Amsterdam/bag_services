@@ -119,6 +119,12 @@ class Stadsdeel(Hoofdklasse):
     brondocument_datum = models.DateField(null=True)
     gemeente = models.ForeignKey(Gemeente, related_name='stadsdelen')
 
+    def num_buurten(self):
+        return self.buurten.count()
+
+    def num_gebiedsgerichtwerken(self):
+        return self.gebiedsgerichtwerken.count()
+
     class Meta:
         verbose_name = "Stadsdeel"
         verbose_name_plural = "Stadsdelen"
@@ -142,6 +148,18 @@ class Buurt(Hoofdklasse):
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
+
+    def num_standplaatsen(self):
+        return self.standplaatsen.count()
+
+    def num_bouwblokken(self):
+        return self.bouwblokken.count()
+
+    def num_ligplaatsen(self):
+        return self.ligplaatsen.count()
+
+    def num_verblijfsobjecten(self):
+        return self.verblijfsobjecten.count()
 
     class Meta:
         verbose_name = "Buurt"
@@ -210,6 +228,9 @@ class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, model
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     woonplaats = models.ForeignKey(Woonplaats)
+
+    def num_adressen(self):
+        return self.adressen.count()
 
     class Meta:
         verbose_name = "Openbare Ruimte"
@@ -307,6 +328,9 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mod
 
     objects = geo.GeoManager()
 
+    def num_adressen(self):
+        return self.adressen.count()
+
     class Meta:
         verbose_name = "Ligplaats"
         verbose_name_plural = "Ligplaatsen"
@@ -333,6 +357,9 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.M
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()
+
+    def num_adressen(self):
+        return self.adressen.count()
 
     class Meta:
         verbose_name = "Standplaats"
@@ -383,6 +410,15 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mode
 
     objects = geo.GeoManager()
 
+    def num_kadastrale_objecten(self):
+        return self.kadastrale_objecten.count()
+
+    def num_panden(self):
+        return self.panden.count()
+
+    def num_adressen(self):
+        return self.adressen.count()
+
     class Meta:
         verbose_name = "Verblijfsobject"
         verbose_name_plural = "Verblijfsobjecten"
@@ -411,6 +447,9 @@ class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()
+
+    def num_verblijfsobjecten(self):
+        return self.verblijfsobjecten.count()
 
     class Meta:
         verbose_name = "Pand"

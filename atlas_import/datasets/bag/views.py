@@ -29,6 +29,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
+    serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
     template_name = "bag/ligplaats.html"
 
@@ -44,6 +45,7 @@ class StandplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
+    serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
     template_name = "bag/standplaats.html"
 
@@ -60,6 +62,7 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects.all()
+    serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
     template_name = "bag/verblijfsobject.html"
 
@@ -74,6 +77,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
+    serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
     template_name = "bag/nummeraanduiding.html"
 
@@ -88,6 +92,7 @@ class PandViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
+    serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
     template_name = "bag/pand.html"
 
@@ -108,6 +113,7 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
+    serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
     template_name = "bag/openbare_ruimte.html"
 
@@ -123,6 +129,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Woonplaats.objects.all()
+    serializer_detail_class = serializers.WoonplaatsDetail
     serializer_class = serializers.Woonplaats
 
 
@@ -142,6 +149,7 @@ class GemeenteViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Gemeente.objects.all()
+    serializer_detail_class = serializers.GemeenteDetail
     serializer_class = serializers.Gemeente
     template_name = "gebieden/gemeente.html"
 
@@ -154,7 +162,9 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
+    # TODO verkeerde serializer wordt gepakt in list? :/
     queryset = models.Stadsdeel.objects.all()
+    serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
     template_name = "gebieden/stadsdeel.html"
 
@@ -169,6 +179,7 @@ class BuurtViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all()
+    serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
     template_name = "gebieden/buurt.html"
 
@@ -184,6 +195,7 @@ class BouwblokViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Bouwblok.objects.all()
+    serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
     template_name = "gebieden/bouwblok.html"
 
@@ -197,6 +209,7 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     """
     metadata_class = ExpansionMetadata
     queryset = models.Buurtcombinatie.objects.all()
+    serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
 
 
@@ -210,6 +223,7 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Gebiedsgerichtwerken.objects.all()
+    serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
     template_name = "gebieden/gebiedsgerichtwerken.html"
 
@@ -223,6 +237,7 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     """
     metadata_class = ExpansionMetadata
     queryset = models.Grootstedelijkgebied.objects.all()
+    serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
 
 
@@ -236,4 +251,5 @@ class UnescoViewSet(rest.AtlasViewSet):
     """
     metadata_class = ExpansionMetadata
     queryset = models.Unesco.objects.all()
+    serializer_detail_class = serializers.UnescoDetail
     serializer_class = serializers.Unesco

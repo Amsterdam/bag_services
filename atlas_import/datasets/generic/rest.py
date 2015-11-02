@@ -4,6 +4,7 @@ from django.template import RequestContext, loader
 from rest_framework import renderers, serializers, pagination, response, viewsets
 from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
+from rest_framework_extensions.mixins import DetailSerializerMixin
 
 
 class HTMLDetailRenderer(renderers.BaseRenderer):
@@ -95,6 +96,6 @@ class HALPagination(pagination.PageNumberPagination):
         ]))
 
 
-class AtlasViewSet(viewsets.ReadOnlyModelViewSet):
+class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination

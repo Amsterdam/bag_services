@@ -56,6 +56,17 @@ class Woonplaats(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'code',
+        )
+
+
+class WoonplaatsDetail(BagMixin, rest.HALSerializer):
+    gemeente = 'Gemeente'
+
+    class Meta:
+        model = models.Woonplaats
+        fields = (
+            '_links',
+            'code',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -67,6 +78,15 @@ class Woonplaats(BagMixin, rest.HALSerializer):
 
 
 class OpenbareRuimte(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.OpenbareRuimte
+        fields = (
+            '_links',
+            'code',
+        )
+
+
+class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
     status = Status()
     type = serializers.CharField(source='get_type_display')
     woonplaats = Woonplaats()
@@ -89,12 +109,70 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
             'naam_nen',
             'straat_nummer',
             'woonplaats',
+            'num_adressen'
         )
 
 
+class Ligplaats(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Ligplaats
+        fields = (
+            '_links',
+            'identificatie',
+        )
+
+
+class LigplaatsDetail(BagMixin, rest.HALSerializer):
+    status = Status()
+    hoofdadres = serializers.HyperlinkedRelatedField(
+        source='hoofdadres.id',
+        view_name='nummeraanduiding-detail',
+        read_only=True,
+    )
+
+    class Meta:
+        model = models.Ligplaats
+        fields = (
+            '_links',
+            'id',
+            'identificatie',
+            'date_modified',
+            'document_mutatie',
+            'document_nummer',
+            'status',
+            'bron',
+
+            'geometrie',
+            'hoofdadres',
+            'adressen',
+            'num_adressen',
+            'buurt',
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        expand = 'full' in self.context['request'].query_params if self.context else False
+
+        if expand:
+            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
+
+
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Nummeraanduiding
+        fields = (
+            '_links',
+            'code',
+        )
+
+
+class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     status = Status()
     openbare_ruimte = OpenbareRuimte()
+    ligplaats = Ligplaats()
+    verblijfsobject = 'Verblijfsobject'
+    standplaats = 'Standplaats'
+    verblijfsobject = 'Verblijfsobject'
     type = serializers.CharField(source='get_type_display')
 
     class Meta:
@@ -124,41 +202,16 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
         )
 
 
-class Ligplaats(BagMixin, rest.HALSerializer):
-    status = Status()
-    hoofdadres = serializers.HyperlinkedRelatedField(
-        source='hoofdadres.id',
-        view_name='nummeraanduiding-detail',
-        read_only=True,
-    )
-
+class Standplaats(BagMixin, rest.HALSerializer):
     class Meta:
-        model = models.Ligplaats
+        model = models.Standplaats
         fields = (
             '_links',
-            'id',
             'identificatie',
-            'date_modified',
-            'document_mutatie',
-            'document_nummer',
-            'status',
-            'bron',
-
-            'geometrie',
-            'hoofdadres',
-            'adressen',
-            'buurt',
         )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].query_params if self.context else False
 
-        if expand:
-            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
-
-
-class Standplaats(BagMixin, rest.HALSerializer):
+class StandplaatsDetail(BagMixin, rest.HALSerializer):
     status = Status()
     hoofdadres = serializers.HyperlinkedRelatedField(
         source='hoofdadres.id',
@@ -181,6 +234,7 @@ class Standplaats(BagMixin, rest.HALSerializer):
             'geometrie',
             'hoofdadres',
             'adressen',
+            'num_adressen',
             'buurt',
         )
 
@@ -197,6 +251,15 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
 
 
 class Verblijfsobject(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Verblijfsobject
+        fields = (
+            '_links',
+            'identificatie',
+        )
+
+
+class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
     financieringswijze = Financieringswijze()
@@ -246,7 +309,9 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             'adressen',
             'buurt',
             'panden',
+            'num_panden',
             'kadastrale_objecten',
+            'num_kadastrale_objecten',
         )
 
     def __init__(self, *args, **kwargs):
@@ -277,7 +342,17 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
 
 
 class Pand(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Pand
+        fields = (
+            '_links',
+            'identificatie',
+        )
+
+
+class PandDetail(BagMixin, rest.HALSerializer):
     status = Status()
+    verblijfsobjecten = Verblijfsobject(many=True)
 
     class Meta:
         model = models.Pand
@@ -298,10 +373,20 @@ class Pand(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
+            'num_verblijfsobjecten'
         )
 
 
 class Gemeente(BagMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Gemeente
+        fields = (
+            '_links',
+            'code',
+        )
+
+
+class GemeenteDetail(BagMixin, rest.HALSerializer):
     class Meta:
         model = models.Gemeente
         fields = (
@@ -324,6 +409,16 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
         model = models.Stadsdeel
         fiels = (
             '_links',
+            'code',
+            'naam',
+        )
+
+
+class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Stadsdeel
+        fiels = (
+            '_links',
             'id',
             'code',
             'date_modified',
@@ -334,10 +429,23 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
+            'num_buurten',
+            'num_gebiedsgerichtwerken',
         )
 
 
 class Buurt(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Buurt
+        fields = (
+            '_links',
+            'code',
+        )
+
+
+class BuurtDetail(GebiedenMixin, rest.HALSerializer):
+    stadsdeel = Stadsdeel()
+
     class Meta:
         model = models.Buurt
         fields = (
@@ -350,10 +458,25 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
+            'num_standplaatsen',
+            'num_bouwblokken',
+            'num_ligplaatsen',
+            'num_verblijfsobjecten',
         )
 
 
 class Bouwblok(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Bouwblok
+        fields = (
+            '_links',
+            'code',
+        )
+
+
+class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
+    buurt = Buurt()
+
     class Meta:
         model = models.Bouwblok
         fields = (
@@ -366,6 +489,15 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
 
 
 class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Buurtcombinatie
+        fields = (
+            '_links',
+            'naam',
+        )
+
+
+class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Buurtcombinatie
         fields = (
@@ -386,6 +518,17 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             'naam',
+        )
+
+
+class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
+    stadsdeel = Stadsdeel()
+
+    class Meta:
+        model = models.Gebiedsgerichtwerken
+        fields = (
+            '_links',
+            'naam',
             'code',
             'stadsdeel',
             'geometrie',
@@ -398,11 +541,29 @@ class Grootstedelijkgebied(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             'naam',
+        )
+
+
+class GrootstedelijkgebiedDetail(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Grootstedelijkgebied
+        fields = (
+            '_links',
+            'naam',
             'geometrie',
         )
 
 
 class Unesco(GebiedenMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Unesco
+        fields = (
+            '_links',
+            'naam',
+        )
+
+
+class UnescoDetail(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Unesco
         fields = (
