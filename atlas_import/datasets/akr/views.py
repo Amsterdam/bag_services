@@ -14,11 +14,13 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
     """
-    queryset = (models.KadastraalSubject.objects
-                .select_related('soort_niet_natuurlijke_persoon',
-                                'woonadres', 'woonadres__land',
-                                'postadres', 'postadres__land'))
+    queryset = models.KadastraalSubject.objects.all()
+    queryset_detail = (models.KadastraalSubject.objects
+                       .select_related('soort_niet_natuurlijke_persoon',
+                                       'woonadres', 'woonadres__land',
+                                       'postadres', 'postadres__land'))
     serializer_class = serializers.KadastraalSubject
+    serializer_detail_class = serializers.KadastraalSubjectDetail
     template_name = "akr/kadastraal_subject.html"
 
 
@@ -106,6 +108,7 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     """
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
+    serializer_detail_class = serializers.KadastraalObjectDetail
     template_name = "akr/kadastraal_object.html"
 
 
@@ -127,6 +130,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     """
     queryset = models.ZakelijkRecht.objects.all()
     serializer_class = serializers.ZakelijkRecht
+    serializer_detail_class = serializers.ZakelijkRechtDetail
     template_name = "akr/zakelijk_recht.html"
 
 
@@ -146,4 +150,5 @@ class TransactieViewSet(rest.AtlasViewSet):
     """
     queryset = models.Transactie.objects.all()
     serializer_class = serializers.Transactie
+    serializer_detail_class = serializers.TransactieDetail
     template_name = "akr/transactie.html"

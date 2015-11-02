@@ -4,6 +4,10 @@ from . import models
 from datasets.generic import rest
 
 
+class AkrMixin(rest.DataSetSerializerMixin):
+    dataset = 'kadaster'
+
+
 class NietNatuurlijkePersoon(serializers.ModelSerializer):
     class Meta:
         model = models.NietNatuurlijkePersoon
@@ -12,6 +16,15 @@ class NietNatuurlijkePersoon(serializers.ModelSerializer):
 class Titel(serializers.ModelSerializer):
     class Meta:
         model = models.Titel
+
+
+class Adres(AkrMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Adres
+        fields = (
+            '_links',
+            'aanduiding',
+        )
 
 
 class Adres(serializers.ModelSerializer):
@@ -33,17 +46,35 @@ class Adres(serializers.ModelSerializer):
         )
 
 
-class KadastraalSubject(rest.HALSerializer):
+class SoortRecht(serializers.ModelSerializer):
+    class Meta:
+        model = models.SoortRecht
+
+
+class KadastraalSubject(AkrMixin, rest.HALSerializer):
+    class Meta:
+        model = models.KadastraalSubject
+        fields = (
+            '_links',
+            'subjectnummer',
+            'volledige_naam',
+        )
+
+
+class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
     titel_of_predikaat = Titel()
     woonadres = Adres()
     postadres = Adres()
     soort_niet_natuurlijke_persoon = NietNatuurlijkePersoon()
+    rechten = 'ZakelijkRecht'
 
     class Meta:
         model = models.KadastraalSubject
         fields = (
             '_links',
             'subjectnummer',
+            'volledige_naam',
+            'natuurlijk_persoon',
             'titel_of_predikaat',
             'geslachtsaanduiding',
             'geslachtsnaam',
@@ -100,13 +131,19 @@ class BebouwingsCode(serializers.ModelSerializer):
         )
 
 
-class SoortRecht(serializers.ModelSerializer):
+class ZakelijkRecht(AkrMixin, rest.HALSerializer):
     class Meta:
-        model = models.SoortRecht
+        model = models.ZakelijkRecht
+        fields = (
+            '_links',
+            'identificatie',
+        )
 
 
-class ZakelijkRecht(rest.HALSerializer):
+class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
     soort_recht = SoortRecht()
+    kadastraal_object = 'KadastraalObject'
+    kadastraal_subject = 'KadastraalSubject'
 
     class Meta:
         model = models.ZakelijkRecht
@@ -128,9 +165,19 @@ class ZakelijkRecht(rest.HALSerializer):
         )
 
 
-class KadastraalObject(rest.HALSerializer):
+class KadastraalObject(AkrMixin, rest.HALSerializer):
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            'id',
+        )
+
+
+class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
+    rechten = ZakelijkRecht(many=True)
 
     class Meta:
         model = models.KadastraalObject
@@ -162,8 +209,18 @@ class SoortStuk(serializers.ModelSerializer):
         model = models.SoortStuk
 
 
-class Transactie(rest.HALSerializer):
+class Transactie(AkrMixin, rest.HALSerializer):
+    class Meta:
+        model = models.Transactie
+        fields = (
+            '_links',
+            'registercode',
+        )
+
+
+class TransactieDetail(AkrMixin, rest.HALSerializer):
     soort_stuk = SoortStuk()
+    rechten = ZakelijkRecht(many=True)
 
     class Meta:
         model = models.Transactie
