@@ -39,6 +39,15 @@ class Beperkingcode(serializers.ModelSerializer):
 
 
 class Beperking(rest.HALSerializer):
+    class Meta:
+        model = models.Beperking
+        fields = (
+            '_links',
+            'inschrijfnummer',
+        )
+
+
+class BeperkingDetail(rest.HALSerializer):
     beperkingtype = Beperkingcode()
 
     class Meta:

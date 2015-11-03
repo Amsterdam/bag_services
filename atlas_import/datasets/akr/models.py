@@ -170,6 +170,9 @@ class KadastraalSubject(mixins.ImportStatusMixin):
                                            'transactie',
                                            'soort_recht')
 
+    def num_rechten(self):
+        return len(self.rechten.all())
+
 
 class SoortStuk(models.Model):
     code = models.CharField(max_length=3, primary_key=True)

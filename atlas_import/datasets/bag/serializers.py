@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, reverse
 
 from . import models
 from datasets.generic import rest
@@ -211,8 +211,13 @@ class Standplaats(BagMixin, rest.HALSerializer):
         )
 
 
+class RelatedSummaryField(serializers.HyperlinkedRelatedField):
+    view_name = ''
+
+
 class StandplaatsDetail(BagMixin, rest.HALSerializer):
     status = Status()
+    adressen = serializers.SerializerMethodField()
     hoofdadres = serializers.HyperlinkedRelatedField(
         source='hoofdadres.id',
         view_name='nummeraanduiding-detail',
@@ -236,6 +241,13 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'adressen',
             'num_adressen',
             'buurt',
+        )
+
+    def adressen(self, obj):
+        import ipdb;ipdb.set_trace()
+        return dict(
+            count=len(obj),
+            url=reverse.reverse('nummeraanduiding-list', request=self.context['request'])
         )
 
     def __init__(self, *args, **kwargs):

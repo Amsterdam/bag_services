@@ -132,6 +132,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
     template_name = "akr/zakelijk_recht.html"
+    filter_fields = ('kadastraal_subject', 'kadastraal_object')
 
 
 class TransactieViewSet(rest.AtlasViewSet):

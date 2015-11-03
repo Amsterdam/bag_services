@@ -28,13 +28,16 @@ class BeperkingView(AtlasViewSet):
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/)
     """
     serializer_class = serializers.Beperking
-    queryset = (models.Beperking.objects
-                .prefetch_related(Prefetch('documenten',
-                                           queryset=models.Brondocument.objects.select_related('bron')
-                                           ))
-                .select_related('beperkingtype')
-                )
+    serializer_detail_class = serializers.BeperkingDetail
+    queryset = models.Beperking.objects.all()
+    queryset_detail = (models.Beperking.objects
+                       .prefetch_related(Prefetch('documenten',
+                                                  queryset=models.Brondocument.objects.select_related('bron')
+                                                  ))
+                       .select_related('beperkingtype')
+                       )
     template_name = "wkpb/beperking.html"
+    filter_fields = ('kadastrale_objecten__id',)
 
 
 class BrondocumentView(AtlasViewSet):
