@@ -226,4 +226,5 @@ class TransactieDetail(AkrMixin, rest.HALSerializer):
             'koopjaar',
             'koopsom',
             'belastingplichtige',
+            'rechten',
         )

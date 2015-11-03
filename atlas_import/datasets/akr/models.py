@@ -1,8 +1,8 @@
-from django.db import models
 from django.contrib.gis.db import models as geo
+from django.db import models
 
-from datasets.generic import mixins
 from datasets.bag import models as bag
+from datasets.generic import mixins
 
 
 class SoortCultuurOnbebouwd(models.Model):
@@ -163,12 +163,6 @@ class KadastraalSubject(mixins.ImportStatusMixin):
                                            self.voorletters or self.voornamen,
                                            self.voorvoegsel,
                                            self.geslachtsnaam) if part])
-
-    def rechten_lazy(self):
-        return self.rechten.select_related('kadastraal_object',
-                                           'kadastraal_subject',
-                                           'transactie',
-                                           'soort_recht')
 
 
 class SoortStuk(models.Model):

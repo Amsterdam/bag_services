@@ -14,7 +14,29 @@ class Broncode(rest.HALSerializer):
         )
 
 
+class BroncodeDetail(rest.HALSerializer):
+    documenten = rest.RelatedSummaryField()
+    class Meta:
+        model = models.Broncode
+        fields = (
+            '_links',
+            'code',
+            'omschrijving',
+            'documenten',
+        )
+
+
 class Brondocument(rest.HALSerializer):
+    class Meta:
+        model = models.Brondocument
+        fields = (
+            '_links',
+            'documentnummer',
+            'documentnaam',
+        )
+
+
+class BrondocumentDetail(rest.HALSerializer):
     class Meta:
         model = models.Brondocument
         fields = (

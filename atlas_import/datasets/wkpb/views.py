@@ -11,6 +11,7 @@ class BroncodeView(AtlasViewSet):
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/bronleverancier/)
     """
     serializer_class = serializers.Broncode
+    serializer_detail_class = serializers.BroncodeDetail
     queryset = models.Broncode.objects.all()
     template_name = "wkpb/broncode.html"
 
@@ -47,5 +48,6 @@ class BrondocumentView(AtlasViewSet):
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/brondocument/)
     """
     serializer_class = serializers.Brondocument
+    serializer_detail_class = serializers.BrondocumentDetail
     queryset = models.Brondocument.objects.all()
-    template_name = "wkpb/brondocument.html"
+    filter_fields = ('bron', )

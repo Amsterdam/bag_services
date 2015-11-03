@@ -58,7 +58,7 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
 
     id = models.IntegerField(null=False, primary_key=True)  # beperking id
     documentnummer = models.IntegerField(null=False)
-    bron = models.ForeignKey(Broncode, null=True)
+    bron = models.ForeignKey(Broncode, null=True, related_name="documenten")
     documentnaam = models.CharField(max_length=21, null=False)
     persoonsgegeven_afschermen = models.BooleanField(null=False)
     soort_besluit = models.CharField(max_length=60, null=True)

@@ -209,7 +209,7 @@ class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, model
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    woonplaats = models.ForeignKey(Woonplaats)
+    woonplaats = models.ForeignKey(Woonplaats, related_name="openbare_ruimtes")
 
     class Meta:
         verbose_name = "Openbare Ruimte"

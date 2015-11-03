@@ -1,5 +1,5 @@
-from . import models, serializers
 from datasets.generic import rest
+from . import models, serializers
 
 
 class KadastraalSubjectViewSet(rest.AtlasViewSet):
@@ -21,7 +21,6 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
                                        'postadres', 'postadres__land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
-    template_name = "akr/kadastraal_subject.html"
 
 
 class KadastraalObjectViewSet(rest.AtlasViewSet):
@@ -109,7 +108,7 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    template_name = "akr/kadastraal_object.html"
+    filter_fields = ('verblijfsobjecten__id', 'beperkingen__id', )
 
 
 class ZakelijkRechtViewSet(rest.AtlasViewSet):
@@ -131,8 +130,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     queryset = models.ZakelijkRecht.objects.all()
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
-    template_name = "akr/zakelijk_recht.html"
-    filter_fields = ('kadastraal_subject', 'kadastraal_object')
+    filter_fields = ('kadastraal_subject', 'kadastraal_object', 'transactie',)
 
 
 class TransactieViewSet(rest.AtlasViewSet):
@@ -152,4 +150,3 @@ class TransactieViewSet(rest.AtlasViewSet):
     queryset = models.Transactie.objects.all()
     serializer_class = serializers.Transactie
     serializer_detail_class = serializers.TransactieDetail
-    template_name = "akr/transactie.html"

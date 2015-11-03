@@ -31,7 +31,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
     queryset = models.Ligplaats.objects.all()
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
-    template_name = "bag/ligplaats.html"
+    filter_fields = ('buurt', )
 
 
 class StandplaatsViewSet(rest.AtlasViewSet):
@@ -47,7 +47,7 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     queryset = models.Standplaats.objects.all()
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
-    template_name = "bag/standplaats.html"
+    filter_fields = ('buurt', )
 
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
@@ -64,7 +64,7 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
     queryset = models.Verblijfsobject.objects.all()
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
-    template_name = "bag/verblijfsobject.html"
+    filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt', )
 
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
@@ -79,7 +79,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     queryset = models.Nummeraanduiding.objects.all()
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
-    template_name = "bag/nummeraanduiding.html"
+    filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
 
 
 class PandViewSet(rest.AtlasViewSet):
@@ -94,7 +94,7 @@ class PandViewSet(rest.AtlasViewSet):
     queryset = models.Pand.objects.all()
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    template_name = "bag/pand.html"
+    filter_fields = ('verblijfsobjecten__id', )
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
@@ -115,7 +115,6 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     queryset = models.OpenbareRuimte.objects.all()
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
-    template_name = "bag/openbare_ruimte.html"
 
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
@@ -162,11 +161,9 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    # TODO verkeerde serializer wordt gepakt in list? :/
     queryset = models.Stadsdeel.objects.all()
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
-    template_name = "gebieden/stadsdeel.html"
 
 
 class BuurtViewSet(rest.AtlasViewSet):
@@ -181,7 +178,7 @@ class BuurtViewSet(rest.AtlasViewSet):
     queryset = models.Buurt.objects.all()
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    template_name = "gebieden/buurt.html"
+    filter_fields = ('stadsdeel', )
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
@@ -197,7 +194,7 @@ class BouwblokViewSet(rest.AtlasViewSet):
     queryset = models.Bouwblok.objects.all()
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
-    template_name = "gebieden/bouwblok.html"
+    filter_fields = ('buurt', )
 
 
 class BuurtcombinatieViewSet(rest.AtlasViewSet):
@@ -225,7 +222,7 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     queryset = models.Gebiedsgerichtwerken.objects.all()
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
-    template_name = "gebieden/gebiedsgerichtwerken.html"
+    filter_fields = ('stadsdeel', )
 
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
