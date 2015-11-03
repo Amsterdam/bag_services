@@ -49,6 +49,7 @@ class Beperking(rest.HALSerializer):
 
 class BeperkingDetail(rest.HALSerializer):
     beperkingtype = Beperkingcode()
+    kadastrale_objecten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Beperking

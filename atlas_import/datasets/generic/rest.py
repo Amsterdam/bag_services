@@ -1,27 +1,11 @@
 from collections import OrderedDict
 
-from django.template import RequestContext, loader
-from rest_framework import renderers, serializers, pagination, response, viewsets, filters
+from rest_framework import renderers, serializers, pagination, response, viewsets, filters, reverse
 from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-
-class HTMLDetailRenderer(renderers.BaseRenderer):
-    format = 'html'
-    media_type = 'text/html'
-
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        view = renderer_context['view']
-        request = renderer_context['request']
-
-        obj = view.get_object()
-        tmpl = loader.get_template(view.template_name)
-        ctx = RequestContext(request, dict(data=data, object=obj))
-        return tmpl.render(ctx)
-
-
-DEFAULT_RENDERERS = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer, HTMLDetailRenderer)
+DEFAULT_RENDERERS = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer)
 FORMATS = [dict(format=r.format, type=r.media_type) for r in DEFAULT_RENDERERS]
 
 
@@ -31,10 +15,6 @@ def get_links(view_name, kwargs=None, request=None):
             href=reverse(view_name, kwargs=kwargs, request=request)
         ))
     ])
-    for f in FORMATS:
-        result[f['type']] = dict(
-            href=reverse(view_name, kwargs=kwargs, request=request, format=f['format'])
-        )
 
     return result
 
@@ -55,11 +35,6 @@ class LinksField(serializers.HyperlinkedIdentityField):
                 href=self.get_url(value, self.view_name, request, None))
              ),
         ])
-
-        for f in FORMATS:
-            result[f['type']] = dict(
-                href=self.get_url(value, self.view_name, request, f['format'])
-            )
 
         return result
 
@@ -100,3 +75,20 @@ class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
     filter_backends = (filters.DjangoFilterBackend,)
+
+
+class RelatedSummaryField(serializers.Field):
+
+    def to_representation(self, value):
+        count = value.count()
+        model_name = value.model.__name__
+        mapping = model_name.lower() + "-list"
+        url = reverse(mapping, request=self.context['request'])
+
+        parent_pk = value.instance.pk
+        filter_name = list(value.core_filters.keys())[0]
+
+        return dict(
+            count=count,
+            href="{}?{}={}".format(url, filter_name, parent_pk),
+        )

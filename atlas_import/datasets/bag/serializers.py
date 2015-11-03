@@ -1,7 +1,7 @@
 from rest_framework import serializers, reverse
 
-from . import models
 from datasets.generic import rest
+from . import models
 
 
 class BagMixin(rest.DataSetSerializerMixin):
@@ -109,7 +109,6 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'naam_nen',
             'straat_nummer',
             'woonplaats',
-            'num_adressen'
         )
 
 
@@ -145,7 +144,6 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'geometrie',
             'hoofdadres',
             'adressen',
-            'num_adressen',
             'buurt',
         )
 
@@ -239,12 +237,12 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'geometrie',
             'hoofdadres',
             'adressen',
-            'num_adressen',
             'buurt',
         )
 
     def adressen(self, obj):
-        import ipdb;ipdb.set_trace()
+        import ipdb;
+        ipdb.set_trace()
         return dict(
             count=len(obj),
             url=reverse.reverse('nummeraanduiding-list', request=self.context['request'])
@@ -321,9 +319,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'adressen',
             'buurt',
             'panden',
-            'num_panden',
             'kadastrale_objecten',
-            'num_kadastrale_objecten',
         )
 
     def __init__(self, *args, **kwargs):
@@ -385,7 +381,6 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
-            'num_verblijfsobjecten'
         )
 
 
@@ -419,7 +414,7 @@ class GebiedenMixin(rest.DataSetSerializerMixin):
 class Stadsdeel(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Stadsdeel
-        fiels = (
+        fields = (
             '_links',
             'code',
             'naam',
@@ -429,7 +424,7 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
 class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
     class Meta:
         model = models.Stadsdeel
-        fiels = (
+        fields = (
             '_links',
             'id',
             'code',
@@ -441,8 +436,6 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
-            'num_buurten',
-            'num_gebiedsgerichtwerken',
         )
 
 
@@ -470,10 +463,6 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
-            'num_standplaatsen',
-            'num_bouwblokken',
-            'num_ligplaatsen',
-            'num_verblijfsobjecten',
         )
 
 
@@ -583,5 +572,3 @@ class UnescoDetail(GebiedenMixin, rest.HALSerializer):
             'naam',
             'geometrie',
         )
-
-

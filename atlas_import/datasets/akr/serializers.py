@@ -1,7 +1,7 @@
-from rest_framework import serializers, reverse
+from rest_framework import serializers
 
-from . import models
 from datasets.generic import rest
+from . import models
 
 
 class AkrMixin(rest.DataSetSerializerMixin):
@@ -16,15 +16,6 @@ class NietNatuurlijkePersoon(serializers.ModelSerializer):
 class Titel(serializers.ModelSerializer):
     class Meta:
         model = models.Titel
-
-
-class Adres(AkrMixin, rest.HALSerializer):
-    class Meta:
-        model = models.Adres
-        fields = (
-            '_links',
-            'aanduiding',
-        )
 
 
 class Adres(serializers.ModelSerializer):
@@ -66,7 +57,7 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
     woonadres = Adres()
     postadres = Adres()
     soort_niet_natuurlijke_persoon = NietNatuurlijkePersoon()
-    rechten_summary = serializers.SerializerMethodField()
+    rechten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraalSubject
@@ -93,18 +84,7 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
             'woonadres',
             'postadres',
             'a_nummer',
-            'rechten_summary',
-        )
-
-    def get_rechten_summary(self, obj):
-        url = '%s?kadastraal_subject=%s' % (
-            reverse.reverse('zakelijkrecht-list', request=self.context['request']),
-            obj.pk
-        )
-
-        return dict(
-            count=obj.rechten.count(),
-            url=url
+            'rechten',
         )
 
     def to_representation(self, instance):
@@ -114,14 +94,9 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
         if not user.has_perm('akr.view_sensitive_details') and instance.natuurlijk_persoon():
             data['woonadres'] = None
             data['postadres'] = None
-            data['rechten_summary'] = None
+            data['rechten'] = None
 
         return data
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.context.get('format') == 'html':
-            self.fields.pop('rechten_summary')
 
 
 class SoortCultuurOnbebouwd(serializers.ModelSerializer):
@@ -188,42 +163,10 @@ class KadastraalObject(AkrMixin, rest.HALSerializer):
 class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
-    rechten_summary = serializers.SerializerMethodField()
-    beperkingen_summary = serializers.SerializerMethodField()
-    verblijfsobjecten_summary = serializers.SerializerMethodField()
 
-    def get_rechten_summary(self, obj):
-        url = '%s?kadastraal_object=%s' % (
-            reverse.reverse('zakelijkrecht-list', request=self.context['request']),
-            obj.pk
-        )
-
-        return dict(
-            count=obj.rechten.count(),
-            url=url
-        )
-
-    def get_beperkingen_summary(self, obj):
-        url = '%s?kadastraal_object=%s' % (
-            reverse.reverse('beperking-list', request=self.context['request']),
-            obj.pk
-        )
-
-        return dict(
-            count=obj.beperkingen.count(),
-            url=url
-        )
-
-    def get_verblijfsobjecten_summary(self, obj):
-        url = '%s?kadastraal_object=%s' % (
-            reverse.reverse('verblijfsobject-list', request=self.context['request']),
-            obj.pk
-        )
-
-        return dict(
-            count=obj.verblijfsobjecten.count(),
-            url=url
-        )
+    rechten = rest.RelatedSummaryField()
+    verblijfsobjecten = rest.RelatedSummaryField()
+    beperkingen = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraalObject
@@ -243,10 +186,10 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
             'kaartblad',
             'ruitletter',
             'ruitnummer',
-            'verblijfsobjecten_summary',
-            'rechten_summary',
+            'verblijfsobjecten',
+            'rechten',
             'geometrie',
-            'beperkingen_summary'
+            'beperkingen'
         )
 
 
@@ -264,46 +207,9 @@ class Transactie(AkrMixin, rest.HALSerializer):
         )
 
 
-class RelatedSummaryField(serializers.DictField):
-    view_name = None
-    pk_field = None
-    related_model_fieldname = None
-
-    def __init__(self, args, **kwargs, view_name, pk_field, related_model_fieldname):
-        self.view_name = view_name
-        self.lookup_key = pk_field
-        self.related_model_fieldname = related_model_fieldname
-
-    def get_rechten_summary(self, obj):
-        url = '%s?%s=%s' % (
-            reverse.reverse(self.view_name, request=self.context['request']),
-            self.pk_field,
-            obj.pk
-        )
-
-        model_field = getattr(self, self.related_model_fieldname)
-
-        return dict(
-            count=model_field.count(),
-            url=url
-        )
-
-
 class TransactieDetail(AkrMixin, rest.HALSerializer):
     soort_stuk = SoortStuk()
-    rechten_summary = serializers.SerializerMethodField()
-
-    def get_rechten_summary(self, obj):
-        url = '%s?transactie=%s' % (
-            reverse.reverse('zakelijkrecht-list', request=self.context['request']),
-            obj.pk
-        )
-
-        return dict(
-            count=obj.rechten.count(),
-            url=url
-        )
-
+    rechten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Transactie
@@ -320,5 +226,4 @@ class TransactieDetail(AkrMixin, rest.HALSerializer):
             'koopjaar',
             'koopsom',
             'belastingplichtige',
-            'rechten_summary',
         )

@@ -34,6 +34,7 @@ INSTALLED_APPS = (
 
     'django.contrib.staticfiles',
     'django_jenkins',
+    'django_extensions',
 
     'oauth2_provider',
 
