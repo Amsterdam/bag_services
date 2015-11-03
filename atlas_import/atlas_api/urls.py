@@ -13,6 +13,15 @@ class DocumentedRouter(routers.DefaultRouter):
     `bag/`
     :   [Basisadministratie Adressen en Gebouwen](http://www.amsterdam.nl/stelselpedia/bag-index/)
 
+    `gebieden/`
+    :   [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
+
+    `kadaster/`
+    :   [Basisregistratie kadaster](https://www.amsterdam.nl/stelselpedia/brk-index/)
+
+    `wkpb/`
+    :   [Gemeentelijke beperkingenregistratie](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
+
     `atlas/`
     :   Specifieke functionaliteit voor Atlas
     """
