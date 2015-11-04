@@ -6,10 +6,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'insecure',
+        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR'),
-        'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT'),
+        'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5432),
         'CONN_MAX_AGE': 60,
     }
 }
@@ -39,7 +39,7 @@ LOGGING = {
 }
 
 ELASTIC_SEARCH_HOSTS = ["{}:{}".format(os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR'),
-                                       os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT'))]
+                                       os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'atlas_import', 'diva'))
