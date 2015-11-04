@@ -234,11 +234,11 @@ class ImportBbkTest(TaskTestCase):
         imported = models.Buurt.objects.all()
         self.assertEqual(len(imported), 481)
 
-        b = models.Bouwblok.objects.get(pk='03630012094871')
+        b = models.Bouwblok.objects.get(pk='03630012100449')
 
-        self.assertEquals(b.id, '03630012094871')
-        self.assertEquals(b.code, 'PB32')
-        self.assertEquals(b.buurt.id, '03630000000656')
+        self.assertEquals(b.id, '03630012100449')
+        self.assertEquals(b.code, 'DE66')
+        self.assertEquals(b.buurt.id, '03630000000537')
         self.assertIsNotNone(b.geometrie)
 
 
