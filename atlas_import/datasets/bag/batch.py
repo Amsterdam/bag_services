@@ -1032,7 +1032,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        pass
+        database.clear_models(models.Buurtcombinatie)
 
     def after(self):
         pass
@@ -1067,6 +1067,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         self.stadsdelen = dict()
 
     def before(self):
+        database.clear_models(models.Gebiedsgerichtwerken)
         self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "pk"))
 
     def after(self):
@@ -1103,7 +1104,7 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        pass
+        database.clear_models(models.Grootstedelijkgebied)
 
     def after(self):
         pass
@@ -1132,7 +1133,7 @@ class ImportUnescoTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        pass
+        database.clear_models(models.Unesco)
 
     def after(self):
         pass

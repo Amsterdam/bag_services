@@ -396,7 +396,7 @@ class ImportKotVboTask(batch.BasicTask):
         self.kot_ids = set()
 
     def before(self):
-        # database.clear_models(models.KadastraalObjectVerblijfsobject)
+        database.clear_models(models.KadastraalObjectVerblijfsobject)
         if not self.vbo_ids:
             self.vbo_ids = set(bag.Verblijfsobject.objects.values_list('id', flat=True))
 
