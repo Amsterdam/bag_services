@@ -161,7 +161,7 @@ class Bouwblok(Hoofdklasse):
     """
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)  # Bouwbloknummer
-    buurt = models.ForeignKey(Buurt, related_name='bouwblokken')
+    buurt = models.ForeignKey(Buurt, related_name='bouwblokken', null=True)
     ingang_cyclus = models.DateField(null=True)
 
     class Meta:

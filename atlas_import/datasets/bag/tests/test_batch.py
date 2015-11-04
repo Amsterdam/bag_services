@@ -205,15 +205,15 @@ class ImportBrtTest(TaskTestCase):
         self.run_task()
 
         imported = models.Buurt.objects.all()
-        self.assertEqual(len(imported), 481)
+        self.assertEqual(len(imported), 46)
 
-        b = models.Buurt.objects.get(pk='03630000000796')
+        b = models.Buurt.objects.get(pk='03630000000487')
 
-        self.assertEquals(b.id, '03630000000796')
-        self.assertEquals(b.code, '44b')
-        self.assertEquals(b.naam, 'Westlandgrachtbuurt')
+        self.assertEquals(b.id, '03630000000487')
+        self.assertEquals(b.code, '92c')
+        self.assertEquals(b.naam, 'Amstel III deel C/D Noord')
         self.assertEquals(b.vervallen, False)
-        self.assertEquals(b.stadsdeel.id, '03630011872038')
+        self.assertEquals(b.stadsdeel.id, '03630000000016')
         self.assertIsNotNone(b.geometrie)
 
 
@@ -231,14 +231,14 @@ class ImportBbkTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        imported = models.Buurt.objects.all()
-        self.assertEqual(len(imported), 481)
+        imported = models.Bouwblok.objects.all()
+        self.assertEqual(len(imported), 96)
 
         b = models.Bouwblok.objects.get(pk='03630012100449')
 
         self.assertEquals(b.id, '03630012100449')
         self.assertEquals(b.code, 'DE66')
-        self.assertEquals(b.buurt.id, '03630000000537')
+        self.assertIsNone(b.buurt)
         self.assertIsNotNone(b.geometrie)
 
 
@@ -330,12 +330,12 @@ class ImportLigTest(TaskTestCase):
         imported = models.Ligplaats.objects.all()
         self.assertEqual(len(imported), 60)
 
-        l = models.Ligplaats.objects.get(pk='03630001024868')
-        self.assertEquals(l.identificatie, '03630001024868')
+        l = models.Ligplaats.objects.get(pk='03630001028467')
+        self.assertEquals(l.identificatie, '03630001028467')
         self.assertEquals(l.vervallen, False)
         self.assertIsNone(l.bron)
         self.assertEquals(l.status.code, '33')
-        self.assertEquals(l.buurt.id, '03630000000100')
+        self.assertEquals(l.buurt.id, '03630000000491')
         self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEquals(l.document_nummer, 'GV00000407')
 

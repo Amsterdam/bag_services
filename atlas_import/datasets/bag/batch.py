@@ -271,8 +271,8 @@ class ImportBbkTask(batch.BasicTask):
         pk = r['sleutelVerzendend']
         buurt_id = r['BBKBRT/BRT/sleutelVerzendend'] or None
         if buurt_id not in self.buurten:
-            log.warning('Bouwblok {} references non-existing buurt {}; skipping'.format(pk, buurt_id))
-            return None
+            log.warning('Bouwblok {} references non-existing buurt {}; ignoring'.format(pk, buurt_id))
+            buurt_id = None
 
         code = r['Bouwbloknummer']
         return code, models.Bouwblok(
