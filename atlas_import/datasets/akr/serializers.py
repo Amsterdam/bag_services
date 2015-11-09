@@ -59,6 +59,8 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
     soort_niet_natuurlijke_persoon = NietNatuurlijkePersoon()
     rechten = rest.RelatedSummaryField()
 
+    allowed_anonymous = {'_links', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
+
     class Meta:
         model = models.KadastraalSubject
         fields = (
@@ -89,12 +91,11 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        user = self.context['request'].user
 
-        if not user.has_perm('akr.view_sensitive_details') and instance.natuurlijk_persoon():
-            data['woonadres'] = None
-            data['postadres'] = None
-            data['rechten'] = None
+        user = self.context['request'].user
+        if instance.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
+            for f in self.fields.keys() - self.allowed_anonymous:
+                del data[f]
 
         return data
 

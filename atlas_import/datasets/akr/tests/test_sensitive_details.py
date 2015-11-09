@@ -32,9 +32,9 @@ class SensitiveDetailsTestCase(APITestCase):
 
     def test_niet_ingelogd_geen_details_in_natuurlijk_persoon_json(self):
         response = self.client.get('/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk)).data
-        self.assertIsNone(response['rechten'])
-        self.assertIsNone(response['woonadres'])
-        self.assertIsNone(response['postadres'])
+        self.assertNotIn('rechten', response)
+        self.assertNotIn('woonadres', response)
+        self.assertNotIn('postadres', response)
 
     def test_niet_ingelogd_wel_details_in_niet_natuurlijk_persoon_json(self):
         response = self.client.get('/api/kadaster/subject/{}.json'.format(self.niet_natuurlijk.pk)).data
@@ -47,9 +47,9 @@ class SensitiveDetailsTestCase(APITestCase):
         self.client.login(username='not_authorized', password='pass')
         response = self.client.get('/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk)).data
 
-        self.assertIsNone(response['rechten'])
-        self.assertIsNone(response['woonadres'])
-        self.assertIsNone(response['postadres'])
+        self.assertNotIn('rechten', response)
+        self.assertNotIn('woonadres', response)
+        self.assertNotIn('postadres', response)
 
     def test_ingelogd_wel_geautoriseed_wel_details_in_natuurlijk_persoon_json(self):
         self.client.login(username='authorized', password='pass')
