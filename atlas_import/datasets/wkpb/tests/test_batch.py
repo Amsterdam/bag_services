@@ -43,6 +43,8 @@ class ImportWkpbBrondocument(TaskTestCase):
     def requires(self):
         return [
             batch.ImportWkpbBroncodeTask(BEPERKINGEN),
+            batch.ImportBeperkingcodeTask(BEPERKINGEN),
+            batch.ImportBeperkingTask(BEPERKINGEN),
         ]
 
     def task(self):
@@ -59,13 +61,12 @@ class ImportWkpbBrondocument(TaskTestCase):
         self.assertEqual(a.documentnaam, 'BD00000149_WK00WK.pdf')
         self.assertEqual(a.bron.omschrijving, 'Burgemeester')
         self.assertEqual(a.persoonsgegeven_afschermen, False)
+        self.assertEqual(a.beperking.id, 1006943)
 
 
 class ImportBeperking(TaskTestCase):
     def requires(self):
         return [
-            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
-            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
             batch.ImportBeperkingcodeTask(BEPERKINGEN),
         ]
 
@@ -88,10 +89,10 @@ class ImportBeperking(TaskTestCase):
 class ImportWkpbBepKad(TaskTestCase):
     def requires(self):
         return [
-            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
-            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
             batch.ImportBeperkingcodeTask(BEPERKINGEN),
             batch.ImportBeperkingTask(BEPERKINGEN),
+            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
+            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
             lki.ImportKadastraalObjectTask(KAD_LKI),
             akr.ImportKotTask(KAD_AKR),
         ]
