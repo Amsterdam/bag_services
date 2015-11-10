@@ -143,7 +143,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         bron_id = r[2] if r[2] in self.codes else None
 
         inschrijfnummer = int(r[0])
-        beperking_id = self.beperkingen.get(int(inschrijfnummer))
+        beperking_id = self.beperkingen.get(inschrijfnummer)
 
         if not beperking_id:
             log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
