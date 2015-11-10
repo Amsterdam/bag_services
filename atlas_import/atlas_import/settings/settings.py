@@ -31,6 +31,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
 
     'django.contrib.staticfiles',
     'django_jenkins',
@@ -153,6 +154,7 @@ SECURE_BROWSER_XSS_FILTER = True
 # CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
+
 
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

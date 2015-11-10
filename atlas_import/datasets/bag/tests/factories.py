@@ -132,6 +132,7 @@ class BuurtcombinatieFactory(factory.DjangoModelFactory):
 
     naam = fuzzy.FuzzyText(length=50)
     code = fuzzy.FuzzyText(length=2)
+    vollcode = fuzzy.FuzzyText(length=3)
 
 
 class GebiedsgerichtwerkenFactory(factory.DjangoModelFactory):

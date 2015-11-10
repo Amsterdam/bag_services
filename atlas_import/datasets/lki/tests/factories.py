@@ -28,7 +28,7 @@ class KadastraleGemeenteFactory(factory.DjangoModelFactory):
         model = models.KadastraleGemeente
 
     id = fuzzy.FuzzyInteger(low=1, high=99999)
-    code = fuzzy.FuzzyInteger(low=1, high=9999)
+    code = fuzzy.FuzzyText(length=5)
     ingang_cyclus = fuzzy.FuzzyDate(start_date=date.today())
 
 
