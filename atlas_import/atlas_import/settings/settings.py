@@ -49,6 +49,7 @@ INSTALLED_APPS = (
 
     'geo_views',
     'atlas_api',
+    'health',
 
     'django.contrib.gis',
     'rest_framework',

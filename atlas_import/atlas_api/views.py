@@ -4,11 +4,11 @@ from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
-from rest_framework import viewsets, metadata, pagination
+from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from datasets.generic import rest
 
+from datasets.generic import rest
 
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -93,6 +93,19 @@ def autocomplete_query(client, query):
     )
 
 
+def get_autocomplete_response(client, query):
+    result = autocomplete_query(client, query)[0:20].execute()
+    matches = OrderedDict()
+    for r in result:
+        h = r.meta.highlight
+        for key in h:
+            highlights = h[key]
+            for match in highlights:
+                matches[match] = 1
+    response = [dict(item=m) for m in matches.keys()][:5]
+    return response
+
+
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all objects that (partially) match the
@@ -111,16 +124,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         query = request.query_params['q']
 
-        result = autocomplete_query(self.client, query)[0:20].execute()
-        matches = OrderedDict()
-        for r in result:
-            h = r.meta.highlight
-            for key in h:
-                highlights = h[key]
-                for match in highlights:
-                    matches[match] = 1
-
-        return Response([dict(item=m) for m in matches.keys()][:5])
+        response = get_autocomplete_response(self.client, query)
+        return Response(response)
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -155,13 +160,13 @@ class SearchViewSet(viewsets.ViewSet):
         elif page == 2:
             prev_page = "{}?q={}".format(followup_url, query)
         else:
-            prev_page = "{}?q={}&page={}".format(followup_url, query, page-1)
+            prev_page = "{}?q={}&page={}".format(followup_url, query, page - 1)
 
         total = result.hits.total
         if end >= total:
             next_page = None
         else:
-            next_page = "{}?q={}&page={}".format(followup_url, query, page+1)
+            next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
 
         res = OrderedDict()
         res['_links'] = OrderedDict([
