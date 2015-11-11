@@ -19,7 +19,7 @@ def health(request):
             cursor.execute("select 1")
             assert cursor.fetchone()
     except:
-        log.exception()
+        log.exception("Database connectivity failed")
         return HttpResponse("Database connectivity failed", content_type="text/plain", status=500)
 
     # check elasticsearch
@@ -27,7 +27,7 @@ def health(request):
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         assert client.info()
     except:
-        log.exception()
+        log.exception("Elasticsearch connectivity failed")
         return HttpResponse("Elasticsearch connectivity failed", content_type="text/plain", status=500)
 
     return HttpResponse("Connectivity OK", content_type='text/plain', status=200)
@@ -38,7 +38,7 @@ def check_data(request):
     try:
         assert Verblijfsobject.objects.count() > 10
     except:
-        log.exception()
+        log.exception("No BAG data found")
         return HttpResponse("No BAG data found", content_type="text/plain", status=500)
 
     # check elastic
@@ -46,7 +46,7 @@ def check_data(request):
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         assert get_autocomplete_response(client, 'weesp')
     except:
-        log.exception()
+        log.exception("Autocomplete failed")
         return HttpResponse("Autocomplete failed", content_type="text/plain", status=500)
 
     return HttpResponse("Data OK", content_type='text/plain', status=200)
