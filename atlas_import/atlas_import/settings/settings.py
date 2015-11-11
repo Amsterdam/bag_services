@@ -124,6 +124,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '.localdomain',
     '.datalabamsterdam.nl',
+    '127.0.0.1',
+    '.datapunt.amsterdam.nl',
 ]
 
 REST_FRAMEWORK = dict(
