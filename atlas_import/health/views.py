@@ -9,33 +9,35 @@ from datasets.bag.models import Verblijfsobject
 
 def health(request):
     # check database
-    with connection.cursor() as cursor:
-        cursor.execute("select 1")
-        result = cursor.fetchone()
-        if not result:
-            raise ValueError("Could not connect to database")
-        if result[0] is not 1:
-            raise ValueError("Could not retrieve results from database")
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("select 1")
+            assert cursor.fetchone()
+    except:
+        return HttpResponse("Database connectivity failed", content_type="text/plain", status=500)
 
     # check elasticsearch
-    client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-    info = client.info()
+    try:
+        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+        assert client.info()
+    except:
+        return HttpResponse("Elasticsearch connectivity failed", content_type="text/plain", status=500)
 
-    if not info:
-        raise ValueError("Could not connect to elasticsearch")
-
-    return HttpResponse("OK", content_type='text/plain', status=200)
+    return HttpResponse("Connectivity OK", content_type='text/plain', status=200)
 
 
 def check_data(request):
     # check bag
-    if Verblijfsobject.objects.count() < 10:
-        raise ValueError("Suspiciously low amount of verblijfsobjecten")
+    try:
+        assert Verblijfsobject.objects.count() > 10
+    except:
+        return HttpResponse("No BAG data found", content_type="text/plain", status=500)
 
     # check elastic
-    client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-    response = get_autocomplete_response(client, 'weesp')
-    if not response:
-        raise ValueError("No result for elastic queries")
+    try:
+        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+        assert get_autocomplete_response(client, 'weesp')
+    except:
+        return HttpResponse("Autocomplete failed", content_type="text/plain", status=500)
 
     return HttpResponse("OK", content_type='text/plain', status=200)
