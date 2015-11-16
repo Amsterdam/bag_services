@@ -121,11 +121,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     'localhost',
     '.localdomain',
     '.datalabamsterdam.nl',
-    '127.0.0.1',
-    '.datapunt.amsterdam.nl',
+    '.amsterdam.nl',
 ]
 
 REST_FRAMEWORK = dict(
