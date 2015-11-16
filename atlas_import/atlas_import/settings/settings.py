@@ -125,6 +125,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '.localdomain',
     '.datalabamsterdam.nl',
+    '.datapunt.amsterdam.nl',
     '.amsterdam.nl',
 ]
 
@@ -148,6 +149,7 @@ REST_FRAMEWORK = dict(
 CORS_ORIGIN_REGEX_WHITELIST = (
     '^(https?://)?localhost(:\d+)?$',
     '^(https?://)?.*\.datalabamsterdam\.nl$',
+    '^(https?://)?.*\.amsterdam\.nl$',
 )
 
 # Security
