@@ -64,7 +64,7 @@ def resolve_file(path, code):
         raise ValueError("No code specified")
 
     prefix = code + '_'
-    matches = [f for f in os.listdir(path) if f.startswith(prefix)]
+    matches = [f for f in os.listdir(path) if f.startswith(prefix) and f.endswith('UVA2')]
     if len(matches) != 1:
         raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
 
