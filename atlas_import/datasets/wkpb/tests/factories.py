@@ -16,6 +16,7 @@ class BeperkingCodeFactory(factory.DjangoModelFactory):
         model = models.Beperkingcode
 
     code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=20)
 
 
 class BeperkingFactory(factory.DjangoModelFactory):

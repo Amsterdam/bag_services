@@ -92,3 +92,14 @@ class RelatedSummaryField(serializers.Field):
             count=count,
             href="{}?{}={}".format(url, filter_name, parent_pk),
         )
+
+
+class DisplayField(serializers.Field):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['source'] = '*'
+        kwargs['read_only'] = True
+        super().__init__(*args, **kwargs)
+
+    def to_representation(self, value):
+        return str(value)

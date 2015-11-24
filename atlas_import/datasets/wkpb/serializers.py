@@ -5,21 +5,25 @@ from datasets.generic import rest
 
 
 class Broncode(rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.Broncode
         fields = (
             '_links',
+            '_display',
             'code',
             'omschrijving',
         )
 
 
 class BroncodeDetail(rest.HALSerializer):
+    _display = rest.DisplayField()
     documenten = rest.RelatedSummaryField()
     class Meta:
         model = models.Broncode
         fields = (
             '_links',
+            '_display',
             'code',
             'omschrijving',
             'documenten',
@@ -27,20 +31,24 @@ class BroncodeDetail(rest.HALSerializer):
 
 
 class Brondocument(rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.Brondocument
         fields = (
             '_links',
+            '_display',
             'documentnummer',
             'documentnaam',
         )
 
 
 class BrondocumentDetail(rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.Brondocument
         fields = (
             '_links',
+            '_display',
             'documentnummer',
             'bron',
             'documentnaam',
@@ -61,15 +69,18 @@ class Beperkingcode(serializers.ModelSerializer):
 
 
 class Beperking(rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.Beperking
         fields = (
             '_links',
+            '_display',
             'inschrijfnummer',
         )
 
 
 class BeperkingDetail(rest.HALSerializer):
+    _display = rest.DisplayField()
     beperkingtype = Beperkingcode()
     kadastrale_objecten = rest.RelatedSummaryField()
 
@@ -77,6 +88,7 @@ class BeperkingDetail(rest.HALSerializer):
         model = models.Beperking
         fields = (
             '_links',
+            '_display',
             'inschrijfnummer',
             'beperkingtype',
             'datum_in_werking',
@@ -85,9 +97,5 @@ class BeperkingDetail(rest.HALSerializer):
             'documenten'
         )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.context.get('format') == 'html':
-            self.fields.pop('kadastrale_objecten')
 
 

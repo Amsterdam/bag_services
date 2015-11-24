@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
-from datasets.bag.tests import factories as bag_factories
+
 from datasets.akr.tests import factories as akr_factories
+from datasets.bag.tests import factories as bag_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
 
@@ -28,7 +29,6 @@ class BrowseDatasetsTestCase(APITestCase):
         'wkpb/brondocument',
         'wkpb/broncode',
     ]
-
 
     def setUp(self):
         bag_factories.LigplaatsFactory.create()
@@ -73,3 +73,4 @@ class BrowseDatasetsTestCase(APITestCase):
 
             self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))
             self.assertEqual(detail['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
+            self.assertIn('_display', detail.data)

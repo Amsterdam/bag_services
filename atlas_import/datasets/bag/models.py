@@ -70,7 +70,7 @@ class Gemeente(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Gemeentes"
 
     def __str__(self):
-        return "{}: {}".format(self.code, self.naam)
+        return self.naam
 
 
 class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
@@ -86,7 +86,7 @@ class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mo
         verbose_name_plural = "Woonplaatsen"
 
     def __str__(self):
-        return "{}: {}".format(self.landelijk_id, self.naam)
+        return self.naam
 
 
 class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
@@ -124,7 +124,7 @@ class Stadsdeel(Hoofdklasse):
         verbose_name_plural = "Stadsdelen"
 
     def __str__(self):
-        return "{}: {}".format(self.code, self.naam)
+        return self.naam
 
 
 class Buurt(Hoofdklasse):
@@ -148,7 +148,7 @@ class Buurt(Hoofdklasse):
         verbose_name_plural = "Buurten"
 
     def __str__(self):
-        return "{}: {}".format(self.code, self.naam)
+        return self.naam
 
 
 class Bouwblok(Hoofdklasse):
@@ -217,7 +217,7 @@ class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, model
         verbose_name_plural = "Openbare Ruimtes"
 
     def __str__(self):
-        return "{}: {}".format(self.code, self.naam)
+        return self.naam
 
 
 class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
@@ -287,8 +287,13 @@ class AdresseerbaarObjectMixin(object):
     def nevenadressen(self):
         return [a for a in self.adressen.all() if not a.hoofdadres]
 
+    def __str__(self):
+        if self.hoofdadres:
+            return self.hoofdadres.adres()
+        return "adres onbekend"
 
-class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+
+class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
@@ -312,11 +317,8 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mod
         verbose_name = "Ligplaats"
         verbose_name_plural = "Ligplaatsen"
 
-    def __str__(self):
-        return "{}".format(self.id)
 
-
-class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
     dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
@@ -339,11 +341,8 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.M
         verbose_name = "Standplaats"
         verbose_name_plural = "Standplaatsen"
 
-    def __str__(self):
-        return "{}".format(self.id)
 
-
-class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model, AdresseerbaarObjectMixin):
+class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
@@ -387,9 +386,6 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mode
     class Meta:
         verbose_name = "Verblijfsobject"
         verbose_name_plural = "Verblijfsobjecten"
-
-    def __str__(self):
-        return "{}".format(self.id)
 
 
 class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
@@ -464,7 +460,7 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Buurtcombinaties"
 
     def __str__(self):
-        return "{}".format(self.code)
+        return self.naam
 
 
 class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
@@ -489,7 +485,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Gebiedsgerichtwerken"
 
     def __str__(self):
-        return "{}".format(self.code)
+        return self.naam
 
 
 class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):

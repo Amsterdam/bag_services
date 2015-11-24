@@ -1,7 +1,9 @@
 from django.db import models
+
+from datasets.akr.models import KadastraalObject as KadastraalObjectAkr
 from datasets.generic import mixins
 from datasets.lki.models import KadastraalObject as KadastraalObjectLki
-from datasets.akr.models import KadastraalObject as KadastraalObjectAkr
+
 
 # Wkpb
 
@@ -15,6 +17,9 @@ class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, mode
         verbose_name = "Beperkingcode"
         verbose_name_plural = "Beperkingcodes"
 
+    def __str__(self):
+        return self.omschrijving
+
 
 class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     """
@@ -24,6 +29,9 @@ class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Mo
     class Meta:
         verbose_name = "Broncode"
         verbose_name_plural = "Broncodes"
+
+    def __str__(self):
+        return self.omschrijving
 
 
 class Beperking(mixins.ImportStatusMixin, models.Model):
@@ -48,7 +56,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Beperkingen"
 
     def __str__(self):
-        return "Beperking({})".format(self.id)
+        return self.beperkingtype.omschrijving
 
 
 class Brondocument(mixins.ImportStatusMixin, models.Model):
@@ -74,7 +82,7 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Brondocumenten"
 
     def __str__(self):
-        return "{}".format(self.documentnummer)
+        return self.documentnaam
 
 
 class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):

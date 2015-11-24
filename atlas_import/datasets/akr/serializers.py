@@ -44,28 +44,34 @@ class SoortRecht(serializers.ModelSerializer):
 
 
 class KadastraalSubject(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
     class Meta:
         model = models.KadastraalSubject
         fields = (
             '_links',
+            '_display',
             'subjectnummer',
             'volledige_naam',
         )
 
 
 class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
     titel_of_predikaat = Titel()
     woonadres = Adres()
     postadres = Adres()
     soort_niet_natuurlijke_persoon = NietNatuurlijkePersoon()
     rechten = rest.RelatedSummaryField()
 
-    allowed_anonymous = {'_links', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
+    allowed_anonymous = {'_links', '_display', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
 
     class Meta:
         model = models.KadastraalSubject
         fields = (
             '_links',
+            '_display',
             'subjectnummer',
             'volledige_naam',
             'natuurlijk_persoon',
@@ -102,6 +108,7 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
 
 
 class KadastraalSubjectDetailWithPersonalData(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     titel_of_predikaat = Titel()
     woonadres = Adres()
     postadres = Adres()
@@ -111,6 +118,7 @@ class KadastraalSubjectDetailWithPersonalData(AkrMixin, rest.HALSerializer):
         model = models.KadastraalSubject
         fields = (
             '_links',
+            '_display',
             'subjectnummer',
             'volledige_naam',
             'natuurlijk_persoon',
@@ -135,8 +143,6 @@ class KadastraalSubjectDetailWithPersonalData(AkrMixin, rest.HALSerializer):
         )
 
 
-
-
 class SoortCultuurOnbebouwd(serializers.ModelSerializer):
     class Meta:
         model = models.SoortCultuurOnbebouwd
@@ -156,15 +162,18 @@ class BebouwingsCode(serializers.ModelSerializer):
 
 
 class ZakelijkRecht(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.ZakelijkRecht
         fields = (
             '_links',
+            '_display',
             'identificatie',
         )
 
 
 class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     soort_recht = SoortRecht()
     kadastraal_object = 'KadastraalObject'
     kadastraal_subject = 'KadastraalSubject'
@@ -173,6 +182,7 @@ class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
         model = models.ZakelijkRecht
         fields = (
             '_links',
+            '_display',
             'identificatie',
 
             'kadastraal_object',
@@ -195,23 +205,25 @@ class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
         user = request.user
         if instance.kadastraal_subject.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
             data['kadastraal_subject'] = reverse('kadastraal_subject_from_recht-detail',
-                                                 args=(instance.kadastraal_subject_id, ),
+                                                 args=(instance.kadastraal_subject_id,),
                                                  request=request)
 
         return data
 
 
-
 class KadastraalObject(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.KadastraalObject
         fields = (
             '_links',
+            '_display',
             'id',
         )
 
 
 class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
     bebouwingscode = BebouwingsCode()
 
@@ -223,6 +235,7 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
         model = models.KadastraalObject
         fields = (
             '_links',
+            '_display',
             'gemeentecode',
             'sectie',
             'perceelnummer',
@@ -250,15 +263,18 @@ class SoortStuk(serializers.ModelSerializer):
 
 
 class Transactie(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     class Meta:
         model = models.Transactie
         fields = (
             '_links',
+            '_display',
             'registercode',
         )
 
 
 class TransactieDetail(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
     soort_stuk = SoortStuk()
     rechten = rest.RelatedSummaryField()
 
@@ -266,6 +282,7 @@ class TransactieDetail(AkrMixin, rest.HALSerializer):
         model = models.Transactie
         fields = (
             '_links',
+            '_display',
             'registercode',
             'stukdeel_1',
             'stukdeel_2',

@@ -55,6 +55,9 @@ class KadastraalObject(mixins.ImportStatusMixin):
         verbose_name_plural = "Kadastrale objecten"
         ordering = ('id',)
 
+    def __str__(self):
+        return self.id
+
 
 class Titel(models.Model):
     code = models.CharField(max_length=11, primary_key=True)
@@ -164,6 +167,9 @@ class KadastraalSubject(mixins.ImportStatusMixin):
                                            self.voorvoegsel,
                                            self.geslachtsnaam) if part])
 
+    def __str__(self):
+        return self.volledige_naam()
+
 
 class SoortStuk(models.Model):
     code = models.CharField(max_length=3, primary_key=True)
@@ -195,6 +201,9 @@ class Transactie(mixins.ImportStatusMixin):
         verbose_name = "Transactie"
         verbose_name_plural = "Transacties"
 
+    def __str__(self):
+        return self.registercode
+
 
 class SoortRecht(models.Model):
     code = models.CharField(max_length=6, primary_key=True)
@@ -224,6 +233,9 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Zakelijke recht"
         verbose_name_plural = "Zakelijke rechten"
+
+    def __str__(self):
+        return "{} - {} - {}".format(self.kadastraal_subject, self.soort_recht, self.kadastraal_object)
 
 
 class KadastraalObjectVerblijfsobject(mixins.ImportStatusMixin):
