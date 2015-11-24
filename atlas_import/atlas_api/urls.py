@@ -68,6 +68,9 @@ router.register(r'atlas/typeahead', views.TypeaheadViewSet, base_name='typeahead
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 urlpatterns = [
+    url(r'^kadaster/zakelijk-recht/(?P<pk>.*?)/subject', datasets.akr.views.KadastraalSubjectFromRechtView.as_view(),
+        name='kadastraal_subject_from_recht-detail'),
+
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),
 ]

@@ -1,3 +1,5 @@
+from rest_framework import generics
+
 from datasets.generic import rest
 from . import models, serializers
 
@@ -21,6 +23,11 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
                                        'postadres', 'postadres__land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
+
+
+class KadastraalSubjectFromRechtView(generics.RetrieveAPIView):
+    queryset = models.KadastraalSubject.objects.all()
+    serializer_class = serializers.KadastraalSubjectDetailWithPersonalData
 
 
 class KadastraalObjectViewSet(rest.AtlasViewSet):

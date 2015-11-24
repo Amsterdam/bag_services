@@ -1,7 +1,5 @@
-import json
 from django.contrib.auth.models import User, Permission
 
-from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from datasets.akr.tests import factories
@@ -59,3 +57,27 @@ class SensitiveDetailsTestCase(APITestCase):
         self.assertIsNotNone(response['woonadres'])
         self.assertIsNotNone(response['postadres'])
 
+    def test_ingelogd_zakelijk_recht_verwijst_naar_hoofd_view(self):
+        self.client.login(username='authorized', password='pass')
+        response = self.client.get('/api/kadaster/zakelijk-recht/{}.json'.format(self.natuurlijk_recht.pk)).data
+
+        subj = response['kadastraal_subject']
+        self.assertEqual(subj, 'http://testserver/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk))
+
+    def test_uitgelogd_zakelijk_recht_niet_natuurlijk_verwijst_naar_hoofd_view(self):
+        response = self.client.get('/api/kadaster/zakelijk-recht/{}.json'.format(self.niet_natuurlijk_recht.pk)).data
+
+        subj = response['kadastraal_subject']
+        self.assertEqual(subj, 'http://testserver/api/kadaster/subject/{}.json'.format(self.niet_natuurlijk.pk))
+
+    def test_uitgelogd_zakelijk_recht_natuurlijk_verwijst_naar_subresource(self):
+        response = self.client.get('/api/kadaster/zakelijk-recht/{}/'.format(self.natuurlijk_recht.pk)).data
+
+        subj = response['kadastraal_subject']
+        self.assertEqual(subj, 'http://testserver/api/kadaster/zakelijk-recht/{}/subject'.format(self.natuurlijk.pk))
+
+    def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
+        response = self.client.get('/api/kadaster/zakelijk-recht/{}/subject.json'.format(self.natuurlijk.pk)).data
+        self.assertIsNotNone(response['woonadres'])
+        self.assertIsNotNone(response['postadres'])
+        self.assertNotIn('rechten', response)

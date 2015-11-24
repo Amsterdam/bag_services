@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from datasets.generic import rest
 from . import models
@@ -100,6 +101,42 @@ class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
         return data
 
 
+class KadastraalSubjectDetailWithPersonalData(AkrMixin, rest.HALSerializer):
+    titel_of_predikaat = Titel()
+    woonadres = Adres()
+    postadres = Adres()
+    soort_niet_natuurlijke_persoon = NietNatuurlijkePersoon()
+
+    class Meta:
+        model = models.KadastraalSubject
+        fields = (
+            '_links',
+            'subjectnummer',
+            'volledige_naam',
+            'natuurlijk_persoon',
+            'titel_of_predikaat',
+            'geslachtsaanduiding',
+            'geslachtsnaam',
+            'diacritisch',
+            'naam_niet_natuurlijke_persoon',
+            'soort_subject',
+            'soort_niet_natuurlijke_persoon',
+            'voorletters',
+            'voornamen',
+            'voorvoegsel',
+            'geboortedatum',
+            'geboorteplaats',
+            'overleden',
+            'overlijdensdatum',
+            'zetel',
+            'woonadres',
+            'postadres',
+            'a_nummer',
+        )
+
+
+
+
 class SoortCultuurOnbebouwd(serializers.ModelSerializer):
     class Meta:
         model = models.SoortCultuurOnbebouwd
@@ -150,6 +187,19 @@ class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
             'einde_filiatie',
             'sluimerend',
         )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
+            data['kadastraal_subject'] = reverse('kadastraal_subject_from_recht-detail',
+                                                 args=(instance.kadastraal_subject_id, ),
+                                                 request=request)
+
+        return data
+
 
 
 class KadastraalObject(AkrMixin, rest.HALSerializer):
