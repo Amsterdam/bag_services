@@ -59,12 +59,12 @@ def uva_reader(source):
         yield (_wrap_uva_row(r, headers) for r in rows)
 
 
-def resolve_file(path, code):
+def resolve_file(path, code, extension='UVA2'):
     if not code:
         raise ValueError("No code specified")
 
     prefix = code + '_'
-    matches = [f for f in os.listdir(path) if f.startswith(prefix) and f.endswith('UVA2')]
+    matches = [f for f in os.listdir(path) if f.startswith(prefix) and f.endswith(extension)]
     if len(matches) != 1:
         raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
 
@@ -106,3 +106,16 @@ def process_uva2(path, file_code, process_row_callback):
     source = resolve_file(path, file_code)
     with uva_reader(source) as rows:
         return [result for result in (process_row_callback(r) for r in rows) if result]
+
+
+def read_landelijk_id_mapping(path, file_code):
+    source = resolve_file(path, file_code, extension='dat')
+    result = dict()
+    with open(source) as f:
+        reader = csv.reader(f, delimiter=';')
+        next(reader)    # skip header
+        for row in reader:
+            if len(row) >= 2:
+                result[row[0]] = row[1]
+
+    return result

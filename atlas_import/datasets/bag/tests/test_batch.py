@@ -331,7 +331,7 @@ class ImportLigTest(TaskTestCase):
         self.assertEqual(len(imported), 60)
 
         l = models.Ligplaats.objects.get(pk='03630001028467')
-        self.assertEquals(l.landelijk_id, '03630001028467')
+        self.assertEquals(l.landelijk_id, '0363020001028467')
         self.assertEquals(l.vervallen, False)
         self.assertIsNone(l.bron)
         self.assertEquals(l.status.code, '33')
@@ -395,6 +395,7 @@ class ImportOprTest(TaskTestCase):
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
         self.assertEquals(o.id, '03630000002701')
+        self.assertEquals(o.landelijk_id, '0363300000002701')
         self.assertEquals(o.type, models.OpenbareRuimte.TYPE_WEG)
         self.assertEquals(o.naam, 'Amstel')
         self.assertEquals(o.code, '02186')
@@ -425,7 +426,7 @@ class ImportStaTest(TaskTestCase):
         self.assertEqual(len(imported), 51)
 
         l = models.Standplaats.objects.get(pk='03630001002936')
-        self.assertEquals(l.landelijk_id, '03630001002936')
+        self.assertEquals(l.landelijk_id, '0363030001002936')
         self.assertEquals(l.vervallen, False)
         self.assertIsNone(l.bron)
         self.assertEquals(l.status.code, '37')
@@ -465,7 +466,7 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(len(imported), 96)
 
         v = models.Verblijfsobject.objects.get(pk='03630000648915')
-        self.assertEqual(v.landelijk_id, '03630000648915')
+        self.assertEqual(v.landelijk_id, '0363010000648915')
         self.assertEqual(v.geometrie, Point(121466, 493032))
         self.assertEqual(v.gebruiksdoel_code, '1010')
         self.assertEqual(v.gebruiksdoel_omschrijving, 'BEST-woning')
@@ -518,7 +519,7 @@ class ImportNumTest(TaskTestCase):
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
         self.assertEquals(n.id, '03630000512845')
-        self.assertEquals(n.landelijk_id, '03630000512845')
+        self.assertEquals(n.landelijk_id, '0363200000512845')
         self.assertEquals(n.huisnummer, 26)
         self.assertEquals(n.huisletter, 'G')
         self.assertEquals(n.huisnummer_toevoeging, '')
@@ -590,7 +591,7 @@ class ImportPndTest(TaskTestCase):
         self.assertEquals(len(imported), 79)
 
         p = models.Pand.objects.get(pk='03630013002931')
-        self.assertEqual(p.landelijk_id, '03630013002931')
+        self.assertEqual(p.landelijk_id, '0363100012073178')
         self.assertEqual(p.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEqual(p.document_nummer, 'GV00000406')
         self.assertEqual(p.bouwjaar, 1993)

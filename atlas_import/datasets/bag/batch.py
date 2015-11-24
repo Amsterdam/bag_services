@@ -342,6 +342,7 @@ class ImportOprTask(batch.BasicTask):
         self.bronnen = set()
         self.statussen = set()
         self.woonplaatsen = set()
+        self.landelijke_ids = dict()
 
     def before(self):
         database.clear_models(models.OpenbareRuimte)
@@ -355,6 +356,7 @@ class ImportOprTask(batch.BasicTask):
         self.woonplaatsen.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
         openbare_ruimtes = uva2.process_uva2(self.path, "OPR", self.process_row)
         models.OpenbareRuimte.objects.bulk_create(openbare_ruimtes, batch_size=database.BATCH_SIZE)
 
@@ -384,7 +386,7 @@ class ImportOprTask(batch.BasicTask):
 
         return models.OpenbareRuimte(
             pk=pk,
-            landelijk_id=pk,
+            landelijk_id=self.landelijke_ids.get(pk),
             type=r['TypeOpenbareRuimteDomein'],
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
@@ -414,6 +416,7 @@ class ImportNumTask(batch.BasicTask):
         self.verblijfsobjecten = set()
 
         self.nummeraanduidingen = dict()
+        self.landelijke_ids = dict()
 
     def before(self):
         database.clear_models(models.Nummeraanduiding)
@@ -437,6 +440,7 @@ class ImportNumTask(batch.BasicTask):
         self.nummeraanduidingen.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
         self.nummeraanduidingen = dict(uva2.process_uva2(self.path, "NUM", self.process_num_row))
         uva2.process_uva2(self.path, "NUMLIGHFD", self.process_numlig_row)
         uva2.process_uva2(self.path, "NUMSTAHFD", self.process_numsta_row)
@@ -472,7 +476,7 @@ class ImportNumTask(batch.BasicTask):
 
         return pk, models.Nummeraanduiding(
             pk=pk,
-            landelijk_id=r['IdentificatiecodeNummeraanduiding'],
+            landelijk_id=self.landelijke_ids.get(r['IdentificatiecodeNummeraanduiding']),
             huisnummer=r['Huisnummer'],
             huisletter=r['Huisletter'],
             huisnummer_toevoeging=r['Huisnummertoevoeging'],
@@ -589,6 +593,7 @@ class ImportLigTask(batch.BasicTask):
         self.bronnen = set()
         self.statussen = set()
         self.buurten = set()
+        self.landelijke_ids = dict()
 
         self.ligplaatsen = dict()
 
@@ -606,6 +611,8 @@ class ImportLigTask(batch.BasicTask):
         self.ligplaatsen.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "LIG")
+
         self.ligplaatsen = dict(uva2.process_uva2(self.bag_path, "LIG", self.process_row))
         geo.process_wkt(self.wkt_path, 'BAG_LIGPLAATS_GEOMETRIE.dat', self.process_wkt_row)
 
@@ -637,7 +644,7 @@ class ImportLigTask(batch.BasicTask):
 
         return pk, models.Ligplaats(
             pk=pk,
-            landelijk_id=r['Ligplaatsidentificatie'],
+            landelijk_id=self.landelijke_ids.get(r['Ligplaatsidentificatie']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieLigplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieLigplaats']),
@@ -664,6 +671,7 @@ class ImportStaTask(batch.BasicTask):
         self.bronnen = set()
         self.statussen = set()
         self.buurten = set()
+        self.landelijke_ids = dict()
 
         self.standplaatsen = dict()
 
@@ -680,6 +688,7 @@ class ImportStaTask(batch.BasicTask):
         self.standplaatsen.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "STA")
         self.standplaatsen = dict(uva2.process_uva2(self.bag_path, "STA", self.process_row))
         geo.process_wkt(self.wkt_path, "BAG_STANDPLAATS_GEOMETRIE.dat", self.process_wkt_row)
 
@@ -711,7 +720,7 @@ class ImportStaTask(batch.BasicTask):
 
         return pk, models.Standplaats(
             pk=pk,
-            landelijk_id=r['Standplaatsidentificatie'],
+            landelijk_id=self.landelijke_ids.get(r['Standplaatsidentificatie']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieStandplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieStandplaats']),
@@ -744,6 +753,7 @@ class ImportVboTask(batch.BasicTask):
         self.toegang = set()
         self.statussen = set()
         self.buurten = set()
+        self.landelijke_ids = dict()
 
     def before(self):
         database.clear_models(models.Verblijfsobject)
@@ -771,6 +781,7 @@ class ImportVboTask(batch.BasicTask):
         self.buurten.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
 
@@ -846,7 +857,7 @@ class ImportVboTask(batch.BasicTask):
 
         return models.Verblijfsobject(
             pk=pk,
-            landelijk_id=(r['Verblijfsobjectidentificatie']),
+            landelijk_id=self.landelijke_ids.get(r['Verblijfsobjectidentificatie']),
             geometrie=geo,
             gebruiksdoel_code=(r['GebruiksdoelVerblijfsobjectDomein']),
             gebruiksdoel_omschrijving=(r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
@@ -885,6 +896,7 @@ class ImportPndTask(batch.BasicTask):
         self.bag_path = bag_path
         self.statussen = set()
         self.panden = dict()
+        self.landelijke_ids = dict()
 
     def before(self):
         database.clear_models(models.Pand)
@@ -895,6 +907,7 @@ class ImportPndTask(batch.BasicTask):
         self.panden.clear()
 
     def process(self):
+        self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "PND")
         self.panden = dict(uva2.process_uva2(self.bag_path, "PND", self.process_row))
         geo.process_wkt(self.wkt_path, "BAG_PAND_GEOMETRIE.dat", self.process_wkt_row)
 
@@ -916,7 +929,7 @@ class ImportPndTask(batch.BasicTask):
 
         return pk, models.Pand(
             pk=pk,
-            landelijk_id=(r['Pandidentificatie']),
+            landelijk_id=self.landelijke_ids.get(r['Pandidentificatie']),
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatiePand']),
             document_nummer=(r['DocumentnummerMutatiePand']),
             bouwjaar=uva2.uva_nummer(r['OorspronkelijkBouwjaarPand']),

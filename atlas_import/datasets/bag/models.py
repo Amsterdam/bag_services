@@ -299,7 +299,7 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mod
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    landelijk_id = models.CharField(max_length=16, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
@@ -326,7 +326,7 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.M
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    landelijk_id = models.CharField(max_length=16, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
