@@ -324,7 +324,7 @@ class ImportWplTask(batch.BasicTask):
 
         return models.Woonplaats(
             pk=pk,
-            code=r['Woonplaatsidentificatie'],
+            landelijk_id=r['Woonplaatsidentificatie'],
             naam=r['Woonplaatsnaam'],
             document_nummer=r['DocumentnummerMutatieWoonplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieWoonplaats']),
@@ -384,6 +384,7 @@ class ImportOprTask(batch.BasicTask):
 
         return models.OpenbareRuimte(
             pk=pk,
+            landelijk_id=pk,
             type=r['TypeOpenbareRuimteDomein'],
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
@@ -471,7 +472,7 @@ class ImportNumTask(batch.BasicTask):
 
         return pk, models.Nummeraanduiding(
             pk=pk,
-            code=r['IdentificatiecodeNummeraanduiding'],
+            landelijk_id=r['IdentificatiecodeNummeraanduiding'],
             huisnummer=r['Huisnummer'],
             huisletter=r['Huisletter'],
             huisnummer_toevoeging=r['Huisnummertoevoeging'],
@@ -636,7 +637,7 @@ class ImportLigTask(batch.BasicTask):
 
         return pk, models.Ligplaats(
             pk=pk,
-            identificatie=r['Ligplaatsidentificatie'],
+            landelijk_id=r['Ligplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieLigplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieLigplaats']),
@@ -710,7 +711,7 @@ class ImportStaTask(batch.BasicTask):
 
         return pk, models.Standplaats(
             pk=pk,
-            identificatie=r['Standplaatsidentificatie'],
+            landelijk_id=r['Standplaatsidentificatie'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieStandplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieStandplaats']),
@@ -845,7 +846,7 @@ class ImportVboTask(batch.BasicTask):
 
         return models.Verblijfsobject(
             pk=pk,
-            identificatie=(r['Verblijfsobjectidentificatie']),
+            landelijk_id=(r['Verblijfsobjectidentificatie']),
             geometrie=geo,
             gebruiksdoel_code=(r['GebruiksdoelVerblijfsobjectDomein']),
             gebruiksdoel_omschrijving=(r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
@@ -915,7 +916,7 @@ class ImportPndTask(batch.BasicTask):
 
         return pk, models.Pand(
             pk=pk,
-            identificatie=(r['Pandidentificatie']),
+            landelijk_id=(r['Pandidentificatie']),
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatiePand']),
             document_nummer=(r['DocumentnummerMutatiePand']),
             bouwjaar=uva2.uva_nummer(r['OorspronkelijkBouwjaarPand']),

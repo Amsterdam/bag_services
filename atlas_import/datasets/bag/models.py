@@ -75,7 +75,7 @@ class Gemeente(mixins.ImportStatusMixin, models.Model):
 
 class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
-    code = models.CharField(max_length=4, unique=True)
+    landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
     naam_ptt = models.CharField(max_length=18, null=True)
     vervallen = models.BooleanField(default=False)
@@ -86,7 +86,7 @@ class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mo
         verbose_name_plural = "Woonplaatsen"
 
     def __str__(self):
-        return "{}: {}".format(self.code, self.naam)
+        return "{}: {}".format(self.landelijk_id, self.naam)
 
 
 class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
@@ -200,6 +200,7 @@ class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, model
     )
 
     id = models.CharField(max_length=14, primary_key=True)
+    landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
     code = models.CharField(max_length=5, unique=True)
@@ -242,7 +243,7 @@ class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mod
     )
 
     id = models.CharField(max_length=14, primary_key=True)
-    code = models.CharField(max_length=14, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True)
     huisnummer = models.IntegerField()
     huisletter = models.CharField(max_length=1, null=True)
     huisnummer_toevoeging = models.CharField(max_length=4, null=True)
@@ -298,7 +299,7 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Mod
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    identificatie = models.CharField(max_length=14, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
@@ -325,7 +326,7 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.M
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    identificatie = models.CharField(max_length=14, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
@@ -353,7 +354,7 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, mode
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    identificatie = models.CharField(max_length=14, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True)
     gebruiksdoel_code = models.CharField(max_length=4, null=True)
     gebruiksdoel_omschrijving = models.CharField(max_length=150, null=True)
     oppervlakte = models.PositiveIntegerField(null=True)
@@ -400,7 +401,7 @@ class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     """
 
     id = models.CharField(max_length=14, primary_key=True)
-    identificatie = models.CharField(max_length=14, unique=True)
+    landelijk_id = models.CharField(max_length=16, unique=True)
     bouwjaar = models.PositiveIntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)

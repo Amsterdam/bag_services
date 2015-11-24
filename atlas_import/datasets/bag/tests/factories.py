@@ -14,7 +14,7 @@ class LigplaatsFactory(factory.DjangoModelFactory):
         model = models.Ligplaats
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    identificatie = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
 
 
 class StandplaatsFactory(factory.DjangoModelFactory):
@@ -22,7 +22,7 @@ class StandplaatsFactory(factory.DjangoModelFactory):
         model = models.Standplaats
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    identificatie = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
 
 
 class VerblijfsobjectFactory(factory.DjangoModelFactory):
@@ -30,7 +30,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
         model = models.Verblijfsobject
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    identificatie = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
 
 
 class PandFactory(factory.DjangoModelFactory):
@@ -38,6 +38,7 @@ class PandFactory(factory.DjangoModelFactory):
         model = models.Pand
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
 
 
 class GemeenteFactory(factory.DjangoModelFactory):
@@ -52,10 +53,10 @@ class GemeenteFactory(factory.DjangoModelFactory):
 class WoonplaatsFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Woonplaats
-        django_get_or_create = ('code',)
+        django_get_or_create = ('landelijk_id',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=4, chars=string.digits)
     gemeente = factory.SubFactory(GemeenteFactory)
 
 
@@ -65,6 +66,7 @@ class OpenbareRuimteFactory(factory.DjangoModelFactory):
         django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     code = fuzzy.FuzzyText(length=5, chars=string.digits)
     woonplaats = factory.SubFactory(WoonplaatsFactory)
     naam = factory.LazyAttribute(lambda o: f.street_name())
@@ -75,7 +77,7 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
         model = models.Nummeraanduiding
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     huisnummer = factory.LazyAttribute(lambda o: f.building_number())
     openbare_ruimte = factory.SubFactory(OpenbareRuimteFactory)
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)

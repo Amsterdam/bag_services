@@ -55,7 +55,7 @@ class Woonplaats(BagMixin, rest.HALSerializer):
         model = models.Woonplaats
         fields = (
             '_links',
-            'code',
+            'landelijk_id',
         )
 
 
@@ -66,7 +66,7 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
         model = models.Woonplaats
         fields = (
             '_links',
-            'code',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -83,7 +83,7 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
         model = models.OpenbareRuimte
         fields = (
             '_links',
-            'code',
+            'landelijk_id',
         )
 
 
@@ -97,6 +97,7 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
+            'landelijk_id',
             'code',
             'date_modified',
             'document_mutatie',
@@ -119,7 +120,7 @@ class Ligplaats(BagMixin, rest.HALSerializer):
         model = models.Ligplaats
         fields = (
             '_links',
-            'identificatie',
+            'landelijk_id',
         )
 
 
@@ -137,7 +138,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
-            'identificatie',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -156,7 +157,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
         model = models.Nummeraanduiding
         fields = (
             '_links',
-            'code',
+            'landelijk_id',
         )
 
 
@@ -169,7 +170,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
-            'code',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -196,7 +197,7 @@ class Standplaats(BagMixin, rest.HALSerializer):
         model = models.Standplaats
         fields = (
             '_links',
-            'identificatie',
+            'landelijk_id',
         )
 
 
@@ -214,7 +215,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
-            'identificatie',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -237,7 +238,7 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
         model = models.Verblijfsobject
         fields = (
             '_links',
-            'identificatie',
+            'landelijk_id',
         )
 
 
@@ -266,7 +267,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
-            'identificatie',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -328,7 +329,7 @@ class Pand(BagMixin, rest.HALSerializer):
         model = models.Pand
         fields = (
             '_links',
-            'identificatie',
+            'landelijk_id',
         )
 
 
@@ -341,7 +342,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             'id',
-            'identificatie',
+            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
