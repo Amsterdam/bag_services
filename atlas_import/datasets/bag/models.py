@@ -73,7 +73,8 @@ class Gemeente(mixins.ImportStatusMixin, models.Model):
         return self.naam
 
 
-class Woonplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
+class Woonplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                 mixins.DocumentStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
@@ -172,7 +173,8 @@ class Bouwblok(Hoofdklasse):
         return "{}".format(self.code)
 
 
-class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
+class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                     mixins.DocumentStatusMixin, models.Model):
     """
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorziene
     buitenruimte die binnen één woonplaats is gelegen.
@@ -220,7 +222,8 @@ class OpenbareRuimte(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, model
         return self.naam
 
 
-class Nummeraanduiding(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
+class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                       mixins.DocumentStatusMixin, models.Model):
     """
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
     zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
@@ -293,7 +296,8 @@ class AdresseerbaarObjectMixin(object):
         return "adres onbekend"
 
 
-class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
@@ -318,7 +322,8 @@ class Ligplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, Adresseerb
         verbose_name_plural = "Ligplaatsen"
 
 
-class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                  mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
     dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
@@ -342,7 +347,8 @@ class Standplaats(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, Adressee
         verbose_name_plural = "Standplaatsen"
 
 
-class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
+                      mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
@@ -360,6 +366,7 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, Adre
     bouwlaag_toegang = models.IntegerField(null=True)
     status_coordinaat_code = models.CharField(max_length=3, null=True)
     status_coordinaat_omschrijving = models.CharField(max_length=150, null=True)
+    verhuurbare_eenheden = models.PositiveIntegerField(null=True)
     bouwlagen = models.PositiveIntegerField(null=True)
     type_woonobject_code = models.CharField(max_length=2, null=True)
     type_woonobject_omschrijving = models.CharField(max_length=150, null=True)
@@ -388,7 +395,8 @@ class Verblijfsobject(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, Adre
         verbose_name_plural = "Verblijfsobjecten"
 
 
-class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
+class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+           models.Model):
     """
     Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die direct
     en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
@@ -404,6 +412,7 @@ class Pand(mixins.ImportStatusMixin, mixins.DocumentStatusMixin, models.Model):
     pandnummer = models.CharField(max_length=10, null=True)
     vervallen = models.BooleanField(default=False)
     status = models.ForeignKey(Status, null=True)
+    bouwblok = models.ForeignKey(Bouwblok, null=True)
 
     geometrie = geo.PolygonField(null=True, srid=28992)
 

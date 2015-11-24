@@ -2,7 +2,6 @@ import logging
 import os
 
 from django.conf import settings
-
 from django.contrib.gis.geos import Point
 
 from batch import batch
@@ -331,6 +330,9 @@ class ImportWplTask(batch.BasicTask):
             naam_ptt=r['WoonplaatsPTTSchrijfwijze'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             gemeente_id=gemeente_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
 
@@ -399,6 +401,9 @@ class ImportOprTask(batch.BasicTask):
             bron_id=bron_id,
             status_id=status_id,
             woonplaats_id=woonplaats_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
 
@@ -489,6 +494,9 @@ class ImportNumTask(batch.BasicTask):
             bron_id=bron_id,
             status_id=status_id,
             openbare_ruimte_id=openbare_ruimte_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
     def process_numlig_row(self, r):
@@ -651,6 +659,9 @@ class ImportLigTask(batch.BasicTask):
             bron_id=bron_id,
             status_id=status_id,
             buurt_id=buurt_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
     def process_wkt_row(self, wkt_id, geometrie):
@@ -727,6 +738,9 @@ class ImportStaTask(batch.BasicTask):
             bron_id=bron_id,
             status_id=status_id,
             buurt_id=buurt_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
     def process_wkt_row(self, wkt_id, geometrie):
@@ -867,6 +881,7 @@ class ImportVboTask(batch.BasicTask):
             bouwlaag_toegang=uva2.uva_nummer(r['Bouwlaagtoegang']),
             status_coordinaat_code=(r['StatusCoordinaatDomein']),
             status_coordinaat_omschrijving=(r['OmschrijvingCoordinaatDomein']),
+            verhuurbare_eenheden=r['AantalVerhuurbareEenheden'] or None,
             bouwlagen=uva2.uva_nummer(r['AantalBouwlagen']),
             type_woonobject_code=(r['TypeWoonobjectDomein']),
             type_woonobject_omschrijving=(r['OmschrijvingTypeWoonobjectDomein']),
@@ -885,6 +900,9 @@ class ImportVboTask(batch.BasicTask):
             # ?=(r['VBOOVR/OVR/Code']),
             status_id=status_id,
             buurt_id=buurt_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
 
@@ -895,12 +913,14 @@ class ImportPndTask(batch.BasicTask):
         self.wkt_path = wkt_path
         self.bag_path = bag_path
         self.statussen = set()
+        self.bouwblokken = set()
         self.panden = dict()
         self.landelijke_ids = dict()
 
     def before(self):
         database.clear_models(models.Pand)
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
+        self.bouwblokken = set(models.Bouwblok.objects.values_list("pk", flat=True))
 
     def after(self):
         self.statussen.clear()
@@ -922,10 +942,15 @@ class ImportPndTask(batch.BasicTask):
 
         pk = r['sleutelverzendend']
         status_id = r['PNDSTS/STS/Code'] or None
+        bbk_id = r['PNDBBK/BBK/sleutelVerzendend'] or None
 
         if status_id and status_id not in self.statussen:
-            log.warning('Ligplaats {} references non-existing status {}; ignoring'.format(pk, status_id))
+            log.warning('Pand {} references non-existing status {}; ignoring'.format(pk, status_id))
             status_id = None
+
+        if bbk_id and bbk_id not in self.bouwblokken:
+            log.warning('Pand {} references non-existing bouwblok {}; ignoring'.format(pk, bbk_id))
+            bbk_id = None
 
         return pk, models.Pand(
             pk=pk,
@@ -938,6 +963,10 @@ class ImportPndTask(batch.BasicTask):
             pandnummer=(r['Pandnummer']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             status_id=status_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            mutatie_gebruiker=r['Mutatie-gebruiker'],
+            bouwblok_id=bbk_id,
         )
 
     def process_wkt_row(self, wkt_id, geometrie):

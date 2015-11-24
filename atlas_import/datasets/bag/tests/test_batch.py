@@ -338,6 +338,9 @@ class ImportLigTest(TaskTestCase):
         self.assertEquals(l.buurt.id, '03630000000491')
         self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEquals(l.document_nummer, 'GV00000407')
+        self.assertEquals(l.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertIsNone(l.einde_geldigheid)
+        self.assertEquals(l.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
@@ -373,6 +376,9 @@ class ImportWplTest(TaskTestCase):
         self.assertEquals(w.naam_ptt, 'AMSTERDAM')
         self.assertEquals(w.vervallen, False)
         self.assertEquals(w.gemeente.id, '03630000000000')
+        self.assertEquals(w.begin_geldigheid, datetime.date(2014, 1, 10))
+        self.assertIsNone(w.einde_geldigheid)
+        self.assertEquals(w.mutatie_gebruiker, 'DBI')
 
 
 class ImportOprTest(TaskTestCase):
@@ -408,6 +414,9 @@ class ImportOprTest(TaskTestCase):
         self.assertIsNone(o.bron)
         self.assertEquals(o.status.code, '35')
         self.assertEquals(o.woonplaats.id, '03630022796658')
+        self.assertEquals(o.begin_geldigheid, datetime.date(2014, 1, 10))
+        self.assertEquals(o.einde_geldigheid, None)
+        self.assertEquals(o.mutatie_gebruiker, 'DBI')
 
 
 class ImportStaTest(TaskTestCase):
@@ -433,6 +442,9 @@ class ImportStaTest(TaskTestCase):
         self.assertIsNone(l.buurt)
         self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEquals(l.document_nummer, 'GV00000407')
+        self.assertEquals(l.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertIsNone(l.einde_geldigheid)
+        self.assertEquals(l.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
@@ -494,6 +506,10 @@ class ImportVboTest(TaskTestCase):
         # todo: opvoer
         self.assertEqual(v.status.code, '21')
         self.assertIsNone(v.buurt)
+        self.assertEqual(v.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertIsNone(v.einde_geldigheid)
+        self.assertEqual(v.verhuurbare_eenheden, None)
+        self.assertEqual(v.mutatie_gebruiker, 'DBI')
 
 
 class ImportNumTest(TaskTestCase):
@@ -531,6 +547,9 @@ class ImportNumTest(TaskTestCase):
         self.assertIsNone(n.bron)
         self.assertEquals(n.status.code, '16')
         self.assertEquals(n.openbare_ruimte.id, '03630000003910')
+        self.assertEquals(n.begin_geldigheid, datetime.date(2005, 5, 25))
+        self.assertIsNone(n.einde_geldigheid)
+        self.assertEquals(n.mutatie_gebruiker, 'DBI')
 
     def test_num_lig_hfd_import(self):
         self.run_task()
@@ -579,6 +598,7 @@ class ImportPndTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportStsTask(BAG),
+            batch.ImportBbkTask(GEBIEDEN, GEBIEDEN_SHP),
         ]
 
     def task(self):
@@ -600,6 +620,13 @@ class ImportPndTest(TaskTestCase):
         self.assertEqual(p.pandnummer, '')
         self.assertEqual(p.vervallen, False)
         self.assertEqual(p.status.code, '31')
+        self.assertEqual(p.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertIsNone(p.einde_geldigheid)
+        self.assertEqual(p.mutatie_gebruiker, 'DBI')
+        self.assertIsNone(p.bouwblok)
+
+        p = models.Pand.objects.get(pk='03630012977654')
+        self.assertEquals(p.bouwblok.id, '03630012102404')
 
     def test_import_geo(self):
         self.run_task()

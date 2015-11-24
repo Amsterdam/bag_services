@@ -71,10 +71,14 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
 
             'naam',
             'naam_ptt',
@@ -112,6 +116,9 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -161,6 +168,9 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -198,6 +208,9 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
             'status',
             'bron',
             'adres',
@@ -248,6 +261,9 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -305,6 +321,9 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'date_modified',
             'document_mutatie',
             'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -313,6 +332,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'oppervlakte',
             'bouwlaag_toegang',
             'status_coordinaat',
+            'verhuurbare_eenheden',
             'bouwlagen',
             'type_woonobject',
             'woningvoorraad',
@@ -395,6 +415,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
+            'bouwblok',
         )
 
 

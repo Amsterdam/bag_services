@@ -17,6 +17,21 @@ class DocumentStatusMixin(models.Model):
         abstract = True
 
 
+class GeldigheidMixin(models.Model):
+    begin_geldigheid = models.DateField(null=True)
+    einde_geldigheid = models.DateField(null=True)
+
+    class Meta:
+        abstract = True
+
+
+class MutatieGebruikerMixin(models.Model):
+    mutatie_gebruiker = models.CharField(max_length=30, null=True)
+
+    class Meta:
+        abstract = True
+
+
 class CodeOmschrijvingMixin(models.Model):
     code = models.CharField(max_length=4, primary_key=True)
     omschrijving = models.CharField(max_length=150, null=True)
