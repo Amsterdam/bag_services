@@ -128,7 +128,7 @@ class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
         return self.naam
 
 
-class Buurt(Hoofdklasse):
+class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
     elementen.
@@ -137,12 +137,14 @@ class Buurt(Hoofdklasse):
     """
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=3, unique=True)
+    vollcode = models.CharField(max_length=4)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
     ingang_cyclus = models.DateField(null=True)
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
+    buurtcombinatie = models.ForeignKey('Buurtcombinatie', related_name='buurten', null=True)
 
     class Meta:
         verbose_name = "Buurt"

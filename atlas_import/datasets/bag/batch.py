@@ -186,14 +186,17 @@ class ImportBrtTask(batch.BasicTask):
         self.uva_path = uva_path
         self.stadsdelen = set()
         self.buurten = dict()
+        self.buurtcombinaties = dict()
 
     def before(self):
         database.clear_models(models.Buurt)
         self.stadsdelen = set(models.Stadsdeel.objects.values_list("pk", flat=True))
+        self.buurtcombinaties = dict(models.Buurtcombinatie.objects.values_list("code", "pk"))
 
     def after(self):
         self.stadsdelen.clear()
         self.buurten.clear()
+        self.buurtcombinaties.clear()
 
     def process(self):
         self.buurten = dict(uva2.process_uva2(self.uva_path, "BRT", self.process_row))
@@ -217,6 +220,12 @@ class ImportBrtTask(batch.BasicTask):
             return None
 
         code = r['Buurtcode']
+        bc_code = code[:-1]
+        bc_id = self.buurtcombinaties.get(bc_code)
+
+        if not bc_id:
+            log.warn("Buurt {} references non-existing buurtcombinatie {}; ignoring".format(pk, bc_code))
+
         return code, models.Buurt(
             pk=pk,
             code=code,
@@ -226,15 +235,20 @@ class ImportBrtTask(batch.BasicTask):
             ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             stadsdeel_id=stadsdeel_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            buurtcombinatie_id=bc_id,
         )
 
     def process_feature(self, feat):
-        code = feat.get('VOLLCODE')[1:]
+        vollcode = feat.get('VOLLCODE')
+        code = vollcode[1:]
         if code not in self.buurten:
             log.warning('Buurt/SHP {} references non-existing buurt; skipping'.format(code))
             return
 
         self.buurten[code].geometrie = geo.get_multipoly(feat.geom.wkt)
+        self.buurten[code].vollcode = vollcode
 
 
 class ImportBbkTask(batch.BasicTask):

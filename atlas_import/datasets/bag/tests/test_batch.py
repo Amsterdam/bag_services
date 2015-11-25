@@ -198,6 +198,7 @@ class ImportBrtTest(TaskTestCase):
         return [
             batch.ImportGmeTask(GEBIEDEN),
             batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
         ]
 
     def task(self):
@@ -213,10 +214,14 @@ class ImportBrtTest(TaskTestCase):
 
         self.assertEquals(b.id, '03630000000487')
         self.assertEquals(b.code, '92c')
+        self.assertEquals(b.vollcode, 'T92c')
         self.assertEquals(b.naam, 'Amstel III deel C/D Noord')
         self.assertEquals(b.vervallen, False)
         self.assertEquals(b.stadsdeel.id, '03630000000016')
         self.assertIsNotNone(b.geometrie)
+        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertIsNone(b.einde_geldigheid)
+        self.assertEquals(b.buurtcombinatie.code, '92')
 
 
 class ImportBbkTest(TaskTestCase):
