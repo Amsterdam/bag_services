@@ -104,6 +104,7 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
     status = Status()
     type = serializers.CharField(source='get_type_display')
     adressen = rest.RelatedSummaryField()
+    woonplaats = Woonplaats()
 
     class Meta:
         model = models.OpenbareRuimte
