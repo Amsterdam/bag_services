@@ -204,8 +204,8 @@ class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
         request = self.context['request']
         user = request.user
         if instance.kadastraal_subject.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
-            data['kadastraal_subject'] = reverse('kadastraal_subject_from_recht-detail',
-                                                 args=(instance.kadastraal_subject_id,),
+            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+                                                 args=(instance.id,),
                                                  request=request)
 
         return data

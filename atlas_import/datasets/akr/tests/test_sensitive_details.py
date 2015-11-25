@@ -74,10 +74,10 @@ class SensitiveDetailsTestCase(APITestCase):
         response = self.client.get('/api/kadaster/zakelijk-recht/{}/'.format(self.natuurlijk_recht.pk)).data
 
         subj = response['kadastraal_subject']
-        self.assertEqual(subj, 'http://testserver/api/kadaster/zakelijk-recht/{}/subject'.format(self.natuurlijk.pk))
+        self.assertEqual(subj, 'http://testserver/api/kadaster/zakelijk-recht/{}/subject/'.format(self.natuurlijk_recht.pk))
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
-        response = self.client.get('/api/kadaster/zakelijk-recht/{}/subject.json'.format(self.natuurlijk.pk)).data
+        response = self.client.get('/api/kadaster/zakelijk-recht/{}/subject.json'.format(self.natuurlijk_recht.pk)).data
         self.assertIsNotNone(response['woonadres'])
         self.assertIsNotNone(response['postadres'])
         self.assertNotIn('rechten', response)

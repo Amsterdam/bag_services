@@ -1,4 +1,6 @@
 from rest_framework import generics
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from datasets.generic import rest
 from . import models, serializers
@@ -23,11 +25,6 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
                                        'postadres', 'postadres__land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
-
-
-class KadastraalSubjectFromRechtView(generics.RetrieveAPIView):
-    queryset = models.KadastraalSubject.objects.all()
-    serializer_class = serializers.KadastraalSubjectDetailWithPersonalData
 
 
 class KadastraalObjectViewSet(rest.AtlasViewSet):
@@ -138,6 +135,13 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
     filter_fields = ('kadastraal_subject', 'kadastraal_object', 'transactie',)
+
+    @detail_route(methods=['get'])
+    def subject(self, request, pk=None, *args, **kwargs):
+        zakelijk_recht = self.get_object()
+        subject = zakelijk_recht.kadastraal_subject
+        serializer = serializers.KadastraalSubjectDetailWithPersonalData(instance=subject, context=dict(request=request))
+        return Response(serializer.data)
 
 
 class TransactieViewSet(rest.AtlasViewSet):
