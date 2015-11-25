@@ -587,7 +587,7 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'code',
+            'id',
         )
 
 
@@ -600,9 +600,12 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'code',
             'buurt',
             'ingang_cyclus',
+            'begin_geldigheid',
+            'einde_geldigheid',
             'geometrie',
             'panden',
         )

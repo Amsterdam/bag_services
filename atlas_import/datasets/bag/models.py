@@ -154,7 +154,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
         return "{} ({})".format(self.naam, self.code)
 
 
-class Bouwblok(Hoofdklasse):
+class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
     grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste

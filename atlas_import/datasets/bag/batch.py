@@ -294,7 +294,9 @@ class ImportBbkTask(batch.BasicTask):
             pk=pk,
             code=code,
             ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            buurt_id=buurt_id
+            buurt_id=buurt_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def process_feature(self, feat):

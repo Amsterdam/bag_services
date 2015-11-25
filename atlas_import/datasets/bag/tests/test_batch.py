@@ -247,6 +247,8 @@ class ImportBbkTest(TaskTestCase):
         self.assertEquals(b.code, 'DE66')
         self.assertIsNone(b.buurt)
         self.assertIsNotNone(b.geometrie)
+        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertIsNone(b.einde_geldigheid)
 
 
 # gebieden shp
