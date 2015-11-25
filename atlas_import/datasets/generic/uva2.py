@@ -1,3 +1,4 @@
+import stat
 from contextlib import contextmanager
 import csv
 import datetime
@@ -64,11 +65,11 @@ def resolve_file(path, code, extension='UVA2'):
         raise ValueError("No code specified")
 
     prefix = code + '_'
-    matches = [f for f in os.listdir(path) if f.startswith(prefix) and f.endswith(extension)]
-    if len(matches) != 1:
-        raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
+    matches = [os.path.join(path, f) for f in os.listdir(path) if f.startswith(prefix) and f.endswith(extension)]
 
-    return os.path.join(path, matches[0])
+    matches_with_mtime = [(os.path.getmtime(f), f) for f in matches]
+    match = sorted(matches_with_mtime)[-1]
+    return match[1]
 
 
 def geldig_tijdvak(r):

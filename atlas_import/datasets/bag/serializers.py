@@ -395,7 +395,6 @@ class PandDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
-    panden = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Pand
@@ -547,6 +546,7 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
 
 class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    panden = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Bouwblok
