@@ -586,6 +586,7 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'naam',
             'code',
             'vollcode',

@@ -1092,6 +1092,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         vollcode = feat.get('VOLLCODE')
 
         return models.Buurtcombinatie(
+            id=str(int(feat.get('ID'))),
             naam=feat.get('NAAM').encode('utf-8'),
             code=feat.get('CODE').encode('utf-8'),
             vollcode=vollcode,

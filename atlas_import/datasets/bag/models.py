@@ -453,6 +453,7 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
     ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
     """
 
+    id = models.CharField(max_length=14, primary_key=True)
     naam = models.CharField(max_length=100)
     code = models.CharField(max_length=2)
     vollcode = models.CharField(max_length=3)

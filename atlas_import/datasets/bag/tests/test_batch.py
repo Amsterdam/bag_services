@@ -263,6 +263,7 @@ class ImportBuurtcombinatieTest(TaskTestCase):
 
         b = models.Buurtcombinatie.objects.get(code='14')
 
+        self.assertEquals(b.id, '3630012052018')
         self.assertEquals(b.vollcode, 'E14')
         self.assertEquals(b.stadsdeel.code, 'E')
         self.assertEquals(b.begin_geldigheid, datetime.date(2010, 5, 1))
