@@ -105,7 +105,7 @@ class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
         abstract = True
 
 
-class Stadsdeel(Hoofdklasse):
+class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
@@ -444,7 +444,7 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
         return "Pand-Verblijfsobject({}-{})".format(self.pand_id, self.verblijfsobject_id)
 
 
-class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
+class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     """
     model for data from shp files
 
@@ -459,6 +459,7 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     ingang_cyclus = models.DateField(null=True)
+    stadsdeel = models.ForeignKey(Stadsdeel, null=True, related_name="buurtcombinaties")
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 

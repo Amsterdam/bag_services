@@ -183,6 +183,8 @@ class ImportSdlTest(TaskTestCase):
         self.assertEquals(s.naam, 'Nieuw-West')
         self.assertEquals(s.vervallen, False)
         self.assertEquals(s.gemeente.id, '03630000000000')
+        self.assertEquals(s.begin_geldigheid, datetime.date(2015, 1, 1))
+        self.assertIsNone(s.einde_geldigheid)
 
     def test_import_geo(self):
         self.run_task()
@@ -244,6 +246,12 @@ class ImportBbkTest(TaskTestCase):
 
 # gebieden shp
 class ImportBuurtcombinatieTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
+            ]
+
     def task(self):
         return batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP)
 
@@ -256,6 +264,9 @@ class ImportBuurtcombinatieTest(TaskTestCase):
         b = models.Buurtcombinatie.objects.get(code='14')
 
         self.assertEquals(b.vollcode, 'E14')
+        self.assertEquals(b.stadsdeel.code, 'E')
+        self.assertEquals(b.begin_geldigheid, datetime.date(2010, 5, 1))
+        self.assertIsNone(b.einde_geldigheid)
 
 
 class ImportGebiedsgerichtwerkenTest(TaskTestCase):

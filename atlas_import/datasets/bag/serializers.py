@@ -472,6 +472,7 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     buurten = rest.RelatedSummaryField()
     gebiedsgerichtwerken = rest.RelatedSummaryField()
+    buurtcombinaties = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Stadsdeel
@@ -481,6 +482,8 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
             'id',
             'code',
             'date_modified',
+            'begin_geldigheid',
+            'einde_geldigheid',
 
             'naam',
             'gemeente',
@@ -489,6 +492,7 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
             'brondocument_datum',
             'geometrie',
             'buurten',
+            'buurtcombinaties',
             'gebiedsgerichtwerken',
         )
 
@@ -575,6 +579,7 @@ class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
 
 class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    stadsdeel = Stadsdeel()
 
     class Meta:
         model = models.Buurtcombinatie
@@ -588,6 +593,9 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
             'brondocument_datum',
             'ingang_cyclus',
             'geometrie',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'stadsdeel',
         )
 
 

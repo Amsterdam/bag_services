@@ -165,6 +165,8 @@ class ImportSdlTask(batch.BasicTask):
             ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             gemeente_id=gemeente_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def process_feature(self, feat):
@@ -1073,26 +1075,33 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
 
     def __init__(self, shp_path):
         self.shp_path = shp_path
+        self.stadsdelen = dict()
 
     def before(self):
         database.clear_models(models.Buurtcombinatie)
+        self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "id"))
 
     def after(self):
-        pass
+        self.stadsdelen.clear()
 
     def process(self):
         bcs = geo.process_shp(self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
         models.Buurtcombinatie.objects.bulk_create(bcs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
+        vollcode = feat.get('VOLLCODE')
+
         return models.Buurtcombinatie(
             naam=feat.get('NAAM').encode('utf-8'),
             code=feat.get('CODE').encode('utf-8'),
-            vollcode=feat.get('VOLLCODE').encode('utf-8'),
+            vollcode=vollcode,
             brondocument_naam=feat.get('DOCNR').encode('utf-8'),
             brondocument_datum=feat.get('DOCDATUM'),
             ingang_cyclus=feat.get('INGSDATUM'),
             geometrie=geo.get_multipoly(feat.geom.wkt),
+            stadsdeel_id=self.stadsdelen.get(vollcode[0]),
+            begin_geldigheid=feat.get('INGSDATUM'),
+            einde_geldigheid=feat.get('EINDDATUM'),
         )
 
 
