@@ -149,7 +149,7 @@ class Buurt(Hoofdklasse):
         verbose_name_plural = "Buurten"
 
     def __str__(self):
-        return self.naam
+        return "{} ({})".format(self.naam, self.code)
 
 
 class Bouwblok(Hoofdklasse):
@@ -412,7 +412,7 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
     pandnummer = models.CharField(max_length=10, null=True)
     vervallen = models.BooleanField(default=False)
     status = models.ForeignKey(Status, null=True)
-    bouwblok = models.ForeignKey(Bouwblok, null=True)
+    bouwblok = models.ForeignKey(Bouwblok, null=True, related_name="panden")
 
     geometrie = geo.PolygonField(null=True, srid=28992)
 
@@ -469,7 +469,7 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Buurtcombinaties"
 
     def __str__(self):
-        return self.naam
+        return "{} ({})".format(self.naam, self.code)
 
 
 class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
@@ -494,7 +494,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Gebiedsgerichtwerken"
 
     def __str__(self):
-        return self.naam
+        return "{} ({})".format(self.naam, self.code)
 
 
 class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
