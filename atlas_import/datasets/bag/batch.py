@@ -1246,6 +1246,7 @@ class ImportBagJob(object):
             ImportGmeTask(self.gebieden),
             ImportWplTask(self.bag),
             ImportSdlTask(self.gebieden, self.gebieden_shp),
+            ImportBuurtcombinatieTask(self.gebieden_shp),
             ImportBrtTask(self.gebieden, self.gebieden_shp),
             ImportBbkTask(self.gebieden, self.gebieden_shp),
             ImportOprTask(self.bag),
@@ -1259,7 +1260,6 @@ class ImportBagJob(object):
             ImportPndTask(self.bag, self.bag_wkt),
             ImportPndVboTask(self.bag),
 
-            ImportBuurtcombinatieTask(self.gebieden_shp),
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp),
             ImportUnescoTask(self.gebieden_shp),
