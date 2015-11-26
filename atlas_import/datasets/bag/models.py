@@ -472,6 +472,7 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
     class Meta:
         verbose_name = "Buurtcombinatie"
         verbose_name_plural = "Buurtcombinaties"
+        ordering = ('code', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
@@ -497,6 +498,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     class Meta:
         verbose_name = "Gebiedsgerichtwerken"
         verbose_name_plural = "Gebiedsgerichtwerken"
+        ordering = ('code', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
