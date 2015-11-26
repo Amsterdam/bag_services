@@ -625,6 +625,7 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
 class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     panden = rest.RelatedSummaryField()
+    buurt = Buurt()
 
     class Meta:
         model = models.Bouwblok
