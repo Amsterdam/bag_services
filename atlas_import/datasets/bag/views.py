@@ -94,7 +94,7 @@ class PandViewSet(rest.AtlasViewSet):
     queryset = models.Pand.objects.all()
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    filter_fields = ('verblijfsobjecten__id', )
+    filter_fields = ('verblijfsobjecten__id', 'bouwblok', )
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
