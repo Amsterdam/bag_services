@@ -219,6 +219,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
     class Meta:
         verbose_name = "Openbare Ruimte"
         verbose_name_plural = "Openbare Ruimtes"
+        ordering = ('naam', 'id')
 
     def __str__(self):
         return self.naam
