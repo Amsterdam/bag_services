@@ -62,13 +62,13 @@ class SensitiveDetailsTestCase(APITestCase):
         response = self.client.get('/api/kadaster/zakelijk-recht/{}.json'.format(self.natuurlijk_recht.pk)).data
 
         subj = response['kadastraal_subject']
-        self.assertEqual(subj, 'http://testserver/api/kadaster/subject/{}.json'.format(self.natuurlijk.pk))
+        self.assertEqual(subj['_links']['self']['href'], 'http://testserver/api/kadaster/subject/{}/'.format(self.natuurlijk.pk))
 
     def test_uitgelogd_zakelijk_recht_niet_natuurlijk_verwijst_naar_hoofd_view(self):
         response = self.client.get('/api/kadaster/zakelijk-recht/{}.json'.format(self.niet_natuurlijk_recht.pk)).data
 
         subj = response['kadastraal_subject']
-        self.assertEqual(subj, 'http://testserver/api/kadaster/subject/{}.json'.format(self.niet_natuurlijk.pk))
+        self.assertEqual(subj['_links']['self']['href'], 'http://testserver/api/kadaster/subject/{}/'.format(self.niet_natuurlijk.pk))
 
     def test_uitgelogd_zakelijk_recht_natuurlijk_verwijst_naar_subresource(self):
         response = self.client.get('/api/kadaster/zakelijk-recht/{}/'.format(self.natuurlijk_recht.pk)).data
