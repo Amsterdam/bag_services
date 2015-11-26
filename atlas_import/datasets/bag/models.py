@@ -149,6 +149,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     class Meta:
         verbose_name = "Buurt"
         verbose_name_plural = "Buurten"
+        ordering = ('vollcode', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)

@@ -178,7 +178,7 @@ class BuurtViewSet(rest.AtlasViewSet):
     queryset = models.Buurt.objects.all()
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    filter_fields = ('stadsdeel', )
+    filter_fields = ('stadsdeel', 'buurtcombinatie')
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
