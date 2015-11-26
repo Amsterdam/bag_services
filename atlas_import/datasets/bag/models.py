@@ -283,6 +283,26 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
                 + ('-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else '')
                 )
 
+    @property
+    def adresseerbaar_object(self):
+        return self.ligplaats or self.standplaats or self.verblijfsobject
+
+    @property
+    def buurt(self):
+        a = self.adresseerbaar_object
+        return a.buurt if a else None
+
+    @property
+    def stadsdeel(self):
+        b = self.buurt
+        return b.stadsdeel if b else None
+
+    @property
+    def woonplaats(self):
+        o = self.openbare_ruimte
+        return o.woonplaats if o else None
+
+
 
 class AdresseerbaarObjectMixin(object):
     @property

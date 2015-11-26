@@ -352,6 +352,10 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     type = serializers.CharField(source='get_type_display')
+    buurt = Buurt()
+    stadsdeel = Stadsdeel()
+    openbare_ruimte = OpenbareRuimte()
+    woonplaats = Woonplaats()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -381,6 +385,9 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'ligplaats',
             'standplaats',
             'verblijfsobject',
+            'buurt',
+            'stadsdeel',
+            'woonplaats',
         )
 
 
