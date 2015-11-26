@@ -171,6 +171,7 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     class Meta:
         verbose_name = "Bouwblok"
         verbose_name_plural = "Bouwblokken"
+        ordering = ('code', )
 
     def __str__(self):
         return "{}".format(self.code)
