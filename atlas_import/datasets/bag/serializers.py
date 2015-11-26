@@ -50,6 +50,37 @@ class Toegang(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
+class Gemeente(BagMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    class Meta:
+        model = models.Gemeente
+        fields = (
+            '_links',
+            '_display',
+            'code',
+        )
+
+
+class GemeenteDetail(BagMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+    woonplaatsen = rest.RelatedSummaryField()
+
+    class Meta:
+        model = models.Gemeente
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'code',
+            'date_modified',
+
+            'naam',
+            'verzorgingsgebied',
+            'woonplaatsen',
+        )
+
+
 class Woonplaats(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
@@ -65,6 +96,7 @@ class Woonplaats(BagMixin, rest.HALSerializer):
 class WoonplaatsDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     openbare_ruimtes = rest.RelatedSummaryField()
+    gemeente = Gemeente()
 
     class Meta:
         model = models.Woonplaats
@@ -417,37 +449,6 @@ class PandDetail(BagMixin, rest.HALSerializer):
 
             'verblijfsobjecten',
             'bouwblok',
-        )
-
-
-class Gemeente(BagMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-
-    class Meta:
-        model = models.Gemeente
-        fields = (
-            '_links',
-            '_display',
-            'code',
-        )
-
-
-class GemeenteDetail(BagMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    woonplaatsen = rest.RelatedSummaryField()
-
-    class Meta:
-        model = models.Gemeente
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'code',
-            'date_modified',
-
-            'naam',
-            'verzorgingsgebied',
-            'woonplaatsen',
         )
 
 
