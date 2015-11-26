@@ -388,11 +388,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     adressen = rest.RelatedSummaryField()
-    hoofdadres = serializers.HyperlinkedRelatedField(
-        source='hoofdadres.id',
-        view_name='nummeraanduiding-detail',
-        read_only=True,
-    )
+    hoofdadres = Nummeraanduiding()
+    buurt = Buurt()
 
     class Meta:
         model = models.Standplaats
@@ -433,11 +430,8 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
     gebruiksdoel = serializers.SerializerMethodField()
-    hoofdadres = serializers.HyperlinkedRelatedField(
-        source='hoofdadres.id',
-        view_name='nummeraanduiding-detail',
-        read_only=True,
-    )
+    hoofdadres = Nummeraanduiding()
+    buurt = Buurt()
     kadastrale_objecten = rest.RelatedSummaryField()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
@@ -513,6 +507,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
+    bouwblok = Bouwblok()
 
     class Meta:
         model = models.Pand
@@ -543,6 +538,7 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
     buurten = rest.RelatedSummaryField()
     gebiedsgerichtwerken = rest.RelatedSummaryField()
     buurtcombinaties = rest.RelatedSummaryField()
+    gemeente = Gemeente()
 
     class Meta:
         model = models.Stadsdeel
@@ -574,6 +570,7 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
     standplaatsen = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
     buurtcombinatie = Buurtcombinatie()
+    stadsdeel = Stadsdeel()
 
     class Meta:
         model = models.Buurt
@@ -647,6 +644,7 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    stadsdeel = Stadsdeel()
 
     class Meta:
         model = models.Gebiedsgerichtwerken
