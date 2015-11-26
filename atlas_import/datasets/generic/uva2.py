@@ -66,7 +66,8 @@ def resolve_file(path, code, extension='UVA2'):
 
     prefix = code + '_'
     matches = [os.path.join(path, f) for f in os.listdir(path) if f.startswith(prefix) and f.endswith(extension)]
-
+    if not matches:
+        raise ValueError("Could not find file starting with {} in {}".format(prefix, path))
     matches_with_mtime = [(os.path.getmtime(f), f) for f in matches]
     match = sorted(matches_with_mtime)[-1]
     return match[1]

@@ -56,6 +56,105 @@ class KadastraalSubject(AkrMixin, rest.HALSerializer):
         )
 
 
+class SoortCultuurOnbebouwd(serializers.ModelSerializer):
+    class Meta:
+        model = models.SoortCultuurOnbebouwd
+        fields = (
+            'code',
+            'omschrijving',
+        )
+
+
+class BebouwingsCode(serializers.ModelSerializer):
+    class Meta:
+        model = models.Bebouwingscode
+        fields = (
+            'code',
+            'omschrijving',
+        )
+
+
+class ZakelijkRecht(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = (
+            '_links',
+            '_display',
+            'identificatie',
+        )
+
+
+class KadastraalObject(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+        )
+
+
+class SoortStuk(serializers.ModelSerializer):
+    class Meta:
+        model = models.SoortStuk
+
+
+class Transactie(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    class Meta:
+        model = models.Transactie
+        fields = (
+            '_links',
+            '_display',
+            'registercode',
+        )
+
+
+class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+    soort_recht = SoortRecht()
+    kadastraal_object = KadastraalObject()
+    kadastraal_subject = KadastraalSubject()
+    transactie = Transactie()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = (
+            '_links',
+            '_display',
+            'identificatie',
+
+            'kadastraal_object',
+            'kadastraal_subject',
+            'transactie',
+
+            'soort_recht',
+            'volgnummer',
+            'aandeel_medegerechtigden',
+            'aandeel_subject',
+
+            'einde_filiatie',
+            'sluimerend',
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
+            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+                                                 args=(instance.id,),
+                                                 request=request)
+
+        return data
+
+
 class KadastraalSubjectDetail(AkrMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
@@ -143,85 +242,6 @@ class KadastraalSubjectDetailWithPersonalData(AkrMixin, rest.HALSerializer):
         )
 
 
-class SoortCultuurOnbebouwd(serializers.ModelSerializer):
-    class Meta:
-        model = models.SoortCultuurOnbebouwd
-        fields = (
-            'code',
-            'omschrijving',
-        )
-
-
-class BebouwingsCode(serializers.ModelSerializer):
-    class Meta:
-        model = models.Bebouwingscode
-        fields = (
-            'code',
-            'omschrijving',
-        )
-
-
-class ZakelijkRecht(AkrMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    class Meta:
-        model = models.ZakelijkRecht
-        fields = (
-            '_links',
-            '_display',
-            'identificatie',
-        )
-
-
-class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    soort_recht = SoortRecht()
-    kadastraal_object = 'KadastraalObject'
-    kadastraal_subject = 'KadastraalSubject'
-
-    class Meta:
-        model = models.ZakelijkRecht
-        fields = (
-            '_links',
-            '_display',
-            'identificatie',
-
-            'kadastraal_object',
-            'kadastraal_subject',
-            'transactie',
-
-            'soort_recht',
-            'volgnummer',
-            'aandeel_medegerechtigden',
-            'aandeel_subject',
-
-            'einde_filiatie',
-            'sluimerend',
-        )
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        request = self.context['request']
-        user = request.user
-        if instance.kadastraal_subject.natuurlijk_persoon() and not user.has_perm('akr.view_sensitive_details'):
-            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
-                                                 args=(instance.id,),
-                                                 request=request)
-
-        return data
-
-
-class KadastraalObject(AkrMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    class Meta:
-        model = models.KadastraalObject
-        fields = (
-            '_links',
-            '_display',
-            'id',
-        )
-
-
 class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     soort_cultuur_onbebouwd = SoortCultuurOnbebouwd()
@@ -254,22 +274,6 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
             'rechten',
             'geometrie',
             'beperkingen'
-        )
-
-
-class SoortStuk(serializers.ModelSerializer):
-    class Meta:
-        model = models.SoortStuk
-
-
-class Transactie(AkrMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    class Meta:
-        model = models.Transactie
-        fields = (
-            '_links',
-            '_display',
-            'registercode',
         )
 
 
