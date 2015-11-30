@@ -183,6 +183,8 @@ class ImportSdlTest(TaskTestCase):
         self.assertEquals(s.naam, 'Nieuw-West')
         self.assertEquals(s.vervallen, False)
         self.assertEquals(s.gemeente.id, '03630000000000')
+        self.assertEquals(s.begin_geldigheid, datetime.date(2015, 1, 1))
+        self.assertIsNone(s.einde_geldigheid)
 
     def test_import_geo(self):
         self.run_task()
@@ -196,6 +198,7 @@ class ImportBrtTest(TaskTestCase):
         return [
             batch.ImportGmeTask(GEBIEDEN),
             batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
         ]
 
     def task(self):
@@ -211,10 +214,14 @@ class ImportBrtTest(TaskTestCase):
 
         self.assertEquals(b.id, '03630000000487')
         self.assertEquals(b.code, '92c')
+        self.assertEquals(b.vollcode, 'T92c')
         self.assertEquals(b.naam, 'Amstel III deel C/D Noord')
         self.assertEquals(b.vervallen, False)
         self.assertEquals(b.stadsdeel.id, '03630000000016')
         self.assertIsNotNone(b.geometrie)
+        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertIsNone(b.einde_geldigheid)
+        self.assertEquals(b.buurtcombinatie.code, '92')
 
 
 class ImportBbkTest(TaskTestCase):
@@ -240,10 +247,18 @@ class ImportBbkTest(TaskTestCase):
         self.assertEquals(b.code, 'DE66')
         self.assertIsNone(b.buurt)
         self.assertIsNotNone(b.geometrie)
+        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertIsNone(b.einde_geldigheid)
 
 
 # gebieden shp
 class ImportBuurtcombinatieTest(TaskTestCase):
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
+            ]
+
     def task(self):
         return batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP)
 
@@ -255,7 +270,11 @@ class ImportBuurtcombinatieTest(TaskTestCase):
 
         b = models.Buurtcombinatie.objects.get(code='14')
 
+        self.assertEquals(b.id, '3630012052018')
         self.assertEquals(b.vollcode, 'E14')
+        self.assertEquals(b.stadsdeel.code, 'E')
+        self.assertEquals(b.begin_geldigheid, datetime.date(2010, 5, 1))
+        self.assertIsNone(b.einde_geldigheid)
 
 
 class ImportGebiedsgerichtwerkenTest(TaskTestCase):

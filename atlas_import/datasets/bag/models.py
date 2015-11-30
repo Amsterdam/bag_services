@@ -105,7 +105,7 @@ class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
         abstract = True
 
 
-class Stadsdeel(Hoofdklasse):
+class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
@@ -128,7 +128,7 @@ class Stadsdeel(Hoofdklasse):
         return self.naam
 
 
-class Buurt(Hoofdklasse):
+class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
     elementen.
@@ -137,22 +137,25 @@ class Buurt(Hoofdklasse):
     """
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=3, unique=True)
+    vollcode = models.CharField(max_length=4)
     naam = models.CharField(max_length=40)
     vervallen = models.BooleanField(default=False)
     ingang_cyclus = models.DateField(null=True)
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
+    buurtcombinatie = models.ForeignKey('Buurtcombinatie', related_name='buurten', null=True)
 
     class Meta:
         verbose_name = "Buurt"
         verbose_name_plural = "Buurten"
+        ordering = ('vollcode', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
 
 
-class Bouwblok(Hoofdklasse):
+class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     """
     Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
     grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
@@ -168,6 +171,7 @@ class Bouwblok(Hoofdklasse):
     class Meta:
         verbose_name = "Bouwblok"
         verbose_name_plural = "Bouwblokken"
+        ordering = ('code', )
 
     def __str__(self):
         return "{}".format(self.code)
@@ -217,6 +221,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
     class Meta:
         verbose_name = "Openbare Ruimte"
         verbose_name_plural = "Openbare Ruimtes"
+        ordering = ('naam', 'id')
 
     def __str__(self):
         return self.naam
@@ -277,6 +282,26 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
                 + (self.huisletter if self.huisletter else '')
                 + ('-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else '')
                 )
+
+    @property
+    def adresseerbaar_object(self):
+        return self.ligplaats or self.standplaats or self.verblijfsobject
+
+    @property
+    def buurt(self):
+        a = self.adresseerbaar_object
+        return a.buurt if a else None
+
+    @property
+    def stadsdeel(self):
+        b = self.buurt
+        return b.stadsdeel if b else None
+
+    @property
+    def woonplaats(self):
+        o = self.openbare_ruimte
+        return o.woonplaats if o else None
+
 
 
 class AdresseerbaarObjectMixin(object):
@@ -444,7 +469,7 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
         return "Pand-Verblijfsobject({}-{})".format(self.pand_id, self.verblijfsobject_id)
 
 
-class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
+class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     """
     model for data from shp files
 
@@ -453,12 +478,14 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
     ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
     """
 
+    id = models.CharField(max_length=14, primary_key=True)
     naam = models.CharField(max_length=100)
     code = models.CharField(max_length=2)
     vollcode = models.CharField(max_length=3)
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     ingang_cyclus = models.DateField(null=True)
+    stadsdeel = models.ForeignKey(Stadsdeel, null=True, related_name="buurtcombinaties")
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 
@@ -467,6 +494,7 @@ class Buurtcombinatie(mixins.ImportStatusMixin, models.Model):
     class Meta:
         verbose_name = "Buurtcombinatie"
         verbose_name_plural = "Buurtcombinaties"
+        ordering = ('code', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
@@ -492,6 +520,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     class Meta:
         verbose_name = "Gebiedsgerichtwerken"
         verbose_name_plural = "Gebiedsgerichtwerken"
+        ordering = ('code', )
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)

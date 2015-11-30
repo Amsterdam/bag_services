@@ -94,7 +94,7 @@ class PandViewSet(rest.AtlasViewSet):
     queryset = models.Pand.objects.all()
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    filter_fields = ('verblijfsobjecten__id', )
+    filter_fields = ('verblijfsobjecten__id', 'bouwblok', )
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
@@ -178,7 +178,7 @@ class BuurtViewSet(rest.AtlasViewSet):
     queryset = models.Buurt.objects.all()
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    filter_fields = ('stadsdeel', )
+    filter_fields = ('stadsdeel', 'buurtcombinatie')
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
@@ -208,6 +208,7 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     queryset = models.Buurtcombinatie.objects.all()
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
+    filter_fields = ('stadsdeel', )
 
 
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):

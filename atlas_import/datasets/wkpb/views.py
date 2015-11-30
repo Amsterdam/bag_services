@@ -50,4 +50,4 @@ class BrondocumentView(AtlasViewSet):
     serializer_class = serializers.Brondocument
     serializer_detail_class = serializers.BrondocumentDetail
     queryset = models.Brondocument.objects.all()
-    filter_fields = ('bron', )
+    filter_fields = ('bron', 'beperking', )

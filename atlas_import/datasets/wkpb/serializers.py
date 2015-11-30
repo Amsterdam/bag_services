@@ -16,20 +16,6 @@ class Broncode(rest.HALSerializer):
         )
 
 
-class BroncodeDetail(rest.HALSerializer):
-    _display = rest.DisplayField()
-    documenten = rest.RelatedSummaryField()
-    class Meta:
-        model = models.Broncode
-        fields = (
-            '_links',
-            '_display',
-            'code',
-            'omschrijving',
-            'documenten',
-        )
-
-
 class Brondocument(rest.HALSerializer):
     _display = rest.DisplayField()
     class Meta:
@@ -39,23 +25,6 @@ class Brondocument(rest.HALSerializer):
             '_display',
             'documentnummer',
             'documentnaam',
-        )
-
-
-class BrondocumentDetail(rest.HALSerializer):
-    _display = rest.DisplayField()
-    class Meta:
-        model = models.Brondocument
-        fields = (
-            '_links',
-            '_display',
-            'documentnummer',
-            'bron',
-            'documentnaam',
-            'persoonsgegeven_afschermen',
-            'soort_besluit',
-            'url',
-            'beperking'
         )
 
 
@@ -79,10 +48,45 @@ class Beperking(rest.HALSerializer):
         )
 
 
+class BroncodeDetail(rest.HALSerializer):
+    _display = rest.DisplayField()
+    documenten = rest.RelatedSummaryField()
+    class Meta:
+        model = models.Broncode
+        fields = (
+            '_links',
+            '_display',
+            'code',
+            'omschrijving',
+            'documenten',
+        )
+
+
+class BrondocumentDetail(rest.HALSerializer):
+    _display = rest.DisplayField()
+    beperking = Beperking()
+    bron = Broncode()
+
+    class Meta:
+        model = models.Brondocument
+        fields = (
+            '_links',
+            '_display',
+            'documentnummer',
+            'bron',
+            'documentnaam',
+            'persoonsgegeven_afschermen',
+            'soort_besluit',
+            'url',
+            'beperking'
+        )
+
+
 class BeperkingDetail(rest.HALSerializer):
     _display = rest.DisplayField()
     beperkingtype = Beperkingcode()
     kadastrale_objecten = rest.RelatedSummaryField()
+    documenten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Beperking
