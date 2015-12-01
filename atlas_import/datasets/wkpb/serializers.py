@@ -23,6 +23,7 @@ class Brondocument(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'url',
             'documentnummer',
             'documentnaam',
         )
