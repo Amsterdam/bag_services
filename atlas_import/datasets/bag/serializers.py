@@ -187,7 +187,7 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'code',
-            'name',
+            'naam',
         )
 
 
