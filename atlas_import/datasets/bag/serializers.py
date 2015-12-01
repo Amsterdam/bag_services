@@ -187,6 +187,7 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'code',
+            'name',
         )
 
 
@@ -537,6 +538,10 @@ class PandDetail(BagMixin, rest.HALSerializer):
 
             'verblijfsobjecten',
             'bouwblok',
+
+            'begin_geldigheid',
+            'einde_geldigheid'
+
         )
 
 

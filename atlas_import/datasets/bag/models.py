@@ -303,7 +303,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
         return o.woonplaats if o else None
 
 
-
 class AdresseerbaarObjectMixin(object):
     @property
     def hoofdadres(self):
@@ -313,6 +312,7 @@ class AdresseerbaarObjectMixin(object):
 
     @property
     def nevenadressen(self):
+        # noinspection PyUnresolvedReferences
         return [a for a in self.adressen.all() if not a.hoofdadres]
 
     def __str__(self):
