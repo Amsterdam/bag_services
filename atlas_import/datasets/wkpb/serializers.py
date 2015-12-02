@@ -73,7 +73,7 @@ class BrondocumentDetail(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'documentnummer',
+            'inschrijfnummer',
             'bron',
             'documentnaam',
             'persoonsgegeven_afschermen',
@@ -85,7 +85,7 @@ class BrondocumentDetail(rest.HALSerializer):
 
 class BeperkingDetail(rest.HALSerializer):
     _display = rest.DisplayField()
-    beperkingtype = Beperkingcode()
+    beperkingcode = Beperkingcode()
     kadastrale_objecten = rest.RelatedSummaryField()
     documenten = rest.RelatedSummaryField()
 
@@ -94,8 +94,9 @@ class BeperkingDetail(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'inschrijfnummer',
-            'beperkingtype',
+            'beperkingcode',
             'datum_in_werking',
             'datum_einde',
             'kadastrale_objecten',

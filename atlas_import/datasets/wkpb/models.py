@@ -45,7 +45,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
 
     id = models.IntegerField(null=False, primary_key=True)
     inschrijfnummer = models.IntegerField(null=False)
-    beperkingtype = models.ForeignKey(Beperkingcode, null=False)
+    beperkingcode = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
     kadastrale_objecten = models.ManyToManyField(KadastraalObjectAkr, through='BeperkingKadastraalObject',
@@ -65,7 +65,7 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
     """
 
     id = models.IntegerField(null=False, primary_key=True)  # beperking id
-    documentnummer = models.IntegerField(null=False)
+    inschrijfnummer = models.IntegerField(null=False)
     bron = models.ForeignKey(Broncode, null=True, related_name="documenten")
     documentnaam = models.CharField(max_length=21, null=False)
     persoonsgegeven_afschermen = models.BooleanField(null=False)
