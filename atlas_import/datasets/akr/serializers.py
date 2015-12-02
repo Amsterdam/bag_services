@@ -112,6 +112,9 @@ class Transactie(AkrMixin, rest.HALSerializer):
             '_links',
             '_display',
             'registercode',
+            'koopjaar',
+            'koopsom',
+            'meer_kadastrale_objecten',
         )
 
 
@@ -273,7 +276,8 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
             'verblijfsobjecten',
             'rechten',
             'geometrie',
-            'beperkingen'
+            'beperkingen',
+            'omschrijving_deelperceel',
         )
 
 
