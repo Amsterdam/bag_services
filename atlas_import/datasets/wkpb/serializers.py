@@ -75,7 +75,7 @@ class BrondocumentDetail(rest.HALSerializer):
             '_display',
             'inschrijfnummer',
             'bron',
-            'documentnaam',
+            'inschrijfnummer',
             'persoonsgegeven_afschermen',
             'soort_besluit',
             'url',
@@ -85,7 +85,7 @@ class BrondocumentDetail(rest.HALSerializer):
 
 class BeperkingDetail(rest.HALSerializer):
     _display = rest.DisplayField()
-    beperkingcode = serializers.SerializerMethodField()
+    beperkingtype = Beperkingcode()
     kadastrale_objecten = rest.RelatedSummaryField()
     documenten = rest.RelatedSummaryField()
 
@@ -96,12 +96,21 @@ class BeperkingDetail(rest.HALSerializer):
             '_display',
             'id',
             'inschrijfnummer',
-            'beperkingcode',
+            'beperkingtype',
             'datum_in_werking',
             'datum_einde',
             'kadastrale_objecten',
             'documenten'
         )
+
+    # TODO handle this smarter
+    def to_representation(self, instance):
+        data = super(BeperkingDetail, self).to_representation(instance)
+
+        data['beperkingcode'] = data['beperkingtype']
+        del data['beperkingtype']
+
+        return data
 
     def get_beperkingcode(self, obj):
         return Beperkingcode(source='*')
