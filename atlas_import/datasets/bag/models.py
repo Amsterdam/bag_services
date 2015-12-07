@@ -152,7 +152,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
         ordering = ('vollcode', )
 
     def __str__(self):
-        return "{} ({})".format(self.naam, self.code)
+        return "{} ({})".format(self.naam, self.vollcode)
 
 
 class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
