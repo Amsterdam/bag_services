@@ -317,6 +317,8 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'straat_nummer',
             'woonplaats',
             'adressen',
+
+            'geometrie',
         )
 
 

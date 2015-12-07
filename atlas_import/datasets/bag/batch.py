@@ -357,12 +357,14 @@ class ImportWplTask(batch.BasicTask):
 class ImportOprTask(batch.BasicTask):
     name = "Import OPR"
 
-    def __init__(self, path):
+    def __init__(self, path, wkt_path):
         self.path = path
+        self.wkt_path = wkt_path
         self.bronnen = set()
         self.statussen = set()
         self.woonplaatsen = set()
         self.landelijke_ids = dict()
+        self.openbare_ruimtes = dict()
 
     def before(self):
         database.clear_models(models.OpenbareRuimte)
@@ -374,11 +376,14 @@ class ImportOprTask(batch.BasicTask):
         self.bronnen.clear()
         self.statussen.clear()
         self.woonplaatsen.clear()
+        self.landelijke_ids.clear()
+        self.openbare_ruimtes.clear()
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
-        openbare_ruimtes = uva2.process_uva2(self.path, "OPR", self.process_row)
-        models.OpenbareRuimte.objects.bulk_create(openbare_ruimtes, batch_size=database.BATCH_SIZE)
+        self.openbare_ruimtes = dict(uva2.process_uva2(self.path, "OPR", self.process_row))
+        geo.process_wkt(self.wkt_path, "BAG_OPENBARERUIMTE_GEOMETRIE.dat", self.process_wkt_row)
+        models.OpenbareRuimte.objects.bulk_create(self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -404,7 +409,7 @@ class ImportOprTask(batch.BasicTask):
             log.warning('OpenbareRuimte {} references non-existing woonplaats {}; skipping'.format(pk, woonplaats_id))
             return None
 
-        return models.OpenbareRuimte(
+        return pk, models.OpenbareRuimte(
             pk=pk,
             landelijk_id=self.landelijke_ids.get(pk),
             type=r['TypeOpenbareRuimteDomein'],
@@ -423,6 +428,15 @@ class ImportOprTask(batch.BasicTask):
             einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
+
+    def process_wkt_row(self, wkt_id, geometrie):
+        key = '0' + wkt_id
+        if key not in self.openbare_ruimtes:
+            log.warning('OpenbareRuimte/WKT {} references non-existing ligplaats {}; skipping'.format(wkt_id, key))
+            return
+
+        self.openbare_ruimtes[key].geometrie = geo.get_multipoly(geometrie)
+
 
 
 class ImportNumTask(batch.BasicTask):
@@ -1249,7 +1263,7 @@ class ImportBagJob(object):
             ImportBuurtcombinatieTask(self.gebieden_shp),
             ImportBrtTask(self.gebieden, self.gebieden_shp),
             ImportBbkTask(self.gebieden, self.gebieden_shp),
-            ImportOprTask(self.bag),
+            ImportOprTask(self.bag, self.bag_wkt),
 
             ImportLigTask(self.bag, self.bag_wkt),
             ImportStaTask(self.bag, self.bag_wkt),

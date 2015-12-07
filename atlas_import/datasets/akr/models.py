@@ -53,7 +53,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastraal object"
         verbose_name_plural = "Kadastrale objecten"
-        ordering = ('id',)
+        ordering = ('objectindex_letter', 'objectindex_nummer', 'id',)
 
     def __str__(self):
         return self.id
@@ -235,7 +235,8 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
         verbose_name_plural = "Zakelijke rechten"
 
     def __str__(self):
-        return "{} - {} - {}".format(self.kadastraal_subject, self.soort_recht, self.kadastraal_object)
+        omschrijving = self.soort_recht.omschrijving if self.soort_recht else ''
+        return "{} - {} - {}".format(self.kadastraal_subject, omschrijving, self.kadastraal_object)
 
 
 class KadastraalObjectVerblijfsobject(mixins.ImportStatusMixin):
