@@ -2,7 +2,7 @@ from django.contrib.gis.db import models as geo
 from django.db import models
 
 from datasets.bag import models as bag
-from datasets.generic import mixins
+from datasets.generic import mixins, kadaster
 
 
 class SoortCultuurOnbebouwd(models.Model):
@@ -50,13 +50,18 @@ class KadastraalObject(mixins.ImportStatusMixin):
     verblijfsobjecten = models.ManyToManyField('bag.Verblijfsobject', through="KadastraalObjectVerblijfsobject",
                                                related_name="kadastrale_objecten")
 
+    def get_aanduiding_spaties(self):
+        return kadaster.get_aanduiding_spaties(
+            self.gemeentecode, self.sectie, self.perceelnummer, self.objectindex_letter, self.objectindex_nummer
+        )
+
     class Meta:
         verbose_name = "Kadastraal object"
         verbose_name_plural = "Kadastrale objecten"
         ordering = ('objectindex_letter', 'objectindex_nummer', 'id',)
 
     def __str__(self):
-        return self.id
+        return self.get_aanduiding_spaties()
 
 
 class Titel(models.Model):

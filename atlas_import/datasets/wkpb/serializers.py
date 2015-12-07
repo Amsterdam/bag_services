@@ -85,7 +85,7 @@ class BrondocumentDetail(rest.HALSerializer):
 
 class BeperkingDetail(rest.HALSerializer):
     _display = rest.DisplayField()
-    beperkingcode = Beperkingcode()
+    beperkingcode = serializers.SerializerMethodField()
     kadastrale_objecten = rest.RelatedSummaryField()
     documenten = rest.RelatedSummaryField()
 
@@ -103,5 +103,5 @@ class BeperkingDetail(rest.HALSerializer):
             'documenten'
         )
 
-
-
+    def get_beperkingcode(self, obj):
+        return Beperkingcode(source='*')

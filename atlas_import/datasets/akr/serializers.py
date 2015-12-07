@@ -53,6 +53,7 @@ class KadastraalSubject(AkrMixin, rest.HALSerializer):
             '_display',
             'subjectnummer',
             'volledige_naam',
+            'postadres',
         )
 
 
@@ -88,6 +89,7 @@ class ZakelijkRecht(AkrMixin, rest.HALSerializer):
 
 class KadastraalObject(AkrMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    aanduiding = serializers.CharField(source='get_aanduiding_spaties')
 
     class Meta:
         model = models.KadastraalObject
@@ -95,6 +97,7 @@ class KadastraalObject(AkrMixin, rest.HALSerializer):
             '_links',
             '_display',
             'id',
+            'aanduiding'
         )
 
 

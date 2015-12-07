@@ -45,7 +45,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
 
     id = models.IntegerField(null=False, primary_key=True)
     inschrijfnummer = models.IntegerField(null=False)
-    beperkingcode = models.ForeignKey(Beperkingcode, null=False)
+    beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
     kadastrale_objecten = models.ManyToManyField(KadastraalObjectAkr, through='BeperkingKadastraalObject',
