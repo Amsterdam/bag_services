@@ -99,6 +99,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_links',
             '_display',
             'landelijk_id',
+            'hoofdadres',
         )
 
 
