@@ -217,6 +217,9 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     woonplaats = models.ForeignKey(Woonplaats, related_name="openbare_ruimtes")
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Openbare Ruimte"

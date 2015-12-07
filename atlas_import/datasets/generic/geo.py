@@ -1,8 +1,14 @@
 import csv
 import os.path
+
+import sys
 from django.contrib.gis.gdal import DataSource
 
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
+
+
+# sommige WKT-velden zijn best wel groot
+csv.field_size_limit(sys.maxsize)
 
 
 def process_wkt(path, filename, callback):
