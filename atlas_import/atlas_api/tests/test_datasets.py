@@ -17,7 +17,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/nummeraanduiding',
         'bag/openbareruimte',
         'bag/woonplaats',
-        'bag/gemeente',
+        'kadaster/gemeente',
         'gebieden/stadsdeel',
         'gebieden/buurt',
         'gebieden/bouwblok',
