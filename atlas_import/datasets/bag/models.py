@@ -448,7 +448,7 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
         verbose_name_plural = "Panden"
 
     def __str__(self):
-        return "{}".format(self.id)
+        return "{}".format(self.landelijk_id)
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
