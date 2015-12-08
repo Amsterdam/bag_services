@@ -53,7 +53,6 @@ class KadastraalSubject(AkrMixin, rest.HALSerializer):
             '_display',
             'subjectnummer',
             'volledige_naam',
-            'postadres',
         )
 
 
