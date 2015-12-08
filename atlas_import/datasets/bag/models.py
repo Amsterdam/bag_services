@@ -58,7 +58,7 @@ class Toegang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Mod
         verbose_name_plural = "Toegang"
 
 
-class Gemeente(mixins.ImportStatusMixin, models.Model):
+class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
