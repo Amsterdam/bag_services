@@ -175,6 +175,8 @@ class ImportZrtTest(TaskTestCase):
         self.assertEqual(zrt.kadastraal_object.id, 'ASD25AD00588G0000')
         self.assertEqual(zrt.kadastraal_subject.id, '20857')
         self.assertEqual(zrt.transactie.id, '170922')
+        self.assertEquals(zrt.begin_geldigheid, datetime.date(2005, 5, 17))
+        self.assertIsNone(zrt.einde_geldigheid)
 
 
 class ImportKotVboTest(TaskTestCase):

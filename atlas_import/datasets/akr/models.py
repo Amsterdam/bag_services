@@ -222,7 +222,7 @@ class SoortRecht(models.Model):
         return '{}: {}'.format(self.code, self.omschrijving)
 
 
-class ZakelijkRecht(mixins.ImportStatusMixin):
+class ZakelijkRecht(mixins.GeldigheidMixin, mixins.ImportStatusMixin):
     id = models.CharField(max_length=14, primary_key=True)
     identificatie = models.CharField(max_length=14)
     soort_recht = models.ForeignKey(SoortRecht, null=True)
