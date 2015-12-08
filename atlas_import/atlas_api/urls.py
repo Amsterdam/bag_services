@@ -45,7 +45,6 @@ router.register(r'bag/openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
 router.register(r'bag/nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 router.register(r'bag/pand', datasets.bag.views.PandViewSet)
 router.register(r'bag/woonplaats', datasets.bag.views.WoonplaatsViewSet)
-router.register(r'bag/gemeente', datasets.bag.views.GemeenteViewSet)
 
 router.register(r'gebieden/stadsdeel', datasets.bag.views.StadsdeelViewSet)
 router.register(r'gebieden/buurt', datasets.bag.views.BuurtViewSet)
@@ -59,6 +58,7 @@ router.register(r'kadaster/subject', datasets.akr.views.KadastraalSubjectViewSet
 router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
 router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
+router.register(r'kadaster/gemeente', datasets.bag.views.GemeenteViewSet)
 
 router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
 router.register(r'wkpb/brondocument', datasets.wkpb.views.BrondocumentView)

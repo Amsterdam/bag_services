@@ -99,6 +99,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_links',
             '_display',
             'landelijk_id',
+            'hoofdadres',
         )
 
 
@@ -307,6 +308,7 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'mutatie_gebruiker',
             'status',
             'bron',
+            'geometrie',
 
             'type',
             'naam',
@@ -315,6 +317,8 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'straat_nummer',
             'woonplaats',
             'adressen',
+
+            'geometrie',
         )
 
 
@@ -540,7 +544,8 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'bouwblok',
 
             'begin_geldigheid',
-            'einde_geldigheid'
+            'einde_geldigheid',
+            'mutatie_gebruiker',
 
         )
 
@@ -625,7 +630,6 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
             'vollcode',
             'brondocument_naam',
             'brondocument_datum',
-            'ingang_cyclus',
             'geometrie',
             'begin_geldigheid',
             'einde_geldigheid',

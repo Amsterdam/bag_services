@@ -151,7 +151,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
 
         return models.Brondocument(
             pk=inschrijfnummer,
-            documentnummer=inschrijfnummer,
+            inschrijfnummer=inschrijfnummer,
             bron_id=bron_id,
             documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
             persoonsgegeven_afschermen=pers_afsch,

@@ -23,6 +23,7 @@ class Brondocument(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'url',
             'documentnummer',
             'documentnaam',
         )
@@ -72,9 +73,9 @@ class BrondocumentDetail(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'documentnummer',
+            'inschrijfnummer',
             'bron',
-            'documentnaam',
+            'inschrijfnummer',
             'persoonsgegeven_afschermen',
             'soort_besluit',
             'url',
@@ -93,6 +94,7 @@ class BeperkingDetail(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'inschrijfnummer',
             'beperkingtype',
             'datum_in_werking',
@@ -101,5 +103,14 @@ class BeperkingDetail(rest.HALSerializer):
             'documenten'
         )
 
+    # TODO handle this smarter
+    def to_representation(self, instance):
+        data = super(BeperkingDetail, self).to_representation(instance)
 
+        data['beperkingcode'] = data['beperkingtype']
+        del data['beperkingtype']
 
+        return data
+
+    def get_beperkingcode(self, obj):
+        return Beperkingcode(source='*')

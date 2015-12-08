@@ -152,7 +152,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
         ordering = ('vollcode', )
 
     def __str__(self):
-        return "{} ({})".format(self.naam, self.code)
+        return "{} ({})".format(self.naam, self.vollcode)
 
 
 class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
@@ -217,6 +217,9 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     woonplaats = models.ForeignKey(Woonplaats, related_name="openbare_ruimtes")
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Openbare Ruimte"
@@ -448,7 +451,7 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
         verbose_name_plural = "Panden"
 
     def __str__(self):
-        return "{}".format(self.id)
+        return "{}".format(self.landelijk_id)
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):

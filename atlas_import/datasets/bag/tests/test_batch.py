@@ -410,7 +410,7 @@ class ImportOprTest(TaskTestCase):
         ]
 
     def task(self):
-        return batch.ImportOprTask(BAG)
+        return batch.ImportOprTask(BAG, BAG_WKT)
 
     def test_import(self):
         self.run_task()
@@ -436,6 +436,7 @@ class ImportOprTest(TaskTestCase):
         self.assertEquals(o.begin_geldigheid, datetime.date(2014, 1, 10))
         self.assertEquals(o.einde_geldigheid, None)
         self.assertEquals(o.mutatie_gebruiker, 'DBI')
+        self.assertIsNotNone(o.geometrie)
 
 
 class ImportStaTest(TaskTestCase):
@@ -537,7 +538,7 @@ class ImportNumTest(TaskTestCase):
             batch.ImportStsTask(BAG),
             batch.ImportGmeTask(GEBIEDEN),
             batch.ImportWplTask(BAG),
-            batch.ImportOprTask(BAG),
+            batch.ImportOprTask(BAG, BAG_WKT),
             batch.ImportLigTask(BAG, BAG_WKT),
             batch.ImportStaTask(BAG, BAG_WKT),
             batch.ImportVboTask(BAG),
