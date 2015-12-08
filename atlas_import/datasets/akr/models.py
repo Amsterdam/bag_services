@@ -29,7 +29,7 @@ class Bebouwingscode(models.Model):
         return "{}: {}".format(self.code, self.omschrijving)
 
 
-class KadastraalObject(mixins.ImportStatusMixin):
+class KadastraalObject(mixins.GeldigheidMixin, mixins.ImportStatusMixin):
     id = models.CharField(max_length=17, primary_key=True)
     gemeentecode = models.CharField(max_length=5)
     sectie = models.CharField(max_length=2)

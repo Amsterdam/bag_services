@@ -39,6 +39,8 @@ class ImportKotTest(TaskTestCase):
         self.assertEqual(kot.ruitnummer, 5)
         self.assertEqual(kot.omschrijving_deelperceel, '')
         self.assertEqual(kot.geometrie, geos.Point(x=118333, y=483286, srid=28992))
+        self.assertEquals(kot.begin_geldigheid, datetime.date(1985, 7, 1))
+        self.assertIsNone(kot.einde_geldigheid)
 
 
 class ImportKstTest(TaskTestCase):

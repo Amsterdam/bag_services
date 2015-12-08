@@ -283,6 +283,8 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
             'geometrie',
             'beperkingen',
             'omschrijving_deelperceel',
+            'begin_geldigheid',
+            'einde_geldigheid',
         )
 
 
