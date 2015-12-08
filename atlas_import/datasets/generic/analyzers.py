@@ -1,6 +1,15 @@
 import elasticsearch_dsl as es
 from elasticsearch_dsl import analysis
 
+
+orderings = dict(
+    openbare_ruimte=10,
+    kadastraal_subject=25,
+    adres=50,
+    kadastraal_object=100,
+)
+
+
 synonym_filter = analysis.token_filter(
     'synonyms',
     type='synonym',
