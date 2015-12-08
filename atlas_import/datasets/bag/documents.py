@@ -8,7 +8,7 @@ class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -21,7 +21,7 @@ class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -34,7 +34,7 @@ class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -49,7 +49,7 @@ class Verblijfsobject(es.DocType):
 
 class OpenbareRuimte(es.DocType):
     naam = es.String(analyzer=analyzers.adres)
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     class Meta:
@@ -68,7 +68,7 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = adres.postcode
+        dest.postcode = "{}-{}".format(adres.postcode, adres.huisnummer)
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.huisnummer = int(adres.huisnummer)
 

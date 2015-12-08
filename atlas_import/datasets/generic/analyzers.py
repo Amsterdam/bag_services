@@ -20,29 +20,43 @@ synonym_filter = analysis.token_filter(
         '4e=>vierde',
     ])
 
-stripper = analysis.char_filter(
-    'stripper',
+adres_stripper = analysis.char_filter(
+    'adres_stripper',
     type='mapping',
     mappings=[
         "-=>",      # strip '-'
         ".=>' '",   # change '.' to separator
     ])
 
+postcode_stripper = analysis.char_filter(
+    'postcode_stripper',
+    type='pattern_replace',
+    pattern=r'[\s\-]',        # strip whitespace and '-'
+    replacement='',
+)
+
 kadastrale_aanduiding = es.analyzer(
     'kadastrale_aanduiding',
-    tokenizer='keyword'
-    , filter=['standard', 'lowercase'])
+    tokenizer='keyword',
+    filter=['standard', 'lowercase'])
 
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
     filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
-    char_filter=[stripper],
+    char_filter=[adres_stripper],
 )
 
 naam = es.analyzer(
     'naam',
     tokenizer='standard',
     filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
-    char_filter=[stripper]
+    char_filter=[adres_stripper],
+)
+
+postcode = es.analyzer(
+    'postcode',
+    tokenizer='keyword',
+    filter=['standard', 'lowercase'],
+    char_filter=[postcode_stripper],
 )
