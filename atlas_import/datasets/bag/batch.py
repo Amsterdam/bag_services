@@ -113,6 +113,8 @@ class ImportGmeTask(batch.BasicTask):
             naam=r['Gemeentenaam'],
             verzorgingsgebied=uva2.uva_indicatie(r['IndicatieVerzorgingsgebied']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
 

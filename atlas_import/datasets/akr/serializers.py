@@ -145,6 +145,9 @@ class ZakelijkRechtDetail(AkrMixin, rest.HALSerializer):
 
             'einde_filiatie',
             'sluimerend',
+
+            'begin_geldigheid',
+            'einde_geldigheid',
         )
 
     def to_representation(self, instance):
@@ -280,6 +283,8 @@ class KadastraalObjectDetail(AkrMixin, rest.HALSerializer):
             'geometrie',
             'beperkingen',
             'omschrijving_deelperceel',
+            'begin_geldigheid',
+            'einde_geldigheid',
         )
 
 

@@ -159,6 +159,8 @@ class ImportGmeTest(TaskTestCase):
         self.assertEquals(g.naam, 'Amsterdam')
         self.assertTrue(g.verzorgingsgebied)
         self.assertFalse(g.vervallen)
+        self.assertEquals(g.begin_geldigheid, datetime.date(1900, 1, 1))
+        self.assertIsNone(g.einde_geldigheid)
 
 
 class ImportSdlTest(TaskTestCase):
