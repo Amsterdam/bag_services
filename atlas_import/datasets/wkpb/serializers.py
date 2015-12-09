@@ -18,6 +18,9 @@ class Broncode(rest.HALSerializer):
 
 class Brondocument(rest.HALSerializer):
     _display = rest.DisplayField()
+
+    bron = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Brondocument
         fields = (
@@ -26,7 +29,13 @@ class Brondocument(rest.HALSerializer):
             'url',
             'inschrijfnummer',
             'documentnaam',
+            'soort_besluit',
+            'persoonsgegevens_afschermen',
+            'bron',
         )
+
+    def get_bron(self, obj):
+        return obj.bron.omschrijving if obj.bron else None
 
 
 class Beperkingcode(serializers.ModelSerializer):
@@ -76,7 +85,7 @@ class BrondocumentDetail(rest.HALSerializer):
             'inschrijfnummer',
             'bron',
             'inschrijfnummer',
-            'persoonsgegeven_afschermen',
+            'persoonsgegevens_afschermen',
             'soort_besluit',
             'url',
             'beperking'

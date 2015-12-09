@@ -154,7 +154,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
             inschrijfnummer=inschrijfnummer,
             bron_id=bron_id,
             documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
-            persoonsgegeven_afschermen=pers_afsch,
+            persoonsgegevens_afschermen=pers_afsch,
             soort_besluit=r[5],
             beperking_id=beperking_id
         )
