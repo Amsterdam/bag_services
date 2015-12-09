@@ -416,11 +416,29 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixi
 
     geometrie = geo.PointField(null=True, srid=28992)
 
+    # gedenormaliseerde velden
+    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
+    _huisnummer = models.IntegerField(null=True)
+    _huisletter = models.CharField(max_length=1, null=True)
+    _huisnummer_toevoeging = models.CharField(max_length=4, null=True)
+
     objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Verblijfsobject"
         verbose_name_plural = "Verblijfsobjecten"
+        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        index_together = [
+            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ]
+
+    def __str__(self):
+        result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
+        if self._huisletter:
+            result += self._huisletter
+        if self._huisnummer_toevoeging:
+            result += '-' + self._huisnummer_toevoeging
+        return result
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,

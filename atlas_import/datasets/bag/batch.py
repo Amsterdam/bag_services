@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.db import connection
 
 from batch import batch
 from datasets.generic import uva2, index, database, geo
@@ -438,7 +439,6 @@ class ImportOprTask(batch.BasicTask):
             return
 
         self.openbare_ruimtes[key].geometrie = geo.get_multipoly(geometrie)
-
 
 
 class ImportNumTask(batch.BasicTask):
@@ -1234,6 +1234,36 @@ class ImportUnescoTask(batch.BasicTask):
         )
 
 
+class DenormalizeDataTask(batch.BasicTask):
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+        with connection.cursor() as c:
+            c.execute("""
+UPDATE bag_verblijfsobject vbo
+SET _openbare_ruimte_naam = t.naam,
+  _huisnummer             = t.huisnummer,
+  _huisletter             = t.huisletter,
+  _huisnummer_toevoeging  = t.huisnummer_toevoeging
+FROM (
+       SELECT
+         num.verblijfsobject_id    AS vbo_id,
+         opr.naam                  AS naam,
+         num.huisnummer            AS huisnummer,
+         num.huisletter            AS huisletter,
+         num.huisnummer_toevoeging AS huisnummer_toevoeging
+       FROM bag_nummeraanduiding num
+         LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
+       WHERE num.hoofdadres
+     ) t
+WHERE vbo.id = t.vbo_id;
+            """)
+
 class ImportBagJob(object):
     name = "Import BAG"
 
@@ -1279,6 +1309,8 @@ class ImportBagJob(object):
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp),
             ImportUnescoTask(self.gebieden_shp),
+
+            DenormalizeDataTask(),
         ]
 
 
