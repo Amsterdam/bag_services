@@ -61,7 +61,7 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Verblijfsobject.objects.all()
+    queryset = models.Verblijfsobject.objects
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
     filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt', )

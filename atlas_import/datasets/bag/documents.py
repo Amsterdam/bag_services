@@ -8,7 +8,8 @@ class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
+    order = es.Integer()
 
     centroid = es.GeoPoint()
 
@@ -20,7 +21,8 @@ class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
+    order = es.Integer()
 
     centroid = es.GeoPoint()
 
@@ -32,8 +34,9 @@ class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
     huisnummer = es.Integer()
+    postcode = es.String(analyzer=analyzers.postcode)
+    order = es.Integer()
 
-    postcode = es.String()
     centroid = es.GeoPoint()
 
     bestemming = es.String()
@@ -46,7 +49,8 @@ class Verblijfsobject(es.DocType):
 
 class OpenbareRuimte(es.DocType):
     naam = es.String(analyzer=analyzers.adres)
-    postcode = es.String()
+    postcode = es.String(analyzer=analyzers.postcode)
+    order = es.Integer()
 
     class Meta:
         index = 'bag'
@@ -64,7 +68,7 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = adres.postcode
+        dest.postcode = "{}-{}".format(adres.postcode, adres.huisnummer)
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.huisnummer = int(adres.huisnummer)
 
@@ -73,6 +77,7 @@ def from_ligplaats(l: models.Ligplaats):
     d = Ligplaats(_id=l.id)
     update_adres(d, l.hoofdadres)
     d.centroid = get_centroid(l.geometrie)
+    d.order = analyzers.orderings['adres']
 
     return d
 
@@ -81,6 +86,7 @@ def from_standplaats(s: models.Standplaats):
     d = Standplaats(_id=s.id)
     update_adres(d, s.hoofdadres)
     d.centroid = get_centroid(s.geometrie)
+    d.order = analyzers.orderings['adres']
 
     return d
 
@@ -93,6 +99,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
     d.bestemming = v.gebruiksdoel_omschrijving
     d.kamers = v.aantal_kamers
     d.oppervlakte = v.oppervlakte
+    d.order = analyzers.orderings['adres']
 
     return d
 
@@ -102,8 +109,10 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.naam = o.naam
     postcodes = set()
     for a in o.adressen.all():
-        postcodes.add(a.postcode)
+        if a.postcode:
+            postcodes.add(a.postcode)
 
     d.postcode = list(postcodes)
+    d.order = analyzers.orderings['openbare_ruimte']
 
     return d

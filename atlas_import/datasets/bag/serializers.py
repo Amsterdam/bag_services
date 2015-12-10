@@ -252,6 +252,8 @@ class GemeenteDetail(BagMixin, rest.HALSerializer):
             'id',
             'code',
             'date_modified',
+            'begin_geldigheid',
+            'einde_geldigheid',
 
             'naam',
             'verzorgingsgebied',

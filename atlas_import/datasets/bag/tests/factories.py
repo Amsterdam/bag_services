@@ -78,7 +78,7 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
-    huisnummer = factory.LazyAttribute(lambda o: f.building_number())
+    huisnummer = factory.LazyAttribute(lambda o: int(f.building_number()))
     openbare_ruimte = factory.SubFactory(OpenbareRuimteFactory)
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
 

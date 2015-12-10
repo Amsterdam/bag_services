@@ -60,7 +60,7 @@ class ImportWkpbBrondocument(TaskTestCase):
         self.assertEqual(a.inschrijfnummer, 6641)
         self.assertEqual(a.documentnaam, 'BD00000149_WK00WK.pdf')
         self.assertEqual(a.bron.omschrijving, 'Burgemeester')
-        self.assertEqual(a.persoonsgegeven_afschermen, False)
+        self.assertEqual(a.persoonsgegevens_afschermen, False)
         self.assertEqual(a.beperking.id, 1006943)
 
 

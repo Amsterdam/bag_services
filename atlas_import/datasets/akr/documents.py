@@ -5,6 +5,7 @@ from datasets.generic import analyzers
 
 class KadastraalObject(es.DocType):
     aanduiding = es.String(analyzer=analyzers.kadastrale_aanduiding)
+    order = es.Integer()
     centroid = es.GeoPoint()
 
     class Meta:
@@ -16,6 +17,7 @@ class KadastraalSubject(es.DocType):
     natuurlijk_persoon = es.Boolean()
     geslachtsnaam = es.String(analyzer=analyzers.naam)
     geboortedatum = es.Date()
+    order = es.Integer()
 
     class Meta:
         index = 'brk'
@@ -33,6 +35,7 @@ def from_kadastraal_subject(ks):
         d.geboortedatum = ks.geboortedatum
 
     d.naam = ks.volledige_naam()
+    d.order = analyzers.orderings['kadastraal_subject']
 
     return d
 
@@ -41,6 +44,7 @@ def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.id)
 
     d.aanduiding = ko.id
+    d.order = analyzers.orderings['kadastraal_object']
     if ko.geometrie:
         centroid = ko.geometrie
         centroid.transform('wgs84')

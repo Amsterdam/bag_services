@@ -111,6 +111,8 @@ class ImportKotTask(batch.BasicTask):
             ruitnummer=uva2.uva_nummer(r['Ruitnummer']),
             omschrijving_deelperceel=r['OmschrijvingDeelperceel'],
             geometrie=geo,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
 
@@ -378,6 +380,8 @@ class ImportZrtTask(batch.BasicTask):
             kadastraal_object_id=kot_id,
             kadastraal_subject_id=kst_id,
             transactie_id=tte_id,
+            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def get_soort_recht(self, code, omschrijving):

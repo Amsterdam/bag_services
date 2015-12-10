@@ -58,7 +58,7 @@ class Toegang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Mod
         verbose_name_plural = "Toegang"
 
 
-class Gemeente(mixins.ImportStatusMixin, models.Model):
+class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
@@ -343,11 +343,29 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.Imp
     buurt = models.ForeignKey(Buurt, null=True, related_name='ligplaatsen')
     geometrie = geo.PolygonField(null=True, srid=28992)
 
+    # gedenormaliseerde velden
+    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
+    _huisnummer = models.IntegerField(null=True)
+    _huisletter = models.CharField(max_length=1, null=True)
+    _huisnummer_toevoeging = models.CharField(max_length=4, null=True)
+
     objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Ligplaats"
         verbose_name_plural = "Ligplaatsen"
+        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        index_together = [
+            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ]
+
+    def __str__(self):
+        result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
+        if self._huisletter:
+            result += self._huisletter
+        if self._huisnummer_toevoeging:
+            result += '-' + self._huisnummer_toevoeging
+        return result
 
 
 class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
@@ -368,11 +386,29 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.I
     buurt = models.ForeignKey(Buurt, null=True, related_name='standplaatsen')
     geometrie = geo.PolygonField(null=True, srid=28992)
 
+    # gedenormaliseerde velden
+    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
+    _huisnummer = models.IntegerField(null=True)
+    _huisletter = models.CharField(max_length=1, null=True)
+    _huisnummer_toevoeging = models.CharField(max_length=4, null=True)
+
     objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Standplaats"
         verbose_name_plural = "Standplaatsen"
+        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        index_together = [
+            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ]
+
+    def __str__(self):
+        result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
+        if self._huisletter:
+            result += self._huisletter
+        if self._huisnummer_toevoeging:
+            result += '-' + self._huisnummer_toevoeging
+        return result
 
 
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
@@ -416,11 +452,29 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixi
 
     geometrie = geo.PointField(null=True, srid=28992)
 
+    # gedenormaliseerde velden
+    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
+    _huisnummer = models.IntegerField(null=True)
+    _huisletter = models.CharField(max_length=1, null=True)
+    _huisnummer_toevoeging = models.CharField(max_length=4, null=True)
+
     objects = geo.GeoManager()
 
     class Meta:
         verbose_name = "Verblijfsobject"
         verbose_name_plural = "Verblijfsobjecten"
+        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        index_together = [
+            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ]
+
+    def __str__(self):
+        result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
+        if self._huisletter:
+            result += self._huisletter
+        if self._huisnummer_toevoeging:
+            result += '-' + self._huisnummer_toevoeging
+        return result
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,

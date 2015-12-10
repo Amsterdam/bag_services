@@ -50,7 +50,8 @@ def search_query(client, query):
                      fields=['naam', 'adres', 'postcode', 'geslachtsnaam', 'aanduiding'])
                    | Q("wildcard", naam=dict(value=wildcard))
                    )
-            .sort({"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
+            .sort({"order": {"order": "asc", "missing": "_last", "unmapped_type": "long"}},
+                  {"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
                   {"huisnummer": {"order": "asc", "missing": "_first", "unmapped_type": "long"}},
                   {"adres": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
                   '-_score',

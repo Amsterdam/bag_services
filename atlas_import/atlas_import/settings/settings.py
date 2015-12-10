@@ -130,7 +130,7 @@ ALLOWED_HOSTS = [
 ]
 
 REST_FRAMEWORK = dict(
-    PAGE_SIZE=10,
+    PAGE_SIZE=25,
     DEFAULT_AUTHENTICATION_CLASSES=(
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.BasicAuthentication',
