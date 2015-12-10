@@ -1235,7 +1235,6 @@ class ImportUnescoTask(batch.BasicTask):
 
 
 class DenormalizeDataTask(batch.BasicTask):
-
     def before(self):
         pass
 
@@ -1263,6 +1262,47 @@ FROM (
      ) t
 WHERE vbo.id = t.vbo_id;
             """)
+
+            c.execute("""
+UPDATE bag_ligplaats lig
+SET _openbare_ruimte_naam = t.naam,
+  _huisnummer             = t.huisnummer,
+  _huisletter             = t.huisletter,
+  _huisnummer_toevoeging  = t.huisnummer_toevoeging
+FROM (
+       SELECT
+         num.ligplaats_id          AS lig_id,
+         opr.naam                  AS naam,
+         num.huisnummer            AS huisnummer,
+         num.huisletter            AS huisletter,
+         num.huisnummer_toevoeging AS huisnummer_toevoeging
+       FROM bag_nummeraanduiding num
+         LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
+       WHERE num.hoofdadres AND num.ligplaats_id IS NOT NULL
+     ) t
+WHERE lig.id = t.lig_id;
+            """)
+
+            c.execute("""
+UPDATE bag_standplaats sta
+SET _openbare_ruimte_naam = t.naam,
+  _huisnummer             = t.huisnummer,
+  _huisletter             = t.huisletter,
+  _huisnummer_toevoeging  = t.huisnummer_toevoeging
+FROM (
+       SELECT
+         num.standplaats_id        AS sta_id,
+         opr.naam                  AS naam,
+         num.huisnummer            AS huisnummer,
+         num.huisletter            AS huisletter,
+         num.huisnummer_toevoeging AS huisnummer_toevoeging
+       FROM bag_nummeraanduiding num
+         LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
+       WHERE num.hoofdadres AND num.standplaats_id IS NOT NULL
+     ) t
+WHERE sta.id = t.sta_id;
+            """)
+
 
 class ImportBagJob(object):
     name = "Import BAG"
