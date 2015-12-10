@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'datasets.bag',
     'datasets.akr',
     'datasets.lki',
+    'datasets.brk',
     'datasets.wkpb',
 
     'geo_views',

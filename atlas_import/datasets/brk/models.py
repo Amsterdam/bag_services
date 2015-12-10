@@ -140,8 +140,8 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     statutaire_zetel = models.CharField(max_length=24, null=True)
 
     bron = models.SmallIntegerField(choices=BRON_CHOICES)
-    woonadres = models.ForeignKey(Adres, null=True)
-    postadres = models.ForeignKey(Adres, null=True)
+    woonadres = models.ForeignKey(Adres, null=True, related_name="woonadres")
+    postadres = models.ForeignKey(Adres, null=True, related_name="postadres")
 
 
 class SoortGrootte(KadasterCodeOmschrijving):
@@ -183,12 +183,12 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
     geometrie = geo.MultiPolygonField(srid=28992, null=True)
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject)
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobject')
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
 
     objects = geo.GeoManager()
 
 
-class KadastraalObjectVerblijfsobject(mixins.ImportStatusMixin):
+class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
     id = models.UUIDField(primary_key=True)
     kadastraal_object = models.ForeignKey(KadastraalObject)
     verblijfsobject = models.ForeignKey(bag.Verblijfsobject, null=True)
@@ -209,8 +209,8 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     belast_azt = models.CharField(max_length=15)
     belast_met_azt = models.CharField(max_length=15)
-    ontstaan_uit = models.ForeignKey('ZakelijkRecht', null=True)
-    betrokken_bij = models.ForeignKey('ZakelijkRecht', null=True)
+    ontstaan_uit = models.ForeignKey('ZakelijkRecht', null=True, related_name="ontstaan_uit_set")
+    betrokken_bij = models.ForeignKey('ZakelijkRecht', null=True, related_name="betrokken_bij_set")
 
     beperkt_tot_tng = models.BooleanField(default=False)
 
