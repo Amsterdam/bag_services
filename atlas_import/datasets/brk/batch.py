@@ -62,3 +62,37 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
             geometrie=geo.get_multipoly(feat.geom.wkt)
         )
 
+
+class ImportKadastraleSectieTask(batch.BasicTask):
+    name = "Import Kadastrale Sectie"
+
+    def __init__(self, path):
+        self.path = path
+        self.gemeentes = set()
+
+    def before(self):
+        database.clear_models(models.KadastraleSectie)
+        self.gemeentes = set(models.KadastraleGemeente.objects.values_list('pk', flat=True))
+
+    def after(self):
+        self.gemeentes.clear()
+
+    def process(self):
+        s = geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature)
+        models.KadastraleSectie.objects.bulk_create(s, batch_size=database.BATCH_SIZE)
+
+    def process_feature(self, feat):
+        kad_gem_id = feat.get('LKI_KADGEM')
+        sectie = feat.get('LKI_SECTIE')
+        pk = "{}{}".format(kad_gem_id, sectie)
+
+        if kad_gem_id not in self.gemeentes:
+            log.warn("Kadastrale sectie {} references non-existing Kadastrale Gemeente {}; skipping".format(pk, kad_gem_id))
+            return
+
+        return models.KadastraleSectie(
+            pk=pk,
+            sectie=sectie,
+            kadastrale_gemeente_id=kad_gem_id,
+            geometrie=geo.get_multipoly(feat.geom.wkt)
+        )

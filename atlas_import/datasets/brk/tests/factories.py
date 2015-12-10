@@ -21,3 +21,12 @@ class GemeenteFactory(factory.DjangoModelFactory):
     gemeente = factory.LazyAttribute(lambda o: f.city())
     geometrie = random_poly()
 
+
+class KadastraleGemeenteFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.KadastraleGemeente
+
+    pk = fuzzy.FuzzyText(length=5)
+    gemeente = factory.SubFactory(GemeenteFactory)
+    geometrie = random_poly()
+

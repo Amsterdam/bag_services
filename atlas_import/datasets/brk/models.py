@@ -32,6 +32,8 @@ class KadastraleGemeente(mixins.ImportStatusMixin):
 
 class KadastraleSectie(mixins.ImportStatusMixin):
     id = models.CharField(max_length=200, primary_key=True)
+
+    sectie = models.CharField(max_length=2)
     kadastrale_gemeente = models.ForeignKey(KadastraleGemeente, related_name="secties")
 
     geometrie = geo.MultiPolygonField(srid=28992)
