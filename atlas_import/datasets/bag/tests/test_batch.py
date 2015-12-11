@@ -1,7 +1,9 @@
 import datetime
 
 from django.contrib.gis.geos import Point
+from django.test import TransactionTestCase
 
+from datasets.bag.tests import factories
 from .. import models, batch
 from batch.test import TaskTestCase
 
@@ -681,3 +683,5 @@ class ImportVboPndTask(TaskTestCase):
 
         self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()], [v1.id, v2.id, v3.id])
         self.assertEqual([p.id for p in v1.panden.all()], [p.id])
+
+
