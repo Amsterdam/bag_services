@@ -29,11 +29,6 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
                                                                'Belemmeringenwet Privaatrecht)')
         self.assertEqual(zrt.aard_zakelijk_recht_akr, 'BP')
 
-        # self.assertIsNotNone(zrt.belast_azt)
-        # self.assertEqual(zrt.belast_azt[0].code, 'VE')
-        # self.assertEqual(zrt.belast_azt[1].omschrijving, '')
-
-        self.assertQuerysetEqual(zrt.belast_met_azt.all(), [])
         self.assertIsNone(zrt.ontstaan_uit_id)
         self.assertIsNone(zrt.betrokken_bij_id)
 

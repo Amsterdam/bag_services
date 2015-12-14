@@ -445,8 +445,6 @@ class ImportZakelijkRechtTask(batch.BasicTask):
             aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                             row['ZRT_AARDZAKELIJKRECHT_OMS']),
             aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
-            # belast_azt=None,  # models.CharField(max_length=15)
-            # belast_met_azt=None,  # models.CharField(max_length=15)
             ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
             betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
             kadastraal_object_id=kot_id,
