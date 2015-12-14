@@ -2,7 +2,7 @@ from django.contrib.gis.db import models as geo
 from django.db import models
 from datasets.bag import models as bag
 
-from datasets.generic import mixins
+from datasets.generic import mixins, kadaster
 
 
 class Gemeente(mixins.ImportStatusMixin):
@@ -16,6 +16,9 @@ class Gemeente(mixins.ImportStatusMixin):
         verbose_name = "Gemeente"
         verbose_name_plural = "Gemeentes"
 
+    def __str__(self):
+        return "{}".format(self.gemeente)
+
 
 class KadastraleGemeente(mixins.ImportStatusMixin):
     id = models.CharField(max_length=200, primary_key=True)
@@ -28,6 +31,9 @@ class KadastraleGemeente(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastrale Gemeente"
         verbose_name_plural = "Kadastrale Gemeentes"
+
+    def __str__(self):
+        return "{}".format(self.gemeente)
 
 
 class KadastraleSectie(mixins.ImportStatusMixin):
@@ -43,6 +49,9 @@ class KadastraleSectie(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastrale Sectie"
         verbose_name_plural = "Kadastrale Secties"
+
+    def __str__(self):
+        return "{} {}".format(self.gemeente, self.sectie)
 
 
 class KadasterCodeOmschrijving(mixins.ImportStatusMixin):
@@ -184,6 +193,11 @@ class KadastraalObject(mixins.ImportStatusMixin):
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
 
     objects = geo.GeoManager()
+
+    def get_aanduiding_spaties(self):
+        return kadaster.get_aanduiding_spaties(
+            self.gemeentecode, self.sectie, self.perceelnummer, self.objectindex_letter, self.objectindex_nummer
+        )
 
 
 class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
