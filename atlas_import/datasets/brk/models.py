@@ -72,10 +72,6 @@ class Land(KadasterCodeOmschrijving):
     pass
 
 
-class VertrekLand(KadasterCodeOmschrijving):
-    pass
-
-
 class Rechtsvorm(KadasterCodeOmschrijving):
     pass
 
@@ -124,16 +120,16 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     naam = models.CharField(max_length=200, null=True)
     geslacht = models.ForeignKey(Geslacht, null=True)
     aanduiding_naam = models.ForeignKey(AanduidingNaam, null=True)
-    geboortedatum = models.DateField(null=True)
-    geboorteplaats = models.CharField(max_length=80)
-    geboorteland = models.ForeignKey(Land, null=True)
-    overlijdensdatum = models.DateField(null=True)
+    geboortedatum = models.CharField(max_length=50, null=True)     # kadaster-data kan onvolledig zijn
+    geboorteplaats = models.CharField(max_length=80, null=True)
+    geboorteland = models.ForeignKey(Land, null=True, related_name='+')
+    overlijdensdatum = models.CharField(max_length=50, null=True)  # kadaster-data kan onvolledig zijn
 
-    partner_voornamen = models.CharField(max_length=200)
-    partner_voorvoegsels = models.CharField(max_length=10)
-    partner_naam = models.CharField(max_length=200)
+    partner_voornamen = models.CharField(max_length=200, null=True)
+    partner_voorvoegsels = models.CharField(max_length=10, null=True)
+    partner_naam = models.CharField(max_length=200, null=True)
 
-    land_waarnaar_vertrokken = models.ForeignKey(VertrekLand, null=True)
+    land_waarnaar_vertrokken = models.ForeignKey(Land, null=True, related_name='+')
 
     rsin = models.CharField(max_length=80, null=True)
     kvknummer = models.CharField(max_length=8, null=True)
@@ -142,8 +138,8 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     statutaire_zetel = models.CharField(max_length=24, null=True)
 
     bron = models.SmallIntegerField(choices=BRON_CHOICES)
-    woonadres = models.ForeignKey(Adres, null=True, related_name="woonadres")
-    postadres = models.ForeignKey(Adres, null=True, related_name="postadres")
+    woonadres = models.ForeignKey(Adres, null=True, related_name="+")
+    postadres = models.ForeignKey(Adres, null=True, related_name="+")
 
 
 class SoortGrootte(KadasterCodeOmschrijving):
