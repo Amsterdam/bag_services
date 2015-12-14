@@ -1,11 +1,28 @@
 import hashlib
 import logging
 
+import datetime
+
 from batch import batch
 from datasets.brk import models
-from datasets.generic import geo, database, uva2
+from datasets.generic import geo, database, uva2, kadaster
 
 log = logging.getLogger(__name__)
+
+
+def _get_related(code, omschrijving, cache, model):
+    if not code or code == 'geenWaarde':
+        return None
+    cached = cache.get(code)
+    if cached:
+        return cached
+
+    obj = model.objects.create(
+        code=code,
+        omschrijving=omschrijving
+    )
+    cache[code] = obj
+    return obj
 
 
 class ImportGemeenteTask(batch.BasicTask):
@@ -220,34 +237,20 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             bron=bron,
         )
 
-    def __get_related(self, code, omschrijving, cache, model):
-        if not code:
-            return None
-        cached = cache.get(code)
-        if cached:
-            return cached
-
-        obj = model.objects.create(
-            code=code,
-            omschrijving=omschrijving
-        )
-        cache[code] = obj
-        return obj
-
     def get_geslacht(self, code, omschrijving):
-        return self.__get_related(code, omschrijving, self.geslacht, models.Geslacht)
+        return _get_related(code, omschrijving, self.geslacht, models.Geslacht)
 
     def get_beschikkingsbevoegdheid(self, code, omschrijving):
-        return self.__get_related(code, omschrijving, self.beschikkingsbevoegdheid, models.Beschikkingsbevoegdheid)
+        return _get_related(code, omschrijving, self.beschikkingsbevoegdheid, models.Beschikkingsbevoegdheid)
 
     def get_aanduiding_naam(self, code, omschrijving):
-        return self.__get_related(code, omschrijving, self.aanduiding_naam, models.AanduidingNaam)
+        return _get_related(code, omschrijving, self.aanduiding_naam, models.AanduidingNaam)
 
     def get_land(self, code, omschrijving):
-        return self.__get_related(code, omschrijving, self.land, models.Land)
+        return _get_related(code, omschrijving, self.land, models.Land)
 
     def get_rechtsvorm(self, code, omschrijving):
-        return self.__get_related(code, omschrijving, self.rechtsvorm, models.Rechtsvorm)
+        return _get_related(code, omschrijving, self.rechtsvorm, models.Rechtsvorm)
 
     def get_adres(self, openbareruimte_naam, huisnummer, huisletter, toevoeging, postcode, woonplaats, postbus_nummer,
                   postbus_postcode, postbus_woonplaats, buitenland_adres, buitenland_woonplaats, buitenland_regio,
@@ -286,59 +289,114 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         return adres_id
 
 
-"""
-SJT_NP_GEBOORTEDATUM
-SJT_NP_GEBOORTEPLAATS
-SJT_NP_GEBOORTELAND_CODE
-SJT_NP_GEBOORTELAND_OMS
-SJT_NP_DATUMOVERLIJDEN
-SJT_NP_VOORNAMEN_PARTNER
-SJT_NP_VOORVOEGSEL_PARTNER
-SJT_NP_GESLACHTSNAAM_PARTNER
-SJT_NP_LANDWAARNAARVERTR_CODE
-SJT_NP_LANDWAARNAARVERTR_OMS
+class ImportKadastraalObjectTask(batch.BasicTask):
+    name = "Import Kadastraal Object"
 
-SJT_KAD_GEBOORTEDATUM
-SJT_KAD_GEBOORTEPLAATS
-SJT_KAD_GEBOORTELAND_CODE
-SJT_KAD_GEBOORTELAND_OMS
-SJT_KAD_INDICATIEOVERLEDEN
-SJT_KAD_DATUMOVERLIJDEN
-SJT_NNP_RSIN
-SJT_NNP_KVKNUMMER
-SJT_NNP_RECHTSVORM_CODE
-SJT_NNP_RECHTSVORM_OMS
-SJT_NNP_STATUTAIRE_NAAM
-SJT_NNP_STATUTAIRE_ZETEL
-SJT_KAD_STATUTAIRE_NAAM
-SJT_KAD_RECHTSVORM_CODE
-SJT_KAD_RECHTSVORM_OMS
-SJT_KAD_STATUTAIRE_ZETEL
-SWS_OPENBARERUIMTENAAM
-SWS_HUISNUMMER
-SWS_HUISLETTER
-SWS_HUISNUMMERTOEVOEGING
-SWS_POSTCODE
-SWS_WOONPLAATSNAAM
-SWS_BUITENLAND_ADRES
-SWS_BUITENLAND_WOONPLAATS
-SWS_BUITENLAND_REGIO
-SWS_BUITENLAND_NAAM
-SWS_BUITENLAND_CODE
-SWS_BUITENLAND_OMS
-SPS_POSTBUSNUMMER
-SPS_POSTBUS_POSTCODE
-SPS_POSTBUS_WOONPLAATSNAAM
-SPS_OPENBARERUIMTENAAM
-SPS_HUISNUMMER
-SPS_HUISLETTER
-SPS_HUISNUMMERTOEVOEGING
-SPS_POSTCODE
-SPS_WOONPLAATSNAAM
-SPS_BUITENLAND_ADRES
-SPS_BUITENLAND_WOONPLAATS
-SPS_BUITENLAND_REGIO
-SPS_BUITENLAND_NAAM
-SPS_BUITENLAND_CODE
-SPS_BUITENLAND_OMS
-"""
+    def __init__(self, path):
+        self.path = path
+        self.secties = dict()
+        self.soort_grootte = dict()
+        self.cultuur_code_onbebouwd = dict()
+        self.cultuur_code_bebouwd = dict()
+        self.subjects = set()
+
+    def before(self):
+        database.clear_models(
+            models.KadastraalObject,
+            models.SoortGrootte,
+            models.CultuurCodeOnbebouwd,
+            models.CultuurCodeBebouwd,
+        )
+
+        secties = models.KadastraleSectie.objects.select_related('kadastrale_gemeente').all()
+        for s in secties:
+            self.secties[(s.kadastrale_gemeente_id, s.sectie)] = s.pk
+
+        self.subjects = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+
+    def after(self):
+        self.secties.clear()
+        self.soort_grootte.clear()
+        self.cultuur_code_onbebouwd.clear()
+        self.cultuur_code_bebouwd.clear()
+        self.subjects.clear()
+
+    def process(self):
+        objects = uva2.process_csv(self.path, 'Kadastraal_object', self.process_object)
+        models.KadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+
+    def process_object(self, row):
+        kot_id = row['BRK_KOT_ID']
+
+        kg_id = row['KOT_KADASTRALEGEMEENTE_CODE']
+        sectie = row['KOT_SECTIE']
+        if (kg_id, sectie) not in self.secties:
+            log.warn("Kadastraal Object {} references non-existing Kadastrale Gemeente {}, Sectie {}; skipping".format(
+                kot_id, kg_id, sectie))
+            return
+
+        s_id = self.secties[(kg_id, sectie)]
+
+        perceelnummer = row['KOT_PERCEELNUMMER']
+        index_letter = row['KOT_INDEX_LETTER']
+        index_nummer = row['KOT_INDEX_NUMMER']
+        aanduiding = kadaster.get_aanduiding(kg_id, sectie, perceelnummer, index_letter, index_nummer)
+
+        grootte = row['KOT_KADGROOTTE']
+        koopsom = row['KOT_KOOPSOM']
+
+        toestands_datum_str = row['KOT_TOESTANDSDATUM']
+        toestands_datum = None
+        try:
+            toestands_datum = datetime.datetime.strptime(toestands_datum_str, "%Y%m%d%H%M%S").date()
+        except ValueError:
+            log.warn("Could not parse toestandsdatum {} for Kadastraal Object {}; ignoring".format(toestands_datum_str,
+                                                                                                   kot_id))
+            pass
+
+        subject_id = row['BRK_SJT_ID'] or None
+        if subject_id and subject_id not in self.subjects:
+            log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
+            subject_id = None
+
+
+        return models.KadastraalObject(
+            id=kot_id,
+            kadastrale_gemeente_id=kg_id,
+            aanduiding=aanduiding,
+            sectie_id=s_id,
+            perceelnummer=perceelnummer,
+            index_letter=index_letter,
+            index_nummer=index_nummer,
+            soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
+            grootte=int(grootte) if grootte else None,
+            g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
+            koopsom=int(koopsom) if koopsom else None,
+            koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
+            koopjaar=row['KOT_KOOPJAAR'],
+            meer_objecten=row['KOT_INDICATIE_MEER_OBJECTEN'].lower() == 'j',
+            cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(row['KOT_CULTUURCODEONBEBOUWD_CODE'],
+                                                                  row['KOT_CULTUURCODEONBEBOUWD_OMS']),
+            cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(row['KOT_CULTUURCODEBEBOUWD_CODE'],
+                                                              row['KOT_CULTUURCODEBEBOUWD_OMS']),
+
+            register9_tekst=row['KOT_AKRREGISTER9TEKST'],
+            status_code=row['KOT_STATUS_CODE'],
+            toestandsdatum=toestands_datum,
+            voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
+            in_onderzoek=row['KOT_INONDERZOEK'],
+
+            geometrie=geo.get_multipoly(row['GEOMETRIE']),
+            voornaamste_gerechtigde_id=subject_id,
+        )
+
+    def get_soort_grootte(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.soort_grootte, models.SoortGrootte)
+
+    def get_cultuur_code_onbebouwd(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.cultuur_code_onbebouwd, models.CultuurCodeOnbebouwd)
+
+    def get_cultuur_code_bebouwd(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.cultuur_code_bebouwd, models.CultuurCodeBebouwd)
+
+

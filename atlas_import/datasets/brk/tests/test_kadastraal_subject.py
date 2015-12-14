@@ -6,9 +6,6 @@ from datasets.brk import batch, models
 
 class ImportKadastraalSubjectTaskTest(TaskTestCase):
 
-    def setUp(self):
-        super().setUp()
-
     def task(self):
         return batch.ImportKadastraalSubjectTask("diva/brk")
 

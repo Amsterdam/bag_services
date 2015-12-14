@@ -1,11 +1,9 @@
 import factory
+import faker
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from factory import fuzzy
-import faker
 
 from .. import models
-from datasets.generic import kadaster
-
 
 f = faker.Factory.create(locale='nl_NL')
 
@@ -30,3 +28,22 @@ class KadastraleGemeenteFactory(factory.DjangoModelFactory):
     gemeente = factory.SubFactory(GemeenteFactory)
     geometrie = random_poly()
 
+
+class KadastraleSectieFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.KadastraleSectie
+
+    pk = fuzzy.FuzzyText(length=60)
+    sectie = fuzzy.FuzzyText(length=2)
+    kadastrale_gemeente = factory.SubFactory(KadastraleGemeenteFactory)
+    geometrie = random_poly()
+
+
+class NatuurlijkPersoonFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.KadastraalSubject
+
+    pk = fuzzy.FuzzyText(length=60)
+    type = models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK
+    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
+                                      models.KadastraalSubject.BRON_REGISTRATIE))

@@ -166,7 +166,6 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
 class KadastraalObject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=16)
-    gemeente = models.ForeignKey(Gemeente, related_name="kadastrale_objecten")
     kadastrale_gemeente = models.ForeignKey(KadastraleGemeente, related_name="kadastrale_objecten")
     sectie = models.ForeignKey(KadastraleSectie, related_name="kadastrale_objecten")
     perceelnummer = models.IntegerField()
@@ -179,17 +178,17 @@ class KadastraalObject(mixins.ImportStatusMixin):
     koopsom_valuta_code = models.CharField(max_length=50, null=True)
     koopjaar = models.CharField(max_length=15, null=True)
     meer_objecten = models.BooleanField(default=False)
-    cultuurcode_onbebouwd = models.ForeignKey(CultuurCodeOnbebouwd)
-    cultuurcode_bebouwd = models.ForeignKey(CultuurCodeBebouwd)
+    cultuurcode_onbebouwd = models.ForeignKey(CultuurCodeOnbebouwd, null=True)
+    cultuurcode_bebouwd = models.ForeignKey(CultuurCodeBebouwd, null=True)
 
     register9_tekst = models.TextField()
     status_code = models.CharField(max_length=50)
-    toestandsdatum = models.DateField()
+    toestandsdatum = models.DateField(null=True)
     voorlopige_kadastrale_grens = models.BooleanField(default=False)
     in_onderzoek = models.TextField(null=True)
 
     geometrie = geo.MultiPolygonField(srid=28992, null=True)
-    voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject)
+    voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
 
     objects = geo.GeoManager()
