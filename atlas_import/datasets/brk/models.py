@@ -51,7 +51,7 @@ class KadastraleSectie(mixins.ImportStatusMixin):
         verbose_name_plural = "Kadastrale Secties"
 
     def __str__(self):
-        return "{} {}".format(self.kadastrale_gemeente, self.sectie)
+        return "{} {}".format(self.kadastrale_gemeente.gemeente, self.sectie)
 
 
 class KadasterCodeOmschrijving(mixins.ImportStatusMixin):
@@ -218,12 +218,8 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     aard_zakelijk_recht = models.ForeignKey(AardZakelijkRecht, null=True)
     aard_zakelijk_recht_akr = models.CharField(max_length=3, null=True)
 
-    belast_azt = models.CharField(max_length=15)
-    belast_met_azt = models.CharField(max_length=15)
     ontstaan_uit = models.ForeignKey('ZakelijkRecht', null=True, related_name="ontstaan_uit_set")
     betrokken_bij = models.ForeignKey('ZakelijkRecht', null=True, related_name="betrokken_bij_set")
-
-    beperkt_tot_tng = models.BooleanField(default=False)
 
     kadastraal_object = models.ForeignKey(KadastraalObject, related_name="rechten")
     kadastraal_subject = models.ForeignKey(KadastraalSubject, related_name="rechten")

@@ -1,7 +1,6 @@
+import datetime
 import hashlib
 import logging
-
-import datetime
 
 from batch import batch
 from datasets.brk import models
@@ -359,7 +358,6 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
             subject_id = None
 
-
         return models.KadastraalObject(
             id=kot_id,
             kadastrale_gemeente_id=kg_id,
@@ -400,3 +398,74 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.cultuur_code_bebouwd, models.CultuurCodeBebouwd)
 
 
+class ImportZakelijkRechtTask(batch.BasicTask):
+    name = "Import Zakelijk Recht"
+
+    def __init__(self, path):
+        self.path = path
+        self.aard_zakelijk_recht = dict()
+        self.splits_type = dict()
+        self.kst = set()
+        self.kot = set()
+
+    def before(self):
+        database.clear_models(
+            models.ZakelijkRecht,
+            models.AardZakelijkRecht,
+            models.AppartementsrechtsSplitsType,
+        )
+        self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
+
+    def after(self):
+        self.aard_zakelijk_recht.clear()
+        self.kst.clear()
+        self.kot.clear()
+        self.splits_type.clear()
+
+    def process(self):
+        zrts = uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject)
+        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
+
+    def process_subject(self, row):
+        zrt_id = row['BRK_ZRT_ID']
+
+        kot_id = row['BRK_KOT_ID']
+        if kot_id and kot_id not in self.kot:
+            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(zrt_id, kot_id))
+            return
+
+        kst_id = row['BRK_SJT_ID']
+        if kst_id and kst_id not in self.kst:
+            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(zrt_id, kst_id))
+            return
+
+        return models.ZakelijkRecht(
+            pk=zrt_id,
+            aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
+                                                            row['ZRT_AARDZAKELIJKRECHT_OMS']),
+            aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
+            ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
+            betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
+            kadastraal_object_id=kot_id,
+            kadastraal_subject_id=kst_id,
+            kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
+            app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
+                                                                        row['ASG_APP_RECHTSPLITSTYPE_OMS']),
+        )
+
+    def get_aardzakelijk_recht(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.aard_zakelijk_recht, models.AardZakelijkRecht)
+
+    def get_appartementsrechts_splits_type(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.splits_type, models.AppartementsrechtsSplitsType)
+
+
+"""
+ZRT_BELAST_AZT
+Dit zakelijk recht belast de volgende Aardzakelijkrechten
+VARCHAR2(15)
+ZRT_BELAST_MET_AZT
+Dit zakelijk recht is belast met de volgende Aardzakelijkrechten
+VARCHAR2(15)
+"""
