@@ -1,3 +1,4 @@
+from unittest import skip
 from django.contrib.auth.models import User, Permission
 
 from rest_framework.test import APITestCase
@@ -5,6 +6,7 @@ from rest_framework.test import APITestCase
 from datasets.akr.tests import factories
 
 
+@skip
 class SensitiveDetailsTestCase(APITestCase):
     def setUp(self):
         self.not_authorized = User.objects.create_user(username='not_authorized', password='pass')
