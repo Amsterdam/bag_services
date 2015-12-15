@@ -37,9 +37,9 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/gemeente',
         'brk/kadastrale-gemeente',
         'brk/kadastrale-sectie',
-        # 'brk/object',
-        # 'brk/subject',
-        # 'brk/zakelijk-recht',
+        'brk/object',
+        'brk/subject',
+        'brk/zakelijk-recht',
         # 'brk/aantekening',
         # 'brk/stukdeel',
     ]
@@ -67,6 +67,17 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.GemeenteFactory.create()
         brk_factories.KadastraleGemeenteFactory.create()
         brk_factories.KadastraleSectieFactory.create()
+        brk_factories.KadastraalObjectFactory.create()
+        brk_factories.KadastraalSubjectFactory.create()
+
+    def should_skip_url(self, url):
+        if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
+            return True
+
+        if not settings.USE_BRK and url[0:len('brk')] == 'brk':
+            return True
+
+        return False
 
     def test_root(self):
         response = self.client.get('/api/')
@@ -74,13 +85,14 @@ class BrowseDatasetsTestCase(APITestCase):
         self.assertEqual(response['Content-Type'], 'application/hal+json')
 
         for url in self.datasets:
+            if self.should_skip_url(url):
+                continue
+
             self.assertIn(url, response.data)
 
     def test_lists(self):
         for url in self.datasets:
-            if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
-                continue
-            elif settings.USE_BRK and url[0:len('brk')] == 'brk':
+            if self.should_skip_url(url):
                 continue
 
             response = self.client.get('/api/{}/'.format(url))
@@ -93,9 +105,7 @@ class BrowseDatasetsTestCase(APITestCase):
 
     def test_details(self):
         for url in self.datasets:
-            if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
-                continue
-            elif settings.USE_BRK and url[0:len('brk')] == 'brk':
+            if self.should_skip_url(url):
                 continue
 
             response = self.client.get('/api/{}/'.format(url))

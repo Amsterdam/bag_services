@@ -43,10 +43,9 @@ class DocumentedRouter(routers.DefaultRouter):
 
     def register(self, prefix, viewset, base_name=None):
         if settings.USE_BRK and prefix[0:len('kadaster')] != 'kadaster':
-            print('including: %s' % prefix)
             super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
-        elif prefix[0:len('brk')] != 'brk':
-            print('including: %s' % prefix)
+
+        if not settings.USE_BRK and prefix[0:len('brk')] != 'brk':
             super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
 
 
