@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from datasets.generic import rest
 from . import models
@@ -253,6 +254,48 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
     rechtsvorm = Rechtsvorm()
 
     aantekeningen = rest.RelatedSummaryField()
+
+    class Meta:
+        model = models.KadastraalSubject
+        fields = (
+            '_links',
+            '_display',
+
+            'type',
+            'beschikkingsbevoegdheid',
+            'bsn',
+
+            'voornamen',
+            'voorvoegsels',
+            'naam',
+            'geslacht',
+            'aanduiding_naam',
+            'geboortedatum',
+            'geboorteplaats',
+            'geboorteland',
+            'overlijdensdatum',
+
+            'partner_voornamen',
+            'partner_voorvoegsels',
+            'partner_naam',
+
+            'land_waarnaar_vertrokken',
+
+            'rsin',
+            'kvknummer',
+            'rechtsvorm',
+            'statutaire_naam',
+            'statutaire_zetel',
+
+            'bron',
+            'woonadres',
+            'postadres',
+
+            'aantekeningen',
+        )
+
+
+class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
 
     allowed_anonymous = {'_links', '_display', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
@@ -297,8 +340,6 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
             'rechten',
         )
 
-
-class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
@@ -389,6 +430,19 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
 
             'app_rechtsplitstype',
         )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK\
+                and not user.has_perm('akr.view_sensitive_details'):
+            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+                                                 args=(instance.id,),
+                                                 request=request)
+
+        return data
 
 
 class AantekeningDetail(BrkMixin, rest.HALSerializer):

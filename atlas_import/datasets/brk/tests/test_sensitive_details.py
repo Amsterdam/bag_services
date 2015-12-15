@@ -75,22 +75,18 @@ class SensitiveDetailsTestCase(APITestCase):
             'http://testserver/api/brk/subject/{}/'.format(self.niet_natuurlijk.pk)
         )
 
-    @skip(reason='skip')
     def test_uitgelogd_zakelijk_recht_natuurlijk_verwijst_naar_subresource(self):
         response = self.client.get('/api/brk/zakelijk-recht/{}/'.format(self.recht_natuurlijk.pk)).data
 
         subj = response['kadastraal_subject']
-        print('%s' % subj)
-        self.assertEqual(subj, 'http://testserver/api/kadaster/zakelijk-recht/{}/subject/'.format(self.recht_natuurlijk.pk))
-        # print(subj['_links']['self']['href'])
-        # self.assertEqual(
-        #     subj['_links']['self']['href'],
-        #     'http://testserver/api/brk/zakelijk-recht/{}/subject/'.format(self.natuurlijk.pk)
-        # )
+        self.assertEqual(
+            subj,
+            'http://testserver/api/brk/zakelijk-recht/{}/subject/'.format(self.recht_natuurlijk.pk)
+        )
 
-    @skip(reason='skip')
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
-        response = self.client.get('/api/brk/zakelijk-recht/{}/subject.json'.format(self.recht_natuurlijk.pk)).data
+        response = self.client.get('/api/brk/zakelijk-recht/{}/subject/'.format(self.recht_natuurlijk.pk)).data
+
         self.assertIsNotNone(response['woonadres'])
         self.assertIsNotNone(response['postadres'])
         self.assertNotIn('rechten', response)
