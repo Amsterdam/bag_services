@@ -17,7 +17,7 @@ class Gemeente(BrkMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'gemeente',
+            # 'gemeente',
         )
 
 
@@ -63,11 +63,6 @@ class AanduidingNaam(serializers.ModelSerializer):
 class Land(serializers.ModelSerializer):
     class Meta:
         model = models.Land
-
-
-class VertrekLand(serializers.ModelSerializer):
-    class Meta:
-        model = models.VertrekLand
 
 
 class Rechtsvorm(serializers.ModelSerializer):
@@ -206,6 +201,7 @@ class Stukdeel(BrkMixin, rest.HALSerializer):
 # detail serializers
 class GemeenteDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    gemeente = serializers.CharField()
 
     class Meta:
         model = models.Gemeente
@@ -253,7 +249,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
     beschikkingsbevoegdheid = Beschikkingsbevoegdheid()
     geslacht = Geslacht()
     aanduiding_naam = AanduidingNaam()
-    land_waarnaar_vertrokken = VertrekLand()
+    land_waarnaar_vertrokken = Land()
     rechtsvorm = Rechtsvorm()
 
     aantekeningen = rest.RelatedSummaryField()

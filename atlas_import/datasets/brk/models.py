@@ -51,7 +51,7 @@ class KadastraleSectie(mixins.ImportStatusMixin):
         verbose_name_plural = "Kadastrale Secties"
 
     def __str__(self):
-        return "{} {}".format(self.gemeente, self.sectie)
+        return "{} {}".format(self.kadastrale_gemeente, self.sectie)
 
 
 class KadasterCodeOmschrijving(mixins.ImportStatusMixin):

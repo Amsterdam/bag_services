@@ -1,9 +1,11 @@
 from django.conf.urls import url, include
+from django.conf import settings
 from rest_framework import routers
 from atlas_api import views
 import datasets.bag.views
 import datasets.akr.views
 import datasets.wkpb.views
+import datasets.brk.views
 
 
 class DocumentedRouter(routers.DefaultRouter):
@@ -22,6 +24,9 @@ class DocumentedRouter(routers.DefaultRouter):
     `wkpb/`
     :   [Gemeentelijke beperkingenregistratie](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
 
+    `brk/`
+    :   [Basisregistratie kadaster (vanaf 1-1-2016)](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/)
+
     `atlas/`
     :   Specifieke functionaliteit voor Atlas
     """
@@ -35,6 +40,14 @@ class DocumentedRouter(routers.DefaultRouter):
 
         Datapunt.__doc__ = self.__doc__
         return Datapunt.as_view()
+
+    def register(self, prefix, viewset, base_name=None):
+        if settings.USE_BRK and prefix[0:len('kadaster')] != 'kadaster':
+            print('including: %s' % prefix)
+            super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
+        elif prefix[0:len('brk')] != 'brk':
+            print('including: %s' % prefix)
+            super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
 
 
 router = DocumentedRouter()
@@ -59,6 +72,15 @@ router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
 router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
 router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
 router.register(r'kadaster/gemeente', datasets.bag.views.GemeenteViewSet)
+
+router.register(r'brk/gemeente', datasets.brk.views.GemeenteViewSet)
+router.register(r'brk/kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+router.register(r'brk/kadastrale-sectie', datasets.brk.views.KadastraleSectieViewSet)
+router.register(r'brk/subject', datasets.brk.views.KadastraalSubjectViewSet)
+router.register(r'brk/object', datasets.brk.views.KadastraalObjectViewSet)
+router.register(r'brk/zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
+router.register(r'brk/aantekening', datasets.brk.views.AantekeningViewSet)
+router.register(r'brk/stukdeel', datasets.brk.views.StukdeelViewSet)
 
 router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
 router.register(r'wkpb/brondocument', datasets.wkpb.views.BrondocumentView)

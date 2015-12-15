@@ -1,8 +1,10 @@
+from django.conf import settings
 from rest_framework.test import APITestCase
 
 from datasets.akr.tests import factories as akr_factories
 from datasets.bag.tests import factories as bag_factories
 from datasets.wkpb.tests import factories as wkpb_factories
+from datasets.brk.tests import factories as brk_factories
 
 
 class BrowseDatasetsTestCase(APITestCase):
@@ -17,17 +19,29 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/nummeraanduiding',
         'bag/openbareruimte',
         'bag/woonplaats',
-        'kadaster/gemeente',
+
         'gebieden/stadsdeel',
         'gebieden/buurt',
         'gebieden/bouwblok',
+
         'kadaster/object',
         'kadaster/subject',
         'kadaster/transactie',
         'kadaster/zakelijk-recht',
+        'kadaster/gemeente',
+
         'wkpb/beperking',
         'wkpb/brondocument',
         'wkpb/broncode',
+
+        'brk/gemeente',
+        'brk/kadastrale-gemeente',
+        'brk/kadastrale-sectie',
+        # 'brk/object',
+        # 'brk/subject',
+        # 'brk/zakelijk-recht',
+        # 'brk/aantekening',
+        # 'brk/stukdeel',
     ]
 
     def setUp(self):
@@ -41,12 +55,18 @@ class BrowseDatasetsTestCase(APITestCase):
         bag_factories.StadsdeelFactory.create()
         bag_factories.BuurtFactory.create()
         bag_factories.BouwblokFactory.create()
+
         akr_factories.KadastraalObjectFactory.create()
         akr_factories.NatuurlijkPersoonFactory.create()
         akr_factories.TransactieFactory.create()
         akr_factories.ZakelijkRechtFactory.create()
+
         wkpb_factories.BeperkingKadastraalObjectFactory.create()
         wkpb_factories.BrondocumentFactory.create()
+
+        brk_factories.GemeenteFactory.create()
+        brk_factories.KadastraleGemeenteFactory.create()
+        brk_factories.KadastraleSectieFactory.create()
 
     def test_root(self):
         response = self.client.get('/api/')
@@ -58,7 +78,13 @@ class BrowseDatasetsTestCase(APITestCase):
 
     def test_lists(self):
         for url in self.datasets:
+            if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
+                continue
+            elif settings.USE_BRK and url[0:len('brk')] == 'brk':
+                continue
+
             response = self.client.get('/api/{}/'.format(url))
+
             self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
             self.assertEqual(response['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
 
@@ -67,7 +93,14 @@ class BrowseDatasetsTestCase(APITestCase):
 
     def test_details(self):
         for url in self.datasets:
+            if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
+                continue
+            elif settings.USE_BRK and url[0:len('brk')] == 'brk':
+                continue
+
             response = self.client.get('/api/{}/'.format(url))
+            if 'brk' in url:
+                print(url, response.data)
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
