@@ -22,7 +22,7 @@ def process_wkt(path, filename, callback):
     source = os.path.join(path, filename)
     with open(source) as f:
         rows = csv.reader(f, delimiter='|')
-        return [callback(row[0], GEOSGeometry(row[1])) for row in rows]
+        return [result for result in (callback(row[0], GEOSGeometry(row[1])) for row in rows) if result]
 
 
 def process_shp(path, filename, callback):
@@ -37,7 +37,7 @@ def process_shp(path, filename, callback):
     source = os.path.join(path, filename)
     ds = DataSource(source, encoding='ISO-8859-1')
     lyr = ds[0]
-    return [callback(feature) for feature in lyr]
+    return [result for result in (callback(feature) for feature in lyr) if result]
 
 
 def get_multipoly(wkt):

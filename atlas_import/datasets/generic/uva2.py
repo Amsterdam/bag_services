@@ -37,27 +37,23 @@ def uva_geldig(start, eind):
     return e is None or s is None or (s <= now < e)
 
 
-def _wrap_uva_row(r, headers):
+def _wrap_row(r, headers):
     return dict(zip(headers, r))
 
 
 @contextmanager
-def uva_reader(source):
+def _context_reader(source, skip=3):
     if not os.path.exists(source):
         raise ValueError("File not found: {}".format(source))
 
     with open(source, encoding='cp1252') as f:
         rows = csv.reader(f, delimiter=';', quoting=csv.QUOTE_NONE)
-        # skip VAN
-        next(rows)
-        # skip TM
-        next(rows)
-        # skip Historie
-        next(rows)
+        for i in range(skip):
+            next(rows)
 
         headers = next(rows)
 
-        yield (_wrap_uva_row(r, headers) for r in rows)
+        yield (_wrap_row(r, headers) for r in rows)
 
 
 def resolve_file(path, code, extension='UVA2'):
@@ -106,7 +102,13 @@ def process_uva2(path, file_code, process_row_callback):
     :return: an iterable over the results of process_row_callback
     """
     source = resolve_file(path, file_code)
-    with uva_reader(source) as rows:
+    with _context_reader(source) as rows:
+        return [result for result in (process_row_callback(r) for r in rows) if result]
+
+
+def process_csv(path, file_code, process_row_callback):
+    source = resolve_file(path, file_code, extension='csv')
+    with _context_reader(source, skip=0) as rows:
         return [result for result in (process_row_callback(r) for r in rows) if result]
 
 
