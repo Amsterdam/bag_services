@@ -253,6 +253,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
     rechtsvorm = Rechtsvorm()
 
     aantekeningen = rest.RelatedSummaryField()
+    rechten = rest.RelatedSummaryField()
 
     allowed_anonymous = {'_links', '_display', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
 
@@ -293,6 +294,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
             'postadres',
 
             'aantekeningen',
+            'rechten',
         )
 
 
@@ -302,7 +304,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
         user = self.context['request'].user
         if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('akr.view_sensitive_details'):
-            data = [data[f] for f in self.fields.keys() if f in self.allowed_anonymous]
+            return {f: data[f] for f in self.fields.keys() if f in self.allowed_anonymous}
 
         return data
 
@@ -377,12 +379,8 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
             'aard_zakelijk_recht',
             'aard_zakelijk_recht_akr',
 
-            'belast_azt',
-            'belast_met_azt',
             'ontstaan_uit',
             'betrokken_bij',
-
-            'beperkt_tot_tng',
 
             'kadastraal_object',
             'kadastraal_subject',

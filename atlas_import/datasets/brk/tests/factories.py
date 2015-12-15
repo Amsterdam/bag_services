@@ -40,6 +40,14 @@ class KadastraleSectieFactory(factory.DjangoModelFactory):
     geometrie = random_poly()
 
 
+class AdresFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Adres
+
+    pk = fuzzy.FuzzyText(length=32)
+    openbareruimte_naam = fuzzy.FuzzyText(length=80)
+
+
 class NatuurlijkPersoonFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.KadastraalSubject
@@ -48,6 +56,20 @@ class NatuurlijkPersoonFactory(factory.DjangoModelFactory):
     type = models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK
     bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
                                       models.KadastraalSubject.BRON_REGISTRATIE))
+    woonadres = factory.SubFactory(AdresFactory)
+    postadres = factory.SubFactory(AdresFactory)
+
+
+class NietNatuurlijkPersoonFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.KadastraalSubject
+
+    pk = fuzzy.FuzzyText(length=60)
+    type = models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK
+    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
+                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    woonadres = factory.SubFactory(AdresFactory)
+    postadres = factory.SubFactory(AdresFactory)
 
 
 class KadastraalSubjectFactory(factory.DjangoModelFactory):
@@ -59,6 +81,8 @@ class KadastraalSubjectFactory(factory.DjangoModelFactory):
                                       models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
     bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
                                       models.KadastraalSubject.BRON_REGISTRATIE))
+    woonadres = factory.SubFactory(AdresFactory)
+    postadres = factory.SubFactory(AdresFactory)
 
 
 class KadastraalObjectFactory(factory.DjangoModelFactory):
@@ -66,7 +90,7 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
         model = models.KadastraalObject
 
     pk = fuzzy.FuzzyText(length=60)
-    aanduiding = factory.LazyAttribute(lambda obj: kadaster.get_aanduiding(obj.sectie.kadastrale_gemeente.pk,
+    aanduiding = factory.LazyAttribute(lambda obj: kadaster.get_aanduiding(obj.kadastrale_gemeente.id,
                                                                            obj.sectie.sectie,
                                                                            obj.perceelnummer,
                                                                            obj.index_letter,
