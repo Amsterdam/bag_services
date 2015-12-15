@@ -310,7 +310,6 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
-    gemeente = Gemeente()
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
@@ -330,8 +329,8 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             '_display',
             'id',
             'aanduiding',
-            'gemeente',
             'kadastrale_gemeente',
+            'sectie',
             'perceelnummer',
             'index_letter',
             'index_nummer',

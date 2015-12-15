@@ -39,7 +39,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/kadastrale-sectie',
         'brk/object',
         'brk/subject',
-        'brk/zakelijk-recht',
+        # 'brk/zakelijk-recht',
         # 'brk/aantekening',
         # 'brk/stukdeel',
     ]
@@ -69,15 +69,11 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.KadastraleSectieFactory.create()
         brk_factories.KadastraalObjectFactory.create()
         brk_factories.KadastraalSubjectFactory.create()
+        brk_factories.ZakelijkRechtFactory.create()
 
     def should_skip_url(self, url):
-        if settings.USE_BRK and url[0:len('kadaster')] == 'kadaster':
-            return True
-
-        if not settings.USE_BRK and url[0:len('brk')] == 'brk':
-            return True
-
-        return False
+        return (settings.USE_BRK and url[0:len('kadaster')] == 'kadaster') or (
+            not settings.USE_BRK and url[0:len('brk')] == 'brk')
 
     def test_root(self):
         response = self.client.get('/api/')
@@ -109,8 +105,7 @@ class BrowseDatasetsTestCase(APITestCase):
                 continue
 
             response = self.client.get('/api/{}/'.format(url))
-            if 'brk' in url:
-                print(url, response.data)
+
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 

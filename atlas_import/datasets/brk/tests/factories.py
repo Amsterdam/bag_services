@@ -79,3 +79,14 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     grootte = fuzzy.FuzzyInteger(low=10, high=1000)
     register9_tekst = fuzzy.FuzzyText(length=50)
     geometrie = random_poly()
+
+
+class ZakelijkRechtFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.ZakelijkRecht
+
+    pk = fuzzy.FuzzyText(length=60)
+    kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
+    kadastraal_subject = factory.SubFactory(KadastraalSubjectFactory)
+
+    kadastraal_object_status = fuzzy.FuzzyText(length=50)

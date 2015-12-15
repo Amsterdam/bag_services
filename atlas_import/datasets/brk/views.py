@@ -60,8 +60,8 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (models.KadastraalSubject.objects
-                       .select_related('woonadres', 'woonadres__land',
-                                       'postadres', 'postadres__land'))
+                       .select_related('woonadres', 'woonadres__buitenland_land',
+                                       'postadres', 'postadres__buitenland_land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
 
@@ -151,7 +151,7 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     queryset = models.KadastraalObject.objects.all()
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    filter_fields = ('verblijfsobjecten__id', 'beperkingen__id', )
+    filter_fields = ('verblijfsobjecten__id', )
 
 
 class ZakelijkRechtViewSet(rest.AtlasViewSet):

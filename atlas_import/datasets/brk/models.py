@@ -195,7 +195,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
     def get_aanduiding_spaties(self):
         return kadaster.get_aanduiding_spaties(
-            self.gemeentecode, self.sectie, self.perceelnummer, self.objectindex_letter, self.objectindex_nummer
+            self.kadastrale_gemeente.id, self.sectie.sectie, self.perceelnummer,
+            self.index_letter, self.index_nummer
         )
 
 
