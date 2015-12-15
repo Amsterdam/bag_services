@@ -1,10 +1,12 @@
-import stat
-from contextlib import contextmanager
 import csv
 import datetime
+import logging
 import os
+from contextlib import contextmanager
 
 __author__ = 'yigalduppen'
+
+log = logging.getLogger(__name__)
 
 
 def uva_datum(s):
@@ -42,12 +44,12 @@ def _wrap_row(r, headers):
 
 
 @contextmanager
-def _context_reader(source, skip=3):
+def _context_reader(source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE):
     if not os.path.exists(source):
         raise ValueError("File not found: {}".format(source))
 
     with open(source, encoding='cp1252') as f:
-        rows = csv.reader(f, delimiter=';', quoting=csv.QUOTE_NONE)
+        rows = csv.reader(f, delimiter=';', quotechar=quotechar, quoting=quoting)
         for i in range(skip):
             next(rows)
 
@@ -107,9 +109,18 @@ def process_uva2(path, file_code, process_row_callback):
 
 
 def process_csv(path, file_code, process_row_callback):
+    def process_with_log(r):
+        try:
+            return process_row_callback(r)
+        except:
+            log.error("Could not process row")
+            for k, v in r.items():
+                log.error("%s: '%s'", k, v)
+            raise
+
     source = resolve_file(path, file_code, extension='csv')
-    with _context_reader(source, skip=0) as rows:
-        return [result for result in (process_row_callback(r) for r in rows) if result]
+    with _context_reader(source, skip=0, quotechar='"', quoting=csv.QUOTE_MINIMAL) as rows:
+        return [result for result in (process_with_log(r) for r in rows) if result]
 
 
 def read_landelijk_id_mapping(path, file_code):
@@ -117,7 +128,7 @@ def read_landelijk_id_mapping(path, file_code):
     result = dict()
     with open(source) as f:
         reader = csv.reader(f, delimiter=';')
-        next(reader)    # skip header
+        next(reader)  # skip header
         for row in reader:
             if len(row) >= 2:
                 result[row[0]] = row[1]

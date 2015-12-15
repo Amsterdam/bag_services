@@ -1,6 +1,9 @@
 import datetime
 import hashlib
 import logging
+import os
+
+from django.conf import settings
 
 from batch import batch
 from datasets.brk import models
@@ -267,11 +270,16 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             m.update(str(v).encode('utf-8'))
         adres_id = m.hexdigest()
 
+        try:
+            huisnummer_int = int(huisnummer) if huisnummer else None
+        except ValueError:
+            huisnummer_int = None
+
         self.adressen.setdefault(adres_id, models.Adres(
             id=adres_id,
 
             openbareruimte_naam=openbareruimte_naam,
-            huisnummer=int(huisnummer) if huisnummer else None,
+            huisnummer=huisnummer_int,
             huisletter=huisletter,
             toevoeging=toevoeging,
             postcode=postcode,
@@ -322,7 +330,21 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
     def process(self):
         objects = uva2.process_csv(self.path, 'Kadastraal_object', self.process_object)
+
+        self.process_g_perceel_relations(objects)
+
         models.KadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+
+    def process_g_perceel_relations(self, objects):
+        # g_percelen = dict((obj.aanduiding, obj.id) for obj in objects if obj.index_letter == 'G')
+        # for obj in (o for o in objects if o.index_letter == 'A' and o.g_perceel_id is not None):
+        #     g_nummer = obj.g_perceel_id
+        #     g_aanduiding = kadaster.get_aanduiding(obj.kadastrale_gemeente.pk, obj.sectie.sectie, g_nummer, 'G', 0)
+        #     g_perceel = g_percelen.get(g_aanduiding)
+        #     if not g_perceel:
+        #         log.warn("Kadastraal Object {} references unknown G-Perceel {}; ignoring".format(obj.id, g_aanduiding))
+        #     obj.g_perceel_id = g_perceel
+        pass
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -368,7 +390,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             index_nummer=index_nummer,
             soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
             grootte=int(grootte) if grootte else None,
-            g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
+            # g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
             koopsom=int(koopsom) if koopsom else None,
             koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
             koopjaar=row['KOT_KOOPJAAR'],
@@ -461,11 +483,23 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.splits_type, models.AppartementsrechtsSplitsType)
 
 
-"""
-ZRT_BELAST_AZT
-Dit zakelijk recht belast de volgende Aardzakelijkrechten
-VARCHAR2(15)
-ZRT_BELAST_MET_AZT
-Dit zakelijk recht is belast met de volgende Aardzakelijkrechten
-VARCHAR2(15)
-"""
+class ImportKadasterJob(object):
+    name = "Import Kadaster - BRK"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.brk = os.path.join(diva, 'brk')
+        self.brk_shp = os.path.join(diva, 'brk_shp')
+
+    def tasks(self):
+        return [
+            # ImportGemeenteTask(self.brk_shp),
+            # ImportKadastraleGemeenteTask(self.brk_shp),
+            # ImportKadastraleSectieTask(self.brk_shp),
+            # ImportKadastraalSubjectTask(self.brk),
+            ImportKadastraalObjectTask(self.brk),
+            ImportZakelijkRechtTask(self.brk),
+        ]

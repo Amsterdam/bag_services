@@ -1,6 +1,7 @@
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
+import datasets.brk.batch
 import datasets.akr.batch
 import datasets.lki.batch
 import datasets.wkpb.batch
@@ -8,10 +9,11 @@ from batch import batch
 
 
 class Command(BaseCommand):
-    ordered = ['bag', 'kadaster', 'wkpb']
+    ordered = ['bag', 'brk', 'kadaster', 'wkpb']
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
+        brk=[datasets.brk.batch.ImportKadasterJob],
         kadaster=[
             datasets.akr.batch.ImportKadasterJob,
             datasets.lki.batch.ImportKadasterJob
@@ -21,6 +23,7 @@ class Command(BaseCommand):
 
     indexes = dict(
         bag=[datasets.bag.batch.IndexJob],
+        brk=[],
         kadaster=[datasets.akr.batch.IndexKadasterJob],
         wkpb=[],
     )

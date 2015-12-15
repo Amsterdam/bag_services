@@ -53,3 +53,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
 
         self.assertIsNotNone(kot.geometrie)
         self.assertEqual(kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
+
+        # kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.11280351910001')
+        # self.assertIsNotNone(kot.g_perceel)
+        # self.assertEqual(kot.g_perceel_id, 'NL.KAD.OnroerendeZaak.11280292370000')

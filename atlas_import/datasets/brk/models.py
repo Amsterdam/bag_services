@@ -172,7 +172,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     index_letter = models.CharField(max_length=1)
     index_nummer = models.IntegerField()
     soort_grootte = models.ForeignKey(SoortGrootte, null=True)
-    grootte = models.IntegerField()
+    grootte = models.IntegerField(null=True)
     g_perceel = models.ForeignKey('KadastraalObject', null=True, related_name="a_percelen")
     koopsom = models.IntegerField(null=True)
     koopsom_valuta_code = models.CharField(max_length=50, null=True)
@@ -188,6 +188,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     in_onderzoek = models.TextField(null=True)
 
     geometrie = geo.MultiPolygonField(srid=28992, null=True)
+
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
 
