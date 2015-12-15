@@ -165,7 +165,7 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
 
 class KadastraalObject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
-    aanduiding = models.CharField(max_length=16)
+    aanduiding = models.CharField(max_length=17)
     kadastrale_gemeente = models.ForeignKey(KadastraleGemeente, related_name="kadastrale_objecten")
     sectie = models.ForeignKey(KadastraleSectie, related_name="kadastrale_objecten")
     perceelnummer = models.IntegerField()
@@ -217,11 +217,12 @@ class AppartementsrechtsSplitsType(KadasterCodeOmschrijving):
 
 class ZakelijkRecht(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
+    zrt_id = models.CharField(max_length=60)
     aard_zakelijk_recht = models.ForeignKey(AardZakelijkRecht, null=True)
     aard_zakelijk_recht_akr = models.CharField(max_length=3, null=True)
 
-    ontstaan_uit = models.ForeignKey('ZakelijkRecht', null=True, related_name="ontstaan_uit_set")
-    betrokken_bij = models.ForeignKey('ZakelijkRecht', null=True, related_name="betrokken_bij_set")
+    ontstaan_uit = models.ForeignKey(KadastraalSubject, null=True, related_name="ontstaan_uit_set")
+    betrokken_bij = models.ForeignKey(KadastraalSubject, null=True, related_name="betrokken_bij_set")
 
     kadastraal_object = models.ForeignKey(KadastraalObject, related_name="rechten")
     kadastraal_subject = models.ForeignKey(KadastraalSubject, related_name="rechten")

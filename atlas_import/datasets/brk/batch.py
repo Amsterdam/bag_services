@@ -329,22 +329,9 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.subjects.clear()
 
     def process(self):
-        objects = uva2.process_csv(self.path, 'Kadastraal_object', self.process_object)
+        objects = dict(uva2.process_csv(self.path, 'Kadastraal_object', self.process_object))
 
-        self.process_g_perceel_relations(objects)
-
-        models.KadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
-
-    def process_g_perceel_relations(self, objects):
-        # g_percelen = dict((obj.aanduiding, obj.id) for obj in objects if obj.index_letter == 'G')
-        # for obj in (o for o in objects if o.index_letter == 'A' and o.g_perceel_id is not None):
-        #     g_nummer = obj.g_perceel_id
-        #     g_aanduiding = kadaster.get_aanduiding(obj.kadastrale_gemeente.pk, obj.sectie.sectie, g_nummer, 'G', 0)
-        #     g_perceel = g_percelen.get(g_aanduiding)
-        #     if not g_perceel:
-        #         log.warn("Kadastraal Object {} references unknown G-Perceel {}; ignoring".format(obj.id, g_aanduiding))
-        #     obj.g_perceel_id = g_perceel
-        pass
+        models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -380,7 +367,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
             subject_id = None
 
-        return models.KadastraalObject(
+        return kot_id, models.KadastraalObject(
             id=kot_id,
             kadastrale_gemeente_id=kg_id,
             aanduiding=aanduiding,
@@ -390,6 +377,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             index_nummer=index_nummer,
             soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
             grootte=int(grootte) if grootte else None,
+            # TODO: Aanzetten wanneer levering correct ID bevat
             # g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
             koopsom=int(koopsom) if koopsom else None,
             koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
@@ -446,24 +434,26 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         self.splits_type.clear()
 
     def process(self):
-        zrts = uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject)
-        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
+        zrts = dict(uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject))
+        models.ZakelijkRecht.objects.bulk_create(zrts.values(), batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
+        tng_id = row['BRK_TNG_ID']
 
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
-            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(zrt_id, kot_id))
+            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
             return
 
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(zrt_id, kst_id))
+            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
-        return models.ZakelijkRecht(
-            pk=zrt_id,
+        return tng_id, models.ZakelijkRecht(
+            pk=tng_id,
+            zrt_id=zrt_id,
             aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                             row['ZRT_AARDZAKELIJKRECHT_OMS']),
             aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
@@ -496,10 +486,10 @@ class ImportKadasterJob(object):
 
     def tasks(self):
         return [
-            # ImportGemeenteTask(self.brk_shp),
-            # ImportKadastraleGemeenteTask(self.brk_shp),
-            # ImportKadastraleSectieTask(self.brk_shp),
-            # ImportKadastraalSubjectTask(self.brk),
+            ImportGemeenteTask(self.brk_shp),
+            ImportKadastraleGemeenteTask(self.brk_shp),
+            ImportKadastraleSectieTask(self.brk_shp),
+            ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
             ImportZakelijkRechtTask(self.brk),
         ]
