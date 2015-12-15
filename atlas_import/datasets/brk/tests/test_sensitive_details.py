@@ -1,4 +1,3 @@
-from unittest import skip
 from django.contrib.auth.models import User, Permission
 
 from rest_framework.test import APITestCase
