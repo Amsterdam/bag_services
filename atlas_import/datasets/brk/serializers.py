@@ -420,7 +420,7 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_aantekening = AardAantekening()
     kadastraal_object = KadastraalObject()
-    kadastraal_subject = KadastraalSubject()
+    opgelegd_door = KadastraalSubject()
 
     class Meta:
         model = models.Aantekening
@@ -432,7 +432,7 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
             'omschrijving',
 
             'kadastraal_object',
-            'kadastraal_subject',
+            'opgelegd_door',
         )
 
 
