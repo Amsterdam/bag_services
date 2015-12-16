@@ -433,8 +433,8 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         self.splits_type.clear()
 
     def process(self):
-        zrts = dict(uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject))
-        models.ZakelijkRecht.objects.bulk_create(zrts.values(), batch_size=database.BATCH_SIZE)
+        zrts = uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject)
+        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
@@ -450,12 +450,14 @@ class ImportZakelijkRechtTask(batch.BasicTask):
             log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
-        return tng_id, models.ZakelijkRecht(
+        return models.ZakelijkRecht(
             pk=tng_id,
             zrt_id=zrt_id,
             aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                             row['ZRT_AARDZAKELIJKRECHT_OMS']),
             aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
+            teller=int(row['TNG_AANDEEL_TELLER']),
+            noemer=int(row['TNG_AANDEEL_NOEMER']),
             ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
             betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
             kadastraal_object_id=kot_id,
@@ -478,15 +480,21 @@ class ImportAantekeningTask(batch.BasicTask):
     def __init__(self, path):
         self.path = path
         self.aard_aantekening = dict()
+        self.kst = set()
+        self.kot = set()
 
     def before(self):
         database.clear_models(
             models.Aantekening,
             models.AardAantekening,
         )
+        self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
 
     def after(self):
         self.aard_aantekening.clear()
+        self.kst.clear()
+        self.kot.clear()
 
     def process(self):
         atks = uva2.process_csv(self.path, 'Aantekening', self.process_row)
@@ -494,39 +502,54 @@ class ImportAantekeningTask(batch.BasicTask):
 
     def process_row(self, row):
         atk_id = row['BRK_ATG_ID']
+
         atk_type = row['ATG_TYPE']
+        if atk_type == "Aantekening Zakelijk Recht (R)":
+            return
 
         if atk_type != "Aantekening Kadastraal object (O)":
-            return None
+            log.warn("Aantekening {} has unknown type {}; skipping".format(atk_id, atk_type))
+            return
+
+        kot_id = row['BRK_KOT_ID'] or None
+        if kot_id and kot_id not in self.kot:
+            log.warn("Aantekening {} references non-existing object {}; skipping".format(atk_id, kot_id))
+            return
+
+        kst_id = row['BRK_SJT_ID'] or None
+        if kst_id and kst_id not in self.kst:
+            log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
+            return
 
         return models.Aantekening(
             pk=atk_id,
             aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'], row['ATG_AARDAANTEKENING_OMS']),
             omschrijving=row['ATG_OMSCHRIJVING'],
-            kadastraal_object=None,
-            opgelegd_door=None,
+            kadastraal_object_id=kot_id,
+            opgelegd_door_id=kst_id,
         )
 
     def get_aard_aantekening(self, code, omschrijving):
         return _get_related(code, omschrijving, self.aard_aantekening, models.AardAantekening)
 
-    class ImportKadasterJob(object):
-        name = "Import Kadaster - BRK"
 
-        def __init__(self):
-            diva = settings.DIVA_DIR
-            if not os.path.exists(diva):
-                raise ValueError("DIVA_DIR not found: {}".format(diva))
+class ImportKadasterJob(object):
+    name = "Import Kadaster - BRK"
 
-            self.brk = os.path.join(diva, 'brk')
-            self.brk_shp = os.path.join(diva, 'brk_shp')
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
 
-        def tasks(self):
-            return [
-                ImportGemeenteTask(self.brk_shp),
-                ImportKadastraleGemeenteTask(self.brk_shp),
-                ImportKadastraleSectieTask(self.brk_shp),
-                ImportKadastraalSubjectTask(self.brk),
-                ImportKadastraalObjectTask(self.brk),
-                ImportZakelijkRechtTask(self.brk),
-            ]
+        self.brk = os.path.join(diva, 'brk')
+        self.brk_shp = os.path.join(diva, 'brk_shp')
+
+    def tasks(self):
+        return [
+            ImportGemeenteTask(self.brk_shp),
+            ImportKadastraleGemeenteTask(self.brk_shp),
+            ImportKadastraleSectieTask(self.brk_shp),
+            ImportKadastraalSubjectTask(self.brk),
+            ImportKadastraalObjectTask(self.brk),
+            ImportZakelijkRechtTask(self.brk),
+        ]
