@@ -39,9 +39,8 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/kadastrale-sectie',
         'brk/object',
         'brk/subject',
-        # 'brk/zakelijk-recht',
-        # 'brk/aantekening',
-        # 'brk/stukdeel',
+        'brk/zakelijk-recht',
+        'brk/aantekening',
     ]
 
     def setUp(self):
@@ -70,6 +69,7 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.KadastraalObjectFactory.create()
         brk_factories.KadastraalSubjectFactory.create()
         brk_factories.ZakelijkRechtFactory.create()
+        brk_factories.AantekeningFactory.create()
 
     def should_skip_url(self, url):
         return (settings.USE_BRK and url[0:len('kadaster')] == 'kadaster') or (

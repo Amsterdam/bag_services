@@ -114,3 +114,19 @@ class ZakelijkRechtFactory(factory.DjangoModelFactory):
     kadastraal_subject = factory.SubFactory(KadastraalSubjectFactory)
 
     kadastraal_object_status = fuzzy.FuzzyText(length=50)
+
+
+class AardAantekeningFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.AardAantekening
+
+
+class AantekeningFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Aantekening
+
+    pk = fuzzy.FuzzyText(length=60)
+    aard_aantekening = factory.SubFactory(AardAantekeningFactory)
+
+    kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
+    opgelegd_door = factory.SubFactory(KadastraalSubjectFactory)

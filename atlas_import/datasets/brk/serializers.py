@@ -315,7 +315,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
         data = super().to_representation(instance)
 
         user = self.context['request'].user
-        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('akr.view_sensitive_details'):
+        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('brk.view_sensitive_details'):
             return {f: data[f] for f in self.fields.keys() if f in self.allowed_anonymous}
 
         return data
@@ -408,7 +408,7 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
         request = self.context['request']
         user = request.user
         if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK\
-                and not user.has_perm('akr.view_sensitive_details'):
+                and not user.has_perm('brk.view_sensitive_details'):
             data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
                                                  args=(instance.id,),
                                                  request=request)
