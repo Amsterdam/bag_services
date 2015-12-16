@@ -430,7 +430,6 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
             'id',
             'aard_aantekening',
             'omschrijving',
-            'type',
 
             'kadastraal_object',
             'kadastraal_subject',
