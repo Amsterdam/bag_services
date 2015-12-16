@@ -150,6 +150,14 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     woonadres = models.ForeignKey(Adres, null=True, related_name="+")
     postadres = models.ForeignKey(Adres, null=True, related_name="+")
 
+    class Meta:
+        verbose_name = "Kadastraal subject"
+        verbose_name_plural = "Kadastrale subjecten"
+
+        permissions = (
+            ('view_sensitive_details', 'Kan privacy-gevoelige data inzien'),
+        )
+
 
 class SoortGrootte(KadasterCodeOmschrijving):
     pass
