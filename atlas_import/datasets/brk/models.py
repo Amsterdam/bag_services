@@ -93,6 +93,8 @@ class Adres(models.Model):
     toevoeging = models.CharField(max_length=4, null=True)
     postcode = models.CharField(max_length=6, null=True)
     woonplaats = models.CharField(max_length=80, null=True)
+
+    # todo: apart modelleren?
     postbus_nummer = models.IntegerField(null=True)
     postbus_postcode = models.CharField(max_length=50, null=True)
     postbus_woonplaats = models.CharField(max_length=80, null=True)
@@ -122,7 +124,6 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     type = models.SmallIntegerField(choices=SUBJECT_TYPE_CHOICES)
     beschikkingsbevoegdheid = models.ForeignKey(Beschikkingsbevoegdheid, null=True)
-    bsn = models.CharField(max_length=50, null=True)
 
     voornamen = models.CharField(max_length=200, null=True)
     voorvoegsels = models.CharField(max_length=10, null=True)
@@ -173,7 +174,6 @@ class KadastraalObject(mixins.ImportStatusMixin):
     index_nummer = models.IntegerField()
     soort_grootte = models.ForeignKey(SoortGrootte, null=True)
     grootte = models.IntegerField(null=True)
-    g_perceel = models.ForeignKey('KadastraalObject', null=True, related_name="a_percelen")
     koopsom = models.IntegerField(null=True)
     koopsom_valuta_code = models.CharField(max_length=50, null=True)
     koopjaar = models.CharField(max_length=15, null=True)
@@ -191,6 +191,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
+
+    g_percelen = models.ManyToManyField('KadastraalObject', related_name="a_percelen")
 
     objects = geo.GeoManager()
 
@@ -224,6 +226,9 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     ontstaan_uit = models.ForeignKey(KadastraalSubject, null=True, related_name="ontstaan_uit_set")
     betrokken_bij = models.ForeignKey(KadastraalSubject, null=True, related_name="betrokken_bij_set")
 
+    teller = models.IntegerField(null=True)
+    noemer = models.IntegerField(null=True)
+
     kadastraal_object = models.ForeignKey(KadastraalObject, related_name="rechten")
     kadastraal_subject = models.ForeignKey(KadastraalSubject, related_name="rechten")
 
@@ -240,41 +245,8 @@ class Aantekening(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     aard_aantekening = models.ForeignKey(AardAantekening)
     omschrijving = models.TextField()
-    type = models.CharField(max_length=33)
 
     kadastraal_object = models.ForeignKey(KadastraalObject, null=True, related_name="aantekeningen")
-    zekerheidsrecht = models.ForeignKey(ZakelijkRecht, null=True, related_name="aantekeningen")
-    kadastraal_subject = models.ForeignKey(KadastraalSubject, null=True, related_name="aantekeningen")
+    opgelegd_door = models.ForeignKey(KadastraalSubject, null=True, related_name="aantekeningen")
 
-
-class AardStukdeel(KadasterCodeOmschrijving):
-    pass
-
-
-class RegisterCode(KadasterCodeOmschrijving):
-    pass
-
-
-class SoortRegister(KadasterCodeOmschrijving):
-    pass
-
-
-class Stukdeel(mixins.ImportStatusMixin):
-    id = models.CharField(max_length=60, primary_key=True)
-    aard_stukdeel = models.ForeignKey(AardStukdeel)
-    koopsom = models.IntegerField()
-    koopsom_valuta = models.CharField(max_length=50)
-
-    stuk_id = models.CharField(max_length=60)
-    portefeuille_nummer = models.CharField(max_length=16)
-    tijdstip_aanbieding = models.DateTimeField()
-    reeks_code = models.CharField(max_length=50)
-    volgnummer = models.IntegerField()
-    register_code = models.ForeignKey(RegisterCode)
-    soort_register = models.ForeignKey(SoortRegister)
-
-    deel_soort = models.CharField(max_length=5)
-
-    tenaamstelling = models.ForeignKey(ZakelijkRecht)
-    aantekening = models.ForeignKey(Aantekening)
 

@@ -79,7 +79,6 @@ router.register(r'brk/subject', datasets.brk.views.KadastraalSubjectViewSet)
 router.register(r'brk/object', datasets.brk.views.KadastraalObjectViewSet)
 router.register(r'brk/zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 router.register(r'brk/aantekening', datasets.brk.views.AantekeningViewSet)
-router.register(r'brk/stukdeel', datasets.brk.views.StukdeelViewSet)
 
 router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
 router.register(r'wkpb/brondocument', datasets.wkpb.views.BrondocumentView)

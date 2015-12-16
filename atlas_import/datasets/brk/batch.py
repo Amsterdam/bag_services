@@ -189,7 +189,6 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             type=models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
             beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
                                                                      row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
-            bsn=row['SJT_BSN'] or None,
             voornamen=row['SJT_NP_VOORNAMEN'] or row['SJT_KAD_VOORNAMEN'],
             voorvoegsels=row['SJT_NP_VOORVOEGSELSGESLSNAAM'] or row['SJT_KAD_VOORVOEGSELSGESLSNAAM'],
             naam=row['SJT_NAAM'] or row['SJT_KAD_GESLACHTSNAAM'],
@@ -473,23 +472,61 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.splits_type, models.AppartementsrechtsSplitsType)
 
 
-class ImportKadasterJob(object):
-    name = "Import Kadaster - BRK"
+class ImportAantekeningTask(batch.BasicTask):
+    name = "Import Aantekeningen"
 
-    def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
+    def __init__(self, path):
+        self.path = path
+        self.aard_aantekening = dict()
 
-        self.brk = os.path.join(diva, 'brk')
-        self.brk_shp = os.path.join(diva, 'brk_shp')
+    def before(self):
+        database.clear_models(
+            models.Aantekening,
+            models.AardAantekening,
+        )
 
-    def tasks(self):
-        return [
-            ImportGemeenteTask(self.brk_shp),
-            ImportKadastraleGemeenteTask(self.brk_shp),
-            ImportKadastraleSectieTask(self.brk_shp),
-            ImportKadastraalSubjectTask(self.brk),
-            ImportKadastraalObjectTask(self.brk),
-            ImportZakelijkRechtTask(self.brk),
-        ]
+    def after(self):
+        self.aard_aantekening.clear()
+
+    def process(self):
+        atks = uva2.process_csv(self.path, 'Aantekening', self.process_row)
+        models.Aantekening.objects.bulk_create(atks, batch_size=database.BATCH_SIZE)
+
+    def process_row(self, row):
+        atk_id = row['BRK_ATG_ID']
+        atk_type = row['ATG_TYPE']
+
+        if atk_type != "Aantekening Kadastraal object (O)":
+            return None
+
+        return models.Aantekening(
+            pk=atk_id,
+            aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'], row['ATG_AARDAANTEKENING_OMS']),
+            omschrijving=row['ATG_OMSCHRIJVING'],
+            kadastraal_object=None,
+            opgelegd_door=None,
+        )
+
+    def get_aard_aantekening(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.aard_aantekening, models.AardAantekening)
+
+    class ImportKadasterJob(object):
+        name = "Import Kadaster - BRK"
+
+        def __init__(self):
+            diva = settings.DIVA_DIR
+            if not os.path.exists(diva):
+                raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+            self.brk = os.path.join(diva, 'brk')
+            self.brk_shp = os.path.join(diva, 'brk_shp')
+
+        def tasks(self):
+            return [
+                ImportGemeenteTask(self.brk_shp),
+                ImportKadastraleGemeenteTask(self.brk_shp),
+                ImportKadastraleSectieTask(self.brk_shp),
+                ImportKadastraalSubjectTask(self.brk),
+                ImportKadastraalObjectTask(self.brk),
+                ImportZakelijkRechtTask(self.brk),
+            ]

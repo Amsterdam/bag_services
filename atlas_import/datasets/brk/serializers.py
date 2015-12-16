@@ -172,33 +172,6 @@ class Aantekening(BrkMixin, rest.HALSerializer):
         )
 
 
-class AardStukdeel(serializers.ModelSerializer):
-    class Meta:
-        model = models.AardStukdeel
-
-
-class RegisterCode(serializers.ModelSerializer):
-    class Meta:
-        model = models.RegisterCode
-
-
-class SoortRegister(serializers.ModelSerializer):
-    class Meta:
-        model = models.SoortRegister
-
-
-class Stukdeel(BrkMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-
-    class Meta:
-        model = models.Stukdeel
-        fields = (
-            '_links',
-            '_display',
-            'id',
-        )
-
-
 # detail serializers
 class GemeenteDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
@@ -263,7 +236,6 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 
             'type',
             'beschikkingsbevoegdheid',
-            'bsn',
 
             'voornamen',
             'voorvoegsels',
@@ -308,7 +280,6 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
             'type',
             'beschikkingsbevoegdheid',
-            'bsn',
 
             'voornamen',
             'voorvoegsels',
@@ -356,7 +327,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
-    g_perceel = KadastraalObject()
     cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
     cultuurcode_bebouwd = CultuurCodeBebouwd()
     voornaamste_gerechtigde = KadastraalSubject()
@@ -364,6 +334,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
+    g_percelen = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraalObject
@@ -379,7 +350,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'index_nummer',
             'soort_grootte',
             'grootte',
-            'g_perceel',
             'koopsom',
             'koopsom_valuta_code',
             'koopjaar',
@@ -396,6 +366,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'geometrie',
             'voornaamste_gerechtigde',
 
+            'g_percelen',
             'verblijfsobjecten',
             'rechten',
             'aantekeningen',
@@ -449,7 +420,6 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_aantekening = AardAantekening()
     kadastraal_object = KadastraalObject()
-    zekerheidsrecht = ZakelijkRecht()
     kadastraal_subject = KadastraalSubject()
 
     class Meta:
@@ -463,39 +433,7 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
             'type',
 
             'kadastraal_object',
-            'zekerheidsrecht',
             'kadastraal_subject',
         )
 
 
-class StukdeelDetail(BrkMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    aard_stukdeel = AardStukdeel()
-    register_code = RegisterCode()
-    soort_register = SoortRegister()
-    tenaamstelling = ZakelijkRecht()
-    aantekening = Aantekening()
-
-    class Meta:
-        model = models.Stukdeel
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'aard_stukdeel',
-            'koopsom',
-            'koopsom_valuta',
-
-            'stuk_id',
-            'portefeuille_nummer',
-            'tijdstip_aanbieding',
-            'reeks_code',
-            'volgnummer',
-            'register_code',
-            'soort_register',
-
-            'deel_soort',
-
-            'tenaamstelling',
-            'aantekening',
-        )

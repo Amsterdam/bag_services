@@ -36,7 +36,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         self.assertEqual(kot.soort_grootte.code, '1')
         self.assertEqual(kot.soort_grootte.omschrijving, 'Vastgesteld')
         self.assertEqual(kot.grootte, 99)
-        self.assertIsNone(kot.g_perceel)
+        self.assertEqual(kot.g_percelen.count(), 0)
         self.assertEqual(kot.koopsom, 290419)
         self.assertEqual(kot.koopsom_valuta_code, 'EUR')
         self.assertEqual(kot.koopjaar, '1998')
