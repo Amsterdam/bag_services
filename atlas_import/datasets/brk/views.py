@@ -198,13 +198,3 @@ class AantekeningViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.AantekeningDetail
 
 
-class StukdeelViewSet(rest.AtlasViewSet):
-    """
-    Een Kadastraal Stuk is een brondocument dat aanleiding geeft tot een wijziging van de gegevens in een
-    basisregistratie.
-
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-stuk/)
-    """
-    queryset = models.Stukdeel.objects.all()
-    serializer_class = serializers.Stukdeel
-    serializer_detail_class = serializers.StukdeelDetail
