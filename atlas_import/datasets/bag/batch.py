@@ -435,7 +435,7 @@ class ImportOprTask(batch.BasicTask):
     def process_wkt_row(self, wkt_id, geometrie):
         key = '0' + wkt_id
         if key not in self.openbare_ruimtes:
-            log.warning('OpenbareRuimte/WKT {} references non-existing ligplaats {}; skipping'.format(wkt_id, key))
+            log.warning('OpenbareRuimte/WKT {} references non-existing openbare ruimte {}; skipping'.format(wkt_id, key))
             return
 
         self.openbare_ruimtes[key].geometrie = geo.get_multipoly(geometrie)
