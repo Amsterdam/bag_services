@@ -38,4 +38,6 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
         self.assertEqual(zrt.kadastraal_object_status, 'B')
 
         self.assertIsNone(zrt.app_rechtsplitstype)
+        self.assertEqual(zrt.teller, 1)
+        self.assertEqual(zrt.noemer, 1)
 
