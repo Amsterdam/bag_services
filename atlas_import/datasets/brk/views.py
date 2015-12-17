@@ -64,6 +64,7 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
                                        'postadres', 'postadres__buitenland_land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
+    lookup_value_regex = '[^/]+'
 
 
 class KadastraalObjectViewSet(rest.AtlasViewSet):
@@ -152,6 +153,7 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
     filter_fields = ('verblijfsobjecten__id', )
+    lookup_value_regex = '[^/]+'
 
 
 class ZakelijkRechtViewSet(rest.AtlasViewSet):
@@ -174,6 +176,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
     filter_fields = ('kadastraal_subject', 'kadastraal_object',)
+    lookup_value_regex = '[^/]+'
 
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
