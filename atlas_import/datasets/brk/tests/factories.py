@@ -16,6 +16,7 @@ def random_poly():
 class GemeenteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gemeente
+        django_get_or_create = ('gemeente', )
 
     gemeente = factory.LazyAttribute(lambda o: f.city())
     geometrie = random_poly()
