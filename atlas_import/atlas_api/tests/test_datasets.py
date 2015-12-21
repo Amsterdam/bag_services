@@ -24,12 +24,6 @@ class BrowseDatasetsTestCase(APITestCase):
         'gebieden/buurt',
         'gebieden/bouwblok',
 
-        'kadaster/object',
-        'kadaster/subject',
-        'kadaster/transactie',
-        'kadaster/zakelijk-recht',
-        'kadaster/gemeente',
-
         'wkpb/beperking',
         'wkpb/brondocument',
         'wkpb/broncode',
@@ -71,26 +65,16 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.ZakelijkRechtFactory.create()
         brk_factories.AantekeningFactory.create()
 
-    def should_skip_url(self, url):
-        return (settings.USE_BRK and url[0:len('kadaster')] == 'kadaster') or (
-            not settings.USE_BRK and url[0:len('brk')] == 'brk')
-
     def test_root(self):
         response = self.client.get('/api/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/hal+json')
 
         for url in self.datasets:
-            if self.should_skip_url(url):
-                continue
-
             self.assertIn(url, response.data)
 
     def test_lists(self):
         for url in self.datasets:
-            if self.should_skip_url(url):
-                continue
-
             response = self.client.get('/api/{}/'.format(url))
 
             self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
@@ -101,9 +85,6 @@ class BrowseDatasetsTestCase(APITestCase):
 
     def test_details(self):
         for url in self.datasets:
-            if self.should_skip_url(url):
-                continue
-
             response = self.client.get('/api/{}/'.format(url))
 
             url = response.data['results'][0]['_links']['self']['href']
