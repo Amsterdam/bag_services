@@ -442,6 +442,10 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         zrt_id = row['BRK_ZRT_ID']
         tng_id = row['BRK_TNG_ID']
 
+        if not tng_id:
+            log.warn("Zakelijk recht {} has no TNG_ID; skipping".format(zrt_id))
+            return
+
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
             log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
@@ -525,7 +529,7 @@ class ImportAantekeningTask(batch.BasicTask):
             log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
             return
 
-        return id, models.Aantekening(
+        return atk_id, models.Aantekening(
                 pk=atk_id,
                 aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'],
                                                            row['ATG_AARDAANTEKENING_OMS']),
