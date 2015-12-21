@@ -218,11 +218,11 @@ class AantekeningViewSet(rest.AtlasViewSet):
                 .select_related('aard_aantekening', 'opgelegd_door')
                 .all())
     queryset_detail = (models.Aantekening.objects
-                .select_related('aard_aantekening', 'opgelegd_door',
-                                'kadastraal_object', 'kadastraal_object__sectie',
-                                'kadastraal_object__kadastrale_gemeente')
+                       .select_related('aard_aantekening', 'opgelegd_door',
+                                       'kadastraal_object', 'kadastraal_object__sectie',
+                                       'kadastraal_object__kadastrale_gemeente')
 
-                )
+                       )
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
     filter_fields = ('opgelegd_door', 'kadastraal_object')
