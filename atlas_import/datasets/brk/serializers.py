@@ -164,6 +164,7 @@ class AardAantekening(serializers.ModelSerializer):
 
 class Aantekening(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    opgelegd_door = KadastraalSubject()
 
     class Meta:
         model = models.Aantekening
@@ -171,6 +172,7 @@ class Aantekening(BrkMixin, rest.HALSerializer):
             '_links',
             '_display',
             'id',
+            'opgelegd_door',
         )
 
 
@@ -342,6 +344,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     verblijfsobjecten = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
     g_percelen = rest.RelatedSummaryField()
+    beperkingen = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraalObject
@@ -377,6 +380,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'verblijfsobjecten',
             'rechten',
             'aantekeningen',
+            'beperkingen',
         )
 
 

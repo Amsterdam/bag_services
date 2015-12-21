@@ -156,6 +156,9 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     class Meta:
         verbose_name = "Kadastraal subject"
         verbose_name_plural = "Kadastrale subjecten"
+        index_together = (
+            ('naam', 'statutaire_naam'),
+        )
 
         permissions = (
             ('view_sensitive_details', 'Kan privacy-gevoelige data inzien'),
@@ -226,6 +229,9 @@ class KadastraalObject(mixins.ImportStatusMixin):
             self.index_letter, self.index_nummer
         )
 
+    def __str__(self):
+        return self.get_aanduiding_spaties()
+
 
 class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -260,6 +266,13 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     app_rechtsplitstype = models.ForeignKey(AppartementsrechtsSplitsType, null=True)
 
+    def __str__(self):
+        omschrijving = self.aard_zakelijk_recht.omschrijving if self.aard_zakelijk_recht else ''
+        aandeel = '({}/{})'.format(self.teller, self.noemer) if self.teller is not None and self.noemer is not None else ''
+
+        return "{} - {}{} - {}".format(self.kadastraal_subject, omschrijving, aandeel, self.kadastraal_object)
+
+
 
 class AardAantekening(KadasterCodeOmschrijving):
     pass
@@ -272,5 +285,8 @@ class Aantekening(mixins.ImportStatusMixin):
 
     kadastraal_object = models.ForeignKey(KadastraalObject, null=True, related_name="aantekeningen")
     opgelegd_door = models.ForeignKey(KadastraalSubject, null=True, related_name="aantekeningen")
+
+    def __str__(self):
+        return self.aard_aantekening.omschrijving if self.aard_aantekening.omschrijving else self.id
 
 

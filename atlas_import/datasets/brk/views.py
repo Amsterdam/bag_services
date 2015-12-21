@@ -1,9 +1,8 @@
-from rest_framework import generics
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
-from datasets.generic import rest
 from datasets.brk import models, serializers
+from datasets.generic import rest
 
 
 class GemeenteViewSet(rest.AtlasViewSet):
@@ -29,7 +28,9 @@ class KadastraleGemeenteViewSet(rest.AtlasViewSet):
 
     http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
     """
-    queryset = models.KadastraleGemeente.objects.all()
+    queryset = (models.KadastraleGemeente.objects
+                .select_related('gemeente')
+                .all())
     serializer_class = serializers.KadastraleGemeente
     serializer_detail_class = serializers.KadastraleGemeenteDetail
 
@@ -42,8 +43,11 @@ class KadastraleSectieViewSet(rest.AtlasViewSet):
     http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
     """
     queryset = models.KadastraleSectie.objects.all()
+    queryset_detail = (models.KadastraleSectie.objects
+                       .select_related('kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
+    filter_fields = ('kadastrale_gemeente',)
 
 
 class KadastraalSubjectViewSet(rest.AtlasViewSet):
@@ -60,7 +64,8 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (models.KadastraalSubject.objects
-                       .select_related('woonadres', 'woonadres__buitenland_land',
+                       .select_related('rechtsvorm',
+                                       'woonadres', 'woonadres__buitenland_land',
                                        'postadres', 'postadres__buitenland_land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
@@ -149,10 +154,18 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-1/)
     """
-    queryset = models.KadastraalObject.objects.all()
+    queryset = (models.KadastraalObject.objects
+                .select_related('sectie', 'kadastrale_gemeente')
+                .all())
+    queryset_detail = (models.KadastraalObject.objects
+                       .select_related('sectie',
+                                       'kadastrale_gemeente', 'kadastrale_gemeente__gemeente',
+                                       'voornaamste_gerechtigde',
+                                       )
+                       )
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    filter_fields = ('verblijfsobjecten__id', )
+    filter_fields = ('verblijfsobjecten__id',)
     lookup_value_regex = '[^/]+'
 
 
@@ -172,7 +185,12 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
     """
-    queryset = models.ZakelijkRecht.objects.all()
+    queryset = (models.ZakelijkRecht.objects
+                .select_related('aard_zakelijk_recht', 'kadastraal_subject', 'kadastraal_object',
+                                'kadastraal_object__sectie', 'kadastraal_object__kadastrale_gemeente')
+                .all()
+                .order_by('aard_zakelijk_recht__code', 'kadastraal_subject__naam',
+                          'kadastraal_subject__statutaire_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
     filter_fields = ('kadastraal_subject', 'kadastraal_object',)
@@ -196,10 +214,16 @@ class AantekeningViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
     """
-    queryset = models.Aantekening.objects.all()
+    queryset = (models.Aantekening.objects
+                .select_related('aard_aantekening', 'opgelegd_door')
+                .all())
+    queryset_detail = (models.Aantekening.objects
+                .select_related('aard_aantekening', 'opgelegd_door',
+                                'kadastraal_object', 'kadastraal_object__sectie',
+                                'kadastraal_object__kadastrale_gemeente')
+
+                )
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
     filter_fields = ('opgelegd_door', 'kadastraal_object')
     lookup_value_regex = '[^/]+'
-
-
