@@ -47,8 +47,8 @@ class KadastraalObject(mixins.GeldigheidMixin, mixins.ImportStatusMixin):
     ruitnummer = models.IntegerField(null=True)
     omschrijving_deelperceel = models.CharField(max_length=20, null=True)
     geometrie = geo.PointField(null=True, srid=28992)
-    verblijfsobjecten = models.ManyToManyField('bag.Verblijfsobject', through="KadastraalObjectVerblijfsobject",
-                                               related_name="kadastrale_objecten")
+    # verblijfsobjecten = models.ManyToManyField('bag.Verblijfsobject', through="KadastraalObjectVerblijfsobject",
+    #                                            related_name="kadastrale_objecten")
 
     def get_aanduiding_spaties(self):
         return kadaster.get_aanduiding_spaties(

@@ -212,7 +212,9 @@ class KadastraalObject(mixins.ImportStatusMixin):
     geometrie = geo.MultiPolygonField(srid=28992, null=True)
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject, through='KadastraalObjectVerblijfsobjectRelatie')
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
+                                               through='KadastraalObjectVerblijfsobjectRelatie',
+                                               related_name="kadastrale_objecten")
 
     g_percelen = models.ManyToManyField('KadastraalObject', related_name="a_percelen")
 
