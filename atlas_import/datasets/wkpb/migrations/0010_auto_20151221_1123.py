@@ -15,6 +15,9 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             sql="DROP VIEW IF EXISTS geo_wkpb",
         ),
+        migrations.RunSQL(
+            sql="DELETE FROM wkpb_beperkingkadastraalobject",
+        ),
         migrations.RemoveField(
             model_name='beperkingkadastraalobject',
             name='kadastraal_object_akr',
