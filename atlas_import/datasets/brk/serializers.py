@@ -72,6 +72,8 @@ class Rechtsvorm(serializers.ModelSerializer):
 
 
 class Adres(serializers.ModelSerializer):
+    buitenland_land = Land()
+
     class Meta:
         model = models.Adres
         fields = (
@@ -227,6 +229,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
     beschikkingsbevoegdheid = Beschikkingsbevoegdheid()
     geslacht = Geslacht()
     aanduiding_naam = AanduidingNaam()
+    geboorteland = Land()
     land_waarnaar_vertrokken = Land()
     rechtsvorm = Rechtsvorm()
 

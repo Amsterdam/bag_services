@@ -18,7 +18,7 @@ class DocumentedRouter(routers.DefaultRouter):
     `gebieden/`
     :   [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
 
-    `kadaster/`
+    `brk/`
     :   [Basisregistratie kadaster](https://www.amsterdam.nl/stelselpedia/brk-index/)
 
     `wkpb/`
@@ -41,14 +41,6 @@ class DocumentedRouter(routers.DefaultRouter):
         Datapunt.__doc__ = self.__doc__
         return Datapunt.as_view()
 
-    def register(self, prefix, viewset, base_name=None):
-        if settings.USE_BRK and prefix[0:len('kadaster')] != 'kadaster':
-            super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
-
-        if not settings.USE_BRK and prefix[0:len('brk')] != 'brk':
-            super(DocumentedRouter, self).register(prefix, viewset, base_name=base_name)
-
-
 router = DocumentedRouter()
 router.register(r'bag/ligplaats', datasets.bag.views.LigplaatsViewSet)
 router.register(r'bag/standplaats', datasets.bag.views.StandplaatsViewSet)
@@ -65,12 +57,6 @@ router.register(r'gebieden/buurtcombinatie', datasets.bag.views.BuurtcombinatieV
 router.register(r'gebieden/gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
 router.register(r'gebieden/grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 router.register(r'gebieden/unesco', datasets.bag.views.UnescoViewSet)
-
-router.register(r'kadaster/subject', datasets.akr.views.KadastraalSubjectViewSet)
-router.register(r'kadaster/object', datasets.akr.views.KadastraalObjectViewSet)
-router.register(r'kadaster/transactie', datasets.akr.views.TransactieViewSet)
-router.register(r'kadaster/zakelijk-recht', datasets.akr.views.ZakelijkRechtViewSet)
-router.register(r'kadaster/gemeente', datasets.bag.views.GemeenteViewSet)
 
 router.register(r'brk/gemeente', datasets.brk.views.GemeenteViewSet)
 router.register(r'brk/kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)

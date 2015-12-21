@@ -1235,6 +1235,8 @@ class ImportUnescoTask(batch.BasicTask):
 
 
 class DenormalizeDataTask(batch.BasicTask):
+    name = "Denormalize data"
+
     def before(self):
         pass
 

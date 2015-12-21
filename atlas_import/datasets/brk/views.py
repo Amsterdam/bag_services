@@ -199,5 +199,6 @@ class AantekeningViewSet(rest.AtlasViewSet):
     queryset = models.Aantekening.objects.all()
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
+    filter_fields = ('opgelegd_door',)
 
 

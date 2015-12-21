@@ -53,10 +53,10 @@ class KadastraleSectie(mixins.ImportStatusMixin):
         verbose_name_plural = "Kadastrale Secties"
 
     def __str__(self):
-        return "{} {}".format(self.kadastrale_gemeente.gemeente, self.sectie)
+        return "{}".format(self.id)
 
 
-class KadasterCodeOmschrijving(mixins.ImportStatusMixin):
+class KadasterCodeOmschrijving(models.Model):
     code = models.CharField(max_length=50, primary_key=True)
     omschrijving = models.TextField()
 
@@ -160,6 +160,18 @@ class KadastraalSubject(mixins.ImportStatusMixin):
         permissions = (
             ('view_sensitive_details', 'Kan privacy-gevoelige data inzien'),
         )
+
+    def __str__(self):
+        return self.volledige_naam()
+
+    def volledige_naam(self):
+        if type == self.SUBJECT_TYPE_NIET_NATUURLIJK:
+            return self.statutaire_naam
+
+        return " ".join([part for part in (self.voornamen,
+                                           self.voorvoegsels,
+                                           self.naam) if part])
+
 
 
 class SoortGrootte(KadasterCodeOmschrijving):

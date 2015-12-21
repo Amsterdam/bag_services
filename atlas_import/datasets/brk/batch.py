@@ -435,8 +435,8 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         self.splits_type.clear()
 
     def process(self):
-        zrts = uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject)
-        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
+        zrts = dict(uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject))
+        models.ZakelijkRecht.objects.bulk_create(zrts.values(), batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
@@ -452,14 +452,16 @@ class ImportZakelijkRechtTask(batch.BasicTask):
             log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
-        return models.ZakelijkRecht(
+        teller = row['TNG_AANDEEL_TELLER']
+        noemer = row['TNG_AANDEEL_NOEMER']
+        return tng_id, models.ZakelijkRecht(
                 pk=tng_id,
                 zrt_id=zrt_id,
                 aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                                 row['ZRT_AARDZAKELIJKRECHT_OMS']),
                 aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
-                teller=int(row['TNG_AANDEEL_TELLER']),
-                noemer=int(row['TNG_AANDEEL_NOEMER']),
+                teller=int(teller) if teller else None,
+                noemer=int(noemer) if noemer else None,
                 ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
                 betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
                 kadastraal_object_id=kot_id,
@@ -499,8 +501,8 @@ class ImportAantekeningTask(batch.BasicTask):
         self.kot.clear()
 
     def process(self):
-        atks = uva2.process_csv(self.path, 'Aantekening', self.process_row)
-        models.Aantekening.objects.bulk_create(atks, batch_size=database.BATCH_SIZE)
+        atks = dict(uva2.process_csv(self.path, 'Aantekening', self.process_row))
+        models.Aantekening.objects.bulk_create(atks.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
         atk_id = row['BRK_ATG_ID']
@@ -523,7 +525,7 @@ class ImportAantekeningTask(batch.BasicTask):
             log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
             return
 
-        return models.Aantekening(
+        return id, models.Aantekening(
                 pk=atk_id,
                 aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'],
                                                            row['ATG_AARDAANTEKENING_OMS']),
@@ -598,4 +600,5 @@ class ImportKadasterJob(object):
             ImportKadastraalObjectTask(self.brk),
             ImportZakelijkRechtTask(self.brk),
             ImportAantekeningTask(self.brk),
+            ImportKadastraalObjectVerblijfsobjectTask(self.brk),
         ]
