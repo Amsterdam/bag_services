@@ -3,7 +3,7 @@ from django.db import connection
 from django.test import TestCase
 from datasets.bag.tests import factories as bag_factories
 
-from datasets.lki.tests import factories as lki_factories
+from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
 
@@ -139,37 +139,37 @@ class ViewsTest(TestCase):
         self.assertEqual(row['uri'], 'http://update.me/api/gebieden/unesco/{}/'.format(u.id))
 
     def test_lki_gemeente(self):
-        g = lki_factories.GemeenteFactory.create()
+        g = brk_factories.GemeenteFactory.create()
         row = self.get_row('geo_lki_gemeente')
-        self.assertEqual(row['id'], g.id)
+        self.assertEqual(row['id'], g.gemeente)
         self.assertIn("geometrie", row)
-        self.assertEqual(row['gemeentenaam'], g.gemeentenaam)
-        self.assertEqual(row['gemeentecode'], g.gemeentecode)
+        self.assertEqual(row['gemeentenaam'], g.gemeente)
+        self.assertEqual(row['gemeentecode'], g.gemeente)
 
     def test_lki_kadastrale_gemeente(self):
-        g = lki_factories.KadastraleGemeenteFactory.create()
+        g = brk_factories.KadastraleGemeenteFactory.create()
         row = self.get_row('geo_lki_kadastralegemeente')
         self.assertEqual(row['id'], g.id)
         self.assertIn("geometrie", row)
-        self.assertEqual(row["code"], g.code)
+        self.assertEqual(row["code"], g.id)
 
     def test_lki_sectie(self):
-        s = lki_factories.SectieFactory.create()
+        s = brk_factories.KadastraleSectieFactory.create()
         row = self.get_row('geo_lki_sectie')
         self.assertEqual(row["id"], s.id)
         self.assertIn("geometrie", row)
-        self.assertEqual(row["code"], s.code)
+        self.assertEqual(row["code"], s.sectie)
 
     def test_lki_kadastraal_object(self):
-        ko = lki_factories.KadastraalObjectFactory.create()
+        ko = brk_factories.KadastraalObjectFactory.create()
         row = self.get_row('geo_lki_kadastraalobject')
         self.assertEqual(row["id"], ko.id)
         self.assertIn("geometrie", row)
         self.assertEqual(row["perceelnummer"], ko.perceelnummer)
         self.assertEqual(row["volledige_code"], ko.aanduiding)
         self.assertEqual(row['display'], ko.aanduiding)
-        self.assertEqual(row['type'], 'kadaster/object')
-        self.assertEqual(row['uri'], 'http://update.me/api/kadaster/object/{}/'.format(ko.aanduiding))
+        self.assertEqual(row['type'], 'kadaster/kadastraal_object')
+        self.assertEqual(row['uri'], 'http://update.me/api/brk/object/{}/'.format(ko.id))
 
     def test_wkpb(self):
         b = wkpb_factories.BeperkingKadastraalObjectFactory.create()
