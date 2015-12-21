@@ -165,7 +165,7 @@ class KadastraalSubject(mixins.ImportStatusMixin):
         return self.volledige_naam()
 
     def volledige_naam(self):
-        if type == self.SUBJECT_TYPE_NIET_NATUURLIJK:
+        if self.statutaire_naam:
             return self.statutaire_naam
 
         return " ".join([part for part in (self.voornamen,
