@@ -1,10 +1,7 @@
 import datetime
 
-from .. import models, batch
 from batch.test import TaskTestCase
-from datasets.akr import batch as akr
-from datasets.lki import batch as lki
-from datasets.akr.models import KadastraalObject
+from .. import models, batch
 
 BEPERKINGEN = 'diva/beperkingen'
 KAD_LKI = 'diva/kadaster/lki'
@@ -86,29 +83,3 @@ class ImportBeperking(TaskTestCase):
         self.assertEqual(b.datum_einde, None)
 
 
-class ImportWkpbBepKad(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportBeperkingcodeTask(BEPERKINGEN),
-            batch.ImportBeperkingTask(BEPERKINGEN),
-            batch.ImportWkpbBroncodeTask(BEPERKINGEN),
-            batch.ImportWkpbBrondocumentTask(BEPERKINGEN),
-            lki.ImportKadastraalObjectTask(KAD_LKI),
-            akr.ImportKotTask(KAD_AKR),
-        ]
-
-    def task(self):
-        return batch.ImportWkpbBepKadTask(BEPERKINGEN)
-
-    def test_import(self):
-        # make sure one record has the id we're mapping
-        # TODO make sure we have good test data
-        kadastraal_object = KadastraalObject.objects.filter()[1]
-        kadastraal_object.id = 'ASD12P03580A0061'
-        kadastraal_object.save()
-
-        self.run_task()
-        bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
-        self.assertEqual(bk.beperking.id, 1001730)
-        self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')
-        self.assertEqual(bk.kadastraal_object_akr.id, 'ASD12P03580A0061')

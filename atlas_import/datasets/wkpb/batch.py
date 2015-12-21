@@ -9,6 +9,7 @@ from batch import batch
 from datasets.generic import kadaster, database
 import datasets.lki.models as lki
 import datasets.akr.models as akr
+import datasets.brk.models as brk
 from . import models
 
 log = logging.getLogger(__name__)
@@ -167,19 +168,16 @@ class ImportWkpbBepKadTask(batch.BasicTask):
         super().__init__()
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
         self.beperkingen = set()
-        self.lki_kots = dict()
-        self.akr_kots = set()
+        self.kot = dict()
 
     def before(self):
         database.clear_models(models.BeperkingKadastraalObject)
         self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
-        self.lki_kots = dict(lki.KadastraalObject.objects.values_list('aanduiding', 'pk'))
-        self.akr_kots = set(akr.KadastraalObject.objects.values_list('pk', flat=True))
+        self.kot = dict(brk.KadastraalObject.objects.values_list('aanduiding', 'pk'))
 
     def after(self):
         self.beperkingen.clear()
-        self.lki_kots.clear()
-        self.akr_kots.clear()
+        self.kot.clear()
 
     def process(self):
         with open(self.source) as f:
@@ -196,13 +194,9 @@ class ImportWkpbBepKadTask(batch.BasicTask):
             log.warning('WPB references non-existing beperking {}; skipping'.format(beperking_id))
             return None
 
-        kadastraal_object_lki = self.lki_kots.get(aanduiding)
-        if not kadastraal_object_lki:
-            log.warning('Beperking {} references non-existing LKI object {}; skipping'.format(beperking_id, aanduiding))
-            return None
-
-        if aanduiding not in self.akr_kots:
-            log.warning('Beperking {} references non-existing AKR object {}; skipping'.format(beperking_id, aanduiding))
+        if not aanduiding or aanduiding not in self.kot:
+            log.warning('Beperking {} references non-existing kadastraal object {}; skipping'
+                        .format(beperking_id, aanduiding))
             return None
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)
@@ -210,8 +204,7 @@ class ImportWkpbBepKadTask(batch.BasicTask):
         return models.BeperkingKadastraalObject(
             pk=uid,
             beperking_id=beperking_id,
-            kadastraal_object_id=kadastraal_object_lki,
-            kadastraal_object_akr_id=aanduiding
+            kadastraal_object_id=self.kot[aanduiding],
         )
 
 

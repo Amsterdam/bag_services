@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.gis.db import models as geo
 from django.db import models
 from datasets.bag import models as bag
@@ -212,7 +214,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
 
 class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     kadastraal_object = models.ForeignKey(KadastraalObject)
     verblijfsobject = models.ForeignKey(bag.Verblijfsobject, null=True)
 

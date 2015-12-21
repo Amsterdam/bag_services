@@ -1,9 +1,7 @@
 from django.db import models
 
-from datasets.akr.models import KadastraalObject as KadastraalObjectAkr
 from datasets.generic import mixins
-from datasets.lki.models import KadastraalObject as KadastraalObjectLki
-
+from datasets.brk import models as brk
 
 # Wkpb
 
@@ -48,7 +46,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
-    kadastrale_objecten = models.ManyToManyField(KadastraalObjectAkr, through='BeperkingKadastraalObject',
+    kadastrale_objecten = models.ManyToManyField(brk.KadastraalObject, through='BeperkingKadastraalObject',
                                                  related_name="beperkingen")
 
     class Meta:
@@ -92,8 +90,7 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
 
     id = models.CharField(max_length=33, null=False, primary_key=True)
     beperking = models.ForeignKey(Beperking, null=False)
-    kadastraal_object = models.ForeignKey(KadastraalObjectLki, null=False)
-    kadastraal_object_akr = models.ForeignKey(KadastraalObjectAkr, null=False)
+    kadastraal_object = models.ForeignKey(brk.KadastraalObject)
 
     def __str__(self):
         return "{}-{}-{}".format(self.beperking_id, self.kadastraal_object_id, self.kadastraal_object_akr_id)
