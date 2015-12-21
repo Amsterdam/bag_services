@@ -69,7 +69,7 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         models.KadastraleGemeente.objects.bulk_create(kgs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        pk = feat.get('LKI_KADGEM')
+        pk = feat.get('KADGEMCODE')
         gemeente_id = feat.get('GEMEENTE')
 
         if gemeente_id not in self.gemeentes:
@@ -102,8 +102,8 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         models.KadastraleSectie.objects.bulk_create(s, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        kad_gem_id = feat.get('LKI_KADGEM')
-        sectie = feat.get('LKI_SECTIE')
+        kad_gem_id = feat.get('KADGEMCODE')
+        sectie = feat.get('SECTIE')
         pk = "{}{}".format(kad_gem_id, sectie)
 
         if kad_gem_id not in self.gemeentes:
