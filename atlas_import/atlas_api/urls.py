@@ -1,11 +1,10 @@
 from django.conf.urls import url, include
-from django.conf import settings
 from rest_framework import routers
-from atlas_api import views
+
 import datasets.bag.views
-import datasets.akr.views
-import datasets.wkpb.views
 import datasets.brk.views
+import datasets.wkpb.views
+from atlas_api import views
 
 
 class DocumentedRouter(routers.DefaultRouter):
@@ -25,7 +24,8 @@ class DocumentedRouter(routers.DefaultRouter):
     :   [Gemeentelijke beperkingenregistratie](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
 
     `brk/`
-    :   [Basisregistratie kadaster (vanaf 1-1-2016)](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/)
+    :   [Basisregistratie kadaster (vanaf 1-1-2016)](
+    https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/)
 
     `atlas/`
     :   Specifieke functionaliteit voor Atlas
@@ -40,6 +40,7 @@ class DocumentedRouter(routers.DefaultRouter):
 
         Datapunt.__doc__ = self.__doc__
         return Datapunt.as_view()
+
 
 router = DocumentedRouter()
 router.register(r'bag/ligplaats', datasets.bag.views.LigplaatsViewSet)

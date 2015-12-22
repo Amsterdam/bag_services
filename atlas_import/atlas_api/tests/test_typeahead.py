@@ -5,33 +5,33 @@ from rest_framework.test import APITestCase
 
 import datasets.bag.batch
 from datasets.bag.tests import factories as bag_factories
-import datasets.akr.batch
+import datasets.brk.batch
 from batch import batch
 
 
 class TypeaheadTest(APITestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Anjeliersstraat")
-        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
-                                                     hoofdadres=True)
-        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
-                                                     hoofdadres=True)
-        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
-                                                     hoofdadres=True)
-        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
-
-        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Marnixkade")
-        bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=36, huisletter='F',
-                                                     hoofdadres=True, postcode='1051XR')
-
-        batch.execute(datasets.bag.batch.IndexJob())
-        batch.execute(datasets.akr.batch.IndexKadasterJob())
-        time.sleep(1)   # this is stupid
-
+    # @classmethod
+    # def setUpClass(cls):
+    #     super().setUpClass()
+    #
+    #     openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Anjeliersstraat")
+    #     bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
+    #                                                  hoofdadres=True)
+    #     bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
+    #                                                  hoofdadres=True)
+    #     bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
+    #                                                  hoofdadres=True)
+    #     bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
+    #
+    #     openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(naam="Marnixkade")
+    #     bag_factories.NummeraanduidingFactory.create(openbare_ruimte=openbare_ruimte, huisnummer=36, huisletter='F',
+    #                                                  hoofdadres=True, postcode='1051XR')
+    #
+    #     batch.execute(datasets.bag.batch.IndexJob())
+    #     batch.execute(datasets.brk.batch.IndexKadasterJob())
+    #     time.sleep(1)   # this is stupid
+    #
     @unittest.skip('skip this for now (test_match_openbare_ruimte)')
     def test_match_openbare_ruimte(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
