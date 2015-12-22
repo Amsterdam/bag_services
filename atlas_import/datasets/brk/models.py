@@ -2,8 +2,8 @@ import uuid
 
 from django.contrib.gis.db import models as geo
 from django.db import models
-from datasets.bag import models as bag
 
+from datasets.bag import models as bag
 from datasets.generic import mixins, kadaster
 
 
@@ -132,7 +132,7 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     naam = models.CharField(max_length=200, null=True)
     geslacht = models.ForeignKey(Geslacht, null=True)
     aanduiding_naam = models.ForeignKey(AanduidingNaam, null=True)
-    geboortedatum = models.CharField(max_length=50, null=True)     # kadaster-data kan onvolledig zijn
+    geboortedatum = models.CharField(max_length=50, null=True)  # kadaster-data kan onvolledig zijn
     geboorteplaats = models.CharField(max_length=80, null=True)
     geboorteland = models.ForeignKey(Land, null=True, related_name='+')
     overlijdensdatum = models.CharField(max_length=50, null=True)  # kadaster-data kan onvolledig zijn
@@ -167,6 +167,9 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     def __str__(self):
         return self.volledige_naam()
 
+    def is_natuurlijk_persoon(self):
+        return not self.statutaire_naam
+
     def volledige_naam(self):
         if self.statutaire_naam:
             return self.statutaire_naam
@@ -174,7 +177,6 @@ class KadastraalSubject(mixins.ImportStatusMixin):
         return " ".join([part for part in (self.voornamen,
                                            self.voorvoegsels,
                                            self.naam) if part])
-
 
 
 class SoortGrootte(KadasterCodeOmschrijving):
@@ -225,8 +227,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
     def get_aanduiding_spaties(self):
         return kadaster.get_aanduiding_spaties(
-            self.kadastrale_gemeente.id, self.sectie.sectie, self.perceelnummer,
-            self.index_letter, self.index_nummer
+                self.kadastrale_gemeente.id, self.sectie.sectie, self.perceelnummer,
+                self.index_letter, self.index_nummer
         )
 
     def __str__(self):
@@ -268,10 +270,10 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     def __str__(self):
         omschrijving = self.aard_zakelijk_recht.omschrijving if self.aard_zakelijk_recht else ''
-        aandeel = '({}/{})'.format(self.teller, self.noemer) if self.teller is not None and self.noemer is not None else ''
+        aandeel = '({}/{})'.format(self.teller,
+                                   self.noemer) if self.teller is not None and self.noemer is not None else ''
 
         return "{} - {}{} - {}".format(self.kadastraal_subject, omschrijving, aandeel, self.kadastraal_object)
-
 
 
 class AardAantekening(KadasterCodeOmschrijving):
@@ -288,5 +290,3 @@ class Aantekening(mixins.ImportStatusMixin):
 
     def __str__(self):
         return self.aard_aantekening.omschrijving if self.aard_aantekening.omschrijving else self.id
-
-

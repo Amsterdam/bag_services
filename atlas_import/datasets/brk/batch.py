@@ -6,9 +6,9 @@ import os
 from django.conf import settings
 
 from batch import batch
-from datasets.brk import models
-from datasets.generic import geo, database, uva2, kadaster
 from datasets.bag import models as bag
+from datasets.brk import models, documents
+from datasets.generic import geo, database, uva2, kadaster, index
 
 log = logging.getLogger(__name__)
 
@@ -553,7 +553,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(
-            models.KadastraalObjectVerblijfsobjectRelatie,
+                models.KadastraalObjectVerblijfsobjectRelatie,
         )
         self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
         self.vbo = set(bag.Verblijfsobject.objects.values_list("id", flat=True))
@@ -579,8 +579,8 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
             return
 
         return models.KadastraalObjectVerblijfsobjectRelatie(
-            verblijfsobject_id=vbo_id,
-            kadastraal_object_id=kot_id,
+                verblijfsobject_id=vbo_id,
+                kadastraal_object_id=kot_id,
         )
 
 
@@ -605,4 +605,36 @@ class ImportKadasterJob(object):
             ImportZakelijkRechtTask(self.brk),
             ImportAantekeningTask(self.brk),
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+        ]
+
+
+class RecreateIndexTask(index.RecreateIndexTask):
+    index = 'brk'
+    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+
+
+class IndexSubjectTask(index.ImportIndexTask):
+    name = "index kadastraal subject"
+    queryset = models.KadastraalSubject.objects
+
+    def convert(self, obj):
+        return documents.from_kadastraal_subject(obj)
+
+
+class IndexObjectTask(index.ImportIndexTask):
+    name = "index kadastraal object"
+    queryset = models.KadastraalObject.objects
+
+    def convert(self, obj):
+        return documents.from_kadastraal_object(obj)
+
+
+class IndexKadasterJob(object):
+    name = "Update search-index BRK"
+
+    def tasks(self):
+        return [
+            RecreateIndexTask(),
+            IndexSubjectTask(),
+            IndexObjectTask(),
         ]

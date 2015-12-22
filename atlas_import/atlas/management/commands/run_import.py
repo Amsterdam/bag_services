@@ -9,22 +9,17 @@ from batch import batch
 
 
 class Command(BaseCommand):
-    ordered = ['bag', 'brk', 'kadaster', 'wkpb']
+    ordered = ['bag', 'brk', 'wkpb']
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
         brk=[datasets.brk.batch.ImportKadasterJob],
-        kadaster=[
-            datasets.akr.batch.ImportKadasterJob,
-            datasets.lki.batch.ImportKadasterJob
-        ],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
     )
 
     indexes = dict(
         bag=[datasets.bag.batch.IndexJob],
-        brk=[],
-        kadaster=[datasets.akr.batch.IndexKadasterJob],
+        brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
     )
 
