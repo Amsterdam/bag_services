@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     """
     dependencies = [
         ('geo_views', '0004_lki_views'),
-        ('bag', '0010_buurtcombinatie_gebiedsgerichtwerken_grootstedelijkproject_unesco')
+        ('bag', '0011_auto_20151022_1202'),
     ]
 
     operations = [

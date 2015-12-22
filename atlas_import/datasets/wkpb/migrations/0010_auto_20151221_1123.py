@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('wkpb', '0009_auto_20151209_1340'),
         ('geo_views', '0009_bag_opr_view'),
+        ('brk', '0024_auto_20151221_1615'),
     ]
 
     operations = [
