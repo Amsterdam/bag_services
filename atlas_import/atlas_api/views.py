@@ -96,7 +96,6 @@ def autocomplete_query(client, query):
 
 def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query)[0:20].execute()
-    print(result)
     matches = OrderedDict()
     for r in result:
         doc_type = r.meta.doc_type.replace('_', ' ')
