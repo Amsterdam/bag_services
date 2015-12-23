@@ -2,9 +2,8 @@ from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
-import datasets.akr.batch
-import datasets.lki.batch
 import datasets.wkpb.batch
+
 from batch import batch
 
 
