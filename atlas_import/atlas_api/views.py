@@ -96,15 +96,24 @@ def autocomplete_query(client, query):
 
 def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query)[0:20].execute()
+    print(result)
     matches = OrderedDict()
     for r in result:
+        doc_type = r.meta.doc_type.replace('_', ' ')
+
+        if doc_type not in matches:
+            matches[doc_type] = OrderedDict()
+
         h = r.meta.highlight
         for key in h:
             highlights = h[key]
             for match in highlights:
-                matches[match] = 1
-    response = [dict(item=m) for m in matches.keys()][:5]
-    return response
+                matches[doc_type][match] = 1
+
+    for doc_type in matches.keys():
+        matches[doc_type] = [dict(item=m) for m in matches[doc_type].keys()][:5]
+
+    return matches
 
 
 class TypeaheadViewSet(viewsets.ViewSet):

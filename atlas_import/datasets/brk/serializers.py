@@ -287,7 +287,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
             '_links',
             '_display',
 
-            'type',
+            'id',
             'beschikkingsbevoegdheid',
 
             'volledige_naam',
