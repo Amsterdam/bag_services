@@ -278,6 +278,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
+    kadastrale_objecten = rest.RelatedSummaryField()
 
     allowed_anonymous = {'_links', '_display', 'id', 'volledige_naam', 'is_natuurlijk_persoon'}
 
@@ -321,6 +322,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
             'aantekeningen',
             'rechten',
+            'kadastrale_objecten',
         )
 
     def to_representation(self, instance):
