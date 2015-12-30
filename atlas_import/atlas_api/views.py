@@ -57,7 +57,6 @@ def cleanup_query(query):
     if m:
         pc = m.groups()[0]
         toevoeging = m.groups()[1]
-        # print(pc, toevoeging)
         return '%s-%s' % (pc.replace(' ', ''), toevoeging.replace(' ', ''))
 
     # postcode huisnummer?
