@@ -97,6 +97,7 @@ def search_query(client, query):
 
 
 def autocomplete_query(client, query):
+    query = cleanup_query(query)
     match_fields = [
         "openbare_ruimte.naam",
         "openbare_ruimte.postcode",
