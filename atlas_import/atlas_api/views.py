@@ -44,7 +44,7 @@ class QueryMetadata(metadata.SimpleMetadata):
 def cleanup_query(query):
     toevoeging_re = re.compile(r'[a-zA-Z]+\s+(\d+\s+[a-zA-Z]+)')
     postcode_re = re.compile(r'^\d{4,}\s+[a-zA-Z]{2,}$')
-    postcode_toevoeging_re = re.compile(r'^(\d{4,}\s+[a-zA-Z]{2,})\s+(\d+\s+[a-zA-Z]+)$')
+    postcode_toevoeging_re = re.compile(r'^(\d{4,}\s?[a-zA-Z]{2,})\s+(\d+\s+[a-zA-Z]+)$')
     postcode_huisnummer_re = re.compile(r'^(\d{4,}\s+[a-zA-Z]{2,})\s+(\d+)$')
 
     # first try to match postcode
