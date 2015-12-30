@@ -1,5 +1,6 @@
 # Create your views here.
 from collections import OrderedDict
+import re
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -40,7 +41,43 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
+def cleanup_query(query):
+    toevoeging_re = re.compile(r'[a-zA-Z]+\s+(\d+\s+[a-zA-Z]+)')
+    postcode_re = re.compile(r'^\d{4,}\s+[a-zA-Z]{2,}$')
+    postcode_toevoeging_re = re.compile(r'^(\d{4,}\s+[a-zA-Z]{2,})\s+(\d+\s+[a-zA-Z]+)$')
+    postcode_huisnummer_re = re.compile(r'^(\d{4,}\s+[a-zA-Z]{2,})\s+(\d+)$')
+
+    # first try to match postcode
+    m = postcode_re.search(query)
+    if m:
+        return query.replace(' ', '')
+
+    # postcode met toevoeging?
+    m = postcode_toevoeging_re.search(query)
+    if m:
+        pc = m.groups()[0]
+        toevoeging = m.groups()[1]
+        # print(pc, toevoeging)
+        return '%s-%s' % (pc.replace(' ', ''), toevoeging.replace(' ', ''))
+
+    # postcode huisnummer?
+    m = postcode_huisnummer_re.search(query)
+    if m:
+        pc = m.groups()[0]
+        huisnummer = m.groups()[1]
+        return '%s-%s' % (pc.replace(' ', ''), huisnummer)
+
+    # adres met toevoeging?
+    m = toevoeging_re.search(query)
+    if m:
+        group = m.groups()[0]
+        return query.replace(group, group.replace(' ', ''))
+
+    return query
+
+
 def search_query(client, query):
+    query = cleanup_query(query)
     wildcard = '*{}*'.format(query)
 
     return (
