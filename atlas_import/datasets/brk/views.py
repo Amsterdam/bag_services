@@ -20,6 +20,7 @@ class GemeenteViewSet(rest.AtlasViewSet):
     queryset = models.Gemeente.objects.all()
     serializer_class = serializers.Gemeente
     serializer_detail_class = serializers.GemeenteDetail
+    lookup_value_regex = '[^/]+'
 
 
 class KadastraleGemeenteViewSet(rest.AtlasViewSet):
@@ -33,6 +34,7 @@ class KadastraleGemeenteViewSet(rest.AtlasViewSet):
                 .all())
     serializer_class = serializers.KadastraleGemeente
     serializer_detail_class = serializers.KadastraleGemeenteDetail
+    lookup_value_regex = '[^/]+'
 
 
 class KadastraleSectieViewSet(rest.AtlasViewSet):
