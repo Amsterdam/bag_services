@@ -7,7 +7,7 @@ from datasets.generic import analyzers
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.Integer()
+    huisnummer = es.String(analyzer=analyzers.postcode)
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -20,7 +20,7 @@ class Ligplaats(es.DocType):
 class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.Integer()
+    huisnummer = es.String(analyzer=analyzers.postcode)
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -33,7 +33,7 @@ class Standplaats(es.DocType):
 class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.Integer()
+    huisnummer = es.String(analyzer=analyzers.postcode)
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -68,9 +68,9 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = "{}-{}".format(adres.postcode, adres.huisnummer)
+        dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
-        dest.huisnummer = int(adres.huisnummer)
+        dest.huisnummer = adres.toevoeging
 
 
 def from_ligplaats(l: models.Ligplaats):
