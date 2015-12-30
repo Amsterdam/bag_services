@@ -42,35 +42,30 @@ class QueryMetadata(metadata.SimpleMetadata):
 
 
 def cleanup_query(query):
-    toevoeging_re = re.compile(r'[a-zA-Z]+\s+(\d+\s+[a-zA-Z]+)')
-    postcode_re = re.compile(r'^\d{4,}\s+[a-zA-Z]{2,}$')
-    postcode_toevoeging_re = re.compile(r'^(\d{4,}\s?[a-zA-Z]{2,})\s+(\d+\s+[a-zA-Z]+)$')
-    postcode_huisnummer_re = re.compile(r'^(\d{4,}\s+[a-zA-Z]{2,})\s+(\d+)$')
+    regex_partial = [
+        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
+        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
+    ]
 
-    # first try to match postcode
-    m = postcode_re.search(query)
-    if m:
-        return query.replace(' ', '')
+    regex_exact = [
+        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
+        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
+        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
+        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
+    ]
 
-    # postcode met toevoeging?
-    m = postcode_toevoeging_re.search(query)
-    if m:
-        pc = m.groups()[0]
-        toevoeging = m.groups()[1]
-        return '%s-%s' % (pc.replace(' ', ''), toevoeging.replace(' ', ''))
+    # first exact matches
+    for regex in regex_exact:
+        m = regex.search(query)
+        if m:
+            result = [match.replace(' ', '') for match in m.groups()]
+            return ' '.join(result)
 
-    # postcode huisnummer?
-    m = postcode_huisnummer_re.search(query)
-    if m:
-        pc = m.groups()[0]
-        huisnummer = m.groups()[1]
-        return '%s-%s' % (pc.replace(' ', ''), huisnummer)
-
-    # adres met toevoeging?
-    m = toevoeging_re.search(query)
-    if m:
-        group = m.groups()[0]
-        return query.replace(group, group.replace(' ', ''))
+    # partial matches
+    for regex in regex_partial:
+        m = regex.search(query)
+        if m:
+            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
 
     return query
 
