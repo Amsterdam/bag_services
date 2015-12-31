@@ -5,6 +5,7 @@ import re
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
+from elasticsearch.exceptions import TransportError
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -193,7 +194,11 @@ class SearchViewSet(viewsets.ViewSet):
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         search = search_query(client, query)[start:end]
 
-        result = search.execute()
+        try:
+            result = search.execute()
+        except TransportError:
+            # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
+            return Response([])
 
         followup_url = reverse('search-list', request=request)
         if page == 1:
