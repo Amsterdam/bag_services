@@ -13,10 +13,16 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
                 pk="AMR03",
             ),
         )
-
-        factories.NatuurlijkPersoonFactory.create(
-            pk='NL.KAD.Persoon.170361583'
+        factories.KadastraleSectieFactory.create(
+            sectie='X',
+            kadastrale_gemeente=factories.KadastraleGemeenteFactory.create(
+                pk="HLM02",
+            ),
         )
+
+        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.170361583')
+        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.172014260')
+        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.199346638')
 
     def task(self):
         return batch.ImportKadastraalObjectTask("diva/brk")
@@ -54,6 +60,6 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         self.assertIsNotNone(kot.geometrie)
         self.assertEqual(kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
 
-        # kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.11280351910001')
-        # self.assertIsNotNone(kot.g_perceel)
-        # self.assertEqual(kot.g_perceel_id, 'NL.KAD.OnroerendeZaak.11280292370000')
+        kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.12550132010037')
+        self.assertIsNotNone(kot.g_percelen)
+        self.assertQuerysetEqual(kot.g_percelen.all(), ['NL.KAD.OnroerendeZaak.12550131670000'], lambda kot: kot.id)
