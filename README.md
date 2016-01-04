@@ -13,9 +13,9 @@ Requirements
 Developing
 ----------
 
-User `docker-compose` to start a local database. 
+User `docker-compose` to start a local database.
 
-	docker-compose start
+	(sudo) docker-compose start
 
 or
 
@@ -38,5 +38,3 @@ To run an import, execute:
 To see the various options for partial imports, execute:
 
 	./atlas_import/manage.py run_import --help
-	
-
