@@ -7,7 +7,7 @@ from datasets.generic import analyzers
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.postcode)
+    huisnummer = es.Integer()
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -20,7 +20,7 @@ class Ligplaats(es.DocType):
 class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.postcode)
+    huisnummer = es.Integer()
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -33,7 +33,7 @@ class Standplaats(es.DocType):
 class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.postcode)
+    huisnummer = es.Integer()
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -70,7 +70,8 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.adres = adres.adres()
         dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
-        dest.huisnummer = adres.toevoeging
+        dest.huisnummer = adres.huisnummer
+        dest.huisnummer_toevoeging = adres.toevoeging
 
 
 def from_ligplaats(l: models.Ligplaats):
