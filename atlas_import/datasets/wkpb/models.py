@@ -46,8 +46,9 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
-    kadastrale_objecten = models.ManyToManyField(brk.KadastraalObject, through='BeperkingKadastraalObject',
-                                                 related_name="beperkingen")
+    kadastrale_objecten = models.ManyToManyField(
+            brk.KadastraalObject, through='BeperkingKadastraalObject',
+            related_name="beperkingen")
 
     class Meta:
         verbose_name = "Beperking"

@@ -159,15 +159,18 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     queryset = (models.KadastraalObject.objects
                 .select_related('sectie', 'kadastrale_gemeente')
                 .all())
-    queryset_detail = (models.KadastraalObject.objects
-                       .select_related('sectie',
-                                       'kadastrale_gemeente', 'kadastrale_gemeente__gemeente',
-                                       'voornaamste_gerechtigde',
-                                       )
-                       )
+
+    queryset_detail = (
+        models.KadastraalObject.objects.select_related(
+            'sectie',
+            'kadastrale_gemeente',
+            'kadastrale_gemeente__gemeente',
+            'voornaamste_gerechtigde',
+        )
+    )
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    filter_fields = ('verblijfsobjecten__id',)
+    filter_fields = ('verblijfsobjecten__id', 'beperkingen__id')
     lookup_value_regex = '[^/]+'
 
 
