@@ -156,6 +156,20 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
             'id',
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            data['subject_href'] = reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
+        else:
+            data['subject_href'] = reverse('kadastraal_subject-detail', kwargs={'pk': instance.kadastraal_subject.id},
+                                           request=request)
+
+        return data
+
 
 class AardAantekening(serializers.ModelSerializer):
     class Meta:
@@ -426,7 +440,7 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
 
         request = self.context['request']
         user = request.user
-        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK\
+        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
                 and not user.has_perm('brk.view_sensitive_details'):
             data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
                                                  args=(instance.id,),
@@ -453,5 +467,3 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
             'kadastraal_object',
             'opgelegd_door',
         )
-
-
