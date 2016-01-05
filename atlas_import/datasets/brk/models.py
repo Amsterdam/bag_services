@@ -191,6 +191,12 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
     pass
 
 
+class APerceelGPerceelRelatie(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    a_perceel = models.ForeignKey('KadastraalObject', related_name='g_perceel_relaties')
+    g_perceel = models.ForeignKey('KadastraalObject', related_name='a_perceel_relaties')
+
+
 class KadastraalObject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=17)
@@ -221,7 +227,10 @@ class KadastraalObject(mixins.ImportStatusMixin):
                                                through='KadastraalObjectVerblijfsobjectRelatie',
                                                related_name="kadastrale_objecten")
 
-    g_percelen = models.ManyToManyField('KadastraalObject', related_name="a_percelen")
+    g_percelen = models.ManyToManyField('KadastraalObject',
+                                        through=APerceelGPerceelRelatie,
+                                        through_fields=('a_perceel', 'g_perceel'),
+                                        related_name="a_percelen")
 
     objects = geo.GeoManager()
 
