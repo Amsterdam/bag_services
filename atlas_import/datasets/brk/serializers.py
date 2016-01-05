@@ -165,7 +165,7 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
                 and not user.has_perm('brk.view_sensitive_details'):
             data['subject_href'] = reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
         else:
-            data['subject_href'] = reverse('subject-detail', kwargs={'pk': instance.kadastraal_subject.id},
+            data['subject_href'] = reverse('kadastraalsubject-detail', kwargs={'pk': instance.kadastraal_subject.id},
                                            request=request)
 
         return data
