@@ -167,7 +167,7 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
                        )
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    filter_fields = ('verblijfsobjecten__id',)
+    filter_fields = ('verblijfsobjecten__id', 'a_percelen__id', 'g_percelen__id')
     lookup_value_regex = '[^/]+'
 
 

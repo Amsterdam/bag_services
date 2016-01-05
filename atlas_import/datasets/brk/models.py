@@ -234,14 +234,17 @@ class KadastraalObject(mixins.ImportStatusMixin):
 
     objects = geo.GeoManager()
 
+    class Meta:
+        ordering = ('kadastrale_gemeente__id', 'sectie', 'perceelnummer', '-index_letter', 'index_nummer')
+
+    def __str__(self):
+        return self.get_aanduiding_spaties()
+
     def get_aanduiding_spaties(self):
         return kadaster.get_aanduiding_spaties(
                 self.kadastrale_gemeente.id, self.sectie.sectie, self.perceelnummer,
                 self.index_letter, self.index_nummer
         )
-
-    def __str__(self):
-        return self.get_aanduiding_spaties()
 
 
 class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
