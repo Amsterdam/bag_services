@@ -307,9 +307,11 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd = dict()
         self.cultuur_code_bebouwd = dict()
         self.subjects = set()
+        self.object_ids = set()
 
     def before(self):
         database.clear_models(
+                models.APerceelGPerceelRelatie,
                 models.KadastraalObject,
                 models.SoortGrootte,
                 models.CultuurCodeOnbebouwd,
@@ -328,11 +330,33 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd.clear()
         self.cultuur_code_bebouwd.clear()
         self.subjects.clear()
+        self.object_ids.clear()
 
     def process(self):
         objects = dict(uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_object))
-
         models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
+
+        self.object_ids = set(objects.keys())
+
+        relaties = uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_relatie)
+        models.APerceelGPerceelRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
+
+    def process_relatie(self, row):
+        kot_id = row['BRK_KOT_ID']
+        g_perceel_id = row['KOT_RELATIE_G_PERCEEL'] or None
+
+        if not g_perceel_id:
+            return
+
+        if g_perceel_id not in self.object_ids:
+            log.warn("Kadastraal Object {} references non-existing G-Perceel {}; skipping".format(kot_id, g_perceel_id))
+            return
+
+        return models.APerceelGPerceelRelatie(
+            a_perceel_id=kot_id,
+            g_perceel_id=g_perceel_id,
+        )
+
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
