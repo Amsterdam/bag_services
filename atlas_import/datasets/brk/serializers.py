@@ -158,8 +158,14 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-
         request = self.context['request']
+
+        data['object_href'] = reverse(
+                'kadastraalobject-detail',
+                kwargs={'pk': instance.kadastraal_object.id},
+                request=request
+        )
+
         user = request.user
         if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
                 and not user.has_perm('brk.view_sensitive_details'):
