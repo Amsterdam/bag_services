@@ -99,8 +99,8 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         self.gemeentes.clear()
 
     def process(self):
-        s = geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature)
-        models.KadastraleSectie.objects.bulk_create(s, batch_size=database.BATCH_SIZE)
+        s = dict(geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature))
+        models.KadastraleSectie.objects.bulk_create(s.values(), batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         kad_gem_id = feat.get('KADGEMCODE')
@@ -113,7 +113,7 @@ class ImportKadastraleSectieTask(batch.BasicTask):
                                                                                                            kad_gem_id))
             return
 
-        return models.KadastraleSectie(
+        return pk, models.KadastraleSectie(
                 pk=pk,
                 sectie=sectie,
                 kadastrale_gemeente_id=kad_gem_id,
