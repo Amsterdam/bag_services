@@ -60,3 +60,10 @@ postcode = es.analyzer(
     filter=['standard', 'lowercase'],
     char_filter=[postcode_stripper],
 )
+
+subtype = es.analyzer(
+    'subtype',
+    tokenizer='keyword',
+    filter=['standard', 'lowercase'],
+    char_filter=[adres_stripper],
+)
