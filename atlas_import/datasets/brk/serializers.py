@@ -18,18 +18,20 @@ class Gemeente(BrkMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            # 'gemeente',
+            'gemeente',
         )
 
 
 class KadastraleGemeente(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    gemeente = Gemeente()
 
     class Meta:
         model = models.KadastraleGemeente
         fields = (
             '_links',
             '_display',
+            'naam',
             'gemeente',
         )
 

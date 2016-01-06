@@ -79,6 +79,7 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
 
         return pk, models.KadastraleGemeente(
                 id=pk,
+                naam=feat.get('KADGEM'),
                 gemeente_id=gemeente_id,
                 geometrie=geo.get_multipoly(feat.geom.wkt)
         )

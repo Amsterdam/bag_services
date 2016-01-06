@@ -24,6 +24,7 @@ class Gemeente(mixins.ImportStatusMixin):
 
 class KadastraleGemeente(mixins.ImportStatusMixin):
     id = models.CharField(max_length=200, primary_key=True)
+    naam = models.CharField(max_length=100)
     gemeente = models.ForeignKey(Gemeente, related_name="kadastrale_gemeentes")
 
     geometrie = geo.MultiPolygonField(srid=28992)
