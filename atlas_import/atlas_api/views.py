@@ -21,26 +21,6 @@ _details = {
     'kadastraal_object': 'kadastraalobject-detail',
 }
 
-all_autocomplete_fields = [
-    "openbare_ruimte.naam",
-    "openbare_ruimte.postcode",
-    "ligplaats.adres",
-    "standplaats.adres",
-    "verblijfsobject.adres",
-    "kadastraal_subject.geslachtsnaam",
-    "kadastraal_subject.naam",
-    "kadastraal_object.aanduiding",
-]
-
-all_fuzzy_autocomplete_fields = [
-    "openbare_ruimte.naam",
-    "kadastraal_subject.geslachtsnaam"
-]
-
-all_autocomplete_docs = list(
-        set([doc.split('.')[0] for doc in all_autocomplete_fields + all_fuzzy_autocomplete_fields])
-)
-
 
 def _get_url(request, doc_type, id):
     if doc_type in _details:
@@ -112,11 +92,23 @@ def search_query(client, query):
     )
 
 
-def autocomplete_query(client, document, query):
+def autocomplete_query(client, query):
     query = cleanup_query(query)
+    match_fields = [
+        "openbare_ruimte.naam",
+        "openbare_ruimte.postcode",
+        "ligplaats.adres",
+        "standplaats.adres",
+        "verblijfsobject.adres",
+        "kadastraal_subject.geslachtsnaam",
+        "kadastraal_subject.naam",
+        "kadastraal_object.aanduiding",
+    ]
 
-    match_fields = [d for d in all_autocomplete_fields if document in d]
-    fuzzy_fields = [d for d in all_fuzzy_autocomplete_fields if document in d]
+    fuzzy_fields = [
+        "openbare_ruimte.naam",
+        "kadastraal_subject.geslachtsnaam"
+    ]
 
     completions = [
         "naam",
@@ -126,36 +118,32 @@ def autocomplete_query(client, document, query):
         "aanduiding",
     ]
 
-    q = Q("multi_match", query=query, type="phrase_prefix", fields=match_fields)
-    if len(fuzzy_fields):
-        q |= Q("multi_match", query=query, fuzziness="auto", prefix_length=1, fields=fuzzy_fields)
-
     return (
         Search(client)
             .index('bag', 'brk')
-            .query(q)
+            .query(Q("multi_match", query=query, type="phrase_prefix", fields=match_fields)
+                   | Q("multi_match", query=query, fuzziness="auto", prefix_length=1, fields=fuzzy_fields))
             .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 
 def get_autocomplete_response(client, query):
-    matches = dict()
+    result = autocomplete_query(client, query)[0:20].execute()
+    matches = OrderedDict()
+    for r in result:
+        doc_type = r.meta.doc_type.replace('_', ' ')
 
-    # execute query per document to distribute the results across all documents
-    for doc_type in all_autocomplete_docs:
-        doc_matches = OrderedDict()
+        if doc_type not in matches:
+            matches[doc_type] = OrderedDict()
 
-        for r in autocomplete_query(client, doc_type, query)[0:5].execute():
-            h = r.meta.highlight
-            for key in h:
-                highlights = h[key]
-                for match in highlights:
-                    doc_matches[match] = 1
+        h = r.meta.highlight
+        for key in h:
+            highlights = h[key]
+            for match in highlights:
+                matches[doc_type][match] = 1
 
-        keys = doc_matches.keys()
-
-        if len(keys):
-            matches[doc_type.replace('_', ' ')] = [dict(item=m) for m in keys]
+    for doc_type in matches.keys():
+        matches[doc_type] = [dict(item=m) for m in matches[doc_type].keys()][:5]
 
     return matches
 
