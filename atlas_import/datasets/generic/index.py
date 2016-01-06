@@ -6,6 +6,8 @@ import elasticsearch
 import elasticsearch_dsl as es
 from elasticsearch_dsl.connections import connections
 
+from tqdm import tqdm
+
 log = logging.getLogger(__name__)
 
 
@@ -49,4 +51,4 @@ class ImportIndexTask(object):
 
     def execute(self):
         client = elasticsearch.Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in self.get_queryset()))
+        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in tqdm(self.get_queryset())))

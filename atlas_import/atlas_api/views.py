@@ -190,6 +190,44 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
     page_size = 100
 
+
+    def _set_followup_url(self, request, result, end,
+            response, query, page):
+        """
+        Add pageing links for result set to response object
+        """
+
+        followup_url = reverse('search-list', request=request)
+
+        if page == 1:
+            prev_page = None
+        elif page == 2:
+            prev_page = "{}?q={}".format(followup_url, query)
+        else:
+            prev_page = "{}?q={}&page={}".format(followup_url, query, page - 1)
+
+        total = result.hits.total
+
+        if end >= total:
+            next_page = None
+        else:
+            next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
+
+        response['_links'] = OrderedDict([
+            ('self', dict(href=followup_url)),
+        ])
+
+        if next_page:
+            response['_links']['next'] = dict(href=next_page)
+        else:
+            response['_links']['next'] = None
+
+        if prev_page:
+            response['_links']['previous'] = dict(href=prev_page)
+        else:
+            response['_links']['previous'] = None
+
+
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
             return Response([])
@@ -212,40 +250,17 @@ class SearchViewSet(viewsets.ViewSet):
             # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
 
-        followup_url = reverse('search-list', request=request)
-        if page == 1:
-            prev_page = None
-        elif page == 2:
-            prev_page = "{}?q={}".format(followup_url, query)
-        else:
-            prev_page = "{}?q={}&page={}".format(followup_url, query, page - 1)
+        response = OrderedDict()
 
-        total = result.hits.total
-        if end >= total:
-            next_page = None
-        else:
-            next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
+        self._set_followup_url(request, result, end, response, query, page)
 
-        res = OrderedDict()
-        res['_links'] = OrderedDict([
-            ('self', dict(href=followup_url)),
-        ])
-        if next_page:
-            res['_links']['next'] = dict(href=next_page)
-        else:
-            res['_links']['next'] = None
+        response['count'] = result.hits.total
+        response['results'] = [self.normalize_hit(h, request) for h in result.hits]
 
-        if prev_page:
-            res['_links']['previous'] = dict(href=prev_page)
-        else:
-            res['_links']['previous'] = None
-
-        res['count'] = result.hits.total
-        res['results'] = [self.normalize_hit(h, request) for h in result.hits]
-
-        return Response(res)
+        return Response(response)
 
     def normalize_hit(self, hit, request):
+        #import pdb; pdb.set_trace()
         result = OrderedDict()
         result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
         result['type'] = hit.meta.doc_type
