@@ -66,8 +66,8 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         self.gemeentes.clear()
 
     def process(self):
-        kgs = geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature)
-        models.KadastraleGemeente.objects.bulk_create(kgs, batch_size=database.BATCH_SIZE)
+        kgs = dict(geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature))
+        models.KadastraleGemeente.objects.bulk_create(kgs.values(), batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         pk = feat.get('KADGEMCODE')
@@ -77,7 +77,7 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
             log.warn("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
             return
 
-        return models.KadastraleGemeente(
+        return pk, models.KadastraleGemeente(
                 id=pk,
                 gemeente_id=gemeente_id,
                 geometrie=geo.get_multipoly(feat.geom.wkt)
