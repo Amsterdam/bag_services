@@ -309,6 +309,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
         o = self.openbare_ruimte
         return o.woonplaats if o else None
 
+    @property
+    def buurtcombinatie(self):
+        b = self.buurt
+        return b.buurtcombinatie if b else None
+
 
 class AdresseerbaarObjectMixin(object):
     @property
