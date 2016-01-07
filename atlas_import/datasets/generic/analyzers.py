@@ -20,45 +20,65 @@ synonym_filter = analysis.token_filter(
         '4e=>vierde',
     ])
 
+postcode_ngram = analysis.NGramTokenizer(
+    name='postcode_ngram',
+    min_gram=2,
+    max_gram=4,
+    token_chars=['letter', 'digit'])
+
 adres_stripper = analysis.char_filter(
     'adres_stripper',
     type='mapping',
     mappings=[
-        "-=>",      # strip '-'
+        "-=>' '",      # strip '-'
         ".=>' '",   # change '.' to separator
     ])
 
-postcode_stripper = analysis.char_filter(
-    'postcode_stripper',
-    type='pattern_replace',
-    pattern=r'[\s\-]',        # strip whitespace and '-'
-    replacement='',
-)
+
+naam_stripper = analysis.char_filter(
+    'naam_stripper',
+    type='mapping',
+    mappings=[
+        "-=>' '",   # change '-' to separator
+        ".=>' '",   # change '.' to separator
+    ])
+
+
+#postcode_stripper = analysis.char_filter(
+#    'postcode_stripper',
+#    type='pattern_replace',
+#    pattern=r'[\s\-]',        # strip whitespace and '-'
+#    replacement='',
+#)
 
 kadastrale_aanduiding = es.analyzer(
     'kadastrale_aanduiding',
     tokenizer='keyword',
     filter=['standard', 'lowercase'])
 
+
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
     filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
     char_filter=[adres_stripper],
+    type='custom'
 )
 
 naam = es.analyzer(
     'naam',
     tokenizer='standard',
     filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
-    char_filter=[adres_stripper],
+    char_filter=[naam_stripper],
 )
 
 postcode = es.analyzer(
     'postcode',
-    tokenizer='keyword',
+    type='custom',
+    #tokenizer='keyword',
+    tokenizer=postcode_ngram,
     filter=['standard', 'lowercase'],
-    char_filter=[postcode_stripper],
+    #char_filter=[postcode_stripper],
 )
 
 subtype = es.analyzer(
@@ -67,3 +87,5 @@ subtype = es.analyzer(
     filter=['standard', 'lowercase'],
     char_filter=[adres_stripper],
 )
+
+

@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
+from datasets.generic import analyzers
+
 
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -42,45 +44,60 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def cleanup_query(query):
-    regex_partial = [
-        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
-        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
-    ]
-
-    regex_exact = [
-        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
-        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
-        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
-        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
-    ]
-
-    # first exact matches
-    for regex in regex_exact:
-        m = regex.search(query)
-        if m:
-            result = [match.replace(' ', '') for match in m.groups()]
-            return ' '.join(result)
-
-    # partial matches
-    for regex in regex_partial:
-        m = regex.search(query)
-        if m:
-            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
-
-    return query
+#def cleanup_query(query):
+#
+#    query = query.lower()
+#
+#    regex_partial = [
+#        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
+#        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
+#    ]
+#
+#    regex_exact = [
+#        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
+#        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
+#        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
+#        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
+#    ]
+#
+#    # first exact matches
+#    for regex in regex_exact:
+#        m = regex.search(query)
+#        if m:
+#            result = [match.replace(' ', '') for match in m.groups()]
+#            return ' '.join(result)
+#
+#    # partial matches
+#    for regex in regex_partial:
+#        m = regex.search(query)
+#        if m:
+#            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
+#
+#    return query
 
 
 def search_query(client, query):
-    query = cleanup_query(query)
+
+    # query = cleanup_query(query)
+
+    #import pdb; pdb.Pdb(skip=['django.*']).set_trace()
+
     wildcard = '*{}*'.format(query)
 
     return (
         Search(client)
             .index('bag', 'brk')
-            .query(Q("multi_match", type="phrase_prefix", query=query,
-                     fields=['naam', 'adres', 'postcode', 'geslachtsnaam', 'aanduiding'])
-                   | Q("wildcard", naam=dict(value=wildcard))
+            .query(Q("multi_match",  query=query,
+                     type="phrase",
+                     slop=12,           # matches "stephan preeker" with "stephan jacob preeker"
+                     fields=[
+                         'naam', 'straatnaam',
+                         'adres',
+                         'postcode',
+                         #'huisnummer_toevoeging',
+                         'geslachtsnaam', 'aanduiding'])
+                   #| Q("wildcard", query=query, naam=dict(value=wildcard))
+                   #| Q("fuzzy", like_test=query, fields=['postcode', 'adres'])
                    )
             .sort({"order": {"order": "asc", "missing": "_last", "unmapped_type": "long"}},
                   {"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
