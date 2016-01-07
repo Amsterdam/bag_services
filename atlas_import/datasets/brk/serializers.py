@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from datasets.generic import rest
 from . import models
@@ -23,12 +24,14 @@ class Gemeente(BrkMixin, rest.HALSerializer):
 
 class KadastraleGemeente(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    gemeente = Gemeente()
 
     class Meta:
         model = models.KadastraleGemeente
         fields = (
             '_links',
             '_display',
+            'naam',
             'gemeente',
         )
 
@@ -65,17 +68,14 @@ class Land(serializers.ModelSerializer):
         model = models.Land
 
 
-class VertrekLand(serializers.ModelSerializer):
-    class Meta:
-        model = models.VertrekLand
-
-
 class Rechtsvorm(serializers.ModelSerializer):
     class Meta:
         model = models.Rechtsvorm
 
 
 class Adres(serializers.ModelSerializer):
+    buitenland_land = Land()
+
     class Meta:
         model = models.Adres
         fields = (
@@ -158,6 +158,26 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
             'id',
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context['request']
+
+        data['object_href'] = reverse(
+                'kadastraalobject-detail',
+                kwargs={'pk': instance.kadastraal_object.id},
+                request=request
+        )
+
+        user = request.user
+        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            data['subject_href'] = reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
+        else:
+            data['subject_href'] = reverse('kadastraalsubject-detail', kwargs={'pk': instance.kadastraal_subject.id},
+                                           request=request)
+
+        return data
+
 
 class AardAantekening(serializers.ModelSerializer):
     class Meta:
@@ -166,6 +186,7 @@ class AardAantekening(serializers.ModelSerializer):
 
 class Aantekening(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    opgelegd_door = KadastraalSubject()
 
     class Meta:
         model = models.Aantekening
@@ -173,39 +194,14 @@ class Aantekening(BrkMixin, rest.HALSerializer):
             '_links',
             '_display',
             'id',
-        )
-
-
-class AardStukdeel(serializers.ModelSerializer):
-    class Meta:
-        model = models.AardStukdeel
-
-
-class RegisterCode(serializers.ModelSerializer):
-    class Meta:
-        model = models.RegisterCode
-
-
-class SoortRegister(serializers.ModelSerializer):
-    class Meta:
-        model = models.SoortRegister
-
-
-class Stukdeel(BrkMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-
-    class Meta:
-        model = models.Stukdeel
-        fields = (
-            '_links',
-            '_display',
-            'id',
+            'opgelegd_door',
         )
 
 
 # detail serializers
 class GemeenteDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    gemeente = serializers.CharField()
 
     class Meta:
         model = models.Gemeente
@@ -220,14 +216,17 @@ class GemeenteDetail(BrkMixin, rest.HALSerializer):
 class KadastraleGemeenteDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     gemeente = Gemeente()
+    secties = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraleGemeente
         fields = (
             '_links',
             '_display',
+            'id',
             'gemeente',
             'geometrie',
+            'secties',
         )
 
 
@@ -240,6 +239,7 @@ class KadastraleSectieDetail(BrkMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'id',
             'kadastrale_gemeente',
             'sectie',
             'geometrie',
@@ -253,12 +253,11 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
     beschikkingsbevoegdheid = Beschikkingsbevoegdheid()
     geslacht = Geslacht()
     aanduiding_naam = AanduidingNaam()
-    land_waarnaar_vertrokken = VertrekLand()
+    geboorteland = Land()
+    land_waarnaar_vertrokken = Land()
     rechtsvorm = Rechtsvorm()
 
     aantekeningen = rest.RelatedSummaryField()
-
-    allowed_anonymous = {'_links', '_display', 'subjectnummer', 'volledige_naam', 'natuurlijk_persoon'}
 
     class Meta:
         model = models.KadastraalSubject
@@ -268,7 +267,6 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 
             'type',
             'beschikkingsbevoegdheid',
-            'bsn',
 
             'voornamen',
             'voorvoegsels',
@@ -301,12 +299,58 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 
 
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
+    rechten = rest.RelatedSummaryField()
+
+    allowed_anonymous = {'_links', '_display', 'id', 'volledige_naam', 'is_natuurlijk_persoon'}
+
+    class Meta:
+        model = models.KadastraalSubject
+        fields = (
+            '_links',
+            '_display',
+
+            'id',
+            'beschikkingsbevoegdheid',
+
+            'volledige_naam',
+            'is_natuurlijk_persoon',
+
+            'voornamen',
+            'voorvoegsels',
+            'naam',
+            'geslacht',
+            'aanduiding_naam',
+            'geboortedatum',
+            'geboorteplaats',
+            'geboorteland',
+            'overlijdensdatum',
+
+            'partner_voornamen',
+            'partner_voorvoegsels',
+            'partner_naam',
+
+            'land_waarnaar_vertrokken',
+
+            'rsin',
+            'kvknummer',
+            'rechtsvorm',
+            'statutaire_naam',
+            'statutaire_zetel',
+
+            'bron',
+            'woonadres',
+            'postadres',
+
+            'aantekeningen',
+            'rechten',
+        )
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
         user = self.context['request'].user
-        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('akr.view_sensitive_details'):
-            data = [data[f] for f in self.fields.keys() if f in self.allowed_anonymous]
+        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('brk.view_sensitive_details'):
+            return {f: data[f] for f in self.fields.keys() if f in self.allowed_anonymous}
 
         return data
 
@@ -314,18 +358,18 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
-    gemeente = Gemeente()
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
-    g_perceel = KadastraalObject()
     cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
     cultuurcode_bebouwd = CultuurCodeBebouwd()
-    voornaamste_gerechtigde = KadastraalSubject()
 
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
+    a_percelen = rest.RelatedSummaryField()
+    g_percelen = rest.RelatedSummaryField()
+    beperkingen = rest.RelatedSummaryField()
 
     class Meta:
         model = models.KadastraalObject
@@ -334,14 +378,13 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             '_display',
             'id',
             'aanduiding',
-            'gemeente',
             'kadastrale_gemeente',
+            'sectie',
             'perceelnummer',
             'index_letter',
             'index_nummer',
             'soort_grootte',
             'grootte',
-            'g_perceel',
             'koopsom',
             'koopsom_valuta_code',
             'koopjaar',
@@ -356,19 +399,21 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'in_onderzoek',
 
             'geometrie',
-            'voornaamste_gerechtigde',
 
+            'g_percelen',
+            'a_percelen',
             'verblijfsobjecten',
             'rechten',
             'aantekeningen',
+            'beperkingen',
         )
 
 
 class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()
-    ontstaan_uit = ZakelijkRecht()
-    betrokken_bij = ZakelijkRecht()
+    ontstaan_uit = KadastraalSubject()
+    betrokken_bij = KadastraalSubject()
     kadastraal_object = KadastraalObject()
     kadastraal_subject = KadastraalSubject()
     app_rechtsplitstype = AppartementsrechtsSplitsType()
@@ -382,12 +427,11 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
             'aard_zakelijk_recht',
             'aard_zakelijk_recht_akr',
 
-            'belast_azt',
-            'belast_met_azt',
             'ontstaan_uit',
             'betrokken_bij',
 
-            'beperkt_tot_tng',
+            'teller',
+            'noemer',
 
             'kadastraal_object',
             'kadastraal_subject',
@@ -397,13 +441,25 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
             'app_rechtsplitstype',
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+                                                 args=(instance.id,),
+                                                 request=request)
+
+        return data
+
 
 class AantekeningDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_aantekening = AardAantekening()
     kadastraal_object = KadastraalObject()
-    zekerheidsrecht = ZakelijkRecht()
-    kadastraal_subject = KadastraalSubject()
+    opgelegd_door = KadastraalSubject()
 
     class Meta:
         model = models.Aantekening
@@ -413,42 +469,7 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
             'id',
             'aard_aantekening',
             'omschrijving',
-            'type',
 
             'kadastraal_object',
-            'zekerheidsrecht',
-            'kadastraal_subject',
-        )
-
-
-class StukdeelDetail(BrkMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    aard_stukdeel = AardStukdeel()
-    register_code = RegisterCode()
-    soort_register = SoortRegister()
-    tenaamstelling = ZakelijkRecht()
-    aantekening = Aantekening()
-
-    class Meta:
-        model = models.Stukdeel
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'aard_stukdeel',
-            'koopsom',
-            'koopsom_valuta',
-
-            'stuk_id',
-            'portefeuille_nummer',
-            'tijdstip_aanbieding',
-            'reeks_code',
-            'volgnummer',
-            'register_code',
-            'soort_register',
-
-            'deel_soort',
-
-            'tenaamstelling',
-            'aantekening',
+            'opgelegd_door',
         )

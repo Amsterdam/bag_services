@@ -1,9 +1,11 @@
 # Create your views here.
 from collections import OrderedDict
+import re
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
+from elasticsearch.exceptions import TransportError
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -40,7 +42,37 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
+def cleanup_query(query):
+    regex_partial = [
+        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
+        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
+    ]
+
+    regex_exact = [
+        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
+        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
+        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
+        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
+    ]
+
+    # first exact matches
+    for regex in regex_exact:
+        m = regex.search(query)
+        if m:
+            result = [match.replace(' ', '') for match in m.groups()]
+            return ' '.join(result)
+
+    # partial matches
+    for regex in regex_partial:
+        m = regex.search(query)
+        if m:
+            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
+
+    return query
+
+
 def search_query(client, query):
+    query = cleanup_query(query)
     wildcard = '*{}*'.format(query)
 
     return (
@@ -61,6 +93,7 @@ def search_query(client, query):
 
 
 def autocomplete_query(client, query):
+    query = cleanup_query(query)
     match_fields = [
         "openbare_ruimte.naam",
         "openbare_ruimte.postcode",
@@ -98,13 +131,21 @@ def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query)[0:20].execute()
     matches = OrderedDict()
     for r in result:
+        doc_type = r.meta.doc_type.replace('_', ' ')
+
+        if doc_type not in matches:
+            matches[doc_type] = OrderedDict()
+
         h = r.meta.highlight
         for key in h:
             highlights = h[key]
             for match in highlights:
-                matches[match] = 1
-    response = [dict(item=m) for m in matches.keys()][:5]
-    return response
+                matches[doc_type][match] = 1
+
+    for doc_type in matches.keys():
+        matches[doc_type] = [dict(item=m) for m in matches[doc_type].keys()][:5]
+
+    return matches
 
 
 class TypeaheadViewSet(viewsets.ViewSet):
@@ -153,7 +194,11 @@ class SearchViewSet(viewsets.ViewSet):
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         search = search_query(client, query)[start:end]
 
-        result = search.execute()
+        try:
+            result = search.execute()
+        except TransportError:
+            # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
+            return Response([])
 
         followup_url = reverse('search-list', request=request)
         if page == 1:

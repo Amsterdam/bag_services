@@ -4,8 +4,7 @@ import os.path
 import sys
 from django.contrib.gis.gdal import DataSource
 
-from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
-
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
 
 # sommige WKT-velden zijn best wel groot
 csv.field_size_limit(sys.maxsize)
@@ -41,9 +40,18 @@ def process_shp(path, filename, callback):
 
 
 def get_multipoly(wkt):
+    if not wkt:
+        return None
+
     geom = GEOSGeometry(wkt)
 
-    if geom and isinstance(geom, Polygon):
-        geom = MultiPolygon(geom)
+    if not geom:
+        return None
+
+    if isinstance(geom, Polygon):
+        return MultiPolygon(geom)
+
+    if isinstance(geom, Point):
+        return None
 
     return geom

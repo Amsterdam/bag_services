@@ -31,12 +31,14 @@ class BeperkingView(AtlasViewSet):
     serializer_class = serializers.Beperking
     serializer_detail_class = serializers.BeperkingDetail
     queryset = models.Beperking.objects.all()
-    queryset_detail = (models.Beperking.objects
-                       .prefetch_related(Prefetch('documenten',
-                                                  queryset=models.Brondocument.objects.select_related('bron')
-                                                  ))
-                       .select_related('beperkingtype')
-                       )
+    queryset_detail = (
+        models.Beperking.objects
+        .prefetch_related(Prefetch(
+            'documenten',
+            queryset=models.Brondocument.objects.select_related('bron')
+        ))
+        .select_related('beperkingtype')
+    )
     template_name = "wkpb/beperking.html"
     filter_fields = ('kadastrale_objecten__id',)
 

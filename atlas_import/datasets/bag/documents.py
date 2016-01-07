@@ -68,9 +68,10 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = "{}-{}".format(adres.postcode, adres.huisnummer)
+        dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
-        dest.huisnummer = int(adres.huisnummer)
+        dest.huisnummer = adres.huisnummer
+        dest.huisnummer_toevoeging = adres.toevoeging
 
 
 def from_ligplaats(l: models.Ligplaats):

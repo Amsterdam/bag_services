@@ -1,9 +1,55 @@
-from rest_framework import generics
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
+from datasets.brk import models, serializers
 from datasets.generic import rest
-from . import models, serializers
+
+
+class GemeenteViewSet(rest.AtlasViewSet):
+    """
+    Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
+    de Grondwet.
+
+    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en is onderdeel van de staat. Zij staat onder bestuur van
+    een raad, een burgemeester en wethouders.
+
+    De gemeentegrens wordt door de centrale overheid vastgesteld, en door het Kadaster vastgelegd.
+
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+    """
+    queryset = models.Gemeente.objects.all()
+    serializer_class = serializers.Gemeente
+    serializer_detail_class = serializers.GemeenteDetail
+    lookup_value_regex = '[^/]+'
+
+
+class KadastraleGemeenteViewSet(rest.AtlasViewSet):
+    """
+    De kadastrale gemeente is het eerste gedeelte van de aanduiding van een kadastraal perceel.
+
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    queryset = (models.KadastraleGemeente.objects
+                .select_related('gemeente')
+                .all())
+    serializer_class = serializers.KadastraleGemeente
+    serializer_detail_class = serializers.KadastraleGemeenteDetail
+    lookup_value_regex = '[^/]+'
+
+
+class KadastraleSectieViewSet(rest.AtlasViewSet):
+    """
+    Een sectie is een onderdeel van een kadastrale gemeente en als zodanig een onderdeel van de
+    kadastrale aanduiding waarbinnen uniek genummerde percelen zijn gelegen.
+
+    http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
+    """
+    queryset = models.KadastraleSectie.objects.all()
+    queryset_detail = (models.KadastraleSectie.objects
+                       .select_related('kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
+    serializer_class = serializers.KadastraleSectie
+    serializer_detail_class = serializers.KadastraleSectieDetail
+    filter_fields = ('kadastrale_gemeente',)
 
 
 class KadastraalSubjectViewSet(rest.AtlasViewSet):
@@ -20,11 +66,12 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (models.KadastraalSubject.objects
-                       .select_related('soort_niet_natuurlijke_persoon',
-                                       'woonadres', 'woonadres__land',
-                                       'postadres', 'postadres__land'))
+                       .select_related('rechtsvorm',
+                                       'woonadres', 'woonadres__buitenland_land',
+                                       'postadres', 'postadres__buitenland_land'))
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
+    lookup_value_regex = '[^/]+'
 
 
 class KadastraalObjectViewSet(rest.AtlasViewSet):
@@ -109,10 +156,22 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-1/)
     """
-    queryset = models.KadastraalObject.objects.all()
+    queryset = (models.KadastraalObject.objects
+                .select_related('sectie', 'kadastrale_gemeente')
+                .all())
+
+    queryset_detail = (
+        models.KadastraalObject.objects.select_related(
+            'sectie',
+            'kadastrale_gemeente',
+            'kadastrale_gemeente__gemeente',
+            'voornaamste_gerechtigde',
+        )
+    )
     serializer_class = serializers.KadastraalObject
     serializer_detail_class = serializers.KadastraalObjectDetail
-    filter_fields = ('verblijfsobjecten__id', 'beperkingen__id', )
+    filter_fields = ('verblijfsobjecten__id', 'beperkingen__id', 'a_percelen__id', 'g_percelen__id')
+    lookup_value_regex = '[^/]+'
 
 
 class ZakelijkRechtViewSet(rest.AtlasViewSet):
@@ -131,33 +190,43 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
     """
-    queryset = models.ZakelijkRecht.objects.all()
+    queryset = (models.ZakelijkRecht.objects
+                .select_related('aard_zakelijk_recht', )#'kadastraal_subject')
+                .all()
+                .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
-    filter_fields = ('kadastraal_subject', 'kadastraal_object', 'transactie',)
+    filter_fields = ('kadastraal_subject', 'kadastraal_object',)
+    lookup_value_regex = '[^/]+'
 
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
         zakelijk_recht = self.get_object()
         subject = zakelijk_recht.kadastraal_subject
-        serializer = serializers.KadastraalSubjectDetailWithPersonalData(instance=subject, context=dict(request=request))
+        serializer = serializers.KadastraalSubjectDetailWithPersonalData(
+                instance=subject, context=dict(request=request)
+        )
         return Response(serializer.data)
 
 
-class TransactieViewSet(rest.AtlasViewSet):
+class AantekeningViewSet(rest.AtlasViewSet):
     """
-    In de objectklasse Transactie zijn elementen opgenomen uit de Stuk.
+    Een Aantekening Kadastraal Object vormt de relatie tussen een Stukdeel en een Kadastraal Object en geeft
+    aanvullende informatie over een bestaand feit, genoemd in een stuk, dat betrekking heeft op een object en
+    dat gevolgen kan hebben voor de uitoefening van rechten op het object.
 
-    Een stuk bevat gegevens over de documenten op basis waarvan wijzigingen in de kadastrale vastgoedregistratie zijn
-    aangebracht.
-
-    Een voorbeeld van een dergelijk document is een notariële akte waarin bijvoorbeeld de transactie van vastgoed is
-    vastgelegd(verkoop woning, grond), of het vastleggen van belemmeringen op rechten en percelen.
-
-    Deze stukken worden aangeboden door het notariaat, deurwaarders, (lagere) overheden. etc.
-
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-9/)
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
     """
-    queryset = models.Transactie.objects.all()
-    serializer_class = serializers.Transactie
-    serializer_detail_class = serializers.TransactieDetail
+    queryset = (models.Aantekening.objects
+                .select_related('aard_aantekening', 'opgelegd_door')
+                .all())
+    queryset_detail = (models.Aantekening.objects
+                       .select_related('aard_aantekening', 'opgelegd_door',
+                                       'kadastraal_object', 'kadastraal_object__sectie',
+                                       'kadastraal_object__kadastrale_gemeente')
+
+                       )
+    serializer_class = serializers.Aantekening
+    serializer_detail_class = serializers.AantekeningDetail
+    filter_fields = ('opgelegd_door', 'kadastraal_object')
+    lookup_value_regex = '[^/]+'

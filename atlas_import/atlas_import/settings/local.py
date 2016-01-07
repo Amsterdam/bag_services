@@ -71,3 +71,5 @@ if not os.path.exists(DIVA_DIR):
 DEBUG = True
 
 INSTALLED_APPS += ('debug_toolbar', )
+
+USE_BRK = True

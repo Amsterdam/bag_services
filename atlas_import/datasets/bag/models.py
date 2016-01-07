@@ -149,7 +149,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     class Meta:
         verbose_name = "Buurt"
         verbose_name_plural = "Buurten"
-        ordering = ('vollcode', )
+        ordering = ('vollcode',)
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.vollcode)
@@ -171,7 +171,7 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     class Meta:
         verbose_name = "Bouwblok"
         verbose_name_plural = "Bouwblokken"
-        ordering = ('code', )
+        ordering = ('code',)
 
     def __str__(self):
         return "{}".format(self.code)
@@ -280,11 +280,15 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
         return self.adres()
 
     def adres(self):
-        return (self.openbare_ruimte.naam
-                + ' ' + str(self.huisnummer)
-                + (self.huisletter if self.huisletter else '')
-                + ('-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else '')
-                )
+        return '%s %s' % (self.openbare_ruimte.naam, self.toevoeging)
+
+    @property
+    def toevoeging(self):
+        return '%s%s%s' % (
+            str(self.huisnummer),
+            self.huisletter if self.huisletter else '',
+            '-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else ''
+        )
 
     @property
     def adresseerbaar_object(self):
@@ -304,6 +308,15 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
     def woonplaats(self):
         o = self.openbare_ruimte
         return o.woonplaats if o else None
+
+    @property
+    def buurtcombinatie(self):
+        b = self.buurt
+        return b.buurtcombinatie if b else None
+
+    @property
+    def bouwblok(self):
+        return self.verblijfsobject.bouwblok if self.verblijfsobject else None
 
 
 class AdresseerbaarObjectMixin(object):
@@ -476,6 +489,17 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixi
             result += '-' + self._huisnummer_toevoeging
         return result
 
+    @property
+    def bouwblok(self):
+        """
+        Geeft het bouwblok van het bijbehorende pand. Indien er meerdere panden zijn, wordt een willekeurig
+        bouwblok gekozen.
+        """
+        if not self.panden.count():
+            return None
+
+        return self.panden.all()[0].bouwblok
+
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
            models.Model):
@@ -551,7 +575,7 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
     class Meta:
         verbose_name = "Buurtcombinatie"
         verbose_name_plural = "Buurtcombinaties"
-        ordering = ('code', )
+        ordering = ('code',)
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
@@ -577,7 +601,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     class Meta:
         verbose_name = "Gebiedsgerichtwerken"
         verbose_name_plural = "Gebiedsgerichtwerken"
-        ordering = ('code', )
+        ordering = ('code',)
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)

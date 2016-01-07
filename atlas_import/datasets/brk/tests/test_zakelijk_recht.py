@@ -20,9 +20,9 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        zrt = models.ZakelijkRecht.objects.get(pk='NL.KAD.ZakelijkRecht.AKR1.1402794')
+        zrt = models.ZakelijkRecht.objects.get(pk='NL.KAD.Tenaamstelling.AKR1.1402794')
 
-        self.assertEqual(zrt.id, 'NL.KAD.ZakelijkRecht.AKR1.1402794')
+        self.assertEqual(zrt.zrt_id, 'NL.KAD.ZakelijkRecht.AKR1.1402794')
         self.assertEqual(zrt.aard_zakelijk_recht.code, '10')
         self.assertEqual(zrt.aard_zakelijk_recht.omschrijving, 'Privaatrechtelijke belemmering (als bedoeld in '
                                                                'artikel 5, lid 3, onder b, '
@@ -38,4 +38,6 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
         self.assertEqual(zrt.kadastraal_object_status, 'B')
 
         self.assertIsNone(zrt.app_rechtsplitstype)
+        self.assertEqual(zrt.teller, 1)
+        self.assertEqual(zrt.noemer, 1)
 

@@ -1,27 +1,24 @@
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
-import datasets.akr.batch
-import datasets.lki.batch
+import datasets.brk.batch
 import datasets.wkpb.batch
+
 from batch import batch
 
 
 class Command(BaseCommand):
-    ordered = ['bag', 'kadaster', 'wkpb']
+    ordered = ['bag', 'brk', 'wkpb']
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
-        kadaster=[
-            datasets.akr.batch.ImportKadasterJob,
-            datasets.lki.batch.ImportKadasterJob
-        ],
+        brk=[datasets.brk.batch.ImportKadasterJob],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
     )
 
     indexes = dict(
         bag=[datasets.bag.batch.IndexJob],
-        kadaster=[datasets.akr.batch.IndexKadasterJob],
+        brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
     )
 

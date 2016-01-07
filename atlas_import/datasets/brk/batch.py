@@ -1,10 +1,14 @@
 import datetime
 import hashlib
 import logging
+import os
+
+from django.conf import settings
 
 from batch import batch
-from datasets.brk import models
-from datasets.generic import geo, database, uva2, kadaster
+from datasets.bag import models as bag
+from datasets.brk import models, documents
+from datasets.generic import geo, database, uva2, kadaster, index
 
 log = logging.getLogger(__name__)
 
@@ -17,8 +21,8 @@ def _get_related(code, omschrijving, cache, model):
         return cached
 
     obj = model.objects.create(
-        code=code,
-        omschrijving=omschrijving
+            code=code,
+            omschrijving=omschrijving
     )
     cache[code] = obj
     return obj
@@ -42,8 +46,8 @@ class ImportGemeenteTask(batch.BasicTask):
 
     def process_feature(self, feat):
         return models.Gemeente(
-            gemeente=feat.get('GEMEENTE'),
-            geometrie=geo.get_multipoly(feat.geom.wkt)
+                gemeente=feat.get('GEMEENTE'),
+                geometrie=geo.get_multipoly(feat.geom.wkt)
         )
 
 
@@ -62,21 +66,22 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         self.gemeentes.clear()
 
     def process(self):
-        kgs = geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature)
-        models.KadastraleGemeente.objects.bulk_create(kgs, batch_size=database.BATCH_SIZE)
+        kgs = dict(geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature))
+        models.KadastraleGemeente.objects.bulk_create(kgs.values(), batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        pk = feat.get('LKI_KADGEM')
+        pk = feat.get('KADGEMCODE')
         gemeente_id = feat.get('GEMEENTE')
 
         if gemeente_id not in self.gemeentes:
             log.warn("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
             return
 
-        return models.KadastraleGemeente(
-            id=pk,
-            gemeente_id=gemeente_id,
-            geometrie=geo.get_multipoly(feat.geom.wkt)
+        return pk, models.KadastraleGemeente(
+                id=pk,
+                naam=feat.get('KADGEM'),
+                gemeente_id=gemeente_id,
+                geometrie=geo.get_multipoly(feat.geom.wkt)
         )
 
 
@@ -95,24 +100,25 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         self.gemeentes.clear()
 
     def process(self):
-        s = geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature)
-        models.KadastraleSectie.objects.bulk_create(s, batch_size=database.BATCH_SIZE)
+        s = dict(geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature))
+        models.KadastraleSectie.objects.bulk_create(s.values(), batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        kad_gem_id = feat.get('LKI_KADGEM')
-        sectie = feat.get('LKI_SECTIE')
+        kad_gem_id = feat.get('KADGEMCODE')
+        sectie = feat.get('SECTIE')
         pk = "{}{}".format(kad_gem_id, sectie)
 
         if kad_gem_id not in self.gemeentes:
             log.warn(
-                "Kadastrale sectie {} references non-existing Kadastrale Gemeente {}; skipping".format(pk, kad_gem_id))
+                    "Kadastrale sectie {} references non-existing Kadastrale Gemeente {}; skipping".format(pk,
+                                                                                                           kad_gem_id))
             return
 
-        return models.KadastraleSectie(
-            pk=pk,
-            sectie=sectie,
-            kadastrale_gemeente_id=kad_gem_id,
-            geometrie=geo.get_multipoly(feat.geom.wkt)
+        return pk, models.KadastraleSectie(
+                pk=pk,
+                sectie=sectie,
+                kadastrale_gemeente_id=kad_gem_id,
+                geometrie=geo.get_multipoly(feat.geom.wkt)
         )
 
 
@@ -130,13 +136,13 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(
-            models.KadastraalSubject,
-            models.Geslacht,
-            models.Beschikkingsbevoegdheid,
-            models.AanduidingNaam,
-            models.Land,
-            models.Adres,
-            models.Rechtsvorm,
+                models.KadastraalSubject,
+                models.Geslacht,
+                models.Beschikkingsbevoegdheid,
+                models.AanduidingNaam,
+                models.Land,
+                models.Adres,
+                models.Rechtsvorm,
         )
 
     def after(self):
@@ -148,7 +154,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         self.rechtsvorm.clear()
 
     def process(self):
-        subjects = uva2.process_csv(self.path, 'Kadastraal_Subject', self.process_subject)
+        subjects = uva2.process_csv(self.path, 'BRK_kadastraal_Subject', self.process_subject)
 
         models.Adres.objects.bulk_create(self.adressen.values(), batch_size=database.BATCH_SIZE)
         models.KadastraalSubject.objects.bulk_create(subjects, batch_size=database.BATCH_SIZE)
@@ -182,35 +188,34 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         bron = models.KadastraalSubject.BRON_REGISTRATIE if row['SJT_NAAM'] else models.KadastraalSubject.BRON_KADASTER
 
         return models.KadastraalSubject(
-            pk=row['BRK_SJT_ID'],
-            type=models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
-            beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
-                                                                     row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
-            bsn=row['SJT_BSN'] or None,
-            voornamen=row['SJT_NP_VOORNAMEN'] or row['SJT_KAD_VOORNAMEN'],
-            voorvoegsels=row['SJT_NP_VOORVOEGSELSGESLSNAAM'] or row['SJT_KAD_VOORVOEGSELSGESLSNAAM'],
-            naam=row['SJT_NAAM'] or row['SJT_KAD_GESLACHTSNAAM'],
-            geslacht=self.get_geslacht(row['SJT_NP_GESLACHTSCODE'] or row['SJT_KAD_GESLACHTSCODE'],
-                                       row['SJT_NP_GESLACHTSCODE_OMS'] or row['SJT_KAD_GESLACHTSCODE_OMS']),
-            aanduiding_naam=self.get_aanduiding_naam(row['SJT_NP_AANDUIDINGNAAMGEBR_CODE'],
-                                                     row['SJT_NP_AANDUIDINGNAAMGEBR_OMS']),
-            geboortedatum=row['SJT_NP_GEBOORTEDATUM'] or row['SJT_KAD_GEBOORTEDATUM'],
-            geboorteplaats=row['SJT_NP_GEBOORTEPLAATS'] or row['SJT_KAD_GEBOORTEPLAATS'],
-            geboorteland=self.get_land(row['SJT_NP_GEBOORTELAND_CODE'] or row['SJT_KAD_GEBOORTELAND_CODE'],
-                                       row['SJT_NP_GEBOORTELAND_OMS'] or row['SJT_KAD_GEBOORTELAND_OMS']),
-            overlijdensdatum=row['SJT_NP_DATUMOVERLIJDEN'] or row['SJT_KAD_DATUMOVERLIJDEN'],
+                pk=row['BRK_SJT_ID'],
+                type=models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
+                beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
+                                                                         row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
+                voornamen=row['SJT_NP_VOORNAMEN'] or row['SJT_KAD_VOORNAMEN'],
+                voorvoegsels=row['SJT_NP_VOORVOEGSELSGESLSNAAM'] or row['SJT_KAD_VOORVOEGSELSGESLSNAAM'],
+                naam=row['SJT_NAAM'] or row['SJT_KAD_GESLACHTSNAAM'],
+                geslacht=self.get_geslacht(row['SJT_NP_GESLACHTSCODE'] or row['SJT_KAD_GESLACHTSCODE'],
+                                           row['SJT_NP_GESLACHTSCODE_OMS'] or row['SJT_KAD_GESLACHTSCODE_OMS']),
+                aanduiding_naam=self.get_aanduiding_naam(row['SJT_NP_AANDUIDINGNAAMGEBR_CODE'],
+                                                         row['SJT_NP_AANDUIDINGNAAMGEBR_OMS']),
+                geboortedatum=row['SJT_NP_GEBOORTEDATUM'] or row['SJT_KAD_GEBOORTEDATUM'],
+                geboorteplaats=row['SJT_NP_GEBOORTEPLAATS'] or row['SJT_KAD_GEBOORTEPLAATS'],
+                geboorteland=self.get_land(row['SJT_NP_GEBOORTELAND_CODE'] or row['SJT_KAD_GEBOORTELAND_CODE'],
+                                           row['SJT_NP_GEBOORTELAND_OMS'] or row['SJT_KAD_GEBOORTELAND_OMS']),
+                overlijdensdatum=row['SJT_NP_DATUMOVERLIJDEN'] or row['SJT_KAD_DATUMOVERLIJDEN'],
 
-            partner_voornamen=row['SJT_NP_VOORNAMEN_PARTNER'],
-            partner_voorvoegsels=row['SJT_NP_VOORVOEGSEL_PARTNER'],
-            partner_naam=row['SJT_NP_GESLACHTSNAAM_PARTNER'],
+                partner_voornamen=row['SJT_NP_VOORNAMEN_PARTNER'],
+                partner_voorvoegsels=row['SJT_NP_VOORVOEGSEL_PARTNER'],
+                partner_naam=row['SJT_NP_GESLACHTSNAAM_PARTNER'],
 
-            land_waarnaar_vertrokken=self.get_land(row['SJT_NP_LANDWAARNAARVERTR_CODE'],
-                                                   row['SJT_NP_LANDWAARNAARVERTR_OMS']),
+                land_waarnaar_vertrokken=self.get_land(row['SJT_NP_LANDWAARNAARVERTR_CODE'],
+                                                       row['SJT_NP_LANDWAARNAARVERTR_OMS']),
 
-            woonadres_id=woonadres_id,
-            postadres_id=postadres_id,
+                woonadres_id=woonadres_id,
+                postadres_id=postadres_id,
 
-            bron=bron,
+                bron=bron,
         )
 
     def process_niet_natuurlijk(self, row, woonadres_id, postadres_id):
@@ -218,22 +223,22 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
                 else models.KadastraalSubject.BRON_KADASTER)
 
         return models.KadastraalSubject(
-            pk=row['BRK_SJT_ID'],
-            type=models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK,
+                pk=row['BRK_SJT_ID'],
+                type=models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK,
 
-            beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
-                                                                     row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
-            rsin=row['SJT_NNP_RSIN'],
-            kvknummer=row['SJT_NNP_KVKNUMMER'],
-            rechtsvorm=self.get_rechtsvorm(row['SJT_NNP_RECHTSVORM_CODE'] or row['SJT_KAD_RECHTSVORM_CODE'],
-                                           row['SJT_NNP_RECHTSVORM_OMS'] or row['SJT_KAD_RECHTSVORM_OMS']),
-            statutaire_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_KAD_STATUTAIRE_NAAM'],
-            statutaire_zetel=row['SJT_NNP_STATUTAIRE_ZETEL'] or row['SJT_KAD_STATUTAIRE_ZETEL'],
+                beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
+                                                                         row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
+                rsin=row['SJT_NNP_RSIN'],
+                kvknummer=row['SJT_NNP_KVKNUMMER'],
+                rechtsvorm=self.get_rechtsvorm(row['SJT_NNP_RECHTSVORM_CODE'] or row['SJT_KAD_RECHTSVORM_CODE'],
+                                               row['SJT_NNP_RECHTSVORM_OMS'] or row['SJT_KAD_RECHTSVORM_OMS']),
+                statutaire_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_KAD_STATUTAIRE_NAAM'],
+                statutaire_zetel=row['SJT_NNP_STATUTAIRE_ZETEL'] or row['SJT_KAD_STATUTAIRE_ZETEL'],
 
-            woonadres_id=woonadres_id,
-            postadres_id=postadres_id,
+                woonadres_id=woonadres_id,
+                postadres_id=postadres_id,
 
-            bron=bron,
+                bron=bron,
         )
 
     def get_geslacht(self, code, omschrijving):
@@ -267,23 +272,28 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             m.update(str(v).encode('utf-8'))
         adres_id = m.hexdigest()
 
-        self.adressen.setdefault(adres_id, models.Adres(
-            id=adres_id,
+        try:
+            huisnummer_int = int(huisnummer) if huisnummer else None
+        except ValueError:
+            huisnummer_int = None
 
-            openbareruimte_naam=openbareruimte_naam,
-            huisnummer=int(huisnummer) if huisnummer else None,
-            huisletter=huisletter,
-            toevoeging=toevoeging,
-            postcode=postcode,
-            woonplaats=woonplaats,
-            postbus_nummer=int(postbus_nummer) if postbus_nummer else None,
-            postbus_postcode=postbus_postcode,
-            postbus_woonplaats=postbus_woonplaats,
-            buitenland_adres=buitenland_adres,
-            buitenland_woonplaats=buitenland_woonplaats,
-            buitenland_regio=buitenland_regio,
-            buitenland_naam=buitenland_naam,
-            buitenland_land=self.get_land(buitenland_code, buitenland_omschrijving),
+        self.adressen.setdefault(adres_id, models.Adres(
+                id=adres_id,
+
+                openbareruimte_naam=openbareruimte_naam,
+                huisnummer=huisnummer_int,
+                huisletter=huisletter,
+                toevoeging=toevoeging,
+                postcode=postcode,
+                woonplaats=woonplaats,
+                postbus_nummer=int(postbus_nummer) if postbus_nummer else None,
+                postbus_postcode=postbus_postcode,
+                postbus_woonplaats=postbus_woonplaats,
+                buitenland_adres=buitenland_adres,
+                buitenland_woonplaats=buitenland_woonplaats,
+                buitenland_regio=buitenland_regio,
+                buitenland_naam=buitenland_naam,
+                buitenland_land=self.get_land(buitenland_code, buitenland_omschrijving),
         ))
         return adres_id
 
@@ -298,13 +308,15 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd = dict()
         self.cultuur_code_bebouwd = dict()
         self.subjects = set()
+        self.object_ids = set()
 
     def before(self):
         database.clear_models(
-            models.KadastraalObject,
-            models.SoortGrootte,
-            models.CultuurCodeOnbebouwd,
-            models.CultuurCodeBebouwd,
+                models.APerceelGPerceelRelatie,
+                models.KadastraalObject,
+                models.SoortGrootte,
+                models.CultuurCodeOnbebouwd,
+                models.CultuurCodeBebouwd,
         )
 
         secties = models.KadastraleSectie.objects.select_related('kadastrale_gemeente').all()
@@ -319,10 +331,32 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd.clear()
         self.cultuur_code_bebouwd.clear()
         self.subjects.clear()
+        self.object_ids.clear()
 
     def process(self):
-        objects = uva2.process_csv(self.path, 'Kadastraal_object', self.process_object)
-        models.KadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+        objects = dict(uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_object))
+        models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
+
+        self.object_ids = set(objects.keys())
+
+        relaties = uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_relatie)
+        models.APerceelGPerceelRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
+
+    def process_relatie(self, row):
+        kot_id = row['BRK_KOT_ID']
+        g_perceel_id = row['KOT_RELATIE_G_PERCEEL'] or None
+
+        if not g_perceel_id:
+            return
+
+        if g_perceel_id not in self.object_ids:
+            log.warn("Kadastraal Object {} references non-existing G-Perceel {}; skipping".format(kot_id, g_perceel_id))
+            return
+
+        return models.APerceelGPerceelRelatie(
+                a_perceel_id=kot_id,
+                g_perceel_id=g_perceel_id,
+        )
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -331,7 +365,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         sectie = row['KOT_SECTIE']
         if (kg_id, sectie) not in self.secties:
             log.warn("Kadastraal Object {} references non-existing Kadastrale Gemeente {}, Sectie {}; skipping".format(
-                kot_id, kg_id, sectie))
+                    kot_id, kg_id, sectie))
             return
 
         s_id = self.secties[(kg_id, sectie)]
@@ -358,34 +392,35 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
             subject_id = None
 
-        return models.KadastraalObject(
-            id=kot_id,
-            kadastrale_gemeente_id=kg_id,
-            aanduiding=aanduiding,
-            sectie_id=s_id,
-            perceelnummer=perceelnummer,
-            index_letter=index_letter,
-            index_nummer=index_nummer,
-            soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
-            grootte=int(grootte) if grootte else None,
-            g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
-            koopsom=int(koopsom) if koopsom else None,
-            koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
-            koopjaar=row['KOT_KOOPJAAR'],
-            meer_objecten=row['KOT_INDICATIE_MEER_OBJECTEN'].lower() == 'j',
-            cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(row['KOT_CULTUURCODEONBEBOUWD_CODE'],
-                                                                  row['KOT_CULTUURCODEONBEBOUWD_OMS']),
-            cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(row['KOT_CULTUURCODEBEBOUWD_CODE'],
-                                                              row['KOT_CULTUURCODEBEBOUWD_OMS']),
+        return kot_id, models.KadastraalObject(
+                id=kot_id,
+                kadastrale_gemeente_id=kg_id,
+                aanduiding=aanduiding,
+                sectie_id=s_id,
+                perceelnummer=perceelnummer,
+                index_letter=index_letter,
+                index_nummer=index_nummer,
+                soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
+                grootte=int(grootte) if grootte else None,
+                # TODO: Aanzetten wanneer levering correct ID bevat
+                # g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
+                koopsom=int(koopsom) if koopsom else None,
+                koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
+                koopjaar=row['KOT_KOOPJAAR'],
+                meer_objecten=row['KOT_INDICATIE_MEER_OBJECTEN'].lower() == 'j',
+                cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(row['KOT_CULTUURCODEONBEBOUWD_CODE'],
+                                                                      row['KOT_CULTUURCODEONBEBOUWD_OMS']),
+                cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(row['KOT_CULTUURCODEBEBOUWD_CODE'],
+                                                                  row['KOT_CULTUURCODEBEBOUWD_OMS']),
 
-            register9_tekst=row['KOT_AKRREGISTER9TEKST'],
-            status_code=row['KOT_STATUS_CODE'],
-            toestandsdatum=toestands_datum,
-            voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
-            in_onderzoek=row['KOT_INONDERZOEK'],
+                register9_tekst=row['KOT_AKRREGISTER9TEKST'],
+                status_code=row['KOT_STATUS_CODE'],
+                toestandsdatum=toestands_datum,
+                voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
+                in_onderzoek=row['KOT_INONDERZOEK'],
 
-            geometrie=geo.get_multipoly(row['GEOMETRIE']),
-            voornaamste_gerechtigde_id=subject_id,
+                geometrie=geo.get_multipoly(row['GEOMETRIE']),
+                voornaamste_gerechtigde_id=subject_id,
         )
 
     def get_soort_grootte(self, code, omschrijving):
@@ -410,9 +445,9 @@ class ImportZakelijkRechtTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(
-            models.ZakelijkRecht,
-            models.AardZakelijkRecht,
-            models.AppartementsrechtsSplitsType,
+                models.ZakelijkRecht,
+                models.AardZakelijkRecht,
+                models.AppartementsrechtsSplitsType,
         )
         self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
         self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
@@ -424,34 +459,46 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         self.splits_type.clear()
 
     def process(self):
-        zrts = uva2.process_csv(self.path, 'Zakelijk_Recht', self.process_subject)
-        models.ZakelijkRecht.objects.bulk_create(zrts, batch_size=database.BATCH_SIZE)
+        zrts = dict(uva2.process_csv(self.path, 'BRK_zakelijk_recht', self.process_subject))
+        models.ZakelijkRecht.objects.bulk_create(zrts.values(), batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
+        tng_id = row['BRK_TNG_ID']
+
+        if not tng_id:
+            log.warn("Zakelijk recht {} has no TNG_ID; skipping".format(zrt_id))
+            return
 
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
-            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(zrt_id, kot_id))
+            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
             return
 
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(zrt_id, kst_id))
+            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
-        return models.ZakelijkRecht(
-            pk=zrt_id,
-            aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
-                                                            row['ZRT_AARDZAKELIJKRECHT_OMS']),
-            aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
-            ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
-            betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
-            kadastraal_object_id=kot_id,
-            kadastraal_subject_id=kst_id,
-            kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
-            app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
-                                                                        row['ASG_APP_RECHTSPLITSTYPE_OMS']),
+        teller = row['TNG_AANDEEL_TELLER']
+        noemer = row['TNG_AANDEEL_NOEMER']
+        return tng_id, models.ZakelijkRecht(
+                pk=tng_id,
+                zrt_id=zrt_id,
+                aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
+                                                                row['ZRT_AARDZAKELIJKRECHT_OMS']),
+                aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
+                teller=int(teller) if teller else None,
+                noemer=int(noemer) if noemer else None,
+                ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
+                betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
+                kadastraal_object_id=kot_id,
+                kadastraal_subject_id=kst_id,
+                kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
+                app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
+                                                                            row['ASG_APP_RECHTSPLITSTYPE_OMS']),
+                _kadastraal_subject_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_NAAM'],
+                _kadastraal_object_aanduiding=(row['ZRT_BETREKKING_OP_KOT'] or '').replace('-', ' ')
         )
 
     def get_aardzakelijk_recht(self, code, omschrijving):
@@ -461,11 +508,159 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.splits_type, models.AppartementsrechtsSplitsType)
 
 
-"""
-ZRT_BELAST_AZT
-Dit zakelijk recht belast de volgende Aardzakelijkrechten
-VARCHAR2(15)
-ZRT_BELAST_MET_AZT
-Dit zakelijk recht is belast met de volgende Aardzakelijkrechten
-VARCHAR2(15)
-"""
+class ImportAantekeningTask(batch.BasicTask):
+    name = "Import Aantekeningen"
+
+    def __init__(self, path):
+        self.path = path
+        self.aard_aantekening = dict()
+        self.kst = set()
+        self.kot = set()
+
+    def before(self):
+        database.clear_models(
+                models.Aantekening,
+                models.AardAantekening,
+        )
+        self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
+
+    def after(self):
+        self.aard_aantekening.clear()
+        self.kst.clear()
+        self.kot.clear()
+
+    def process(self):
+        atks = dict(uva2.process_csv(self.path, 'BRK_aantekening', self.process_row))
+        models.Aantekening.objects.bulk_create(atks.values(), batch_size=database.BATCH_SIZE)
+
+    def process_row(self, row):
+        atk_id = row['BRK_ATG_ID']
+
+        atk_type = row['ATG_TYPE']
+        if atk_type == "Aantekening Zakelijk Recht (R)":
+            return
+
+        if atk_type != "Aantekening Kadastraal object (O)":
+            log.warn("Aantekening {} has unknown type {}; skipping".format(atk_id, atk_type))
+            return
+
+        kot_id = row['BRK_KOT_ID'] or None
+        if kot_id and kot_id not in self.kot:
+            log.warn("Aantekening {} references non-existing object {}; skipping".format(atk_id, kot_id))
+            return
+
+        kst_id = row['BRK_SJT_ID'] or None
+        if kst_id and kst_id not in self.kst:
+            log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
+            return
+
+        return atk_id, models.Aantekening(
+                pk=atk_id,
+                aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'],
+                                                           row['ATG_AARDAANTEKENING_OMS']),
+                omschrijving=row['ATG_OMSCHRIJVING'],
+                kadastraal_object_id=kot_id,
+                opgelegd_door_id=kst_id,
+        )
+
+    def get_aard_aantekening(self, code, omschrijving):
+        return _get_related(code, omschrijving, self.aard_aantekening, models.AardAantekening)
+
+
+class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
+    name = "Import Kadaster - KOT-VBO"
+
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+        self.kot = set()
+        self.vbo = set()
+
+    def before(self):
+        database.clear_models(
+                models.KadastraalObjectVerblijfsobjectRelatie,
+        )
+        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
+        self.vbo = set(bag.Verblijfsobject.objects.values_list("id", flat=True))
+
+    def after(self):
+        self.kot.clear()
+        self.vbo.clear()
+
+    def process(self):
+        rels = uva2.process_csv(self.path, "BRK_brk-bag", self.process_row)
+        models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(rels, batch_size=database.BATCH_SIZE)
+
+    def process_row(self, row):
+        kot_id = row['BRK_KOT_ID']
+        vbo_id = '0' + row['DIVA_VOT_ID']
+
+        if not kot_id or kot_id not in self.kot:
+            log.warn("BRK_BAG references non-existing kadastraal object {}; skipping".format(kot_id))
+            return
+
+        if not vbo_id or vbo_id not in self.vbo:
+            log.warn("BRK_BAG references non-existing verblijfsobject {}; skipping".format(vbo_id))
+            return
+
+        return models.KadastraalObjectVerblijfsobjectRelatie(
+                verblijfsobject_id=vbo_id,
+                kadastraal_object_id=kot_id,
+        )
+
+
+class ImportKadasterJob(object):
+    name = "Import Kadaster - BRK"
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+
+        self.brk = os.path.join(diva, 'brk')
+        self.brk_shp = os.path.join(diva, 'brk_shp')
+
+    def tasks(self):
+        return [
+            ImportGemeenteTask(self.brk_shp),
+            ImportKadastraleGemeenteTask(self.brk_shp),
+            ImportKadastraleSectieTask(self.brk_shp),
+            ImportKadastraalSubjectTask(self.brk),
+            ImportKadastraalObjectTask(self.brk),
+            ImportZakelijkRechtTask(self.brk),
+            ImportAantekeningTask(self.brk),
+            ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+        ]
+
+
+class RecreateIndexTask(index.RecreateIndexTask):
+    index = 'brk'
+    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+
+
+class IndexSubjectTask(index.ImportIndexTask):
+    name = "index kadastraal subject"
+    queryset = models.KadastraalSubject.objects
+
+    def convert(self, obj):
+        return documents.from_kadastraal_subject(obj)
+
+
+class IndexObjectTask(index.ImportIndexTask):
+    name = "index kadastraal object"
+    queryset = models.KadastraalObject.objects
+
+    def convert(self, obj):
+        return documents.from_kadastraal_object(obj)
+
+
+class IndexKadasterJob(object):
+    name = "Update search-index BRK"
+
+    def tasks(self):
+        return [
+            RecreateIndexTask(),
+            IndexSubjectTask(),
+            IndexObjectTask(),
+        ]
