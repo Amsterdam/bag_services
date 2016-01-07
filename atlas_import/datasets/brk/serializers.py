@@ -412,8 +412,8 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
 class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()
-    ontstaan_uit = ZakelijkRecht()
-    betrokken_bij = ZakelijkRecht()
+    ontstaan_uit = KadastraalSubject()
+    betrokken_bij = KadastraalSubject()
     kadastraal_object = KadastraalObject()
     kadastraal_subject = KadastraalSubject()
     app_rechtsplitstype = AppartementsrechtsSplitsType()
