@@ -191,11 +191,9 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
     """
     queryset = (models.ZakelijkRecht.objects
-                .select_related('aard_zakelijk_recht', 'kadastraal_subject', 'kadastraal_object',
-                                'kadastraal_object__sectie', 'kadastraal_object__kadastrale_gemeente')
+                .select_related('aard_zakelijk_recht', )#'kadastraal_subject')
                 .all()
-                .order_by('aard_zakelijk_recht__code', 'kadastraal_subject__naam',
-                          'kadastraal_subject__statutaire_naam'))
+                .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
     filter_fields = ('kadastraal_subject', 'kadastraal_object',)

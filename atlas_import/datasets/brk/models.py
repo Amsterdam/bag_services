@@ -281,12 +281,16 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     app_rechtsplitstype = models.ForeignKey(AppartementsrechtsSplitsType, null=True)
 
+    _kadastraal_subject_naam = models.CharField(max_length=200)
+    _kadastraal_object_aanduiding = models.CharField(max_length=100)
+
     def __str__(self):
         omschrijving = self.aard_zakelijk_recht.omschrijving if self.aard_zakelijk_recht else ''
         aandeel = '({}/{})'.format(self.teller,
                                    self.noemer) if self.teller is not None and self.noemer is not None else ''
 
-        return "{} - {}{} - {}".format(self.kadastraal_subject, omschrijving, aandeel, self.kadastraal_object)
+        return "{} - {}{} - {}".format(self._kadastraal_subject_naam, omschrijving, aandeel,
+                                       self._kadastraal_object_aanduiding)
 
 
 class AardAantekening(KadasterCodeOmschrijving):
