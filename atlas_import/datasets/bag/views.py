@@ -1,18 +1,19 @@
+from django.db.models import Prefetch
 from rest_framework import metadata
 
-from . import serializers, models
 from datasets.generic import rest
+from . import serializers, models
 
 
 class ExpansionMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
-            full=dict(
-                type="string",
-                description="If present, related entities are inlined",
-                required=False
-            )
+                full=dict(
+                        type="string",
+                        description="If present, related entities are inlined",
+                        required=False
+                )
         )
         return result
 
@@ -31,7 +32,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
     queryset = models.Ligplaats.objects.all()
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
-    filter_fields = ('buurt', )
+    filter_fields = ('buurt',)
 
 
 class StandplaatsViewSet(rest.AtlasViewSet):
@@ -47,7 +48,7 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     queryset = models.Standplaats.objects.all()
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
-    filter_fields = ('buurt', )
+    filter_fields = ('buurt',)
 
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
@@ -64,7 +65,7 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
     queryset = models.Verblijfsobject.objects
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
-    filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt', )
+    filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt',)
 
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
@@ -77,14 +78,16 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
-    queryset_detail = models.Nummeraanduiding.objects.select_related(
-        'status',
-        'openbare_ruimte',
-        'openbare_ruimte__woonplaats',
-        'verblijfsobject',
-        'verblijfsobject__buurt',
-        'verblijfsobject__buurt__buurtcombinatie',
-        'verblijfsobject__buurt__stadsdeel',
+    queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
+            Prefetch('verblijfsobject__panden', queryset=models.Pand.objects.select_related('bouwblok'))
+    ).select_related(
+            'status',
+            'openbare_ruimte',
+            'openbare_ruimte__woonplaats',
+            'verblijfsobject',
+            'verblijfsobject__buurt',
+            'verblijfsobject__buurt__buurtcombinatie',
+            'verblijfsobject__buurt__stadsdeel',
     )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
@@ -103,7 +106,7 @@ class PandViewSet(rest.AtlasViewSet):
     queryset = models.Pand.objects.all()
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    filter_fields = ('verblijfsobjecten__id', 'bouwblok', )
+    filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
@@ -128,7 +131,8 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
     """
-    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorzien gedeelte
+    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorzien
+    gedeelte
     van het grondgebied van de gemeente. Vanaf 10 januari 2014 bestaat alleen nog de woonplaats Amsterdam met
     Woonplaatsidentificatie 3594.
 
@@ -203,7 +207,7 @@ class BouwblokViewSet(rest.AtlasViewSet):
     queryset = models.Bouwblok.objects.all()
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
-    filter_fields = ('buurt', )
+    filter_fields = ('buurt',)
 
 
 class BuurtcombinatieViewSet(rest.AtlasViewSet):
@@ -217,7 +221,7 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     queryset = models.Buurtcombinatie.objects.all()
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
-    filter_fields = ('stadsdeel', )
+    filter_fields = ('stadsdeel',)
 
 
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
@@ -232,7 +236,7 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     queryset = models.Gebiedsgerichtwerken.objects.all()
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
-    filter_fields = ('stadsdeel', )
+    filter_fields = ('stadsdeel',)
 
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
