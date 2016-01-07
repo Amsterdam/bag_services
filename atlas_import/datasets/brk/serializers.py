@@ -363,7 +363,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     soort_grootte = SoortGrootte()
     cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
     cultuurcode_bebouwd = CultuurCodeBebouwd()
-    voornaamste_gerechtigde = KadastraalSubject()
 
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
@@ -400,7 +399,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'in_onderzoek',
 
             'geometrie',
-            'voornaamste_gerechtigde',
 
             'g_percelen',
             'a_percelen',
