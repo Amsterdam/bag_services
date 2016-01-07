@@ -77,6 +77,15 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
+    queryset_detail = models.Nummeraanduiding.objects.select_related(
+        'status',
+        'openbare_ruimte',
+        'openbare_ruimte__woonplaats',
+        'verblijfsobject',
+        'verblijfsobject__buurt',
+        'verblijfsobject__buurt__buurtcombinatie',
+        'verblijfsobject__buurt__stadsdeel',
+    )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
     filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
