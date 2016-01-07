@@ -364,6 +364,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
     woonplaats = Woonplaats()
+    bouwblok = Bouwblok()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -397,6 +398,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'buurtcombinatie',
             'stadsdeel',
             'woonplaats',
+            'bouwblok',
         )
 
 
