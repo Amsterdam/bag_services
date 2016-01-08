@@ -79,6 +79,7 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
 
         return pk, models.KadastraleGemeente(
                 id=pk,
+                naam=feat.get('KADGEM'),
                 gemeente_id=gemeente_id,
                 geometrie=geo.get_multipoly(feat.geom.wkt)
         )
@@ -353,10 +354,9 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             return
 
         return models.APerceelGPerceelRelatie(
-            a_perceel_id=kot_id,
-            g_perceel_id=g_perceel_id,
+                a_perceel_id=kot_id,
+                g_perceel_id=g_perceel_id,
         )
-
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -497,6 +497,8 @@ class ImportZakelijkRechtTask(batch.BasicTask):
                 kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
                 app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
                                                                             row['ASG_APP_RECHTSPLITSTYPE_OMS']),
+                _kadastraal_subject_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_NAAM'],
+                _kadastraal_object_aanduiding=(row['ZRT_BETREKKING_OP_KOT'] or '').replace('-', ' ')
         )
 
     def get_aardzakelijk_recht(self, code, omschrijving):

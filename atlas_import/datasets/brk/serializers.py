@@ -18,18 +18,20 @@ class Gemeente(BrkMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            # 'gemeente',
+            'gemeente',
         )
 
 
 class KadastraleGemeente(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    gemeente = Gemeente()
 
     class Meta:
         model = models.KadastraleGemeente
         fields = (
             '_links',
             '_display',
+            'naam',
             'gemeente',
         )
 
@@ -361,7 +363,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     soort_grootte = SoortGrootte()
     cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
     cultuurcode_bebouwd = CultuurCodeBebouwd()
-    voornaamste_gerechtigde = KadastraalSubject()
 
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
@@ -398,7 +399,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'in_onderzoek',
 
             'geometrie',
-            'voornaamste_gerechtigde',
 
             'g_percelen',
             'a_percelen',
@@ -412,8 +412,8 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
 class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()
-    ontstaan_uit = ZakelijkRecht()
-    betrokken_bij = ZakelijkRecht()
+    ontstaan_uit = KadastraalSubject()
+    betrokken_bij = KadastraalSubject()
     kadastraal_object = KadastraalObject()
     kadastraal_subject = KadastraalSubject()
     app_rechtsplitstype = AppartementsrechtsSplitsType()

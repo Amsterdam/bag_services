@@ -315,6 +315,15 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
         o = self.openbare_ruimte
         return o.woonplaats if o else None
 
+    @property
+    def buurtcombinatie(self):
+        b = self.buurt
+        return b.buurtcombinatie if b else None
+
+    @property
+    def bouwblok(self):
+        return self.verblijfsobject.bouwblok if self.verblijfsobject else None
+
 
 class AdresseerbaarObjectMixin(object):
     @property
@@ -485,6 +494,17 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixi
         if self._huisnummer_toevoeging:
             result += '-' + self._huisnummer_toevoeging
         return result
+
+    @property
+    def bouwblok(self):
+        """
+        Geeft het bouwblok van het bijbehorende pand. Indien er meerdere panden zijn, wordt een willekeurig
+        bouwblok gekozen.
+        """
+        if not self.panden.count():
+            return None
+
+        return self.panden.all()[0].bouwblok
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
