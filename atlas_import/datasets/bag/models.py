@@ -226,6 +226,12 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
         verbose_name_plural = "Openbare Ruimtes"
         ordering = ('naam', 'id')
 
+    def get_type_name(self):
+        """Return the string of type"""
+        for type_id, type_name in self.TYPE_CHOICES:
+            if self.type == type_id:
+                return type_name
+
     def __str__(self):
         return self.naam
 

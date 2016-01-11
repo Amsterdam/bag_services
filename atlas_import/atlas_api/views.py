@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
+from datasets.generic import analyzers
+
 
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -41,59 +43,78 @@ class QueryMetadata(metadata.SimpleMetadata):
         )
         return result
 
+def test_search(client, query):
 
-def cleanup_query(query):
-    regex_partial = [
-        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
-        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
-    ]
+    return (
+        Search(client)
+            .index('bag')
+            .query(
+                Q(
+                    "fuzzy_like_this",
+                    like_text=query,
+                    fuzziness=1,
+                    fields=[
+                        'postcode',
+                        #"openbare_ruimte.postcode",
+                        #'adres', 'naam',
+                        'straatnaam', 'aanduiding'
+                    ]
+                )
+                #| Q("wildcard", query=query, naam=dict(value=wildcard))
+            ).sort(*add_sorting())
+        )
 
-    regex_exact = [
-        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
-        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
-        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
-        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
-    ]
 
-    # first exact matches
-    for regex in regex_exact:
-        m = regex.search(query)
-        if m:
-            result = [match.replace(' ', '') for match in m.groups()]
-            return ' '.join(result)
+def mulitimatch_Q(query):
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase",
+        slop=12,          # match "stephan preeker" with "stephan jacob preeker"
+        fields=[
+            'naam', 'straatnaam',
+            'adres', 'postcode',
+            'huisnummer_toevoeging',
+            'geslachtsnaam', 'aanduiding']
+    )
 
-    # partial matches
-    for regex in regex_partial:
-        m = regex.search(query)
-        if m:
-            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
 
-    return query
+def add_sorting():
+    """
+    Give human understandable sorting to the output
+    """
+    return (
+        {"order": {
+            "order": "asc", "missing": "_last", "unmapped_type": "long"}
+        },
+        {"straatnaam": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}
+        },
+        {"huisnummer": {
+            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
+        {"adres": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+        '-_score',
+        'naam'
+    )
 
 
 def search_query(client, query):
-    query = cleanup_query(query)
-    wildcard = '*{}*'.format(query)
+
+    #return test_search(client, query)
 
     return (
         Search(client)
             .index('bag', 'brk')
-            .query(Q("multi_match", type="phrase_prefix", query=query,
-                     fields=['naam', 'adres', 'postcode', 'geslachtsnaam', 'aanduiding'])
-                   | Q("wildcard", naam=dict(value=wildcard))
-                   )
-            .sort({"order": {"order": "asc", "missing": "_last", "unmapped_type": "long"}},
-                  {"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
-                  {"huisnummer": {"order": "asc", "missing": "_first", "unmapped_type": "long"}},
-                  {"adres": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
-                  '-_score',
-                  'naam',
-                  )
+            .query(mulitimatch_Q(query))
+            .sort(*add_sorting())
     )
 
 
 def autocomplete_query(client, query):
-    query = cleanup_query(query)
+    """
+    provice autocomplete suggestions
+    """
     match_fields = [
         "openbare_ruimte.naam",
         "openbare_ruimte.postcode",
@@ -172,11 +193,49 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
 class SearchViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all object that match the elastic search query.
+    Given a query parameter `q`, this function returns a subset of all objects that match the elastic search query.
     """
 
     metadata_class = QueryMetadata
     page_size = 100
+
+
+    def _set_followup_url(self, request, result, end,
+            response, query, page):
+        """
+        Add pageing links for result set to response object
+        """
+
+        followup_url = reverse('search-list', request=request)
+
+        if page == 1:
+            prev_page = None
+        elif page == 2:
+            prev_page = "{}?q={}".format(followup_url, query)
+        else:
+            prev_page = "{}?q={}&page={}".format(followup_url, query, page - 1)
+
+        total = result.hits.total
+
+        if end >= total:
+            next_page = None
+        else:
+            next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
+
+        response['_links'] = OrderedDict([
+            ('self', dict(href=followup_url)),
+        ])
+
+        if next_page:
+            response['_links']['next'] = dict(href=next_page)
+        else:
+            response['_links']['next'] = None
+
+        if prev_page:
+            response['_links']['previous'] = dict(href=prev_page)
+        else:
+            response['_links']['previous'] = None
+
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
@@ -200,40 +259,17 @@ class SearchViewSet(viewsets.ViewSet):
             # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
 
-        followup_url = reverse('search-list', request=request)
-        if page == 1:
-            prev_page = None
-        elif page == 2:
-            prev_page = "{}?q={}".format(followup_url, query)
-        else:
-            prev_page = "{}?q={}&page={}".format(followup_url, query, page - 1)
+        response = OrderedDict()
 
-        total = result.hits.total
-        if end >= total:
-            next_page = None
-        else:
-            next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
+        self._set_followup_url(request, result, end, response, query, page)
 
-        res = OrderedDict()
-        res['_links'] = OrderedDict([
-            ('self', dict(href=followup_url)),
-        ])
-        if next_page:
-            res['_links']['next'] = dict(href=next_page)
-        else:
-            res['_links']['next'] = None
+        response['count'] = result.hits.total
+        response['results'] = [self.normalize_hit(h, request) for h in result.hits]
 
-        if prev_page:
-            res['_links']['previous'] = dict(href=prev_page)
-        else:
-            res['_links']['previous'] = None
-
-        res['count'] = result.hits.total
-        res['results'] = [self.normalize_hit(h, request) for h in result.hits]
-
-        return Response(res)
+        return Response(response)
 
     def normalize_hit(self, hit, request):
+        #import pdb; pdb.set_trace()
         result = OrderedDict()
         result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
         result['type'] = hit.meta.doc_type

@@ -23,10 +23,12 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.add_argument('dataset',
-                            nargs='*',
-                            default=self.ordered,
-                            help="Dataset to import, choose from {}".format(', '.join(self.imports.keys())))
+        parser.add_argument(
+            'dataset',
+            nargs='*',
+            default=self.ordered,
+            help="Dataset to import, choose from {}".format(
+                ', '.join(self.imports.keys())))
 
         parser.add_argument('--no-import',
                             action='store_false',

@@ -52,6 +52,8 @@ class OpenbareRuimte(es.DocType):
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
+    subtype = es.String(analyzer=analyzers.subtype)
+
     class Meta:
         index = 'bag'
 
@@ -107,6 +109,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
+    d.subtype = o.get_type_name()
     d.naam = o.naam
     postcodes = set()
     for a in o.adressen.all():
