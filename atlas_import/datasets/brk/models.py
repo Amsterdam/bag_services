@@ -263,7 +263,7 @@ class AppartementsrechtsSplitsType(KadasterCodeOmschrijving):
 
 
 class ZakelijkRecht(mixins.ImportStatusMixin):
-    id = models.CharField(max_length=60, primary_key=True)
+    id = models.CharField(max_length=183, primary_key=True)
     zrt_id = models.CharField(max_length=60)
     aard_zakelijk_recht = models.ForeignKey(AardZakelijkRecht, null=True)
     aard_zakelijk_recht_akr = models.CharField(max_length=3, null=True)
