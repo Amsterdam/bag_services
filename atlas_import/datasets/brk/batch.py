@@ -634,7 +634,7 @@ class ImportKadasterJob(object):
         ]
 
 
-class RecreateIndexTask(index.RecreateIndexTask):
+class DeleteIndexTask(index.DeleteIndexTask):
     index = 'brk'
     doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
 
@@ -656,11 +656,34 @@ class IndexObjectTask(index.ImportIndexTask):
 
 
 class IndexKadasterJob(object):
+    """
+    Destroy and recreate elastic BKR index
+    """
     name = "Update search-index BRK"
 
     def tasks(self):
         return [
-            RecreateIndexTask(),
+            DeleteIndexTask(),
             IndexSubjectTask(),
             IndexObjectTask(),
         ]
+
+
+class ReindexKadasterJob(object):
+    name = 'Recreate Kadaster index'
+
+    def tasks(self):
+        return [
+            RecreateKadasterTask
+        ]
+
+
+class RecreateKadasterTask(index.RecreateIndexTask):
+    name = 'Recreate Kadaster index'
+    index = 'brk'
+
+    def tasks(self):
+        return [
+            ReindexKadasterJob,
+        ]
+

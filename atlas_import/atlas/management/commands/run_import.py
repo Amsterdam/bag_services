@@ -8,6 +8,7 @@ from batch import batch
 
 
 class Command(BaseCommand):
+
     ordered = ['bag', 'brk', 'wkpb']
 
     imports = dict(
@@ -22,6 +23,13 @@ class Command(BaseCommand):
         wkpb=[],
     )
 
+    reindexes = dict(
+        bag=[datasets.bag.batch.ReindexBagJob],
+        brk=[datasets.brk.batch.ReindexKadasterJob],
+        #brk=[],
+        wkpb=[],
+    )
+
     def add_arguments(self, parser):
         parser.add_argument(
             'dataset',
@@ -29,6 +37,12 @@ class Command(BaseCommand):
             default=self.ordered,
             help="Dataset to import, choose from {}".format(
                 ', '.join(self.imports.keys())))
+
+        parser.add_argument('--reindex-es',
+                            action='store_true',
+                            dest='reindex_es',
+                            default=False,
+                            help='Reindex elsatic search')
 
         parser.add_argument('--no-import',
                             action='store_false',
@@ -55,6 +69,14 @@ class Command(BaseCommand):
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
         for ds in sets:
+
+            if options['reindex_es']:
+                for job_class in self.reindexes[ds]:
+                    print('start reindexing.. %s' % ds)
+                    batch.execute(job_class())
+                # we do not run the other tasks
+                continue  # to next dataset please..
+
             if options['run-import']:
                 for job_class in self.imports[ds]:
                     batch.execute(job_class())

@@ -1058,7 +1058,7 @@ class ImportPndVboTask(batch.BasicTask):
         )
 
 
-class RecreateIndexTask(index.RecreateIndexTask):
+class DeleteIndexTask(index.DeleteIndexTask):
     index = 'bag'
     doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
 
@@ -1361,9 +1361,28 @@ class IndexJob(object):
 
     def tasks(self):
         return [
-            RecreateIndexTask(),
+            DeleteIndexTask(),
             IndexOpenbareRuimteTask(),
             IndexLigplaatsTask(),
             IndexStandplaatsTask(),
             IndexVerblijfsobjectTask(),
+        ]
+
+
+class RecreateBagIndex(index.RecreateIndexTask):
+    """
+    Recreate elastic BAG Index
+    """
+    name = 'recreate bag index in elastic'
+    index = 'bag'
+
+class ReindexBagJob(object):
+    """
+    Reindex elastic documents
+    """
+    name = "Reindex elastic-index BAG"
+
+    def tasks(self):
+        return [
+            RecreateBagIndex,
         ]

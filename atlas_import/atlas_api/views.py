@@ -32,6 +32,7 @@ def _get_url(request, doc_type, id):
 
 
 class QueryMetadata(metadata.SimpleMetadata):
+
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(

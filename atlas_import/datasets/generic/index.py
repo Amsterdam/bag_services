@@ -11,7 +11,7 @@ from tqdm import tqdm
 log = logging.getLogger(__name__)
 
 
-class RecreateIndexTask(object):
+class DeleteIndexTask(object):
     index = ''
     doc_types = []
     name = 'remove index'
@@ -45,6 +45,7 @@ class ImportIndexTask(object):
 
     def get_queryset(self):
         return self.queryset.all()
+        #return self.queryset.iterator()
 
     def convert(self, obj):
         raise NotImplementedError()
@@ -52,3 +53,41 @@ class ImportIndexTask(object):
     def execute(self):
         client = elasticsearch.Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
         helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in tqdm(self.get_queryset())))
+
+
+
+class RecreateIndexTask(object):
+    """
+    Rebuid index from already loaded documents in elastic
+
+    Building index from existing documents is a lot faster
+    then doing if directly from the database
+
+    especialy userfull when editing/testing analyzers
+    and change production environment on the fly
+    """
+    index = ''
+    name = 'reindex elastic'
+
+    def __init__(self):
+        """
+        """
+        if not self.index:
+            raise ValueError("No index specified")
+
+    def execute(self):
+        """
+        Reindex elastic index using existing documents
+        """
+        client = elasticsearch.Elasticsearch(
+            hosts=settings.ELASTIC_SEARCH_HOSTS)
+
+        # check if target exists #1
+        # if so create new one
+        # if done. delete the old one if #1
+        # let original index use new index
+
+        # reindex to reindex new
+        log.debug('reindex task should be here..')
+        #helpers.reindex(client, self.index, chunk_size=500, scroll=u'5m')
+
