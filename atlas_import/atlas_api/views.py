@@ -43,74 +43,78 @@ class QueryMetadata(metadata.SimpleMetadata):
         )
         return result
 
+def test_search(client, query):
 
-#def cleanup_query(query):
-#
-#    query = query.lower()
-#
-#    regex_partial = [
-#        re.compile(r'[a-zA-Z]+\s+(\d+\s+\w)$'),  # straat huisnummer huisletter
-#        re.compile(r'[a-zA-Z]+\s+(\d+\s+(?:\w)?-\w{1,4})$')  # straat huisnummer huisletter toevoeging
-#    ]
-#
-#    regex_exact = [
-#        re.compile(r'^(\d{4}\s+[a-zA-Z]{2,})$'),  # postcode
-#        re.compile(r'^(\d{4}\s+[a-zA-Z]{2})\s+(\d+)$'),  # postcode huisnummer
-#        re.compile(r'^(\d{4}\s?[a-zA-Z]{2,})\s+(\d+\s+\w)$'),  # postcode huisnummer huisletter
-#        re.compile(r'^(\d{4}\s?[a-zA-Z]{2})\s+(\d+(?:\s\w)?-\w{1,4})$')  # postcode huisnummer huisletter? toevoeging
-#    ]
-#
-#    # first exact matches
-#    for regex in regex_exact:
-#        m = regex.search(query)
-#        if m:
-#            result = [match.replace(' ', '') for match in m.groups()]
-#            return ' '.join(result)
-#
-#    # partial matches
-#    for regex in regex_partial:
-#        m = regex.search(query)
-#        if m:
-#            return query.replace(m.groups()[0], m.groups()[0].replace(' ', ''))
-#
-#    return query
+    return (
+        Search(client)
+            .index('bag')
+            .query(
+                Q(
+                    "fuzzy_like_this",
+                    like_text=query,
+                    fuzziness=1,
+                    fields=[
+                        'postcode',
+                        #"openbare_ruimte.postcode",
+                        #'adres', 'naam',
+                        'straatnaam', 'aanduiding'
+                    ]
+                )
+                #| Q("wildcard", query=query, naam=dict(value=wildcard))
+            ).sort(*add_sorting())
+        )
+
+
+def mulitimatch_Q(query):
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase",
+        slop=12,          # match "stephan preeker" with "stephan jacob preeker"
+        fields=[
+            'naam', 'straatnaam',
+            'adres', 'postcode',
+            'huisnummer_toevoeging',
+            'geslachtsnaam', 'aanduiding']
+    )
+
+
+def add_sorting():
+    """
+    Give human understandable sorting to the output
+    """
+    return (
+        {"order": {
+            "order": "asc", "missing": "_last", "unmapped_type": "long"}
+        },
+        {"straatnaam": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}
+        },
+        {"huisnummer": {
+            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
+        {"adres": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+        '-_score',
+        'naam'
+    )
 
 
 def search_query(client, query):
 
-    # query = cleanup_query(query)
-
-    #import pdb; pdb.Pdb(skip=['django.*']).set_trace()
-
-    wildcard = '*{}*'.format(query)
+    #return test_search(client, query)
 
     return (
         Search(client)
             .index('bag', 'brk')
-            .query(Q("multi_match",  query=query,
-                     type="phrase",
-                     slop=12,           # matches "stephan preeker" with "stephan jacob preeker"
-                     fields=[
-                         'naam', 'straatnaam',
-                         'adres',
-                         'postcode',
-                         #'huisnummer_toevoeging',
-                         'geslachtsnaam', 'aanduiding'])
-                   #| Q("wildcard", query=query, naam=dict(value=wildcard))
-                   #| Q("fuzzy", like_test=query, fields=['postcode', 'adres'])
-                   )
-            .sort({"order": {"order": "asc", "missing": "_last", "unmapped_type": "long"}},
-                  {"straatnaam": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
-                  {"huisnummer": {"order": "asc", "missing": "_first", "unmapped_type": "long"}},
-                  {"adres": {"order": "asc", "missing": "_first", "unmapped_type": "string"}},
-                  '-_score',
-                  'naam',
-                  )
+            .query(mulitimatch_Q(query))
+            .sort(*add_sorting())
     )
 
 
 def autocomplete_query(client, query):
-    query = cleanup_query(query)
+    """
+    provice autocomplete suggestions
+    """
     match_fields = [
         "openbare_ruimte.naam",
         "openbare_ruimte.postcode",
@@ -189,7 +193,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
 class SearchViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all object that match the elastic search query.
+    Given a query parameter `q`, this function returns a subset of all objects that match the elastic search query.
     """
 
     metadata_class = QueryMetadata
