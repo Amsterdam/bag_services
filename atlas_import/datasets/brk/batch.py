@@ -612,6 +612,28 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
             """)
 
 
+class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
+    name = "Import Kadaster - ZRT-VBO"
+
+    def before(self):
+        database.clear_models(models.ZakelijkRechtVerblijfsobjectRelatie)
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+            INSERT INTO brk_zakelijkrechtverblijfsobjectrelatie(verblijfsobject_id, zakelijk_recht_id)
+            SELECT
+              vbo.id,
+              zrt.id
+            FROM
+              bag_verblijfsobject vbo
+              LEFT JOIN brk_kadastraalobjectverblijfsobjectrelatie vbo2kot ON vbo2kot.verblijfsobject_id = vbo.id
+              LEFT JOIN brk_zakelijkrecht zrt ON zrt.kadastraal_object_id = vbo2kot.kadastraal_object_id
+            WHERE
+              zrt.id IS NOT NULL
+            """)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -632,8 +654,9 @@ class ImportKadasterJob(object):
             ImportKadastraalObjectTask(self.brk),
             ImportZakelijkRechtTask(self.brk),
             ImportAantekeningTask(self.brk),
-            ImportKadastraalObjectRelatiesTask(),
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+            ImportKadastraalObjectRelatiesTask(),
+            ImportZakelijkRechtVerblijfsobjectTask(),
         ]
 
 

@@ -281,6 +281,10 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     app_rechtsplitstype = models.ForeignKey(AppartementsrechtsSplitsType, null=True)
 
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
+                                               through='ZakelijkRechtVerblijfsobjectRelatie',
+                                               related_name="rechten")
+
     _kadastraal_subject_naam = models.CharField(max_length=200)
     _kadastraal_object_aanduiding = models.CharField(max_length=100)
 
@@ -291,6 +295,11 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
         return "{} - {}{} - {}".format(self._kadastraal_subject_naam, omschrijving, aandeel,
                                        self._kadastraal_object_aanduiding)
+
+
+class ZakelijkRechtVerblijfsobjectRelatie(models.Model):
+    zakelijk_recht = models.ForeignKey(ZakelijkRecht)
+    verblijfsobject = models.ForeignKey(bag.Verblijfsobject)
 
 
 class AardAantekening(KadasterCodeOmschrijving):

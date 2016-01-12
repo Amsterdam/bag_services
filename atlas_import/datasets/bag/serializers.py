@@ -453,6 +453,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     kadastrale_objecten = rest.RelatedSummaryField()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
+    rechten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Verblijfsobject
@@ -492,6 +493,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'buurt',
             'panden',
             'kadastrale_objecten',
+            'rechten',
         )
 
     def __init__(self, *args, **kwargs):
