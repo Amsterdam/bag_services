@@ -9,6 +9,14 @@ from .. import models
 f = faker.Factory.create(locale='nl_NL')
 
 
+class StatusFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Status
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
 class LigplaatsFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Ligplaats

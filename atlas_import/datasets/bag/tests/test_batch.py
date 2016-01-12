@@ -537,25 +537,16 @@ class ImportVboTest(TaskTestCase):
 
 
 class ImportNumTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportStsTask(BAG),
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportWplTask(BAG),
-            batch.ImportOprTask(BAG, BAG_WKT),
-            batch.ImportLigTask(BAG, BAG_WKT),
-            batch.ImportStaTask(BAG, BAG_WKT),
-            batch.ImportVboTask(BAG),
-        ]
+    def setUp(self):
+        factories.OpenbareRuimteFactory.create(pk='03630000003910')
+        factories.LigplaatsFactory.create(pk='03630001025513')
+        factories.StatusFactory.create(code='16')
 
     def task(self):
         return batch.ImportNumTask(BAG)
 
     def test_import(self):
         self.run_task()
-
-        imported = models.Nummeraanduiding.objects.all()
-        self.assertEqual(len(imported), 207)
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
         self.assertEquals(n.id, '03630000512845')
@@ -576,6 +567,9 @@ class ImportNumTest(TaskTestCase):
         self.assertEquals(n.mutatie_gebruiker, 'DBI')
 
     def test_num_lig_hfd_import(self):
+        factories.OpenbareRuimteFactory.create(pk='03630000003404')
+        factories.LigplaatsFactory.create(pk='03630001035885')
+
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
@@ -586,6 +580,9 @@ class ImportNumTest(TaskTestCase):
         self.assertIn(n.id, [a.id for a in l.adressen.all()])
 
     def test_num_sta_hfd_import(self):
+        factories.OpenbareRuimteFactory.create(pk='03630000001094')
+        factories.StandplaatsFactory.create(pk='03630000717733')
+
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
@@ -596,6 +593,9 @@ class ImportNumTest(TaskTestCase):
         self.assertIn(n.id, [a.id for a in s.adressen.all()])
 
     def test_num_vbo_hfd_import(self):
+        factories.OpenbareRuimteFactory.create(pk='03630000004150')
+        factories.VerblijfsobjectFactory.create(pk='03630000721053')
+
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
@@ -606,6 +606,10 @@ class ImportNumTest(TaskTestCase):
         self.assertIn(n.id, [n.id for n in v.adressen.all()])
 
     def test_num_vbo_nvn_import(self):
+        factories.OpenbareRuimteFactory.create(pk='03630000003699')
+        factories.OpenbareRuimteFactory.create(pk='03630000003293')
+        factories.VerblijfsobjectFactory.create(pk='03630000643306')
+
         self.run_task()
 
         v = models.Verblijfsobject.objects.get(pk='03630000643306')
