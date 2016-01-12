@@ -11,6 +11,9 @@ from rest_framework.reverse import reverse
 
 from datasets.generic import rest
 
+import logging
+
+log = logging.getLogger('search')
 
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -22,9 +25,20 @@ _details = {
 }
 
 
-#BAG = settings.ELASTIC_INDICES['BAG'] + 'test'
-#BRK = settings.ELASTIC_INDICES['BRK'] + 'test'
+BAG = settings.ELASTIC_INDICES['BAG']
+BRK = settings.ELASTIC_INDICES['BRK']
+
+
+# uncomment to get results from testindexes
+#if 'test' not in BAG:
+#    BAG = BAG + 'test'
 #
+#if 'test' not in BRK:
+#    BRK = BRK + 'test'
+#
+
+log.debug('using indices %s %s', BAG, BRK)
+
 
 def _get_url(request, doc_type, id):
     if doc_type in _details:
@@ -77,20 +91,47 @@ def mulitimatch_Q(query):
     """
     main search query used
     """
+
     return Q(
         "multi_match",
         query=query,
-        type="phrase",
-        #type="phrase_prefix",
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
         slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=10,
+        max_expansions=12,
         fields=[
-            'naam', 'straatnaam',
-            'adres', 'postcode',
-            'huisnummer_toevoeging',
-            'subtype',
-            'geslachtsnaam', 'aanduiding']
+            'naam',
+            'straatnaam',
+            'adres',
+            'postcode',
+            'huisnummer',
+            'geslachtsnaam',
+            'aanduiding']
     )
+
+
+def wildcard_Q(query):
+    """
+    wilcard match
+    """
+    wildcard = '*{}*'.format(query)
+    return Q(
+        "wildcard",
+        naam=dict(value=wildcard),
+    )
+
+
+def wildcard_Q2(query):
+
+    fuzzy_fields = [
+        "openbare_ruimte.naam",
+        "kadastraal_subject.geslachtsnaam"
+    ]
+
+    return Q("multi_match",
+             query=query, fuzziness="auto",
+             prefix_length=1, fields=fuzzy_fields)
 
 
 def add_sorting():
@@ -118,7 +159,10 @@ def search_query(client, query):
     return (
         Search(client)
         .index(BAG, BRK)
-        .query(mulitimatch_Q(query))
+        .query(
+            mulitimatch_Q(query)
+            # | wildcard_Q2(query),
+            )
         .sort(*add_sorting())
     )
 
@@ -138,11 +182,6 @@ def autocomplete_query(client, query):
         "kadastraal_object.aanduiding",
     ]
 
-    fuzzy_fields = [
-        "openbare_ruimte.naam",
-        "kadastraal_subject.geslachtsnaam"
-    ]
-
     completions = [
         "naam",
         "adres",
@@ -153,10 +192,12 @@ def autocomplete_query(client, query):
 
     return (
         Search(client)
-            .index(BAG, BRK)
-            .query(Q("multi_match", query=query, type="phrase_prefix", fields=match_fields)
-                   | Q("multi_match", query=query, fuzziness="auto", prefix_length=1, fields=fuzzy_fields))
-            .highlight(*completions, pre_tags=[''], post_tags=[''])
+        .index(BAG, BRK)
+        .query(
+            Q("multi_match",
+                query=query, type="phrase_prefix", fields=match_fields)
+            | wildcard_Q2(query))
+        .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 

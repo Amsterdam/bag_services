@@ -22,6 +22,17 @@ synonym_filter = analysis.token_filter(
 )
 
 
+huisnummer_generate = analysis.char_filter(
+    'huisnummer_expand',
+    type='pattern_replace',
+    pattern='(\d+)',
+    replacement="""
+        $1-1 $1- $1-2 $1-3
+        $1a $1b $1a-1 $1b-1 $1-a $1-b"
+    """
+)
+
+
 huisnummer_expand = analysis.token_filter(
     'huisnummer_expand',
     type='word_delimiter',
@@ -48,7 +59,6 @@ postcode_ngram = analysis.NGramTokenizer(
 )
 
 
-
 naam_stripper = analysis.char_filter(
     'naam_stripper',
     type='mapping',
@@ -70,7 +80,7 @@ adres = es.analyzer(
     'adres',
     tokenizer='standard',
     filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
-    char_filter=[adres_split],
+    char_filter=[adres_split, huisnummer_generate],
 )
 
 
@@ -93,7 +103,9 @@ postcode = es.analyzer(
 huisnummer = es.analyzer(
     'huisnummer',
     tokenizer='whitespace',
-    token_filter=[huisnummer_expand],
+    filter=['lowercase', huisnummer_expand],
+    # token_filter=[huisnummer_expand],
+    char_filter=[adres_split, huisnummer_generate],
 )
 
 
@@ -101,5 +113,4 @@ subtype = es.analyzer(
     'subtype',
     tokenizer='keyword',
     filter=['standard', 'lowercase'],
-    char_filter=[adres_split],
 )

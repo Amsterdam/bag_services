@@ -85,18 +85,6 @@ class Command(BaseCommand):
 
         for ds in sets:
 
-            if options['backup_indexes_es']:
-                for job_class in self.backup_indexes[ds]:
-                    batch.execute(job_class())
-                # we do not run the other tasks
-                continue  # to next dataset please..
-
-            if options['restore_indexes_es']:
-                for job_class in self.restore_indexes[ds]:
-                    batch.execute(job_class())
-                # we do not run the other tasks
-                continue  # to next dataset please..
-
             if options['run-import']:
                 for job_class in self.imports[ds]:
                     batch.execute(job_class())
