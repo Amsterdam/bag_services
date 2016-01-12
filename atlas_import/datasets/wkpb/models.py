@@ -1,7 +1,9 @@
 from django.db import models
 
-from datasets.generic import mixins
+from datasets.bag import models as bag
 from datasets.brk import models as brk
+from datasets.generic import mixins
+
 
 # Wkpb
 
@@ -50,6 +52,10 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
             brk.KadastraalObject, through='BeperkingKadastraalObject',
             related_name="beperkingen")
 
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
+                                               through='BeperkingVerblijfsobject',
+                                               related_name='beperkingen')
+
     class Meta:
         verbose_name = "Beperking"
         verbose_name_plural = "Beperkingen"
@@ -95,3 +101,8 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "{}-{}-{}".format(self.beperking_id, self.kadastraal_object_id, self.kadastraal_object_akr_id)
+
+
+class BeperkingVerblijfsobject(models.Model):
+    beperking = models.ForeignKey(Beperking)
+    verblijfsobject = models.ForeignKey(bag.Verblijfsobject)

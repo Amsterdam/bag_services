@@ -1,13 +1,14 @@
 import csv
+import datetime
 import logging
 import os
-import datetime
 
+from django import db
 from django.conf import settings
 
+import datasets.brk.models as brk
 from batch import batch
 from datasets.generic import kadaster, database
-import datasets.brk.models as brk
 from . import models
 
 log = logging.getLogger(__name__)
@@ -206,6 +207,30 @@ class ImportWkpbBepKadTask(batch.BasicTask):
         )
 
 
+class ImportBeperkingVerblijfsobjectTask(object):
+    name = "Import WKPB - Beperking-VBO"
+
+    def before(self):
+        database.clear_models(models.BeperkingVerblijfsobject)
+
+    def execute(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+                INSERT INTO wkpb_beperkingverblijfsobject (verblijfsobject_id, beperking_id)
+                  SELECT DISTINCT
+                    vbo.id,
+                    kot2bep.beperking_id
+                  FROM
+                    bag_verblijfsobject vbo
+                    LEFT JOIN brk_kadastraalobjectverblijfsobjectrelatie vbo2kot
+                      ON vbo2kot.verblijfsobject_id = vbo.id
+                    LEFT JOIN wkpb_beperkingkadastraalobject kot2bep
+                      ON vbo2kot.kadastraal_object_id = kot2bep.kadastraal_object_id
+                  WHERE
+                    kot2bep.beperking_id IS NOT NULL;
+            """)
+
+
 class ImportWkpbJob(object):
     name = "Import WKPB"
 
@@ -223,4 +248,5 @@ class ImportWkpbJob(object):
             ImportBeperkingTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportWkpbBepKadTask(self.beperkingen),
+            ImportBeperkingVerblijfsobjectTask(),
         ]
