@@ -23,12 +23,18 @@ class Command(BaseCommand):
         wkpb=[],
     )
 
-    reindexes = dict(
-        bag=[datasets.bag.batch.ReindexBagJob],
-        brk=[datasets.brk.batch.ReindexKadasterJob],
-        #brk=[],
+    backup_indexes = dict(
+        bag=[datasets.bag.batch.BackupBagJob],
+        brk=[datasets.brk.batch.BackupKadasterJob],
         wkpb=[],
     )
+
+    restore_indexes = dict(
+        bag=[datasets.bag.batch.RestoreBagJob],
+        brk=[datasets.brk.batch.RestoreKadasterJob],
+        wkpb=[],
+    )
+
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -38,11 +44,18 @@ class Command(BaseCommand):
             help="Dataset to import, choose from {}".format(
                 ', '.join(self.imports.keys())))
 
-        parser.add_argument('--reindex-es',
+        parser.add_argument('--backup-indexes-es',
                             action='store_true',
-                            dest='reindex_es',
+                            dest='backup_indexes_es',
                             default=False,
-                            help='Reindex elsatic search')
+                            help='Backup elsatic search')
+
+        parser.add_argument('--restore-indexes-es',
+                            action='store_true',
+                            dest='restore_indexes_es',
+                            default=False,
+                            help='Restore elsatic search index')
+
 
         parser.add_argument('--no-import',
                             action='store_false',
@@ -55,6 +68,10 @@ class Command(BaseCommand):
                             dest='run-index',
                             default=True,
                             help='Skip elastic search indexing')
+
+        parser.add_argument('--noinput', '--no-input',
+                            action='store_false', dest='interactive', default=True,
+                            help='Tells Django to NOT prompt the user for input of any kind.')
 
     def handle(self, *args, **options):
         dataset = options['dataset']
@@ -70,9 +87,14 @@ class Command(BaseCommand):
 
         for ds in sets:
 
-            if options['reindex_es']:
-                for job_class in self.reindexes[ds]:
-                    print('start reindexing.. %s' % ds)
+            if options['backup_indexes_es']:
+                for job_class in self.backup_indexes[ds]:
+                    batch.execute(job_class())
+                # we do not run the other tasks
+                continue  # to next dataset please..
+
+            if options['restore_indexes_es']:
+                for job_class in self.restore_indexes[ds]:
                     batch.execute(job_class())
                 # we do not run the other tasks
                 continue  # to next dataset please..
@@ -84,4 +106,3 @@ class Command(BaseCommand):
             if options['run-index']:
                 for job_class in self.indexes[ds]:
                     batch.execute(job_class())
-

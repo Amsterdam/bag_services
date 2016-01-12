@@ -17,6 +17,7 @@ class DeleteIndexTask(object):
     name = 'remove index'
 
     def __init__(self):
+
         if not self.index:
             raise ValueError("No index specified")
 
@@ -26,6 +27,7 @@ class DeleteIndexTask(object):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
 
     def execute(self):
+
         idx = es.Index(self.index)
 
         try:
@@ -56,24 +58,28 @@ class ImportIndexTask(object):
 
 
 
-class RecreateIndexTask(object):
+class CopyIndexTask(object):
     """
-    Rebuid index from already loaded documents in elastic
+    Backup index from already loaded documents in elastic
 
     Building index from existing documents is a lot faster
     then doing if directly from the database
 
-    especialy userfull when editing/testing analyzers
+    Especialy userfull when editing/testing analyzers
     and change production environment on the fly
     """
     index = ''
-    name = 'reindex elastic'
+    target = ''
+    name = 'copy index elastic'
 
     def __init__(self):
         """
         """
         if not self.index:
             raise ValueError("No index specified")
+
+        if not self.target:
+            raise ValueError("No target index specified")
 
     def execute(self):
         """
@@ -82,12 +88,6 @@ class RecreateIndexTask(object):
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS)
 
-        # check if target exists #1
-        # if so create new one
-        # if done. delete the old one if #1
-        # let original index use new index
-
-        # reindex to reindex new
-        log.debug('reindex task should be here..')
-        #helpers.reindex(client, self.index, chunk_size=500, scroll=u'5m')
+        log.debug('Backup index %s to %s ', self.index, self.target)
+        helpers.reindex(client, self.index, self.target)
 

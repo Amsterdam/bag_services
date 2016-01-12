@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -115,9 +116,17 @@ USE_L10N = True
 
 USE_TZ = True
 
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
+ELASTIC_INDICES = dict(
+  BAG='bag',
+  BRK='brk'
+)
+
+if TESTING:
+    for k, v in ELASTIC_INDICES:
+        ELASTIC_INDICES[k] = ELASTIC_INDICES[v] + 'test'
+
 
 STATIC_URL = '/static/'
 

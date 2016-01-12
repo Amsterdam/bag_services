@@ -2,6 +2,7 @@ import elasticsearch_dsl as es
 
 from . import models
 from datasets.generic import analyzers
+from django.conf import settings
 
 
 class Ligplaats(es.DocType):
@@ -14,7 +15,7 @@ class Ligplaats(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class Standplaats(es.DocType):
@@ -27,7 +28,7 @@ class Standplaats(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class Verblijfsobject(es.DocType):
@@ -44,7 +45,7 @@ class Verblijfsobject(es.DocType):
     oppervlakte = es.Integer()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class OpenbareRuimte(es.DocType):
@@ -55,7 +56,7 @@ class OpenbareRuimte(es.DocType):
     subtype = es.String(analyzer=analyzers.subtype)
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 def get_centroid(geom):

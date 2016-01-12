@@ -1059,8 +1059,15 @@ class ImportPndVboTask(batch.BasicTask):
 
 
 class DeleteIndexTask(index.DeleteIndexTask):
-    index = 'bag'
+    index = settings.ELASTIC_INDICES['BAG']
     doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+
+
+class DeleteBackupIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
+    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+
+
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
@@ -1369,20 +1376,44 @@ class IndexJob(object):
         ]
 
 
-class RecreateBagIndex(index.RecreateIndexTask):
+class BackupBagIndexTask(index.CopyIndexTask):
     """
-    Recreate elastic BAG Index
+    Backup elastic BAG Index
     """
-    name = 'recreate bag index in elastic'
-    index = 'bag'
+    index = settings.ELASTIC_INDICES['BAG']
+    target = settings.ELASTIC_INDICES['BAG'] + 'backup'
+    name = 'Backup BAG index in elastic'
 
-class ReindexBagJob(object):
+
+class RestoreBagIndexTask(index.CopyIndexTask):
     """
-    Reindex elastic documents
+    Restore elastic BAG Index
     """
-    name = "Reindex elastic-index BAG"
+    name = 'Restore backup bag index in elastic'
+
+    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
+    target = settings.ELASTIC_INDICES['BAG']
+
+
+class BackupBagJob(object):
+    """
+    Backup elastic BAG documents
+    """
+    name = "Backup elastic-index BAG"
 
     def tasks(self):
         return [
-            RecreateBagIndex,
+            DeleteBackupIndexTask,
+            BackupBagIndexTask(),
         ]
+
+class RestoreBagJob(object):
+
+    name = "Restore Backup elastic-index BAG"
+
+    def tasks(self):
+        return [
+            DeleteIndexTask(),
+            RestoreBagIndexTask()
+        ]
+

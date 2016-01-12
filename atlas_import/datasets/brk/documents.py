@@ -1,6 +1,7 @@
 import elasticsearch_dsl as es
 
 from datasets.generic import analyzers
+from django.conf import settings
 
 
 class KadastraalObject(es.DocType):
@@ -9,7 +10,7 @@ class KadastraalObject(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'brk'
+        index = settings.ELASTIC_INDICES['BRK']
 
 
 class KadastraalSubject(es.DocType):
@@ -20,7 +21,7 @@ class KadastraalSubject(es.DocType):
     order = es.Integer()
 
     class Meta:
-        index = 'brk'
+        index = settings.ELASTIC_INDICES['BRK']
 
 
 def from_kadastraal_subject(ks):

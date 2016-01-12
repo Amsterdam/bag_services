@@ -32,6 +32,7 @@ class QueryTest(APITestCase):
 
         batch.execute(datasets.bag.batch.IndexJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
+
         time.sleep(1)   # this is stupid
 
     def test_non_matching_query(self):
@@ -135,8 +136,3 @@ class QueryTest(APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(response.data['results'][0]['adres'], "Rozenstraat 228a-1")
-
-
-
-
-
