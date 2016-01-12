@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('atlas_api', '0002_site_name'),
         ('wkpb', '0001_squashed_0010_auto_20151221_1123'),
-        ('bag', '0037_openbareruimte_geometrie'),
+        ('bag', '0001_squashed_0042_auto_20151210_0952'),
         ('sites', '0001_initial'),
         ('brk', '0021_auto_20151221_1123'),
     ]

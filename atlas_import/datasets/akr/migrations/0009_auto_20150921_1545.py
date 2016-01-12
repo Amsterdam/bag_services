@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bag', '0003_auto_20150908_1255'),
+        # ('bag', '0003_auto_20150908_1255'),
         ('akr', '0008_kadastraalobjectverblijfsobject'),
     ]
 
