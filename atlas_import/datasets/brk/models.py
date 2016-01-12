@@ -193,7 +193,7 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
 
 
 class APerceelGPerceelRelatie(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    id = models.CharField(max_length=121, primary_key=True)
     a_perceel = models.ForeignKey('KadastraalObject', related_name='g_perceel_relaties')
     g_perceel = models.ForeignKey('KadastraalObject', related_name='a_perceel_relaties')
 
@@ -281,6 +281,10 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
     app_rechtsplitstype = models.ForeignKey(AppartementsrechtsSplitsType, null=True)
 
+    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
+                                               through='ZakelijkRechtVerblijfsobjectRelatie',
+                                               related_name="rechten")
+
     _kadastraal_subject_naam = models.CharField(max_length=200)
     _kadastraal_object_aanduiding = models.CharField(max_length=100)
 
@@ -291,6 +295,11 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
 
         return "{} - {}{} - {}".format(self._kadastraal_subject_naam, omschrijving, aandeel,
                                        self._kadastraal_object_aanduiding)
+
+
+class ZakelijkRechtVerblijfsobjectRelatie(models.Model):
+    zakelijk_recht = models.ForeignKey(ZakelijkRecht)
+    verblijfsobject = models.ForeignKey(bag.Verblijfsobject)
 
 
 class AardAantekening(KadasterCodeOmschrijving):

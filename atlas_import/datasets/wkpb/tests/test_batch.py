@@ -4,8 +4,6 @@ from batch.test import TaskTestCase
 from .. import models, batch
 
 BEPERKINGEN = 'diva/beperkingen'
-KAD_LKI = 'diva/kadaster/lki'
-KAD_AKR = 'diva/kadaster/akr'
 
 
 class ImportBeperkingcode(TaskTestCase):

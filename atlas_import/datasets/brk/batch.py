@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 
+from django import db
 from django.conf import settings
 
 from batch import batch
@@ -308,11 +309,9 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd = dict()
         self.cultuur_code_bebouwd = dict()
         self.subjects = set()
-        self.object_ids = set()
 
     def before(self):
         database.clear_models(
-                models.APerceelGPerceelRelatie,
                 models.KadastraalObject,
                 models.SoortGrootte,
                 models.CultuurCodeOnbebouwd,
@@ -331,32 +330,10 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd.clear()
         self.cultuur_code_bebouwd.clear()
         self.subjects.clear()
-        self.object_ids.clear()
 
     def process(self):
         objects = dict(uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_object))
         models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
-
-        self.object_ids = set(objects.keys())
-
-        relaties = uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_relatie)
-        models.APerceelGPerceelRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
-
-    def process_relatie(self, row):
-        kot_id = row['BRK_KOT_ID']
-        g_perceel_id = row['KOT_RELATIE_G_PERCEEL'] or None
-
-        if not g_perceel_id:
-            return
-
-        if g_perceel_id not in self.object_ids:
-            log.warn("Kadastraal Object {} references non-existing G-Perceel {}; skipping".format(kot_id, g_perceel_id))
-            return
-
-        return models.APerceelGPerceelRelatie(
-                a_perceel_id=kot_id,
-                g_perceel_id=g_perceel_id,
-        )
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -611,6 +588,52 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         )
 
 
+class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
+    name = "Import Kadaster - KOT-KOT"
+
+    def before(self):
+        database.clear_models(models.APerceelGPerceelRelatie)
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+            INSERT INTO brk_aperceelgperceelrelatie(id, g_perceel_id, a_perceel_id)
+            SELECT DISTINCT
+              f.kadastraal_object_id || '-' || t.kadastraal_object_id,
+              f.kadastraal_object_id,
+              t.kadastraal_object_id
+            FROM
+              brk_zakelijkrecht f
+              LEFT JOIN brk_zakelijkrecht t ON f.betrokken_bij_id = t.ontstaan_uit_id
+            WHERE
+              f.betrokken_bij_id IS NOT NULL
+              AND f.kadastraal_object_id IS NOT NULL
+              AND t.kadastraal_object_id IS NOT NULL
+            """)
+
+
+class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
+    name = "Import Kadaster - ZRT-VBO"
+
+    def before(self):
+        database.clear_models(models.ZakelijkRechtVerblijfsobjectRelatie)
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+            INSERT INTO brk_zakelijkrechtverblijfsobjectrelatie(verblijfsobject_id, zakelijk_recht_id)
+            SELECT
+              vbo.id,
+              zrt.id
+            FROM
+              bag_verblijfsobject vbo
+              LEFT JOIN brk_kadastraalobjectverblijfsobjectrelatie vbo2kot ON vbo2kot.verblijfsobject_id = vbo.id
+              LEFT JOIN brk_zakelijkrecht zrt ON zrt.kadastraal_object_id = vbo2kot.kadastraal_object_id
+            WHERE
+              zrt.id IS NOT NULL
+            """)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -632,6 +655,8 @@ class ImportKadasterJob(object):
             ImportZakelijkRechtTask(self.brk),
             ImportAantekeningTask(self.brk),
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+            ImportKadastraalObjectRelatiesTask(),
+            ImportZakelijkRechtVerblijfsobjectTask(),
         ]
 
 

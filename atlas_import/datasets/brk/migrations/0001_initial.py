@@ -8,7 +8,7 @@ import django.contrib.gis.db.models.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bag', '0042_auto_20151210_0952'),
+        ('bag', '0001_squashed_0042_auto_20151210_0952'),
     ]
 
     operations = [
