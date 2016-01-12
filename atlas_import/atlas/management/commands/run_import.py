@@ -35,7 +35,6 @@ class Command(BaseCommand):
         wkpb=[],
     )
 
-
     def add_arguments(self, parser):
         parser.add_argument(
             'dataset',
@@ -55,7 +54,6 @@ class Command(BaseCommand):
                             dest='restore_indexes_es',
                             default=False,
                             help='Restore elsatic search index')
-
 
         parser.add_argument('--no-import',
                             action='store_false',

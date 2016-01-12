@@ -1,6 +1,5 @@
 # Create your views here.
 from collections import OrderedDict
-import re
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -11,7 +10,6 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
-from datasets.generic import analyzers
 
 
 _details = {
@@ -24,9 +22,14 @@ _details = {
 }
 
 
+#BAG = settings.ELASTIC_INDICES['BAG'] + 'test'
+#BRK = settings.ELASTIC_INDICES['BRK'] + 'test'
+#
+
 def _get_url(request, doc_type, id):
     if doc_type in _details:
-        return rest.get_links(view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
+        return rest.get_links(
+            view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
 
     return None
 
@@ -44,38 +47,48 @@ class QueryMetadata(metadata.SimpleMetadata):
         )
         return result
 
+
 def test_search(client, query):
+    """
+    Do test experiments here..
+    """
 
     return (
         Search(client)
-            .index('bag')
-            .query(
-                Q(
-                    "fuzzy_like_this",
-                    like_text=query,
-                    fuzziness=1,
-                    fields=[
-                        'postcode',
-                        #"openbare_ruimte.postcode",
-                        #'adres', 'naam',
-                        'straatnaam', 'aanduiding'
-                    ]
-                )
-                #| Q("wildcard", query=query, naam=dict(value=wildcard))
-            ).sort(*add_sorting())
+        .index(BAG)
+        .query(
+            Q(
+                "fuzzy_like_this",
+                like_text=query,
+                fuzziness=1,
+                fields=[
+                    'postcode',
+                    # "openbare_ruimte.postcode",
+                    # 'adres', 'naam',
+                    'straatnaam', 'aanduiding'
+                ]
+            )
+            # | Q("wildcard", query=query, naam=dict(value=wildcard))
+        ).sort(*add_sorting())
         )
 
 
 def mulitimatch_Q(query):
+    """
+    main search query used
+    """
     return Q(
         "multi_match",
         query=query,
         type="phrase",
-        slop=12,          # match "stephan preeker" with "stephan jacob preeker"
+        #type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=10,
         fields=[
             'naam', 'straatnaam',
             'adres', 'postcode',
             'huisnummer_toevoeging',
+            'subtype',
             'geslachtsnaam', 'aanduiding']
     )
 
@@ -163,7 +176,8 @@ def get_autocomplete_response(client, query):
                 matches[doc_type][match] = 1
 
     for doc_type in matches.keys():
-        matches[doc_type] = [dict(item=m) for m in matches[doc_type].keys()][:5]
+        matches[doc_type] = [
+            dict(item=m) for m in matches[doc_type].keys()][:5]
 
     return matches
 
@@ -262,7 +276,8 @@ class SearchViewSet(viewsets.ViewSet):
         self._set_followup_url(request, result, end, response, query, page)
 
         response['count'] = result.hits.total
-        response['results'] = [self.normalize_hit(h, request) for h in result.hits]
+        response['results'] = [
+            self.normalize_hit(h, request) for h in result.hits]
 
         return Response(response)
 
