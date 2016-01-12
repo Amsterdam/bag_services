@@ -124,8 +124,8 @@ ELASTIC_INDICES = dict(
 )
 
 if TESTING:
-    for k, v in ELASTIC_INDICES:
-        ELASTIC_INDICES[k] = ELASTIC_INDICES[v] + 'test'
+    for k, v in ELASTIC_INDICES.items():
+        ELASTIC_INDICES[k] = ELASTIC_INDICES[k] + 'test'
 
 
 STATIC_URL = '/static/'
