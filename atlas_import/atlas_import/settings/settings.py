@@ -43,8 +43,6 @@ INSTALLED_APPS = (
     'atlas',
 
     'datasets.bag',
-    'datasets.akr',
-    'datasets.lki',
     'datasets.brk',
     'datasets.wkpb',
 

@@ -7,8 +7,6 @@ from django.conf import settings
 
 from batch import batch
 from datasets.generic import kadaster, database
-import datasets.lki.models as lki
-import datasets.akr.models as akr
 import datasets.brk.models as brk
 from . import models
 
