@@ -52,4 +52,7 @@ class ImportKadastraalObjectRelatiesTaskTest(TaskTestCase):
 
         self.assertQuerysetEqual(self.a1.g_percelen.all(), [self.g1.aanduiding], get_aanduiding)
         self.assertQuerysetEqual(self.a2.g_percelen.all(), [self.g2.aanduiding], get_aanduiding)
-        self.assertQuerysetEqual(self.g2.a_percelen.all(), [self.a2.aanduiding, self.a3.aanduiding], get_aanduiding)
+
+        g2_a = set([obj.aanduiding for obj in self.g2.a_percelen.all()])
+
+        self.assertEqual(g2_a, {self.a2.aanduiding, self.a3.aanduiding})
