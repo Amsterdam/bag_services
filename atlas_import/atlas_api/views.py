@@ -270,7 +270,6 @@ class SearchViewSet(viewsets.ViewSet):
         return Response(response)
 
     def normalize_hit(self, hit, request):
-        #import pdb; pdb.set_trace()
         result = OrderedDict()
         result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
         result['type'] = hit.meta.doc_type
