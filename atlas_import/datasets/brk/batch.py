@@ -402,8 +402,6 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 index_nummer=index_nummer,
                 soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
                 grootte=int(grootte) if grootte else None,
-                # TODO: Aanzetten wanneer levering correct ID bevat
-                # g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
                 koopsom=int(koopsom) if koopsom else None,
                 koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
                 koopjaar=row['KOT_KOOPJAAR'],
@@ -465,15 +463,18 @@ class ImportZakelijkRechtTask(batch.BasicTask):
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
         tng_id = row['BRK_TNG_ID']
+        betrokken_bij = row['ZRT_BETROKKEN_BIJ']
 
-        if not tng_id:
-            log.warn("Zakelijk recht {} has no TNG_ID; skipping".format(zrt_id))
+        if not tng_id and not betrokken_bij:
+            log.warn("Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
             return
 
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
             log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
             return
+
+        pk = zrt_id + "-" + kot_id + "-" + (tng_id or betrokken_bij)
 
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
@@ -482,8 +483,8 @@ class ImportZakelijkRechtTask(batch.BasicTask):
 
         teller = row['TNG_AANDEEL_TELLER']
         noemer = row['TNG_AANDEEL_NOEMER']
-        return tng_id, models.ZakelijkRecht(
-                pk=tng_id,
+        return pk, models.ZakelijkRecht(
+                pk=pk,
                 zrt_id=zrt_id,
                 aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                                 row['ZRT_AARDZAKELIJKRECHT_OMS']),
@@ -491,7 +492,7 @@ class ImportZakelijkRechtTask(batch.BasicTask):
                 teller=int(teller) if teller else None,
                 noemer=int(noemer) if noemer else None,
                 ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
-                betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
+                betrokken_bij_id=betrokken_bij or None,
                 kadastraal_object_id=kot_id,
                 kadastraal_subject_id=kst_id,
                 kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
