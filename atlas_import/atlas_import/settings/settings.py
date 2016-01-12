@@ -118,10 +118,7 @@ USE_TZ = True
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
-ELASTIC_INDICES = dict(
-  BAG='bag',
-  BRK='brk'
-)
+ELASTIC_INDICES = dict(BAG='bag', BRK='brk')
 
 if TESTING:
     for k, v in ELASTIC_INDICES.items():

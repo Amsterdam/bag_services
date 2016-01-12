@@ -86,11 +86,9 @@ def add_sorting():
     """
     return (
         {"order": {
-            "order": "asc", "missing": "_last", "unmapped_type": "long"}
-        },
+            "order": "asc", "missing": "_last", "unmapped_type": "long"}},
         {"straatnaam": {
-            "order": "asc", "missing": "_first", "unmapped_type": "string"}
-        },
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         {"huisnummer": {
             "order": "asc", "missing": "_first", "unmapped_type": "long"}},
         {"adres": {
@@ -102,13 +100,13 @@ def add_sorting():
 
 def search_query(client, query):
 
-    #return test_search(client, query)
+    # return test_search(client, query)
 
     return (
         Search(client)
-            .index('bag', 'brk')
-            .query(mulitimatch_Q(query))
-            .sort(*add_sorting())
+        .index(BAG, BRK)
+        .query(mulitimatch_Q(query))
+        .sort(*add_sorting())
     )
 
 
@@ -142,7 +140,7 @@ def autocomplete_query(client, query):
 
     return (
         Search(client)
-            .index('bag', 'brk')
+            .index(BAG, BRK)
             .query(Q("multi_match", query=query, type="phrase_prefix", fields=match_fields)
                    | Q("multi_match", query=query, fuzziness="auto", prefix_length=1, fields=fuzzy_fields))
             .highlight(*completions, pre_tags=[''], post_tags=[''])
@@ -172,8 +170,8 @@ def get_autocomplete_response(client, query):
 
 class TypeaheadViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects that (partially) match the
-    specified query.
+    Given a query parameter `q`, this function returns a subset of all objects
+    that (partially) match the specified query.
     """
 
     metadata_class = QueryMetadata
@@ -194,15 +192,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
 class SearchViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects that match the elastic search query.
+    Given a query parameter `q`, this function returns a subset of all objects
+    that match the elastic search query.
     """
 
     metadata_class = QueryMetadata
     page_size = 100
 
-
     def _set_followup_url(self, request, result, end,
-            response, query, page):
+                          response, query, page):
         """
         Add pageing links for result set to response object
         """
@@ -236,7 +234,6 @@ class SearchViewSet(viewsets.ViewSet):
             response['_links']['previous'] = dict(href=prev_page)
         else:
             response['_links']['previous'] = None
-
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:
