@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
 
+    replaces = [('wkpb', '0001_initial'), ('wkpb', '0002_beperkingkadastraalobject_kadastraal_object_akr'), ('wkpb', '0003_auto_20151020_1153'), ('wkpb', '0003_auto_20151020_1106'), ('wkpb', '0004_merge'), ('wkpb', '0005_auto_20151021_1107'), ('wkpb', '0006_brondocument_beperking'), ('wkpb', '0007_auto_20151104_1203'), ('wkpb', '0008_auto_20151207_1533'), ('wkpb', '0009_auto_20151209_1340'), ('wkpb', '0010_auto_20151221_1123')]
+
     dependencies = [
-        ('lki', '0002_auto_20150908_1255'),
+        ('brk', '0024_auto_20151221_1615'),
     ]
 
     operations = [
@@ -30,7 +32,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('code', models.CharField(serialize=False, max_length=4, primary_key=True)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
+                ('omschrijving', models.CharField(null=True, max_length=150)),
             ],
             options={
                 'verbose_name_plural': 'Beperkingcodes',
@@ -43,7 +45,7 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('id', models.CharField(serialize=False, max_length=33, primary_key=True)),
                 ('beperking', models.ForeignKey(to='wkpb.Beperking')),
-                ('kadastraal_object', models.ForeignKey(to='lki.KadastraalObject')),
+                ('kadastraal_object', models.ForeignKey(to='brk.KadastraalObject')),
             ],
             options={
                 'abstract': False,
@@ -54,7 +56,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('code', models.CharField(serialize=False, max_length=4, primary_key=True)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
+                ('omschrijving', models.CharField(null=True, max_length=150)),
             ],
             options={
                 'verbose_name_plural': 'Broncodes',
@@ -66,10 +68,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('documentnummer', models.IntegerField()),
+                ('inschrijfnummer', models.IntegerField()),
                 ('documentnaam', models.CharField(max_length=21)),
-                ('persoonsgegeven_afschermen', models.BooleanField()),
-                ('soort_besluit', models.CharField(max_length=60, null=True)),
+                ('persoonsgegevens_afschermen', models.BooleanField()),
+                ('soort_besluit', models.CharField(null=True, max_length=60)),
                 ('bron', models.ForeignKey(null=True, to='wkpb.Broncode')),
             ],
             options={
@@ -81,5 +83,20 @@ class Migration(migrations.Migration):
             model_name='beperking',
             name='beperkingtype',
             field=models.ForeignKey(to='wkpb.Beperkingcode'),
+        ),
+        migrations.AddField(
+            model_name='beperking',
+            name='kadastrale_objecten',
+            field=models.ManyToManyField(through='wkpb.BeperkingKadastraalObject', related_name='beperkingen', to='brk.KadastraalObject'),
+        ),
+        migrations.AddField(
+            model_name='brondocument',
+            name='beperking',
+            field=models.ForeignKey(null=True, to='wkpb.Beperking', related_name='documenten'),
+        ),
+        migrations.AlterField(
+            model_name='brondocument',
+            name='bron',
+            field=models.ForeignKey(null=True, to='wkpb.Broncode', related_name='documenten'),
         ),
     ]

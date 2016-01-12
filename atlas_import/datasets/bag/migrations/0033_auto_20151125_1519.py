@@ -28,6 +28,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('bag', '0032_auto_20151125_1449'),
+        ('sites', '0001_initial'),
     ]
 
     operations = [
