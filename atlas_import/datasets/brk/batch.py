@@ -598,7 +598,7 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
         with db.connection.cursor() as c:
             c.execute("""
             INSERT INTO brk_aperceelgperceelrelatie(id, g_perceel_id, a_perceel_id)
-            SELECT
+            SELECT DISTINCT
               f.kadastraal_object_id || '-' || t.kadastraal_object_id,
               f.kadastraal_object_id,
               t.kadastraal_object_id
@@ -607,6 +607,8 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
               LEFT JOIN brk_zakelijkrecht t ON f.betrokken_bij_id = t.ontstaan_uit_id
             WHERE
               f.betrokken_bij_id IS NOT NULL
+              AND f.kadastraal_object_id IS NOT NULL
+              AND t.kadastraal_object_id IS NOT NULL
             """)
 
 
