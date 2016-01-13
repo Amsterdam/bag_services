@@ -309,6 +309,7 @@ class SearchViewSet(viewsets.ViewSet):
         try:
             result = search.execute()
         except TransportError:
+            log.exception("Could not execute search query " + query)
             # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
 
