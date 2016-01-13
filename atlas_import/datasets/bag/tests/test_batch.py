@@ -198,21 +198,15 @@ class ImportSdlTest(TaskTestCase):
 
 
 class ImportBrtTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
-            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
-        ]
+    def setUp(self):
+        factories.StadsdeelFactory.create(pk='03630000000016')
+        factories.BuurtcombinatieFactory.create(code='92')
 
     def task(self):
         return batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
-
-        imported = models.Buurt.objects.all()
-        self.assertEqual(len(imported), 46)
 
         b = models.Buurt.objects.get(pk='03630000000487')
 
@@ -229,12 +223,8 @@ class ImportBrtTest(TaskTestCase):
 
 
 class ImportBbkTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
-            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
-        ]
+    def setUp(self):
+        factories.BuurtFactory.create(pk='03630000000537')
 
     def task(self):
         return batch.ImportBbkTask(GEBIEDEN, GEBIEDEN_SHP)
@@ -249,7 +239,7 @@ class ImportBbkTest(TaskTestCase):
 
         self.assertEquals(b.id, '03630012100449')
         self.assertEquals(b.code, 'DE66')
-        self.assertIsNone(b.buurt)
+        self.assertEquals(b.buurt.id, '03630000000537')
         self.assertIsNotNone(b.geometrie)
         self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
         self.assertIsNone(b.einde_geldigheid)
@@ -257,11 +247,8 @@ class ImportBbkTest(TaskTestCase):
 
 # gebieden shp
 class ImportBuurtcombinatieTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
-            ]
+    def setUp(self):
+        factories.StadsdeelFactory.create(code='E')
 
     def task(self):
         return batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP)
@@ -334,15 +321,10 @@ class ImportUnescoTest(TaskTestCase):
 
 # bag
 class ImportLigTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportBrnTask(BAG),
-            batch.ImportStsTask(BAG),
 
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
-            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
-        ]
+    def setUp(self):
+        factories.StatusFactory.create(code='33')
+        factories.BuurtFactory.create(pk='03630000000491')
 
     def task(self):
         return batch.ImportLigTask(BAG, BAG_WKT)
@@ -405,22 +387,15 @@ class ImportWplTest(TaskTestCase):
 
 
 class ImportOprTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportBrnTask(BAG),
-            batch.ImportStsTask(BAG),
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportWplTask(BAG),
-        ]
+    def setUp(self):
+        factories.StatusFactory.create(code='35')
+        factories.WoonplaatsFactory.create(id='03630022796658')
 
     def task(self):
         return batch.ImportOprTask(BAG, BAG_WKT)
 
     def test_import(self):
         self.run_task()
-
-        imported = models.OpenbareRuimte.objects.all()
-        self.assertEqual(len(imported), 97)
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
         self.assertEquals(o.id, '03630000002701')
@@ -481,25 +456,18 @@ class ImportStaTest(TaskTestCase):
 
 
 class ImportVboTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportEgmTask(BAG),
-            batch.ImportFngTask(BAG),
-            batch.ImportGbkTask(BAG),
-            batch.ImportLocTask(BAG),
-            batch.ImportStsTask(BAG),
-            batch.ImportLggTask(BAG),
-            batch.ImportTggTask(BAG),
-        ]
+    def setUp(self):
+        factories.EigendomsverhoudingFactory.create(code='02')
+        factories.FinancieringswijzeFactory.create(code='274')
+        factories.GebruikFactory.create(code='1800')
+        factories.LiggingFactory.create(code='03')
+        factories.StatusFactory.create(code='21')
 
     def task(self):
         return batch.ImportVboTask(BAG)
 
     def test_import(self):
         self.run_task()
-
-        imported = models.Verblijfsobject.objects.all()
-        self.assertEqual(len(imported), 96)
 
         v = models.Verblijfsobject.objects.get(pk='03630000648915')
         self.assertEqual(v.landelijk_id, '0363010000648915')
@@ -525,9 +493,6 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(v.gebruik.code, '1800')
         self.assertIsNone(v.locatie_ingang)
         self.assertEqual(v.ligging.code, '03')
-        # todo: monument
-        # todo: toegang
-        # todo: opvoer
         self.assertEqual(v.status.code, '21')
         self.assertIsNone(v.buurt)
         self.assertEqual(v.begin_geldigheid, datetime.date(2010, 9, 9))
@@ -623,11 +588,10 @@ class ImportNumTest(TaskTestCase):
 
 
 class ImportPndTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportStsTask(BAG),
-            batch.ImportBbkTask(GEBIEDEN, GEBIEDEN_SHP),
-        ]
+
+    def setUp(self):
+        factories.StatusFactory.create(pk='31')
+        factories.BouwblokFactory.create(pk='03630012102404')
 
     def task(self):
         return batch.ImportPndTask(BAG, BAG_WKT)
