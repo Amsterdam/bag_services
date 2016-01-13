@@ -166,10 +166,8 @@ class ImportGmeTest(TaskTestCase):
 
 
 class ImportSdlTest(TaskTestCase):
-    def requires(self):
-        return [
-            batch.ImportGmeTask(GEBIEDEN)
-        ]
+    def setUp(self):
+        factories.GemeenteFactory.create(pk='03630000000000')
 
     def task(self):
         return batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
