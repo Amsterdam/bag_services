@@ -21,6 +21,9 @@ class QueryTest(APITestCase):
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
 
+        bag_factories.OpenbareRuimteFactory.create(
+            naam="Prinsengracht", type='02')
+
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
             hoofdadres=True)
@@ -199,3 +202,17 @@ class QueryTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Rozenstraat 228a-1")
+
+    def test_query_openbare_ruimte_water(self):
+        response = self.client.get(
+            "/api/atlas/search/", dict(q="water"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['naam'], "Prinsengracht")
+
+        self.assertEqual(
+            response.data['results'][0]['subtype'], "Water")

@@ -105,6 +105,7 @@ def mulitimatch_Q(query):
             'adres',
             'postcode',
             'huisnummer_variation',
+            'subtype',
             'geslachtsnaam',
             'aanduiding']
     )
