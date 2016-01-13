@@ -26,7 +26,7 @@ class Standplaats(es.DocType):
     adres = es.String(analyzer=analyzers.adres)
 
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer()
 
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()

@@ -1364,7 +1364,7 @@ class ImportBagJob(object):
 
 
 class IndexJob(object):
-    name = "Update search-index BAG"
+    name = "Create new search-index BAG from database"
 
     def tasks(self):
         return [
