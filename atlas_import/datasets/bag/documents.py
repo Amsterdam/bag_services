@@ -8,7 +8,10 @@ from django.conf import settings
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.huisnummer)
+
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer()
+
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -34,7 +37,8 @@ class Standplaats(es.DocType):
 class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.huisnummer)
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer()
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -53,7 +57,8 @@ class OpenbareRuimte(es.DocType):
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
-    huisnummer = es.String(analyzer=analyzers.huisnummer)
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
 
@@ -76,6 +81,7 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.huisnummer = adres.huisnummer
+        dest.huisnummer_variation = adres.huisnummer
 
 
 def from_ligplaats(l: models.Ligplaats):

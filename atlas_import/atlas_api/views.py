@@ -28,12 +28,11 @@ _details = {
 BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 
-
 # uncomment to get results from testindexes
-#if 'test' not in BAG:
+# if 'test' not in BAG:
 #    BAG = BAG + 'test'
 #
-#if 'test' not in BRK:
+# if 'test' not in BRK:
 #    BRK = BRK + 'test'
 #
 
@@ -105,7 +104,7 @@ def mulitimatch_Q(query):
             'straatnaam',
             'adres',
             'postcode',
-            'huisnummer',
+            'huisnummer_variation',
             'geslachtsnaam',
             'aanduiding']
     )
@@ -153,6 +152,12 @@ def add_sorting():
 
 
 def search_query(client, query):
+    """
+    Execute search.
+
+    ./manage.py test atlas_api.tests.test_query --keepdb
+
+    """
 
     # return test_search(client, query)
 
@@ -304,13 +309,15 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.query_params['q']
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+
         search = search_query(client, query)[start:end]
 
         try:
             result = search.execute()
         except TransportError:
             log.exception("Could not execute search query " + query)
-            # Todo fix this https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
+            # Todo fix this
+            # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
 
         response = OrderedDict()
@@ -328,7 +335,8 @@ class SearchViewSet(viewsets.ViewSet):
         result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        # result['uri'] = _get_url(request, hit.meta.doc_type, hit.meta.id) + "?full"
+        # result['uri'] = _get_url(
+        #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
         return result
