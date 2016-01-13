@@ -670,8 +670,6 @@ class DeleteBackupIndexTask(index.DeleteIndexTask):
     doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
 
 
-
-
 class IndexSubjectTask(index.ImportIndexTask):
     name = "index kadastraal subject"
     queryset = models.KadastraalSubject.objects
@@ -689,13 +687,13 @@ class IndexObjectTask(index.ImportIndexTask):
 
 
 class BackupKadasterTask(index.CopyIndexTask):
-    name = 'Recreate Kadaster index'
+    name = 'Backup Kadaster index'
     index = settings.ELASTIC_INDICES['BRK']
     target = settings.ELASTIC_INDICES['BRK'] + 'backup'
 
 
 class RestoreKadasterTask(index.CopyIndexTask):
-    name = 'Recreate Kadaster index'
+    name = 'Restore Kadaster index'
     index = settings.ELASTIC_INDICES['BRK'] + 'backup'
     target = settings.ELASTIC_INDICES['BRK']
 
