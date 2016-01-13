@@ -24,7 +24,10 @@ class Ligplaats(es.DocType):
 class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer = es.String(analyzer=analyzers.huisnummer)
+
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer(analyzer=analyzers.huisnummer)
+
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -56,9 +59,6 @@ class OpenbareRuimte(es.DocType):
     naam = es.String(analyzer=analyzers.adres)
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
-
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
 
