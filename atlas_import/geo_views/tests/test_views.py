@@ -27,7 +27,24 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], l.hoofdadres.adres())
         self.assertEqual(row['type'], 'bag/ligplaats')
-        self.assertEqual(row['uri'], 'http://update.me/api/bag/ligplaats/{}/'.format(l.id))
+        self.assertEqual(row['uri'],
+                         'http://update.me/api/bag/ligplaats/{}/'.format(l.id))
+
+    def test_bag_openbareruimte(self):
+
+        ob = bag_factories.OpenbareRuimteFactory.create(
+            naam='prinsengracht',
+            type='02'
+        )
+
+        row = self.get_row('geo_bag_openbareruimte')
+        self.assertIn("geometrie", row)
+        self.assertEqual(row['display'], 'prinsengracht')
+        self.assertEqual(row['type'], 'bag/openbareruimte')
+        self.assertEqual(row['opr_type'], 'Water')
+        self.assertEqual(
+            row['uri'],
+            'http://update.me/api/bag/openbareruimte/{}/'.format(ob.id))
 
     def test_bag_standplaats(self):
         s = bag_factories.StandplaatsFactory.create()
