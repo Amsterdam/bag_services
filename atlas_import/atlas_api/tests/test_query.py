@@ -24,6 +24,16 @@ class QueryTest(APITestCase):
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
+        # Create brug objects
+        bag_factories.OpenbareRuimteFactory.create(
+            naam="Korte Brug", type='05')
+
+        bag_factories.OpenbareRuimteFactory.create(
+            naam="Brugover", type='05')
+
+        bag_factories.OpenbareRuimteFactory.create(
+            naam="Brughuis", type='05')
+
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
             hoofdadres=True)
@@ -61,7 +71,7 @@ class QueryTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        time.sleep(2)   # this is stupid # es needs 1 second delay
+        time.sleep(2)   # this is stupid # es needs 1 second delay..
 
     def test_non_matching_query(self):
         response = self.client.get('/api/atlas/search/', dict(q="qqq"))
@@ -216,3 +226,16 @@ class QueryTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['subtype'], "Water")
+
+    def test_query_openbare_ruimte_brug(self):
+        response = self.client.get(
+            "/api/atlas/search/", dict(q="brug"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 3)
+
+        self.assertIn('Brug', response.data['results'][0]['naam'])
+
+        self.assertEqual(
+            response.data['results'][0]['subtype'], "Kunstwerk")

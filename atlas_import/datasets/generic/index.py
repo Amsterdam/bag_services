@@ -47,15 +47,17 @@ class ImportIndexTask(object):
 
     def get_queryset(self):
         return self.queryset.all()
-        #return self.queryset.iterator()
+        # return self.queryset.iterator()
 
     def convert(self, obj):
         raise NotImplementedError()
 
     def execute(self):
-        client = elasticsearch.Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in tqdm(self.get_queryset())))
-
+        client = elasticsearch.Elasticsearch(
+            hosts=settings.ELASTIC_SEARCH_HOSTS)
+        helpers.bulk(
+            client, (self.convert(obj).to_dict(include_meta=True)
+                     for obj in tqdm(self.get_queryset())))
 
 
 class CopyIndexTask(object):

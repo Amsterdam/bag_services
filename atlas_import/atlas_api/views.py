@@ -126,7 +126,13 @@ def wildcard_Q2(query):
 
     fuzzy_fields = [
         "openbare_ruimte.naam",
-        "kadastraal_subject.geslachtsnaam"
+        "kadastraal_subject.geslachtsnaam",
+        "adres",
+        #"postcode",
+
+        #"ligplaats.adres",
+        #"standplaats.adres",
+        #"verblijfsobject.adres",
     ]
 
     return Q("multi_match",
@@ -177,12 +183,17 @@ def autocomplete_query(client, query):
     """
     provice autocomplete suggestions
     """
+
     match_fields = [
         "openbare_ruimte.naam",
         "openbare_ruimte.postcode",
+
+        "openbare_ruimte.huisnummer_variation",
+
         "ligplaats.adres",
         "standplaats.adres",
         "verblijfsobject.adres",
+
         "kadastraal_subject.geslachtsnaam",
         "kadastraal_subject.naam",
         "kadastraal_object.aanduiding",

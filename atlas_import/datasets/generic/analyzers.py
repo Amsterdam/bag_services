@@ -28,7 +28,16 @@ huisnummer_generate = analysis.char_filter(
     pattern='(\d+)',
     replacement="""
         $1-1 $1- $1-2 $1-3
-        $1a $1b $1a-1 $1b-1 $1-a $1-b"
+        $1a $1b $1a-1 $1b-1 $1-a $1-b
+        $1b 1-b
+        $1c 1-c
+        $1d 1-d
+        $1e 1-e
+        $1f 1-f
+        $1g 1-g
+        $1h 1-h
+        $1i 1-i
+        $1j 1-j
     """
 )
 
