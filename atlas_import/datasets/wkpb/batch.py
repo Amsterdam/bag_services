@@ -87,7 +87,7 @@ class ImportBeperkingTask(batch.BasicTask):
     def process(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
-            objects = [self.process_row(r) for r in rows]
+            objects = [obj for obj in (self.process_row(r) for r in rows) if obj]
 
         models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
@@ -99,12 +99,16 @@ class ImportBeperkingTask(batch.BasicTask):
 
     def process_row(self, r):
         code_id = r[2] if r[2] in self.codes else None
+        datum_einde = self.get_date(r[4])
+        if datum_einde and datum_einde < datetime.date.today():
+            return None
+
         return models.Beperking(
             pk=r[0],
             inschrijfnummer=r[1],
             beperkingtype_id=code_id,
             datum_in_werking=self.get_date(r[3]),
-            datum_einde=self.get_date(r[4]),
+            datum_einde=datum_einde,
         )
 
 
