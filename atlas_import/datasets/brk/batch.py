@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 
+from django import db
 from django.conf import settings
 
 from batch import batch
@@ -308,11 +309,9 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd = dict()
         self.cultuur_code_bebouwd = dict()
         self.subjects = set()
-        self.object_ids = set()
 
     def before(self):
         database.clear_models(
-                models.APerceelGPerceelRelatie,
                 models.KadastraalObject,
                 models.SoortGrootte,
                 models.CultuurCodeOnbebouwd,
@@ -331,32 +330,10 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.cultuur_code_onbebouwd.clear()
         self.cultuur_code_bebouwd.clear()
         self.subjects.clear()
-        self.object_ids.clear()
 
     def process(self):
         objects = dict(uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_object))
         models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
-
-        self.object_ids = set(objects.keys())
-
-        relaties = uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_relatie)
-        models.APerceelGPerceelRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
-
-    def process_relatie(self, row):
-        kot_id = row['BRK_KOT_ID']
-        g_perceel_id = row['KOT_RELATIE_G_PERCEEL'] or None
-
-        if not g_perceel_id:
-            return
-
-        if g_perceel_id not in self.object_ids:
-            log.warn("Kadastraal Object {} references non-existing G-Perceel {}; skipping".format(kot_id, g_perceel_id))
-            return
-
-        return models.APerceelGPerceelRelatie(
-                a_perceel_id=kot_id,
-                g_perceel_id=g_perceel_id,
-        )
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -402,8 +379,6 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 index_nummer=index_nummer,
                 soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
                 grootte=int(grootte) if grootte else None,
-                # TODO: Aanzetten wanneer levering correct ID bevat
-                # g_perceel_id=row['KOT_RELATIE_G_PERCEEL'] or None,
                 koopsom=int(koopsom) if koopsom else None,
                 koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
                 koopjaar=row['KOT_KOOPJAAR'],
@@ -465,15 +440,18 @@ class ImportZakelijkRechtTask(batch.BasicTask):
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
         tng_id = row['BRK_TNG_ID']
+        betrokken_bij = row['ZRT_BETROKKEN_BIJ']
 
-        if not tng_id:
-            log.warn("Zakelijk recht {} has no TNG_ID; skipping".format(zrt_id))
+        if not tng_id and not betrokken_bij:
+            log.warn("Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
             return
 
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
             log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
             return
+
+        pk = zrt_id + "-" + kot_id + "-" + (tng_id or betrokken_bij)
 
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
@@ -482,8 +460,8 @@ class ImportZakelijkRechtTask(batch.BasicTask):
 
         teller = row['TNG_AANDEEL_TELLER']
         noemer = row['TNG_AANDEEL_NOEMER']
-        return tng_id, models.ZakelijkRecht(
-                pk=tng_id,
+        return pk, models.ZakelijkRecht(
+                pk=pk,
                 zrt_id=zrt_id,
                 aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
                                                                 row['ZRT_AARDZAKELIJKRECHT_OMS']),
@@ -491,7 +469,7 @@ class ImportZakelijkRechtTask(batch.BasicTask):
                 teller=int(teller) if teller else None,
                 noemer=int(noemer) if noemer else None,
                 ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
-                betrokken_bij_id=row['ZRT_BETROKKEN_BIJ'] or None,
+                betrokken_bij_id=betrokken_bij or None,
                 kadastraal_object_id=kot_id,
                 kadastraal_subject_id=kst_id,
                 kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
@@ -610,6 +588,52 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         )
 
 
+class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
+    name = "Import Kadaster - KOT-KOT"
+
+    def before(self):
+        database.clear_models(models.APerceelGPerceelRelatie)
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+            INSERT INTO brk_aperceelgperceelrelatie(id, g_perceel_id, a_perceel_id)
+            SELECT DISTINCT
+              f.kadastraal_object_id || '-' || t.kadastraal_object_id,
+              f.kadastraal_object_id,
+              t.kadastraal_object_id
+            FROM
+              brk_zakelijkrecht f
+              LEFT JOIN brk_zakelijkrecht t ON f.betrokken_bij_id = t.ontstaan_uit_id
+            WHERE
+              f.betrokken_bij_id IS NOT NULL
+              AND f.kadastraal_object_id IS NOT NULL
+              AND t.kadastraal_object_id IS NOT NULL
+            """)
+
+
+class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
+    name = "Import Kadaster - ZRT-VBO"
+
+    def before(self):
+        database.clear_models(models.ZakelijkRechtVerblijfsobjectRelatie)
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+            INSERT INTO brk_zakelijkrechtverblijfsobjectrelatie(verblijfsobject_id, zakelijk_recht_id)
+            SELECT
+              vbo.id,
+              zrt.id
+            FROM
+              bag_verblijfsobject vbo
+              LEFT JOIN brk_kadastraalobjectverblijfsobjectrelatie vbo2kot ON vbo2kot.verblijfsobject_id = vbo.id
+              LEFT JOIN brk_zakelijkrecht zrt ON zrt.kadastraal_object_id = vbo2kot.kadastraal_object_id
+            WHERE
+              zrt.id IS NOT NULL
+            """)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -631,11 +655,18 @@ class ImportKadasterJob(object):
             ImportZakelijkRechtTask(self.brk),
             ImportAantekeningTask(self.brk),
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+            ImportKadastraalObjectRelatiesTask(),
+            ImportZakelijkRechtVerblijfsobjectTask(),
         ]
 
 
-class RecreateIndexTask(index.RecreateIndexTask):
-    index = 'brk'
+class DeleteIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BRK']
+    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+
+
+class DeleteBackupIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BRK'] + 'backup'
     doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
 
 
@@ -655,12 +686,56 @@ class IndexObjectTask(index.ImportIndexTask):
         return documents.from_kadastraal_object(obj)
 
 
+class BackupKadasterTask(index.CopyIndexTask):
+    name = 'Backup Kadaster index'
+    index = settings.ELASTIC_INDICES['BRK']
+    target = settings.ELASTIC_INDICES['BRK'] + 'backup'
+
+
+class RestoreKadasterTask(index.CopyIndexTask):
+    name = 'Restore Kadaster index'
+    index = settings.ELASTIC_INDICES['BRK'] + 'backup'
+    target = settings.ELASTIC_INDICES['BRK']
+
+
 class IndexKadasterJob(object):
+    """
+    Destroy and recreate elastic BKR index
+    """
     name = "Update search-index BRK"
 
     def tasks(self):
         return [
-            RecreateIndexTask(),
+            DeleteIndexTask(),
             IndexSubjectTask(),
             IndexObjectTask(),
         ]
+
+
+class BackupKadasterJob(object):
+    name = 'Backup Kadaster index'
+
+    def tasks(self):
+        """
+        delete the target backup index
+        copy index to target
+        """
+        return [
+            DeleteBackupIndexTask(),
+            BackupKadasterTask(),
+        ]
+
+
+class RestoreKadasterJob(object):
+    name = 'Restore Kadaster index from backup'
+
+    def tasks(self):
+        """
+        Delete index
+        Restore index from backup
+        """
+        return [
+            DeleteIndexTask(),
+            RestoreKadasterTask(),
+        ]
+

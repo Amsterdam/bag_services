@@ -2,37 +2,45 @@ import elasticsearch_dsl as es
 
 from . import models
 from datasets.generic import analyzers
+from django.conf import settings
 
 
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
+
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
+
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class Standplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
+
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
+
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
     centroid = es.GeoPoint()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class Verblijfsobject(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     adres = es.String(analyzer=analyzers.adres)
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
@@ -44,7 +52,7 @@ class Verblijfsobject(es.DocType):
     oppervlakte = es.Integer()
 
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 class OpenbareRuimte(es.DocType):
@@ -52,8 +60,10 @@ class OpenbareRuimte(es.DocType):
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
+    subtype = es.String(analyzer=analyzers.subtype)
+
     class Meta:
-        index = 'bag'
+        index = settings.ELASTIC_INDICES['BAG']
 
 
 def get_centroid(geom):
@@ -71,7 +81,7 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.huisnummer = adres.huisnummer
-        dest.huisnummer_toevoeging = adres.toevoeging
+        dest.huisnummer_variation = adres.huisnummer
 
 
 def from_ligplaats(l: models.Ligplaats):
@@ -107,6 +117,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
+    d.subtype = o.get_type_display()
     d.naam = o.naam
     postcodes = set()
     for a in o.adressen.all():

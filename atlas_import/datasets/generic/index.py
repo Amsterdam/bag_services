@@ -6,15 +6,18 @@ import elasticsearch
 import elasticsearch_dsl as es
 from elasticsearch_dsl.connections import connections
 
+from tqdm import tqdm
+
 log = logging.getLogger(__name__)
 
 
-class RecreateIndexTask(object):
+class DeleteIndexTask(object):
     index = ''
     doc_types = []
     name = 'remove index'
 
     def __init__(self):
+
         if not self.index:
             raise ValueError("No index specified")
 
@@ -24,6 +27,7 @@ class RecreateIndexTask(object):
         connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
 
     def execute(self):
+
         idx = es.Index(self.index)
 
         try:
@@ -43,10 +47,49 @@ class ImportIndexTask(object):
 
     def get_queryset(self):
         return self.queryset.all()
+        # return self.queryset.iterator()
 
     def convert(self, obj):
         raise NotImplementedError()
 
     def execute(self):
-        client = elasticsearch.Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        helpers.bulk(client, (self.convert(obj).to_dict(include_meta=True) for obj in self.get_queryset()))
+        client = elasticsearch.Elasticsearch(
+            hosts=settings.ELASTIC_SEARCH_HOSTS)
+        helpers.bulk(
+            client, (self.convert(obj).to_dict(include_meta=True)
+                     for obj in tqdm(self.get_queryset())))
+
+
+class CopyIndexTask(object):
+    """
+    Backup index from already loaded documents in elastic
+
+    Building index from existing documents is a lot faster
+    then doing if directly from the database
+
+    Especialy userfull when editing/testing analyzers
+    and change production environment on the fly
+    """
+    index = ''
+    target = ''
+    name = 'copy index elastic'
+
+    def __init__(self):
+        """
+        """
+        if not self.index:
+            raise ValueError("No index specified")
+
+        if not self.target:
+            raise ValueError("No target index specified")
+
+    def execute(self):
+        """
+        Reindex elastic index using existing documents
+        """
+        client = elasticsearch.Elasticsearch(
+            hosts=settings.ELASTIC_SEARCH_HOSTS)
+
+        log.debug('Backup index %s to %s ', self.index, self.target)
+        helpers.reindex(client, self.index, self.target)
+

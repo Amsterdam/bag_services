@@ -1,15 +1,14 @@
 import csv
+import datetime
 import logging
 import os
-import datetime
 
+from django import db
 from django.conf import settings
 
+import datasets.brk.models as brk
 from batch import batch
 from datasets.generic import kadaster, database
-import datasets.lki.models as lki
-import datasets.akr.models as akr
-import datasets.brk.models as brk
 from . import models
 
 log = logging.getLogger(__name__)
@@ -88,7 +87,7 @@ class ImportBeperkingTask(batch.BasicTask):
     def process(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
-            objects = [self.process_row(r) for r in rows]
+            objects = [obj for obj in (self.process_row(r) for r in rows) if obj]
 
         models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
@@ -100,12 +99,16 @@ class ImportBeperkingTask(batch.BasicTask):
 
     def process_row(self, r):
         code_id = r[2] if r[2] in self.codes else None
+        datum_einde = self.get_date(r[4])
+        if datum_einde and datum_einde < datetime.date.today():
+            return None
+
         return models.Beperking(
             pk=r[0],
             inschrijfnummer=r[1],
             beperkingtype_id=code_id,
             datum_in_werking=self.get_date(r[3]),
-            datum_einde=self.get_date(r[4]),
+            datum_einde=datum_einde,
         )
 
 
@@ -208,6 +211,30 @@ class ImportWkpbBepKadTask(batch.BasicTask):
         )
 
 
+class ImportBeperkingVerblijfsobjectTask(object):
+    name = "Import WKPB - Beperking-VBO"
+
+    def before(self):
+        database.clear_models(models.BeperkingVerblijfsobject)
+
+    def execute(self):
+        with db.connection.cursor() as c:
+            c.execute("""
+                INSERT INTO wkpb_beperkingverblijfsobject (verblijfsobject_id, beperking_id)
+                  SELECT DISTINCT
+                    vbo.id,
+                    kot2bep.beperking_id
+                  FROM
+                    bag_verblijfsobject vbo
+                    LEFT JOIN brk_kadastraalobjectverblijfsobjectrelatie vbo2kot
+                      ON vbo2kot.verblijfsobject_id = vbo.id
+                    LEFT JOIN wkpb_beperkingkadastraalobject kot2bep
+                      ON vbo2kot.kadastraal_object_id = kot2bep.kadastraal_object_id
+                  WHERE
+                    kot2bep.beperking_id IS NOT NULL;
+            """)
+
+
 class ImportWkpbJob(object):
     name = "Import WKPB"
 
@@ -225,4 +252,5 @@ class ImportWkpbJob(object):
             ImportBeperkingTask(self.beperkingen),
             ImportWkpbBrondocumentTask(self.beperkingen),
             ImportWkpbBepKadTask(self.beperkingen),
+            ImportBeperkingVerblijfsobjectTask(),
         ]

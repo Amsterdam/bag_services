@@ -9,6 +9,46 @@ from .. import models
 f = faker.Factory.create(locale='nl_NL')
 
 
+class EigendomsverhoudingFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Eigendomsverhouding
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
+class FinancieringswijzeFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Financieringswijze
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
+class GebruikFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Gebruik
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
+class LiggingFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Ligging
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
+class StatusFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Status
+
+    code = fuzzy.FuzzyText(length=4)
+    omschrijving = fuzzy.FuzzyText(length=50)
+
+
 class LigplaatsFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Ligplaats

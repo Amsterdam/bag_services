@@ -196,7 +196,7 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
                 .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
-    filter_fields = ('kadastraal_subject', 'kadastraal_object',)
+    filter_fields = ('kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
     lookup_value_regex = '[^/]+'
 
     @detail_route(methods=['get'])

@@ -1,5 +1,3 @@
-import datetime
-
 from batch.test import TaskTestCase
 from datasets.brk import batch, models
 from datasets.brk.tests import factories
@@ -8,10 +6,10 @@ from datasets.brk.tests import factories
 class ImportZakelijkRechtTaskTest(TaskTestCase):
     def setUp(self):
         factories.KadastraalSubjectFactory.create(
-            pk='NL.KAD.Persoon.172020232'
+                pk='NL.KAD.Persoon.172020232'
         )
         factories.KadastraalObjectFactory.create(
-           pk='NL.KAD.OnroerendeZaak.11750199770000'
+                pk='NL.KAD.OnroerendeZaak.11750199770000'
         )
 
     def task(self):
@@ -20,7 +18,9 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        zrt = models.ZakelijkRecht.objects.get(pk='NL.KAD.Tenaamstelling.AKR1.1402794')
+        zrt = models.ZakelijkRecht.objects.get(
+            pk='NL.KAD.ZakelijkRecht.AKR1.1402794-NL.KAD.OnroerendeZaak.11750199770000-NL.KAD.Tenaamstelling.AKR1'
+               '.1402794')
 
         self.assertEqual(zrt.zrt_id, 'NL.KAD.ZakelijkRecht.AKR1.1402794')
         self.assertEqual(zrt.aard_zakelijk_recht.code, '10')
@@ -40,4 +40,3 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
         self.assertIsNone(zrt.app_rechtsplitstype)
         self.assertEqual(zrt.teller, 1)
         self.assertEqual(zrt.noemer, 1)
-

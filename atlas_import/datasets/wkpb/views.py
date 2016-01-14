@@ -40,7 +40,7 @@ class BeperkingView(AtlasViewSet):
         .select_related('beperkingtype')
     )
     template_name = "wkpb/beperking.html"
-    filter_fields = ('kadastrale_objecten__id',)
+    filter_fields = ('kadastrale_objecten__id', 'verblijfsobjecten__id')
 
 
 class BrondocumentView(AtlasViewSet):
