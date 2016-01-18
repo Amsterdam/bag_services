@@ -30,6 +30,12 @@ class Financieringswijze(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
+class RedenAfvoer(serializers.ModelSerializer):
+    class Meta:
+        model = models.RedenAfvoer
+        fields = ('code', 'omschrijving')
+
+
 class Gebruik(serializers.ModelSerializer):
     class Meta:
         model = models.Gebruik
@@ -450,6 +456,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     gebruiksdoel = serializers.SerializerMethodField()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
+    reden_afvoer = RedenAfvoer()
     kadastrale_objecten = rest.RelatedSummaryField()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
