@@ -158,7 +158,7 @@ def add_sorting():
     )
 
 
-def search_query(client, query):
+def search_query(view, client, query):
     """
     Execute search.
 
@@ -221,6 +221,8 @@ def autocomplete_query(client, query):
 def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query)[0:20].execute()
     matches = OrderedDict()
+
+    # group_by doc_type
     for r in result:
         doc_type = r.meta.doc_type.replace('_', ' ')
 
@@ -270,6 +272,7 @@ class SearchViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
     page_size = 100
+    search_query = search_query
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
@@ -322,7 +325,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-        search = search_query(client, query)[start:end]
+        search = self.search_query(client, query)[start:end]
 
         try:
             result = search.execute()
@@ -352,3 +355,48 @@ class SearchViewSet(viewsets.ViewSet):
         result.update(hit.to_dict())
 
         return result
+
+
+class SearchAdresViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all objects
+    that match the elastic search query.
+    """
+
+    metadata_class = QueryMetadata
+    page_size = 100
+    search_query = search_query
+
+
+class SearchSubjectViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    kadestraal subjects (VVE, personen) objects
+    that match the elastic search query.
+    """
+
+    metadata_class = QueryMetadata
+    page_size = 100
+    search_query = search_query
+
+
+class SearchObjectViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    metadata_class = QueryMetadata
+    page_size = 100
+    search_query = search_query
+
+
+class SearchOpenbareRuimteViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset
+    of all openabare ruimte objects that match the elastic search query.
+    """
+
+    metadata_class = QueryMetadata
+    page_size = 100
+    search_query = search_query
