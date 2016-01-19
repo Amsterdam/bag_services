@@ -29,12 +29,12 @@ BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 
 # uncomment to get results from testindexes
-# if 'test' not in BAG:
-#    BAG = BAG + 'test'
-#
-# if 'test' not in BRK:
-#    BRK = BRK + 'test'
-#
+if 'test' not in BAG:
+   BAG = BAG + 'test'
+
+if 'test' not in BRK:
+   BRK = BRK + 'test'
+
 
 log.debug('using indices %s %s', BAG, BRK)
 
@@ -90,6 +90,8 @@ def mulitimatch_Q(query):
     """
     main search query used
     """
+    log.debug('%20s %s', mulitimatch_Q.__name__, query)
+    log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
         "multi_match",
@@ -111,6 +113,98 @@ def mulitimatch_Q(query):
     )
 
 
+def mulitimatch_adres_Q(query):
+    """
+    Adres search query used
+    """
+    log.debug('%20s %s', mulitimatch_adres_Q.__name__, query)
+    log.debug('using indices %s %s', BAG, BRK)
+
+    return Q(
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'straatnaam',
+            'aanduiding',
+            'adres',
+            'postcode',
+            'huisnummer_variation',
+            'kadestraal_object.aanduiding']
+    )
+
+
+def mulitimatch_subject_Q(query):
+    """
+    Adres search query used
+    """
+    log.debug('%20s %s', mulitimatch_subject_Q.__name__, query)
+    log.debug('using indices %s %s', BAG, BRK)
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        slop=14,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'geslachtsnaam',
+        ]
+    )
+
+
+def mulitimatch_object_Q(query):
+    """
+    Object search
+    """
+    log.debug('%20s %s', mulitimatch_object_Q.__name__, query)
+    log.debug('using indices %s %s', BAG, BRK)
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            # 'openbare_ruimte.naam',
+            'aanduiding',
+            'straatnaam',
+            'adres',
+            'postcode',
+            'huisnummer_variation',
+            'aanduiding']
+    )
+
+
+def mulitimatch_openbare_ruimte_Q(query):
+    """
+    Openbare ruimte search
+    """
+    log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
+
+    return Q(
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'openbare_ruimte.naam',
+            'openbare_ruimte.postcode',
+            'openbare_ruimte.subtype',
+        ]
+    )
+
+
 def wildcard_Q(query):
     """
     wilcard match
@@ -128,11 +222,11 @@ def wildcard_Q2(query):
         "openbare_ruimte.naam",
         "kadastraal_subject.geslachtsnaam",
         "adres",
-        #"postcode",
+        # "postcode",
 
-        #"ligplaats.adres",
-        #"standplaats.adres",
-        #"verblijfsobject.adres",
+        # "ligplaats.adres",
+        # "standplaats.adres",
+        # "verblijfsobject.adres",
     ]
 
     return Q("multi_match",
@@ -166,15 +260,70 @@ def search_query(view, client, query):
 
     """
 
-    # return test_search(client, query)
-
     return (
         Search(client)
         .index(BAG, BRK)
         .query(
             mulitimatch_Q(query)
             # | wildcard_Q2(query),
-            )
+        )
+        .sort(*add_sorting())
+    )
+
+
+def search_adres_query(view, client, query):
+    """
+    Execute search on adresses
+    """
+    return (
+        Search(client)
+        .index(BAG, BRK)
+        .query(
+            mulitimatch_adres_Q(query)
+        )
+        .sort(*add_sorting())
+    )
+
+
+def search_subject_query(view, client, query):
+    """
+    Execute search on adresses
+    """
+    return (
+        Search(client)
+        # .filter("term", category="search")
+        .index(BRK)
+        .query(
+            mulitimatch_subject_Q(query)
+        )
+        .sort(*add_sorting())
+    )
+
+
+def search_object_query(view, client, query):
+    """
+    Execute search in Objects
+    """
+    return (
+        Search(client)
+        .index(BAG, BRK)
+        .query(
+            mulitimatch_object_Q(query)
+        )
+        .sort(*add_sorting())
+    )
+
+
+def search_openbare_ruimte_query(view, client, query):
+    """
+    Execute search in Objects
+    """
+    return (
+        Search(client)
+        .index(BAG, BRK)
+        .query(
+            mulitimatch_openbare_ruimte_Q(query)
+        )
         .sort(*add_sorting())
     )
 
@@ -273,6 +422,7 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
     page_size = 100
     search_query = search_query
+    url_name = 'search-list'
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
@@ -280,7 +430,7 @@ class SearchViewSet(viewsets.ViewSet):
         Add pageing links for result set to response object
         """
 
-        followup_url = reverse('search-list', request=request)
+        followup_url = reverse(self.url_name, request=request)
 
         if page == 1:
             prev_page = None
@@ -359,13 +509,11 @@ class SearchViewSet(viewsets.ViewSet):
 
 class SearchAdresViewSet(SearchViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects
-    that match the elastic search query.
+    Given a query parameter `q`, this function returns a subset of
+    all adressable objects that match the adres elastic search query.
     """
-
-    metadata_class = QueryMetadata
-    page_size = 100
-    search_query = search_query
+    url_name = 'search/adres-list'
+    search_query = search_adres_query
 
 
 class SearchSubjectViewSet(SearchViewSet):
@@ -375,9 +523,8 @@ class SearchSubjectViewSet(SearchViewSet):
     that match the elastic search query.
     """
 
-    metadata_class = QueryMetadata
-    page_size = 100
-    search_query = search_query
+    url_name = 'search/subject-list'
+    search_query = search_subject_query
 
 
 class SearchObjectViewSet(SearchViewSet):
@@ -386,9 +533,8 @@ class SearchObjectViewSet(SearchViewSet):
     grond percelen objects that match the elastic search query.
     """
 
-    metadata_class = QueryMetadata
-    page_size = 100
-    search_query = search_query
+    url_name = 'search/object-list'
+    search_query = search_object_query
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -396,7 +542,4 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset
     of all openabare ruimte objects that match the elastic search query.
     """
-
-    metadata_class = QueryMetadata
-    page_size = 100
-    search_query = search_query
+    search_query = search_openbare_ruimte_query

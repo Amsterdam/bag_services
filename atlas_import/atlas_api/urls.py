@@ -92,17 +92,19 @@ router.register(r'wkpb/broncode', datasets.wkpb.views.BroncodeView)
 
 router.register(r'atlas/typeahead',
                 views.TypeaheadViewSet, base_name='typeahead')
+
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 router.register(r'atlas/search/adres',
-                views.SearchViewSet, base_name='search/adres')
+                views.SearchAdresViewSet, base_name='search/adres')
 
 router.register(r'atlas/search/subject',
                 views.SearchSubjectViewSet, base_name='search/subject')
-router.register(r'atlas/search/object',
 
+router.register(r'atlas/search/object',
                 views.SearchObjectViewSet, base_name='search/object')
-router.register(r'atlas/search/opebareruimte',
+
+router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,
                 base_name='search/openbareruimte')
 

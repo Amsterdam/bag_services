@@ -69,5 +69,3 @@ class ImportBeperking(TaskTestCase):
         self.assertEqual(b.datum_einde, None)
 
         self.assertRaises(models.Beperking.DoesNotExist, models.Beperking.objects.get, pk=1001832)
-
-

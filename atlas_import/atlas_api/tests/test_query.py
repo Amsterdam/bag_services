@@ -5,13 +5,12 @@ import datasets.brk.batch
 from batch import batch
 
 from datasets.bag.tests import factories as bag_factories
+from datasets.brk.tests import factories as brk_factories
 
 
 class QueryTest(APITestCase):
     """
     Testing commonly used datasets
-
-    # brug
     """
 
     @classmethod
@@ -25,6 +24,7 @@ class QueryTest(APITestCase):
             naam="Prinsengracht", type='02')
 
         # Create brug objects
+
         bag_factories.OpenbareRuimteFactory.create(
             naam="Korte Brug", type='05')
 
@@ -49,6 +49,17 @@ class QueryTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
 
+        # Maak een woonboot
+        kade_ruimte = bag_factories.OpenbareRuimteFactory.create(
+            type='01',
+            naam="Ligplaatsenstraat")
+
+        bag_factories.NummeraanduidingFactory.create(
+            type='05',
+            postcode='9999ZZ',
+            openbare_ruimte=kade_ruimte, huisnummer=33, hoofdadres=True)
+
+        # marnixkade
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
             naam="Marnixkade")
 
@@ -66,6 +77,20 @@ class QueryTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=229,
             hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+
+        adres = brk_factories.AdresFactory(
+            huisnummer=340,
+            huisletter='A',
+            postcode='1234AB',
+            woonplaats='FabeltjesLand',
+            openbareruimte_naam='Sesamstraat')
+
+        brk_factories.NatuurlijkPersoonFactory(
+            naam='Kikker',
+            voorvoegsels='de',
+            voornamen='Kermet',
+            woonadres=adres
+        )
 
         batch.execute(datasets.bag.batch.IndexJob())
 
@@ -239,3 +264,50 @@ class QueryTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['subtype'], "Kunstwerk")
+
+    def test_search_openbare_ruimte_api(self):
+        response = self.client.get(
+            "/api/atlas/search/openbareruimte/", dict(q="Prinsengracht"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['naam'], "Prinsengracht")
+
+        self.assertEqual(
+            response.data['results'][0]['subtype'], "Water")
+
+    def test_search_subject_api(self):
+        response = self.client.get(
+            "/api/atlas/search/subject/", dict(q="kikker"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['naam'], "Kermet de Kikker")
+
+    def test_search_object_api(self):
+        response = self.client.get(
+            "/api/atlas/search/object/", dict(q="Ligplaatsenstraat 33"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+        print(response.data)
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Ligplaatsenstraat 33")
+
+    def test_search_adres_api(self):
+        response = self.client.get(
+            "/api/atlas/search/adres/", dict(q="1016 SZ 228 a-1"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Rozenstraat 228a-1")

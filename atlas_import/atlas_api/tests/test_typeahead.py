@@ -57,7 +57,6 @@ class TypeaheadTest(APITestCase):
 
         time.sleep(1)   # this is stupid
 
-    @skip('skipping for now')
     def test_match_openbare_ruimte(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
         self.assertEqual(response.status_code, 200)
@@ -67,7 +66,6 @@ class TypeaheadTest(APITestCase):
         # print(response.data)
         self.assertIn("Anjeliersstraat", str(response.data))
 
-    @skip('skipping for now')
     def test_match_openbare_ruimte_lowercase(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="AN"))
         self.assertEqual(response.status_code, 200)
@@ -76,7 +74,6 @@ class TypeaheadTest(APITestCase):
         # self.assertIn('Anjeliersstraat', vbo['item'])
         self.assertIn("Anjeliersstraat", str(response.data))
 
-    @skip('skipping for now')
     def test_match_maximum_length(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="a"))
         self.assertEqual(response.status_code, 200)
@@ -84,7 +81,6 @@ class TypeaheadTest(APITestCase):
         lst = response.data['verblijfsobject']
         self.assertEqual(len(lst), 5)
 
-    @skip('skipping for now')
     def test_match_adresseerbaar_object(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="anjelier"))
         self.assertEqual(response.status_code, 200)
@@ -95,21 +91,13 @@ class TypeaheadTest(APITestCase):
         self.assertIn("Anjeliersstraat 11", str(response.data))
         # self.assertIn("Anjeliersstraat 11B", [h['item'] for h in vbos])
 
-    @skip('skipping for now')
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get(
             '/api/atlas/typeahead/',
             dict(q="anjeliersstraat 11"))
 
-        # vbo = response.data['verblijfsobject'][0]
-        # print(response.data)
-        # self.assertTrue(vbo['item'].startswith("Anjeliersstraat 11"))
         self.assertIn("Anjeliersstraat 11", str(response.data))
 
-    @skip('skipping for now')
     def test_match_postcode(self):
         response = self.client.get("/api/atlas/typeahead/", dict(q='105'))
-        # print(response.data)
-        # vbos = response.data['verblijfsobject']
-        # self.assertTrue(vbo['item'].startswith('105'))
         self.assertIn("105", str(response.data))
