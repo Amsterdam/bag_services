@@ -429,7 +429,7 @@ class ImportStaTest(TaskTestCase):
         self.run_task()
 
         imported = models.Standplaats.objects.all()
-        self.assertEqual(len(imported), 51)
+        self.assertEqual(len(imported), 50)
 
         l = models.Standplaats.objects.get(pk='03630001002936')
         self.assertEquals(l.landelijk_id, '0363030001002936')
@@ -447,7 +447,7 @@ class ImportStaTest(TaskTestCase):
         self.run_task()
 
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
-        self.assertEqual(len(imported), 51)
+        self.assertEqual(len(imported), 50)
 
         l = models.Standplaats.objects.get(pk='03630001002936')
         self.assertIsNotNone(l.geometrie)
