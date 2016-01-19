@@ -399,6 +399,11 @@ class ImportOprTask(batch.BasicTask):
         bron_id = r['OPRBRN/BRN/Code'] or None
         status_id = r['OPRSTS/STS/Code'] or None
         woonplaats_id = r['OPRWPL/WPL/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(pk)
+
+        if not landelijk_id:
+            log.error('OpenbareRuimte {} references non-existing landelijk_id {}; skipping'.format(pk, pk))
+            return
 
         if bron_id and bron_id not in self.bronnen:
             log.warning('OpenbareRuimte {} references non-existing bron {}; ignoring'.format(pk, bron_id))
@@ -414,7 +419,7 @@ class ImportOprTask(batch.BasicTask):
 
         return pk, models.OpenbareRuimte(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(pk),
+            landelijk_id=landelijk_id,
             type=r['TypeOpenbareRuimteDomein'],
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
@@ -499,6 +504,11 @@ class ImportNumTask(batch.BasicTask):
         bron_id = r['NUMBRN/BRN/Code'] or None
         status_id = r['NUMSTS/STS/Code'] or None
         openbare_ruimte_id = r['NUMOPR/OPR/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(r['IdentificatiecodeNummeraanduiding'])
+
+        if not landelijk_id:
+            log.error('Nummeraanduiding {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))
+            return
 
         if bron_id and bron_id not in self.bronnen:
             log.warning('Nummeraanduiding {} references non-existing bron {}; ignoring'.format(pk, bron_id))
@@ -515,7 +525,7 @@ class ImportNumTask(batch.BasicTask):
 
         return pk, models.Nummeraanduiding(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(r['IdentificatiecodeNummeraanduiding']),
+            landelijk_id=landelijk_id,
             huisnummer=r['Huisnummer'],
             huisletter=r['Huisletter'],
             huisnummer_toevoeging=r['Huisnummertoevoeging'],
@@ -671,6 +681,11 @@ class ImportLigTask(batch.BasicTask):
         bron_id = r['LIGBRN/BRN/Code'] or None
         status_id = r['LIGSTS/STS/Code'] or None
         buurt_id = r['LIGBRT/BRT/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(r['Ligplaatsidentificatie'])
+
+        if not landelijk_id:
+            log.error('Ligplaats {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))
+            return
 
         if bron_id and bron_id not in self.bronnen:
             log.warning('Ligplaats {} references non-existing bron {}; ignoring'.format(pk, bron_id))
@@ -686,7 +701,7 @@ class ImportLigTask(batch.BasicTask):
 
         return pk, models.Ligplaats(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(r['Ligplaatsidentificatie']),
+            landelijk_id=landelijk_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieLigplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieLigplaats']),
@@ -750,6 +765,11 @@ class ImportStaTask(batch.BasicTask):
         bron_id = r['STABRN/BRN/Code'] or None
         status_id = r['STASTS/STS/Code'] or None
         buurt_id = r['STABRT/BRT/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(r['Standplaatsidentificatie'])
+
+        if not landelijk_id:
+            log.error('Standplaats {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))
+            return
 
         if bron_id and bron_id not in self.bronnen:
             log.warning('Standplaats {} references non-existing bron {}; ignoring'.format(pk, bron_id))
@@ -765,7 +785,7 @@ class ImportStaTask(batch.BasicTask):
 
         return pk, models.Standplaats(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(r['Standplaatsidentificatie']),
+            landelijk_id=landelijk_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             document_nummer=r['DocumentnummerMutatieStandplaats'],
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieStandplaats']),
@@ -859,6 +879,11 @@ class ImportVboTask(batch.BasicTask):
         toegang_id = r['VBOTGG/TGG/Code'] or None
         status_id = r['VBOSTS/STS/Code'] or None
         buurt_id = r['VBOBRT/BRT/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(r['Verblijfsobjectidentificatie'])
+
+        if not landelijk_id:
+            log.error('Verblijfsobject {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))
+            return
 
         if reden_afvoer_id and reden_afvoer_id not in self.redenen_afvoer:
             log.warning('Verblijfsobject {} references non-existing reden afvoer {}; ignoring'.format(pk, bron_id))
@@ -905,7 +930,7 @@ class ImportVboTask(batch.BasicTask):
 
         return models.Verblijfsobject(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(r['Verblijfsobjectidentificatie']),
+            landelijk_id=landelijk_id,
             geometrie=geo,
             gebruiksdoel_code=(r['GebruiksdoelVerblijfsobjectDomein']),
             gebruiksdoel_omschrijving=(r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
@@ -977,6 +1002,11 @@ class ImportPndTask(batch.BasicTask):
         pk = r['sleutelverzendend']
         status_id = r['PNDSTS/STS/Code'] or None
         bbk_id = r['PNDBBK/BBK/sleutelVerzendend'] or None
+        landelijk_id = self.landelijke_ids.get(r['Pandidentificatie'])
+
+        if not landelijk_id:
+            log.error('Pand {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))
+            return
 
         if status_id and status_id not in self.statussen:
             log.warning('Pand {} references non-existing status {}; ignoring'.format(pk, status_id))
@@ -988,7 +1018,7 @@ class ImportPndTask(batch.BasicTask):
 
         return pk, models.Pand(
             pk=pk,
-            landelijk_id=self.landelijke_ids.get(r['Pandidentificatie']),
+            landelijk_id=landelijk_id,
             document_mutatie=uva2.uva_datum(r['DocumentdatumMutatiePand']),
             document_nummer=(r['DocumentnummerMutatiePand']),
             bouwjaar=uva2.uva_nummer(r['OorspronkelijkBouwjaarPand']),
@@ -1066,8 +1096,6 @@ class DeleteIndexTask(index.DeleteIndexTask):
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
     doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
-
-
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
