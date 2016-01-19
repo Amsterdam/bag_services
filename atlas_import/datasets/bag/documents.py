@@ -7,8 +7,8 @@ from django.conf import settings
 
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
-    adres = es.String(analyzer=analyzers.adres)
 
+    adres = es.String(analyzer=analyzers.adres)
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
 

@@ -297,7 +297,6 @@ class QueryTest(APITestCase):
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
-        print(response.data)
         self.assertEqual(
             response.data['results'][0]['adres'], "Ligplaatsenstraat 33")
 

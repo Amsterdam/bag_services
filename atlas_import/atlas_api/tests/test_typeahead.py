@@ -61,17 +61,12 @@ class TypeaheadTest(APITestCase):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
         self.assertEqual(response.status_code, 200)
 
-        # vbo = response.data['verblijfsobject'][0]
-        # self.assertIn('Anjeliersstraat', vbo['item'])
-        # print(response.data)
         self.assertIn("Anjeliersstraat", str(response.data))
 
     def test_match_openbare_ruimte_lowercase(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="AN"))
         self.assertEqual(response.status_code, 200)
 
-        # vbo = response.data['verblijfsobject'][0]
-        # self.assertIn('Anjeliersstraat', vbo['item'])
         self.assertIn("Anjeliersstraat", str(response.data))
 
     def test_match_maximum_length(self):
@@ -89,7 +84,6 @@ class TypeaheadTest(APITestCase):
         self.assertEqual(vbo['item'], "Anjeliersstraat")
 
         self.assertIn("Anjeliersstraat 11", str(response.data))
-        # self.assertIn("Anjeliersstraat 11B", [h['item'] for h in vbos])
 
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get(
