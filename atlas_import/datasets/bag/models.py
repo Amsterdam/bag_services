@@ -590,8 +590,9 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
     """
 
-    naam = models.CharField(max_length=100)
+    id = models.CharField(max_length=4, primary_key=True)
     code = models.CharField(max_length=4)
+    naam = models.CharField(max_length=100)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='gebiedsgerichtwerken')
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
@@ -616,8 +617,8 @@ class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
     ['NAAM']
     """
 
+    id = models.SlugField(max_length=100, primary_key=True)
     naam = models.CharField(max_length=100)
-
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()
@@ -639,8 +640,8 @@ class Unesco(mixins.ImportStatusMixin, models.Model):
     ['NAAM']
     """
 
+    id = models.SlugField(max_length=100, primary_key=True)
     naam = models.CharField(max_length=100)
-
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 
     objects = geo.GeoManager()

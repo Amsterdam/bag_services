@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
+from django.utils.text import slugify
 
 from batch import batch
 from datasets.generic import uva2, index, database, geo
@@ -1198,15 +1199,17 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         models.Gebiedsgerichtwerken.objects.bulk_create(ggws, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        code = feat.get('STADSDEEL')
-        if code not in self.stadsdelen:
-            log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(code, code))
+        sdl = feat.get('STADSDEEL')
+        if sdl not in self.stadsdelen:
+            log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
             return
 
+        code = feat.get('CODE').encode('utf-8')
         return models.Gebiedsgerichtwerken(
+            id=code,
             naam=feat.get('NAAM').encode('utf-8'),
-            code=feat.get('CODE').encode('utf-8'),
-            stadsdeel_id=self.stadsdelen[code],
+            code=code,
+            stadsdeel_id=self.stadsdelen[sdl],
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
@@ -1234,8 +1237,10 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         models.Grootstedelijkgebied.objects.bulk_create(ggbs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
+        naam = feat.get('NAAM').encode('utf-8')
         return models.Grootstedelijkgebied(
-            naam=feat.get('NAAM').encode('utf-8'),
+            id=slugify(naam),
+            naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
@@ -1263,8 +1268,10 @@ class ImportUnescoTask(batch.BasicTask):
         models.Unesco.objects.bulk_create(unesco, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
+        naam = feat.get('NAAM').encode('utf-8')
         return models.Unesco(
-            naam=feat.get('NAAM').encode('utf-8'),
+            id=slugify(naam),
+            naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
