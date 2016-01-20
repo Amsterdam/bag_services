@@ -17,6 +17,9 @@ class QueryTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        # give elastic docer time to start..
+        time.sleep(4)   # this is stupid # es needs 1 second delay..
+
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
 
@@ -96,7 +99,7 @@ class QueryTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        time.sleep(2)   # this is stupid # es needs 1 second delay..
+        time.sleep(1)   # give elastic time to propagte changes
 
     def test_non_matching_query(self):
         response = self.client.get('/api/atlas/search/', dict(q="qqq"))
@@ -115,7 +118,7 @@ class QueryTest(APITestCase):
         first = response.data['results'][0]
 
         self.assertEqual(first['naam'], "Anjeliersstraat")
-        self.assertEqual(first['type'], "openbare_ruimte")
+        self.assertEqual(first['type'], "Openbare ruimte")
 
     def test_query_case_insensitive(self):
         response = self.client.get('/api/atlas/search/', dict(q="ANJEl"))
