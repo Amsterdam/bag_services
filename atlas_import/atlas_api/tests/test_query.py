@@ -115,7 +115,7 @@ class QueryTest(APITestCase):
         first = response.data['results'][0]
 
         self.assertEqual(first['naam'], "Anjeliersstraat")
-        self.assertEqual(first['type'], "openbare_ruimte")
+        self.assertEqual(first['type'], "Openbare ruimte")
 
     def test_query_case_insensitive(self):
         response = self.client.get('/api/atlas/search/', dict(q="ANJEl"))

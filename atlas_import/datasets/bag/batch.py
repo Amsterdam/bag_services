@@ -1147,37 +1147,11 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
 
 
 class IndexNummerAanduidingTask(index.ImportIndexTask):
-    name = "index nummer aanduidingen"
-    queryset = models.Nummeraanduiding.objects.\
-        prefetch_related('verblijfsobject').\
-        prefetch_related('standplaats').\
-        prefetch_related('ligplaats')
+    name = "index nummeraanduiding"
+    queryset = models.Nummeraanduiding.objects
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
-
-
-class IndexNummerAanduidingTask1(index.ImportIndexTask):
-    name = "index nummer aanduidingen"
-    queryset = models.Nummeraanduiding.objects.\
-        prefetch_related('verblijfsobject').\
-        prefetch_related('standplaats').\
-        prefetch_related('ligplaats')
-
-    def convert(self, obj):
-        return documents.from_nummeraanduiding_ruimte(obj)
-
-class IndexNummerAanduidingTask2(index.ImportIndexTask):
-    name = "index nummer aanduidingen"
-    queryset = models.Nummeraanduiding.objects.\
-        prefetch_related('verblijfsobject').\
-        prefetch_related('standplaats').\
-        prefetch_related('ligplaats')
-
-    def convert(self, obj):
-        return documents.from_nummeraanduiding_ruimte(obj)
-
-
 
 
 # these files don't have a UVA file
@@ -1206,6 +1180,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
     def process(self):
         bcs = geo.process_shp(
             self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
+
         models.Buurtcombinatie.objects.bulk_create(
             bcs, batch_size=database.BATCH_SIZE)
 
