@@ -177,13 +177,16 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
         return "{}".format(self.code)
 
 
-class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                     mixins.DocumentStatusMixin, models.Model):
+class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+                     mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+                     models.Model):
     """
-    Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorziene
+    Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
+    zodanig aangewezen en van een naam voorziene
     buitenruimte die binnen één woonplaats is gelegen.
 
-    Als openbare ruimte worden onder meer aangemerkt weg, water, terrein, spoorbaan en landschappelijk gebied.
+    Als openbare ruimte worden onder meer aangemerkt weg, water,
+    terrein, spoorbaan en landschappelijk gebied.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/
     """
@@ -230,11 +233,14 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixin
         return self.naam
 
 
-class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                       mixins.DocumentStatusMixin, models.Model):
+class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+                       mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+                       models.Model):
     """
-    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
-    zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
+    het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject,
+    standplaats of ligplaats.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
     """
@@ -259,22 +265,30 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
     huisletter = models.CharField(max_length=1, null=True)
     huisnummer_toevoeging = models.CharField(max_length=4, null=True)
     postcode = models.CharField(max_length=6, null=True)
-    type = models.CharField(max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
+    type = models.CharField(
+        max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     adres_nummer = models.CharField(max_length=10, null=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    openbare_ruimte = models.ForeignKey(OpenbareRuimte, related_name='adressen')
+    openbare_ruimte = models.ForeignKey(
+        OpenbareRuimte, related_name='adressen')
 
-    ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
-    standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')
-    verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
+    ligplaats = models.ForeignKey(
+        'Ligplaats', null=True, related_name='adressen')
+    standplaats = models.ForeignKey(
+        'Standplaats', null=True, related_name='adressen')
+    verblijfsobject = models.ForeignKey(
+        'Verblijfsobject', null=True, related_name='adressen')
+
     hoofdadres = models.NullBooleanField(default=None)
 
     class Meta:
         verbose_name = "Nummeraanduiding"
         verbose_name_plural = "Nummeraanduidingen"
-        ordering = ('openbare_ruimte__naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+        ordering = (
+            'openbare_ruimte__naam',
+            'huisnummer', 'huisletter', 'huisnummer_toevoeging')
 
     def __str__(self):
         return self.adres()
@@ -284,10 +298,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mix
 
     @property
     def toevoeging(self):
+        toevoeging = self.huisnummer_toevoeging
         return '%s%s%s' % (
             str(self.huisnummer),
             self.huisletter if self.huisletter else '',
-            '-' + self.huisnummer_toevoeging if self.huisnummer_toevoeging else ''
+            '-' + toevoeging if toevoeging else ''
         )
 
     @property
@@ -427,10 +442,12 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.I
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
                       mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
-    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon-, bedrijfsmatige, of recreatieve
-    doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de
-    openbare weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van goederenrechtelijke rechtshandelingen
-    en in functioneel opzicht zelfstandig is.
+    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor
+    woon-, bedrijfsmatige, of recreatieve
+    doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen
+    afsluitbare toegang vanaf de
+    openbare weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van
+    goederenrechtelijke rechtshandelingen en in functioneel opzicht zelfstandig is.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/
     """
