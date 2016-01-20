@@ -112,22 +112,19 @@ def update_adres(dest, adres: models.Nummeraanduiding):
 def add_verblijfsobject(doc, vo: models.Verblijfsobject):
     if vo:
         doc.centroid = get_centroid(vo.geometrie)
-        doc.bestemming = vo.gebruiksdoel_omschrijving
-        doc.kamers = vo.aantal_kamers
-        doc.oppervlakte = vo.oppervlakte
-        doc.bagtype = 'Verblijfsobject'
+        doc.subtype_id = vo.id
 
 
 def add_standplaats(doc, sp: models.Standplaats):
     if sp:
         doc.centroid = get_centroid(sp.geometrie)
-        doc.bagtype = 'Standplaats'
+        doc.subtype_id = sp.id
 
 
 def add_ligplaats(doc, lp: models.Ligplaats):
     if lp:
         doc.centroid = get_centroid(lp.geometrie)
-        doc.bagtype = 'Ligplaats'
+        doc.subtype_id = lp.id
 
 
 def from_ligplaats(l: models.Ligplaats):
@@ -150,34 +147,34 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     d.huisnummer = n.huisnummer
     d.huisnummer_variation = n.huisnummer
 
-    # d.adresseerbaar_object = n.adresseerbaar_object
+    # if n.buurt:
+    #     d.buurt = n.buurt.naam
 
-    if n.buurt:
-        d.buurt = n.buurt.naam
+    # if n.stadsdeel:
+    #     d.stadsdeel = n.stadsdeel.naam
 
-    if n.stadsdeel:
-        d.stadsdeel = n.stadsdeel.naam
+    # if n.woonplaats:
+    #     d.woonplaats = n.woonplaats.naam
 
-    if n.woonplaats:
-        d.woonplaats = n.woonplaats.naam
-    if n.buurtcombinatie:
-        d.buurtcombinatie = n.buurtcombinatie.naam
+    # if n.buurtcombinatie:
+    #     d.buurtcombinatie = n.buurtcombinatie.naam
 
     if n.bron:
         d.bron = n.bron.omschrijving
 
-    d.subtype = n.get_type_display()
+    d.subtype = n.get_type_display().lower()
 
-    if d.subtype == 'Verblijfsobject':
+    if d.subtype == 'verblijfsobject':
         add_verblijfsobject(d, n.verblijfsobject)
-    elif d.subtype == 'Standplaats':
+    elif d.subtype == 'standplaats':
         pass
         add_standplaats(d, n.standplaats)
-    elif d.subtype == 'Ligplaats':
+    elif d.subtype == 'ligplaats':
         add_ligplaats(d, n.ligplaats)
-    elif d.subtype == 'Overig gebouwd object':
+
+    elif d.subtype == 'overig gebouwd object':
         pass
-    elif d.subtype == 'Overig terrein':
+    elif d.subtype == 'overig terrein':
         pass
 
     return d
