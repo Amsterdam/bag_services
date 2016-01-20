@@ -108,6 +108,10 @@ router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,
                 base_name='search/openbareruimte')
 
+router.register(r'atlas/search/nummeraanduiding',
+                views.SearchOpenbareRuimteViewSet,
+                base_name='search/nummeraanduiding')
+
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),

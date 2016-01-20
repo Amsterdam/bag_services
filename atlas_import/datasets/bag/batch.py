@@ -1091,17 +1091,28 @@ class ImportPndVboTask(batch.BasicTask):
 
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG']
-    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
+
+
+class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    doc_types = [documents.Nummeraanduiding]
 
 
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
     name = "index ligplaatsen"
-    queryset = models.Ligplaats.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Ligplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_ligplaats(obj)
@@ -1109,7 +1120,9 @@ class IndexLigplaatsTask(index.ImportIndexTask):
 
 class IndexStandplaatsTask(index.ImportIndexTask):
     name = "index standplaatsen"
-    queryset = models.Standplaats.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Standplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_standplaats(obj)
@@ -1117,7 +1130,9 @@ class IndexStandplaatsTask(index.ImportIndexTask):
 
 class IndexVerblijfsobjectTask(index.ImportIndexTask):
     name = "index verblijfsobjecten"
-    queryset = models.Verblijfsobject.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Verblijfsobject.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_verblijfsobject(obj)
@@ -1461,12 +1476,31 @@ class IndexJob(object):
         ]
 
 
+class IndexNummerAanduidingJob(object):
+    name = "Createnew search index for Nummeraanduiding"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            IndexNummerAanduidingTask()
+        ]
+
+
 class BackupBagIndexTask(index.CopyIndexTask):
     """
     Backup elastic BAG Index
     """
     index = settings.ELASTIC_INDICES['BAG']
     target = settings.ELASTIC_INDICES['BAG'] + 'backup'
+    name = 'Backup BAG index in elastic'
+
+
+class BackupNummerAanduidingTask(index.CopyIndexTask):
+    """
+    Backup elastic BAG Index
+    """
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
     name = 'Backup BAG index in elastic'
 
 
@@ -1478,6 +1512,16 @@ class RestoreBagIndexTask(index.CopyIndexTask):
 
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
     target = settings.ELASTIC_INDICES['BAG']
+
+
+class RestoreNummerAanduidingIndexTask(index.CopyIndexTask):
+    """
+    Restore elastic BAG Index
+    """
+    name = 'Restore backup nummeraanduiding index in elastic'
+
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
+    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
 class BackupBagJob(object):
@@ -1503,3 +1547,26 @@ class RestoreBagJob(object):
             RestoreBagIndexTask()
         ]
 
+
+class BackupNummerAanduidingJob(object):
+    """
+    Nummeraanduiding elastic index Backup
+    """
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            BackupNummerAanduidingTask(),
+        ]
+
+
+class RestoreNummerAanduidingJob(object):
+    """
+    Nummeraanduiding elastic index Restore
+    """
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            RestoreNummerAanduidingIndexTask()
+        ]

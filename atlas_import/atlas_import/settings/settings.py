@@ -116,11 +116,17 @@ USE_TZ = True
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
-ELASTIC_INDICES = dict(BAG='bag', BRK='brk')
+ELASTIC_INDICES = dict(
+    BAG='bag', BRK='brk',
+    NUMMERAANDUIDING='nummeraanduiding')
 
 if TESTING:
     for k, v in ELASTIC_INDICES.items():
         ELASTIC_INDICES[k] = ELASTIC_INDICES[k] + 'test'
+
+BATCH_SETTINGS = dict(
+    batch_size=100000
+)
 
 
 STATIC_URL = '/static/'

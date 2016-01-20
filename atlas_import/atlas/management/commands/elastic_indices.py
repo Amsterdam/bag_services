@@ -1,5 +1,7 @@
 from django.core.management import BaseCommand
 
+from django.conf import settings
+
 import datasets.bag.batch
 import datasets.brk.batch
 import datasets.wkpb.batch
@@ -9,23 +11,26 @@ from batch import batch
 
 class Command(BaseCommand):
 
-    ordered = ['bag', 'brk', 'wkpb']
+    ordered = ['bag', 'brk', 'wkpb', 'nummeraanduiding']
 
     indexes = dict(
         bag=[datasets.bag.batch.IndexJob],
         brk=[datasets.brk.batch.IndexKadasterJob],
+        nummeraanduiding=[datasets.bag.batch.IndexNummerAanduidingJob],
         wkpb=[],
     )
 
     backup_indexes = dict(
         bag=[datasets.bag.batch.BackupBagJob],
         brk=[datasets.brk.batch.BackupKadasterJob],
+        nummeraanduiding=[datasets.bag.batch.BackupNummerAanduidingJob],
         wkpb=[],
     )
 
     restore_indexes = dict(
         bag=[datasets.bag.batch.RestoreBagJob],
         brk=[datasets.brk.batch.RestoreKadasterJob],
+        nummeraanduiding=[datasets.bag.batch.RestoreNummerAanduidingJob],
         wkpb=[],
     )
 
@@ -55,6 +60,9 @@ class Command(BaseCommand):
                             default=False,
                             help='Build elastic index from postgres')
 
+        parser.add_argument('--batch-size', default='10000', type=int,
+                            help='Change batch size')
+
     def handle(self, *args, **options):
         dataset = options['dataset']
 
@@ -66,6 +74,9 @@ class Command(BaseCommand):
         sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
         self.stdout.write("Working on {}".format(", ".join(sets)))
+
+        if options['batch_size'] > 0:
+            settings.BATCH_SETTINGS['batch_size'] = options['batch_size']
 
         for ds in sets:
 

@@ -69,10 +69,6 @@ class Command(BaseCommand):
                             default=True,
                             help='Skip elastic search indexing')
 
-        parser.add_argument('--noinput', '--no-input',
-                            action='store_false', dest='interactive', default=True,
-                            help='Tells Django to NOT prompt the user for input of any kind.')
-
     def act_on_result(self, job_execution):
         if job_execution.status == JobExecution.STATUS_FAILED:
             self.stderr.write("Job {} failed, exiting".format(job_execution.name))
