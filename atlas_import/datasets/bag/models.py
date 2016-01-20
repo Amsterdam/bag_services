@@ -352,8 +352,9 @@ class AdresseerbaarObjectMixin(object):
         return "adres onbekend"
 
 
-class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+                mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+                AdresseerbaarObjectMixin, models.Model):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
     al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
