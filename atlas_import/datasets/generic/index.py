@@ -57,7 +57,9 @@ class ImportIndexTask(object):
             hosts=settings.ELASTIC_SEARCH_HOSTS)
         helpers.bulk(
             client, (self.convert(obj).to_dict(include_meta=True)
-                     for obj in tqdm(self.get_queryset())))
+                     for obj in tqdm(self.get_queryset())),
+            raise_on_error=True, refresh=True
+        )
 
 
 class CopyIndexTask(object):

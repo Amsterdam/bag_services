@@ -15,7 +15,7 @@ class TypeaheadTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        time.sleep(4)  # give elastic time to start in jekins docker
+        time.sleep(8)  # give elastic time to start in jekins docker
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
@@ -57,6 +57,7 @@ class TypeaheadTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
+        # should not be needed now..
         time.sleep(1)   # give elastic time to propagate changes
 
     def test_match_openbare_ruimte(self):
