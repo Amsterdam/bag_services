@@ -103,7 +103,8 @@ class ImportGmeTask(batch.BasicTask):
 
     def process(self):
         gemeentes = uva2.process_uva2(self.path, "GME", self.process_row)
-        models.Gemeente.objects.bulk_create(gemeentes, batch_size=database.BATCH_SIZE)
+        models.Gemeente.objects.bulk_create(
+            gemeentes, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -131,17 +132,21 @@ class ImportSdlTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Stadsdeel)
-        self.gemeentes = set(models.Gemeente.objects.values_list("pk", flat=True))
+        self.gemeentes = set(
+            models.Gemeente.objects.values_list("pk", flat=True))
 
     def after(self):
         self.gemeentes.clear()
         self.stadsdelen.clear()
 
     def process(self):
-        self.stadsdelen = dict(uva2.process_uva2(self.bag_path, "SDL", self.process_row))
-        geo.process_shp(self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
+        self.stadsdelen = dict(
+            uva2.process_uva2(self.bag_path, "SDL", self.process_row))
+        geo.process_shp(
+            self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
 
-        models.Stadsdeel.objects.bulk_create(self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
+        models.Stadsdeel.objects.bulk_create(
+            self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -194,8 +199,10 @@ class ImportBrtTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Buurt)
-        self.stadsdelen = set(models.Stadsdeel.objects.values_list("pk", flat=True))
-        self.buurtcombinaties = dict(models.Buurtcombinatie.objects.values_list("code", "pk"))
+        self.stadsdelen = set(
+            models.Stadsdeel.objects.values_list("pk", flat=True))
+        self.buurtcombinaties = dict(
+            models.Buurtcombinatie.objects.values_list("code", "pk"))
 
     def after(self):
         self.stadsdelen.clear()
@@ -203,10 +210,13 @@ class ImportBrtTask(batch.BasicTask):
         self.buurtcombinaties.clear()
 
     def process(self):
-        self.buurten = dict(uva2.process_uva2(self.uva_path, "BRT", self.process_row))
-        geo.process_shp(self.shp_path, "GBD_Buurt.shp", self.process_feature)
+        self.buurten = dict(
+            uva2.process_uva2(self.uva_path, "BRT", self.process_row))
+        geo.process_shp(
+            self.shp_path, "GBD_Buurt.shp", self.process_feature)
 
-        models.Buurt.objects.bulk_create(self.buurten.values(), batch_size=database.BATCH_SIZE)
+        models.Buurt.objects.bulk_create(
+            self.buurten.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -236,11 +246,14 @@ class ImportBrtTask(batch.BasicTask):
             naam=r['Buurtnaam'],
             brondocument_naam=r['Brondocumentverwijzing'],
             brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
-            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             stadsdeel_id=stadsdeel_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             buurtcombinatie_id=bc_id,
         )
 
@@ -248,7 +261,8 @@ class ImportBrtTask(batch.BasicTask):
         vollcode = feat.get('VOLLCODE')
         code = vollcode[1:]
         if code not in self.buurten:
-            log.warning('Buurt/SHP {} references non-existing buurt; skipping'.format(code))
+            log.warning(
+                'Buurt/SHP {} references non-existing buurt; skipping'.format(code))
             return
 
         self.buurten[code].geometrie = geo.get_multipoly(feat.geom.wkt)
@@ -297,10 +311,13 @@ class ImportBbkTask(batch.BasicTask):
         return code, models.Bouwblok(
             pk=pk,
             code=code,
-            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             buurt_id=buurt_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def process_feature(self, feat):
@@ -321,14 +338,16 @@ class ImportWplTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Woonplaats)
-        self.gemeentes = set(models.Gemeente.objects.values_list("pk", flat=True))
+        self.gemeentes = set(
+            models.Gemeente.objects.values_list("pk", flat=True))
 
     def after(self):
         self.gemeentes.clear()
 
     def process(self):
         woonplaatsen = uva2.process_uva2(self.path, "WPL", self.process_row)
-        models.Woonplaats.objects.bulk_create(woonplaatsen, batch_size=database.BATCH_SIZE)
+        models.Woonplaats.objects.bulk_create(
+            woonplaatsen, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):

@@ -77,6 +77,9 @@ class ImportIndexTask(object):
             yield (i+1, total_batches, start, end, total, qs[start:end])
 
     def execute(self):
+        """
+        Index data of specified queryset
+        """
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS)
 
