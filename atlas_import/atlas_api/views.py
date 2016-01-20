@@ -32,7 +32,8 @@ def _get_url(request, hit):
 
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
-    id = hit.subtype_id if hit.subtype_id else id
+    if hasattr(hit, 'subtype_id'):
+        id = hit.subtype_id if hit.subtype_id else id
 
     if doc_type in _details:
         return rest.get_links(
