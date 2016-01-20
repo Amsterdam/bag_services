@@ -1166,8 +1166,13 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
 
 
 class IndexNummerAanduidingTask(index.ImportIndexTask):
-    name = "index nummeraanduiding"
-    queryset = models.Nummeraanduiding.objects
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats').\
+        prefetch_related('openbare_ruimte').\
+        prefetch_related('standplaats')
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
@@ -1495,7 +1500,7 @@ class BackupNummerAanduidingTask(index.CopyIndexTask):
     """
     index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
     target = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
-    name = 'Backup BAG index in elastic'
+    name = 'Backup Aanduiding index in elastic'
 
 
 class RestoreBagIndexTask(index.CopyIndexTask):
@@ -1546,6 +1551,8 @@ class BackupNummerAanduidingJob(object):
     """
     Nummeraanduiding elastic index Backup
     """
+
+    name = "Backup elastic-index NUMMERAANDUIDING"
 
     def tasks(self):
         return [
