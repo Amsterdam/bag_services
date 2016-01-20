@@ -126,4 +126,3 @@ class CopyIndexTask(object):
 
         log.debug('Backup index %s to %s ', self.index, self.target)
         helpers.reindex(client, self.index, self.target)
-

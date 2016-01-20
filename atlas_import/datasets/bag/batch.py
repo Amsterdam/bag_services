@@ -1146,12 +1146,47 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
         return documents.from_openbare_ruimte(obj)
 
 
+class IndexNummerAanduidingTask(index.ImportIndexTask):
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats')
+
+    def convert(self, obj):
+        return documents.from_nummeraanduiding_ruimte(obj)
+
+
+class IndexNummerAanduidingTask1(index.ImportIndexTask):
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats')
+
+    def convert(self, obj):
+        return documents.from_nummeraanduiding_ruimte(obj)
+
+class IndexNummerAanduidingTask2(index.ImportIndexTask):
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats')
+
+    def convert(self, obj):
+        return documents.from_nummeraanduiding_ruimte(obj)
+
+
+
+
 # these files don't have a UVA file
 class ImportBuurtcombinatieTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR',
+     'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
     """
 
     name = "Import GBD Buurtcombinatie"
@@ -1162,14 +1197,17 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Buurtcombinatie)
-        self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "id"))
+        self.stadsdelen = dict(
+            models.Stadsdeel.objects.values_list("code", "id"))
 
     def after(self):
         self.stadsdelen.clear()
 
     def process(self):
-        bcs = geo.process_shp(self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
-        models.Buurtcombinatie.objects.bulk_create(bcs, batch_size=database.BATCH_SIZE)
+        bcs = geo.process_shp(
+            self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
+        models.Buurtcombinatie.objects.bulk_create(
+            bcs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         vollcode = feat.get('VOLLCODE')
@@ -1193,7 +1231,8 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM',
+     'EINDDATUM', 'DOCNR', 'DOCDATUM']
     """
 
     name = "Import GBD Gebiedsgerichtwerken"
@@ -1204,14 +1243,19 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Gebiedsgerichtwerken)
-        self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "pk"))
+        self.stadsdelen = dict(
+            models.Stadsdeel.objects.values_list("code", "pk"))
 
     def after(self):
         self.stadsdelen.clear()
 
     def process(self):
-        ggws = geo.process_shp(self.shp_path, "GBD_gebiedsgerichtwerken.shp", self.process_feature)
-        models.Gebiedsgerichtwerken.objects.bulk_create(ggws, batch_size=database.BATCH_SIZE)
+        ggws = geo.process_shp(
+            self.shp_path, "GBD_gebiedsgerichtwerken.shp",
+            self.process_feature)
+
+        models.Gebiedsgerichtwerken.objects.bulk_create(
+            ggws, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         sdl = feat.get('STADSDEEL')
@@ -1248,8 +1292,12 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         pass
 
     def process(self):
-        ggbs = geo.process_shp(self.shp_path, "GBD_grootstedelijke_projecten.shp", self.process_feature)
-        models.Grootstedelijkgebied.objects.bulk_create(ggbs, batch_size=database.BATCH_SIZE)
+        ggbs = geo.process_shp(
+            self.shp_path,
+            "GBD_grootstedelijke_projecten.shp", self.process_feature)
+
+        models.Grootstedelijkgebied.objects.bulk_create(
+            ggbs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         naam = feat.get('NAAM').encode('utf-8')
@@ -1279,8 +1327,10 @@ class ImportUnescoTask(batch.BasicTask):
         pass
 
     def process(self):
-        unesco = geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature)
-        models.Unesco.objects.bulk_create(unesco, batch_size=database.BATCH_SIZE)
+        unesco = geo.process_shp(
+            self.shp_path, "GBD_unesco.shp", self.process_feature)
+        models.Unesco.objects.bulk_create(
+            unesco, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         naam = feat.get('NAAM').encode('utf-8')
@@ -1485,6 +1535,7 @@ class BackupBagJob(object):
             DeleteBackupIndexTask,
             BackupBagIndexTask(),
         ]
+
 
 class RestoreBagJob(object):
 
