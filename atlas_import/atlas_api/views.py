@@ -32,15 +32,17 @@ def _get_url(request, hit):
 
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
+    id = hit.subtype_id if hit.subtype_id else id
+
     if doc_type in _details:
         return rest.get_links(
-                view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
+            view_name=_details[doc_type],
+            kwargs=dict(pk=id), request=request)
 
     if hit.subtype in _details:
-        if hit.subtype_id:
-            return rest.get_links(
-                view_name=_details[hit.subtype],
-                kwargs=dict(pk=id), request=request)
+        return rest.get_links(
+            view_name=_details[hit.subtype],
+            kwargs=dict(pk=id), request=request)
 
     return None
 
