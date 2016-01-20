@@ -199,12 +199,25 @@ def mulitimatch_nummeraanduiding_Q(query):
     """
     log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
 
+    """
+    "straatnaam": "Eerste Helmersstraat",
+    "buurtcombinatie": "Helmersbuurt",
+    "huisnummer": 104,
+    "oppervlakte": 30,
+    "huisnummer_variation": 104,
+    "subtype": "Verblijfsobject",
+    "postcode": "1054EG-104G",
+    "woonplaats": "Amsterdam",
+    "stadsdeel": "West",
+    "adres": "Eerste Helmersstraat 104G",
+    """
+
     return Q(
         "multi_match",
         query=query,
         # type="most_fields",
         # type="phrase",
-        type="phrase_prefix",
+        # type="phrase_prefix",
         slop=12,     # match "stephan preeker" with "stephan jacob preeker"
         max_expansions=12,
         fields=[
@@ -212,8 +225,8 @@ def mulitimatch_nummeraanduiding_Q(query):
             'huisnummer_variation',
             'postcode',
             'adres',
+            'woonplaats',
             'subtype',
-            'buurt',
             'stadsdeel',
             'bestemming'
         ]
@@ -263,6 +276,23 @@ def add_sorting():
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
         'naam'
+    )
+
+
+def add_nummerduiding_sorting():
+    """
+    Give human understandable sorting to the output
+    """
+    return (
+        {"order": {
+            "order": "asc", "missing": "_last", "unmapped_type": "long"}},
+        {"straatnaam": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+        {"huisnummer": {
+            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
+        {"adres": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+        '-_score',
     )
 
 
@@ -352,7 +382,7 @@ def search_nummeraanduiding_query(view, client, query):
         .query(
             mulitimatch_nummeraanduiding_Q(query)
         )
-        .sort(*add_sorting())
+        .sort(*add_nummerduiding_sorting())
     )
 
 

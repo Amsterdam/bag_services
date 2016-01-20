@@ -109,7 +109,7 @@ router.register(r'atlas/search/openbareruimte',
                 base_name='search/openbareruimte')
 
 router.register(r'atlas/search/nummeraanduiding',
-                views.SearchOpenbareRuimteViewSet,
+                views.SearchNummeraanduidingViewSet,
                 base_name='search/nummeraanduiding')
 
 urlpatterns = [
