@@ -95,14 +95,15 @@ router.register(r'atlas/typeahead',
 
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
+# word een alias voor nummer aanduiding
 router.register(r'atlas/search/adres',
                 views.SearchAdresViewSet, base_name='search/adres')
 
 router.register(r'atlas/search/subject',
                 views.SearchSubjectViewSet, base_name='search/subject')
 
-router.register(r'atlas/search/object',
-                views.SearchObjectViewSet, base_name='search/object')
+# router.register(r'atlas/search/object',
+#                views.SearchObjectViewSet, base_name='search/object')
 
 router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,

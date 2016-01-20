@@ -431,9 +431,12 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     class Meta:
         verbose_name = "Standplaats"
         verbose_name_plural = "Standplaatsen"
-        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ordering = (
+            '_openbare_ruimte_naam', '_huisnummer',
+            '_huisletter', '_huisnummer_toevoeging')
         index_together = [
-            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+            ('_openbare_ruimte_naam', '_huisnummer',
+             '_huisletter', '_huisnummer_toevoeging')
         ]
 
     def __str__(self):
@@ -445,15 +448,16 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return result
 
 
-class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                      mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+                      mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+                      AdresseerbaarObjectMixin, models.Model):
     """
-    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor
-    woon-, bedrijfsmatige, of recreatieve
+    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en
+    voor woon-, bedrijfsmatige, of recreatieve
     doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen
-    afsluitbare toegang vanaf de
-    openbare weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van
-    goederenrechtelijke rechtshandelingen en in functioneel opzicht zelfstandig is.
+    afsluitbare toegang vanaf de openbare weg, een erf of een gedeelde
+    verkeersruimte, onderwerp kan zijn van goederenrechtelijke
+    rechtshandelingen en in functioneel opzicht zelfstandig is.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/
     """
@@ -482,9 +486,12 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixi
     ligging = models.ForeignKey(Ligging, null=True)
     toegang = models.ForeignKey(Toegang, null=True)
     status = models.ForeignKey(Status, null=True)
-    buurt = models.ForeignKey(Buurt, null=True, related_name='verblijfsobjecten')
+    buurt = models.ForeignKey(
+        Buurt, null=True, related_name='verblijfsobjecten')
 
-    panden = models.ManyToManyField('Pand', related_name='verblijfsobjecten', through='VerblijfsobjectPandRelatie')
+    panden = models.ManyToManyField(
+        'Pand', related_name='verblijfsobjecten',
+        through='VerblijfsobjectPandRelatie')
 
     geometrie = geo.PointField(null=True, srid=28992)
 
