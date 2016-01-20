@@ -40,10 +40,19 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 log.debug('using indices %s %s', BAG, BRK)
 
 
-def _get_url(request, doc_type, id):
+def _get_url(request, hit):
+
+    doc_type, id = hit.meta.doc_type, hit.meta.id
+
     if doc_type in _details:
         return rest.get_links(
             view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
+
+    if hit.subtype in _details:
+        if hit.subtype_id:
+            return rest.get_links(
+                view_name=_details[hit.subtype],
+                kwargs=dict(pk=id), request=request)
 
     return None
 
@@ -571,7 +580,8 @@ class SearchViewSet(viewsets.ViewSet):
 
     def normalize_hit(self, hit, request):
         result = OrderedDict()
-        result['_links'] = _get_url(request, hit.meta.doc_type, hit.meta.id)
+        result['_links'] = _get_url(request, hit)
+
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
         # result['uri'] = _get_url(
