@@ -382,9 +382,13 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.Imp
     class Meta:
         verbose_name = "Ligplaats"
         verbose_name_plural = "Ligplaatsen"
-        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ordering = (
+            '_openbare_ruimte_naam', '_huisnummer',
+            '_huisletter', '_huisnummer_toevoeging')
+
         index_together = [
-            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+            ('_openbare_ruimte_naam', '_huisnummer',
+             '_huisletter', '_huisnummer_toevoeging')
         ]
 
     def __str__(self):
@@ -396,12 +400,14 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.Imp
         return result
 
 
-class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                  mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
+class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+                  mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+                  AdresseerbaarObjectMixin, models.Model):
     """
-    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
-    dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
-    woon-, bedrijfsmatige, of recreatieve doeleinden geschikte ruimte.
+    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig
+    aangewezen terrein of gedeelte daarvan dat bestemd is voor het permanent
+    plaatsen van een niet direct en niet duurzaam met de aarde verbonden en
+    voor woon-, bedrijfsmatige, of recreatieve doeleinden geschikte ruimte.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/
     """
@@ -604,13 +610,15 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
 
     layer.fields:
 
-    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    ['NAAM', 'CODE', 'STADSDEEL',
+     'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
     """
 
     id = models.CharField(max_length=4, primary_key=True)
     code = models.CharField(max_length=4)
     naam = models.CharField(max_length=100)
-    stadsdeel = models.ForeignKey(Stadsdeel, related_name='gebiedsgerichtwerken')
+    stadsdeel = models.ForeignKey(
+        Stadsdeel, related_name='gebiedsgerichtwerken')
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 

@@ -77,6 +77,9 @@ class ImportIndexTask(object):
             yield (i+1, total_batches, start, end, total, qs[start:end])
 
     def execute(self):
+        """
+        Index data of specified queryset
+        """
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS)
 
@@ -85,7 +88,6 @@ class ImportIndexTask(object):
             progres_msg = 'batch %s of %s : %8s %8s %8s' % (
                 batch_i, total_batches, start, end, total)
 
-            print(progres_msg)
             log.debug(progres_msg)
 
             helpers.bulk(
