@@ -27,14 +27,15 @@ _details = {
 
 BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
+NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 # uncomment to get results from testindexes
-if 'test' not in BAG:
-   BAG = BAG + 'test'
-
-if 'test' not in BRK:
-   BRK = BRK + 'test'
-
+#if 'test' not in BAG:
+#   BAG = BAG + 'test'
+#
+#if 'test' not in BRK:
+#   BRK = BRK + 'test'
+#
 
 log.debug('using indices %s %s', BAG, BRK)
 
@@ -205,6 +206,33 @@ def mulitimatch_openbare_ruimte_Q(query):
     )
 
 
+def mulitimatch_nummeraanduiding_Q(query):
+    """
+    Openbare ruimte search
+    """
+    log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
+
+    return Q(
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'straatnaam',
+            'huisnummer_variation',
+            'postcode',
+            'adres',
+            'subtype',
+            'buurt',
+            'stadsdeel',
+            'bestemming'
+        ]
+    )
+
+
 def wildcard_Q(query):
     """
     wilcard match
@@ -320,9 +348,24 @@ def search_openbare_ruimte_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
+        .index(BAG)
+        # .filter("term", type="Openbare ruimte")
         .query(
             mulitimatch_openbare_ruimte_Q(query)
+        )
+        .sort(*add_sorting())
+    )
+
+
+def search_nummeraanduiding_query(view, client, query):
+    """
+    Execute search in Objects
+    """
+    return (
+        Search(client)
+        .index(NUMMERAANDUIDING)
+        .query(
+            mulitimatch_nummeraanduiding_Q(query)
         )
         .sort(*add_sorting())
     )
@@ -542,4 +585,14 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset
     of all openabare ruimte objects that match the elastic search query.
     """
+    url_name = 'search/openbareruimte-list'
     search_query = search_openbare_ruimte_query
+
+
+class SearchNummeraanduidingViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset
+    of nummeraanduiding objects that match the elastic search query.
+    """
+    url_name = 'search/nummeraanduiding-list'
+    search_query = search_nummeraanduiding_query
