@@ -217,9 +217,9 @@ def mulitimatch_nummeraanduiding_Q(query):
         query=query,
         # type="most_fields",
         # type="phrase",
-        # type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
+        type="phrase_prefix",
+        # slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        # max_expansions=12,
         fields=[
             'straatnaam',
             'huisnummer_variation',
@@ -293,6 +293,7 @@ def add_nummerduiding_sorting():
         {"adres": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
+        'adres'
     )
 
 
