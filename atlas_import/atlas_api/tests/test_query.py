@@ -20,9 +20,6 @@ class QueryTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat")
-
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
@@ -36,20 +33,24 @@ class QueryTest(APITestCase):
         bag_factories.OpenbareRuimteFactory.create(
             naam="Brughuis", type='05')
 
+        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
+            naam="Anjeliersstraat")
+
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
-            hoofdadres=True)
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
-            hoofdadres=True)
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
-            hoofdadres=True)
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
+            postcode=1001,
+            openbare_ruimte=openbare_ruimte, huisnummer=12)
 
         # Maak een woonboot
         kade_ruimte = bag_factories.OpenbareRuimteFactory.create(
@@ -94,8 +95,7 @@ class QueryTest(APITestCase):
             woonadres=adres
         )
 
-        # load the data in elastic
-        batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
     def test_non_matching_query(self):
@@ -203,8 +203,8 @@ class QueryTest(APITestCase):
 
         self.assertEqual(response.data['results'][0]['naam'], "Rozenstraat")
 
-        # self.assertEqual(
-        #    response.data['results'][1]['adres'], "Rozenstraat 229-1")
+        self.assertEqual(
+            response.data['results'][1]['adres'], "Rozenstraat 228a-1")
 
     def test_query_postcode_space_huisnummer(self):
         response = self.client.get("/api/atlas/search/", dict(q="1016 SZ 228"))
@@ -237,20 +237,6 @@ class QueryTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Rozenstraat 228a-1")
-
-    def test_query_openbare_ruimte_water(self):
-        response = self.client.get(
-            "/api/atlas/search/", dict(q="water"))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
-
-        self.assertEqual(
-            response.data['results'][0]['naam'], "Prinsengracht")
-
-        self.assertEqual(
-            response.data['results'][0]['subtype'], "Water")
 
     def test_query_openbare_ruimte_brug(self):
         response = self.client.get(

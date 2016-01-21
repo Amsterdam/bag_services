@@ -38,12 +38,12 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=straat
         )
 
-        batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
     def test_straat_query(self):
         response = self.client.get(
-            '/api/atlas/search/nummeraanduiding/', dict(q="anjel"))
+            '/api/atlas/search/adres/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -54,7 +54,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_gracht_query(self):
         response = self.client.get(
-            "/api/atlas/search/nummeraanduiding/", dict(q="prinsengracht 192"))
+            "/api/atlas/search/adres/", dict(q="prinsengracht 192"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

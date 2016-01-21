@@ -101,10 +101,9 @@ def test_search(client, query):
 
 def mulitimatch_Q(query):
     """
-    main search query used
+    main 'One size fits all' search query used
     """
     log.debug('%20s %s', mulitimatch_Q.__name__, query)
-    log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
         "multi_match",
@@ -117,12 +116,13 @@ def mulitimatch_Q(query):
         fields=[
             'naam',
             'straatnaam',
+            'aanduiding',
             'adres',
+
             'postcode',
+            'huisnummer'
             'huisnummer_variation',
-            'subtype',
-            'geslachtsnaam',
-            'aanduiding']
+        ]
     )
 
 
@@ -177,22 +177,19 @@ def mulitimatch_object_Q(query):
     Object search
     """
     log.debug('%20s %s', mulitimatch_object_Q.__name__, query)
-    log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
         "multi_match",
         query=query,
         type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
         fields=[
-            # 'openbare_ruimte.naam',
+            'naam',
             'aanduiding',
             'straatnaam',
             'adres',
             'postcode',
             'huisnummer_variation',
-            'aanduiding']
+            ]
     )
 
 
@@ -220,20 +217,17 @@ def mulitimatch_openbare_ruimte_Q(query):
 
 def mulitimatch_nummeraanduiding_Q(query):
     """
-    Openbare ruimte search
+    Nummeraanduiding search
     """
-    log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
+    log.debug('%20s %s', mulitimatch_nummeraanduiding_Q.__name__, query)
 
     """
     "straatnaam": "Eerste Helmersstraat",
     "buurtcombinatie": "Helmersbuurt",
     "huisnummer": 104,
-    "oppervlakte": 30,
     "huisnummer_variation": 104,
     "subtype": "Verblijfsobject",
     "postcode": "1054EG-104G",
-    "woonplaats": "Amsterdam",
-    "stadsdeel": "West",
     "adres": "Eerste Helmersstraat 104G",
     """
 
@@ -244,7 +238,7 @@ def mulitimatch_nummeraanduiding_Q(query):
         # type="phrase",
         type="phrase_prefix",
         slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        # max_expansions=12,
+        max_expansions=12,
         fields=[
             'naam',
             'straatnaam',
@@ -301,7 +295,7 @@ def add_sorting():
         {"adres": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
-        'naam'
+        # 'naam',
     )
 
 
@@ -323,20 +317,22 @@ def add_nummerduiding_sorting():
     )
 
 
-def search_query(view, client, query):
+def default_search_query(view, client, query):
+
     """
     Execute search.
 
     ./manage.py test atlas_api.tests.test_query --keepdb
 
     """
+    log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
 
     return (
         Search(client)
-        .index(BAG, BRK)
+        .index(NUMMERAANDUIDING, BAG, BRK)
         .query(
             mulitimatch_Q(query)
-            # | wildcard_Q2(query),
+            #mulitimatch_nummeraanduiding_Q(query)
         )
         .sort(*add_sorting())
     )
@@ -348,7 +344,7 @@ def search_adres_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
+        .index(BAG, BRK, NUMMERAANDUIDING)
         .query(
             mulitimatch_adres_Q(query)
         )
@@ -377,7 +373,7 @@ def search_object_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
+        .index(BRK)
         .query(
             mulitimatch_object_Q(query)
         )
@@ -420,14 +416,11 @@ def autocomplete_query(client, query):
     """
 
     match_fields = [
-        "openbare_ruimte.naam",
-        "openbare_ruimte.postcode",
+        "naam",
+        "postcode",
 
-        "openbare_ruimte.huisnummer_variation",
-
-        "ligplaats.adres",
-        "standplaats.adres",
-        "verblijfsobject.adres",
+        "huisnummer_variation",
+        "adres",
 
         "kadastraal_subject.geslachtsnaam",
         "kadastraal_subject.naam",
@@ -521,7 +514,7 @@ class SearchViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
     page_size = 100
-    search_query = search_query
+    search_query = default_search_query
     url_name = 'search-list'
 
     def _set_followup_url(self, request, result, end,
@@ -573,7 +566,10 @@ class SearchViewSet(viewsets.ViewSet):
 
         query = request.query_params['q']
 
-        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+        client = Elasticsearch(
+            settings.ELASTIC_SEARCH_HOSTS,
+            raise_on_error=True
+        )
 
         search = self.search_query(client, query)[start:end]
 
@@ -677,5 +673,5 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
 
     """
-    url_name = 'search/nummeraanduiding-list'
+    url_name = 'search/adres-list'
     search_query = search_nummeraanduiding_query

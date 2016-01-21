@@ -1,4 +1,3 @@
-import time
 
 from rest_framework.test import APITestCase
 
@@ -24,16 +23,16 @@ class TypeaheadTest(APITestCase):
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=anjeliersstraat,
-            # postcode='1000AN',
+            postcode='1000AN',
             huisnummer=11, huisletter='B', hoofdadres=True)
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=anjeliersstraat,
-            # postcode='1000AN',
+            postcode='1000AN',
             huisnummer=11, huisletter='C', hoofdadres=True)
 
         bag_factories.NummeraanduidingFactory.create(
-            # postcode='1000AN',
+            postcode='1000AN',
             openbare_ruimte=anjeliersstraat,
             huisnummer=12, hoofdadres=True)
 
@@ -50,8 +49,7 @@ class TypeaheadTest(APITestCase):
             huisnummer=36, huisletter='F',
             hoofdadres=True, postcode='1052WR')
 
-        batch.execute(datasets.bag.batch.IndexJob())
-
+        batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
     def test_match_openbare_ruimte(self):
