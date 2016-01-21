@@ -21,7 +21,7 @@ class SubjectSearchTest(APITestCase):
         super().setUpClass()
 
         straat = bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat")
+            naam="Anjeliersstraat", type='01')
 
         gracht = bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='01')
@@ -50,8 +50,7 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         first = response.data['results'][0]
-
-        self.assertEqual(first['naam'], "Anjeliersstraat")
+        self.assertEqual(first['straatnaam'], "Anjeliersstraat")
 
     def test_gracht_query(self):
         response = self.client.get(
@@ -62,4 +61,4 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-            response.data['results'][0]['naam'], "Prinsengracht")
+            response.data['results'][0]['adres'], "Prinsengracht 192A")

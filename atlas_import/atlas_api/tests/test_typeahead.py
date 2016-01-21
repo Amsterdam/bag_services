@@ -1,6 +1,4 @@
-import time
 import unittest
-from unittest import skip
 
 from django.conf import settings
 from elasticsearch import Elasticsearch

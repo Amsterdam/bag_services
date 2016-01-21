@@ -40,7 +40,7 @@ def _get_url(request, hit):
             view_name=_details[doc_type],
             kwargs=dict(pk=id), request=request)
 
-    if hit.subtype in _details:
+    if hasattr(hit, 'subtype') and hit.subtype in _details:
         return rest.get_links(
             view_name=_details[hit.subtype],
             kwargs=dict(pk=id), request=request)
@@ -230,17 +230,17 @@ def mulitimatch_nummeraanduiding_Q(query):
         # type="most_fields",
         # type="phrase",
         type="phrase_prefix",
-        # slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
         # max_expansions=12,
         fields=[
+            'naam',
             'straatnaam',
-            'huisnummer_variation',
-            'postcode',
+            'aanduiding',
             'adres',
-            'woonplaats',
-            'subtype',
-            'stadsdeel',
-            'bestemming'
+
+            'postcode',
+            'huisnummer'
+            'huisnummer_variation',
         ]
     )
 
