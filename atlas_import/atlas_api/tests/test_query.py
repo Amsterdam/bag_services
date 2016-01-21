@@ -1,3 +1,5 @@
+from django.conf import settings
+from elasticsearch import Elasticsearch
 from rest_framework.test import APITestCase
 import time
 import datasets.bag.batch
@@ -16,9 +18,6 @@ class QueryTest(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        # give elastic docer time to start..
-        time.sleep(8)   # this is stupid # es needs 1 second delay..
 
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
@@ -96,10 +95,11 @@ class QueryTest(APITestCase):
         )
 
         batch.execute(datasets.bag.batch.IndexJob())
-
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        time.sleep(2)   # give elastic time to propagte changes
+        es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        es.indices.refresh(index="_all")
+
 
     def test_non_matching_query(self):
         response = self.client.get('/api/atlas/search/', dict(q="qqq"))
