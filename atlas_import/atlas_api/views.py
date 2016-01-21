@@ -479,8 +479,15 @@ def get_autocomplete_response(client, query):
 
 class TypeaheadViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects
+    Given a query parameter `q`, this function returns a
+    subset of all objects
     that (partially) match the specified query.
+
+    *NOTE*
+
+    We assume spelling errors and therefore it is possible
+    to have unexpected results
+
     """
 
     metadata_class = QueryMetadata
@@ -503,6 +510,13 @@ class SearchViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all objects
     that match the elastic search query.
+
+    *NOTE*
+
+    We assume the input is correct but could be incomplete
+
+    for example: seaching for a not existing
+    Rozengracht 3 will rerurn Rozengracht 3-1 which does exist
     """
 
     metadata_class = QueryMetadata
@@ -608,6 +622,13 @@ class SearchSubjectViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset of all
     kadestraal subjects (VVE, personen) objects
     that match the elastic search query.
+
+    Een Kadastraal Subject is een persoon die
+    in de kadastrale registratie voorkomt.
+    Het betreft hier zowel natuurlijk- als niet natuurlijk personen.
+
+    https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/kadastraal-subject/
+
     """
 
     url_name = 'search/subject-list'
@@ -628,6 +649,16 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of all openabare ruimte objects that match the elastic search query.
+
+    Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
+    zodanig aangewezen en van een naam voorziene
+    buitenruimte die binnen één woonplaats is gelegen.
+
+    Als openbare ruimte worden onder meer aangemerkt weg, water,
+    terrein, spoorbaan en landschappelijk gebied.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/
+
     """
     url_name = 'search/openbareruimte-list'
     search_query = search_openbare_ruimte_query
@@ -637,6 +668,14 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
+
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
+    het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject,
+    standplaats of ligplaats.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
+
     """
     url_name = 'search/nummeraanduiding-list'
     search_query = search_nummeraanduiding_query

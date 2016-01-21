@@ -1,5 +1,3 @@
-import time
-from unittest import skip
 
 from rest_framework.test import APITestCase
 
@@ -54,8 +52,6 @@ class TypeaheadTest(APITestCase):
         batch.execute(datasets.bag.batch.IndexJob())
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
-
-        time.sleep(1)   # this is stupid
 
     def test_match_openbare_ruimte(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
