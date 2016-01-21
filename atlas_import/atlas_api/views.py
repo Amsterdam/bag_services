@@ -1,17 +1,16 @@
 # Create your views here.
+import logging
 from collections import OrderedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q
 from elasticsearch.exceptions import TransportError
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
-
-import logging
 
 log = logging.getLogger('search')
 
@@ -24,39 +23,27 @@ _details = {
     'kadastraal_object': 'kadastraalobject-detail',
 }
 
-
 BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
-
-# uncomment to get results from testindexes
-if 'test' not in BAG:
-   BAG = BAG + 'test'
-
-if 'test' not in BRK:
-   BRK = BRK + 'test'
-
-
-log.debug('using indices %s %s', BAG, BRK)
 
 
 def _get_url(request, doc_type, id):
     if doc_type in _details:
         return rest.get_links(
-            view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
+                view_name=_details[doc_type], kwargs=dict(pk=id), request=request)
 
     return None
 
 
 class QueryMetadata(metadata.SimpleMetadata):
-
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
-            q=dict(
-                type="string",
-                description="The query to search for",
-                required=False
-            )
+                q=dict(
+                        type="string",
+                        description="The query to search for",
+                        required=False
+                )
         )
         return result
 
@@ -68,22 +55,22 @@ def test_search(client, query):
 
     return (
         Search(client)
-        .index(BAG)
-        .query(
-            Q(
-                "fuzzy_like_this",
-                like_text=query,
-                fuzziness=1,
-                fields=[
-                    'postcode',
-                    # "openbare_ruimte.postcode",
-                    # 'adres', 'naam',
-                    'straatnaam', 'aanduiding'
-                ]
-            )
-            # | Q("wildcard", query=query, naam=dict(value=wildcard))
+            .index(BAG)
+            .query(
+                Q(
+                        "fuzzy_like_this",
+                        like_text=query,
+                        fuzziness=1,
+                        fields=[
+                            'postcode',
+                            # "openbare_ruimte.postcode",
+                            # 'adres', 'naam',
+                            'straatnaam', 'aanduiding'
+                        ]
+                )
+                # | Q("wildcard", query=query, naam=dict(value=wildcard))
         ).sort(*add_sorting())
-        )
+    )
 
 
 def mulitimatch_Q(query):
@@ -94,22 +81,22 @@ def mulitimatch_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'adres',
-            'postcode',
-            'huisnummer_variation',
-            'subtype',
-            'geslachtsnaam',
-            'aanduiding']
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'straatnaam',
+                'adres',
+                'postcode',
+                'huisnummer_variation',
+                'subtype',
+                'geslachtsnaam',
+                'aanduiding']
     )
 
 
@@ -121,21 +108,21 @@ def mulitimatch_adres_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'aanduiding',
-            'adres',
-            'postcode',
-            'huisnummer_variation',
-            'kadestraal_object.aanduiding']
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'straatnaam',
+                'aanduiding',
+                'adres',
+                'postcode',
+                'huisnummer_variation',
+                'kadestraal_object.aanduiding']
     )
 
 
@@ -147,15 +134,15 @@ def mulitimatch_subject_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        slop=14,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'geslachtsnaam',
-        ]
+            "multi_match",
+            query=query,
+            type="phrase_prefix",
+            slop=14,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'geslachtsnaam',
+            ]
     )
 
 
@@ -167,19 +154,19 @@ def mulitimatch_object_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            # 'openbare_ruimte.naam',
-            'aanduiding',
-            'straatnaam',
-            'adres',
-            'postcode',
-            'huisnummer_variation',
-            'aanduiding']
+            "multi_match",
+            query=query,
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                # 'openbare_ruimte.naam',
+                'aanduiding',
+                'straatnaam',
+                'adres',
+                'postcode',
+                'huisnummer_variation',
+                'aanduiding']
     )
 
 
@@ -190,18 +177,18 @@ def mulitimatch_openbare_ruimte_Q(query):
     log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'openbare_ruimte.naam',
-            'openbare_ruimte.postcode',
-            'openbare_ruimte.subtype',
-        ]
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'openbare_ruimte.naam',
+                'openbare_ruimte.postcode',
+                'openbare_ruimte.subtype',
+            ]
     )
 
 
@@ -211,13 +198,12 @@ def wildcard_Q(query):
     """
     wildcard = '*{}*'.format(query)
     return Q(
-        "wildcard",
-        naam=dict(value=wildcard),
+            "wildcard",
+            naam=dict(value=wildcard),
     )
 
 
 def wildcard_Q2(query):
-
     fuzzy_fields = [
         "openbare_ruimte.naam",
         "kadastraal_subject.geslachtsnaam",
@@ -262,12 +248,12 @@ def search_query(view, client, query):
 
     return (
         Search(client)
-        .index(BAG, BRK)
-        .query(
-            mulitimatch_Q(query)
-            # | wildcard_Q2(query),
+            .index(BAG, BRK)
+            .query(
+                mulitimatch_Q(query)
+                # | wildcard_Q2(query),
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -277,11 +263,11 @@ def search_adres_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
-        .query(
-            mulitimatch_adres_Q(query)
+            .index(BAG, BRK)
+            .query(
+                mulitimatch_adres_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -291,12 +277,12 @@ def search_subject_query(view, client, query):
     """
     return (
         Search(client)
-        # .filter("term", category="search")
-        .index(BRK)
-        .query(
-            mulitimatch_subject_Q(query)
+            # .filter("term", category="search")
+            .index(BRK)
+            .query(
+                mulitimatch_subject_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -306,11 +292,11 @@ def search_object_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
-        .query(
-            mulitimatch_object_Q(query)
+            .index(BAG, BRK)
+            .query(
+                mulitimatch_object_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -320,11 +306,11 @@ def search_openbare_ruimte_query(view, client, query):
     """
     return (
         Search(client)
-        .index(BAG, BRK)
-        .query(
-            mulitimatch_openbare_ruimte_Q(query)
+            .index(BAG, BRK)
+            .query(
+                mulitimatch_openbare_ruimte_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -358,12 +344,12 @@ def autocomplete_query(client, query):
 
     return (
         Search(client)
-        .index(BAG, BRK)
-        .query(
-            Q("multi_match",
-                query=query, type="phrase_prefix", fields=match_fields)
-            | wildcard_Q2(query))
-        .highlight(*completions, pre_tags=[''], post_tags=[''])
+            .index(BAG, BRK)
+            .query(
+                Q("multi_match",
+                  query=query, type="phrase_prefix", fields=match_fields)
+                | wildcard_Q2(query))
+            .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 
@@ -386,7 +372,7 @@ def get_autocomplete_response(client, query):
 
     for doc_type in matches.keys():
         matches[doc_type] = [
-            dict(item=m) for m in matches[doc_type].keys()][:5]
+                                dict(item=m) for m in matches[doc_type].keys()][:5]
 
     return matches
 
