@@ -87,7 +87,8 @@ class ImportIndexTask(object):
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS,
             sniff_on_start=True,
-            retry_on_timeout=True
+            retry_on_timeout=True,
+            refresh=True
         )
 
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
@@ -99,8 +100,10 @@ class ImportIndexTask(object):
 
             helpers.bulk(
                 client, (self.convert(obj).to_dict(include_meta=True)
-                         for obj in tqdm(qs))
-                )
+                         for obj in tqdm(qs)),
+                raise_on_error=True,
+                refresh=True
+            )
 
 
 class CopyIndexTask(object):
