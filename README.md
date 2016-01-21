@@ -38,3 +38,12 @@ To run an import, execute:
 To see the various options for partial imports, execute:
 
 	./atlas_import/manage.py run_import --help
+	
+Update the database
+-------------------
+
+This command removes the current database and downloads and imports the latest Acceptance database
+
+    (sudo) docker exec -it atlasbackend_database_1 ./atlas-update.sh
+
+    
