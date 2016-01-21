@@ -1,7 +1,8 @@
 from rest_framework.test import APITestCase
-import time
+
 import datasets.bag.batch
 import datasets.brk.batch
+
 from batch import batch
 
 from unittest import skip
@@ -26,7 +27,6 @@ class QueryTest(APITestCase):
             naam="Prinsengracht", type='02')
 
         # Create brug objects
-
         bag_factories.OpenbareRuimteFactory.create(
             naam="Korte Brug", type='05')
 
@@ -94,11 +94,9 @@ class QueryTest(APITestCase):
             woonadres=adres
         )
 
+        # load the data in elastic
         batch.execute(datasets.bag.batch.IndexJob())
-
         batch.execute(datasets.brk.batch.IndexKadasterJob())
-
-        time.sleep(2)   # this is stupid # es needs 1 second delay..
 
     def test_non_matching_query(self):
         response = self.client.get('/api/atlas/search/', dict(q="qqq"))
