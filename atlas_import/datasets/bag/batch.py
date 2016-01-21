@@ -1472,6 +1472,7 @@ class IndexJob(object):
             IndexLigplaatsTask(),
             IndexStandplaatsTask(),
             IndexVerblijfsobjectTask(),
+            IndexNummerAanduidingTask()
         ]
 
 

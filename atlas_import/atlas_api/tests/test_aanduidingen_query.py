@@ -41,7 +41,7 @@ class SubjectSearchTest(APITestCase):
         batch.execute(datasets.bag.batch.IndexJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-    def test_matching_query(self):
+    def test_straat_query(self):
         response = self.client.get(
             '/api/atlas/search/nummeraanduiding/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
@@ -52,9 +52,8 @@ class SubjectSearchTest(APITestCase):
         first = response.data['results'][0]
 
         self.assertEqual(first['naam'], "Anjeliersstraat")
-        # self.assertEqual(first['type'], "Openbare ruimte")
 
-    def test_query_openbare_ruimte_gracht(self):
+    def test_gracht_query(self):
         response = self.client.get(
             "/api/atlas/search/nummeraanduiding/", dict(q="prinsengracht 192"))
         self.assertEqual(response.status_code, 200)
@@ -64,9 +63,3 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['naam'], "Prinsengracht")
-
-        results = [
-            response.data['results'][0]['subtype'],
-        ]
-
-        self.assertIn("Weg", results)
