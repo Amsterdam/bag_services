@@ -104,20 +104,15 @@ router.register(r'atlas/search/postcode',
                 views.SearchNummeraanduidingViewSet,
                 base_name='search/postcode')
 
-
 router.register(r'atlas/search/subject',
                 views.SearchSubjectViewSet, base_name='search/subject')
 
-# router.register(r'atlas/search/object',
-#                views.SearchObjectViewSet, base_name='search/object')
+router.register(r'atlas/search/object',
+                views.SearchObjectViewSet, base_name='search/object')
 
 router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,
                 base_name='search/openbareruimte')
-
-router.register(r'atlas/search/nummeraanduiding',
-                views.SearchNummeraanduidingViewSet,
-                base_name='search/nummeraanduiding')
 
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),

@@ -20,7 +20,7 @@ class Command(BaseCommand):
     )
 
     indexes = dict(
-        bag=[datasets.bag.batch.IndexJob],
+        bag=[datasets.bag.batch.IndexBagJob],
         brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
     )

@@ -27,7 +27,7 @@ class SubjectSearchTest(APITestCase):
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
-        batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.bag.batch.IndexBagJob())
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -46,37 +46,9 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(first['naam'], "Anjeliersstraat")
         self.assertEqual(first['type'], "Openbare ruimte")
 
-    def test_query_openbare_ruimte_water(self):
-        response = self.client.get(
-            "/api/atlas/search/", dict(q="water"))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
-
-        self.assertEqual(
-            response.data['results'][0]['naam'], "Prinsengracht")
-
-        self.assertEqual(
-            response.data['results'][0]['subtype'], "Water")
-
-    def test_query_openbare_ruimte_weg(self):
-        response = self.client.get(
-            "/api/atlas/search/", dict(q="weg"))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
-
-        self.assertEqual(
-            response.data['results'][0]['naam'], "Prinsengracht")
-
-        self.assertEqual(
-            response.data['results'][0]['subtype'], "Weg")
-
     def test_query_openbare_ruimte_gracht(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="prinsengracht"))
+            "/api/atlas/search/openbareruimte/", dict(q="prinsengracht"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -91,5 +63,4 @@ class SubjectSearchTest(APITestCase):
         ]
 
         self.assertIn("Weg", results)
-
         self.assertIn("Water", results)

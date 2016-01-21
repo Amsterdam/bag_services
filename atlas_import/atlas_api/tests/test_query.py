@@ -22,82 +22,82 @@ class QueryTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
-                naam="Anjeliersstraat")
-
         bag_factories.OpenbareRuimteFactory.create(
-                naam="Prinsengracht", type='02')
+            naam="Prinsengracht", type='02')
 
         # Create brug objects
         bag_factories.OpenbareRuimteFactory.create(
-                naam="Korte Brug", type='05')
+            naam="Korte Brug", type='05')
 
         bag_factories.OpenbareRuimteFactory.create(
-                naam="Brugover", type='05')
+            naam="Brugover", type='05')
 
         bag_factories.OpenbareRuimteFactory.create(
-                naam="Brughuis", type='05')
+            naam="Brughuis", type='05')
+
+        openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
+            naam="Anjeliersstraat")
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
-                hoofdadres=True)
+            openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
-                hoofdadres=True)
+            openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
-                hoofdadres=True)
+            openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
+            postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=12, hoofdadres=True)
+            postcode=1001,
+            openbare_ruimte=openbare_ruimte, huisnummer=12)
 
         # Maak een woonboot
         kade_ruimte = bag_factories.OpenbareRuimteFactory.create(
-                type='01',
-                naam="Ligplaatsenstraat")
+            type='01',
+            naam="Ligplaatsenstraat")
 
         bag_factories.NummeraanduidingFactory.create(
-                type='05',
-                postcode='9999ZZ',
-                openbare_ruimte=kade_ruimte, huisnummer=33, hoofdadres=True)
+            type='05',
+            postcode='9999ZZ',
+            openbare_ruimte=kade_ruimte, huisnummer=33, hoofdadres=True)
 
         # marnixkade
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
-                naam="Marnixkade")
+            naam="Marnixkade")
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=36, huisletter='F',
-                hoofdadres=True, postcode='1015XR')
+            openbare_ruimte=openbare_ruimte, huisnummer=36, huisletter='F',
+            hoofdadres=True, postcode='1015XR')
 
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
-                naam="Rozenstraat")
+            naam="Rozenstraat")
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=228, huisletter='a',
-                hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+            openbare_ruimte=openbare_ruimte, huisnummer=228, huisletter='a',
+            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
 
         bag_factories.NummeraanduidingFactory.create(
-                openbare_ruimte=openbare_ruimte, huisnummer=229,
-                hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+            openbare_ruimte=openbare_ruimte, huisnummer=229,
+            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
 
         adres = brk_factories.AdresFactory(
-                huisnummer=340,
-                huisletter='A',
-                postcode='1234AB',
-                woonplaats='FabeltjesLand',
-                openbareruimte_naam='Sesamstraat')
+            huisnummer=340,
+            huisletter='A',
+            postcode='1234AB',
+            woonplaats='FabeltjesLand',
+            openbareruimte_naam='Sesamstraat')
 
         brk_factories.NatuurlijkPersoonFactory(
-                naam='Kikker',
-                voorvoegsels='de',
-                voornamen='Kermet',
-                woonadres=adres
+            naam='Kikker',
+            voorvoegsels='de',
+            voornamen='Kermet',
+            woonadres=adres
         )
 
-        # load the data in elastic
-        batch.execute(datasets.bag.batch.IndexJob())
+        batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
         es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
@@ -208,8 +208,8 @@ class QueryTest(APITestCase):
 
         self.assertEqual(response.data['results'][0]['naam'], "Rozenstraat")
 
-        # self.assertEqual(
-        #    response.data['results'][1]['adres'], "Rozenstraat 229-1")
+        self.assertEqual(
+            response.data['results'][1]['adres'], "Rozenstraat 228a-1")
 
     def test_query_postcode_space_huisnummer(self):
         response = self.client.get("/api/atlas/search/", dict(q="1016 SZ 228"))
@@ -242,20 +242,6 @@ class QueryTest(APITestCase):
 
         self.assertEqual(
                 response.data['results'][0]['adres'], "Rozenstraat 228a-1")
-
-    def test_query_openbare_ruimte_water(self):
-        response = self.client.get(
-                "/api/atlas/search/", dict(q="water"))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
-
-        self.assertEqual(
-                response.data['results'][0]['naam'], "Prinsengracht")
-
-        self.assertEqual(
-                response.data['results'][0]['subtype'], "Water")
 
     def test_query_openbare_ruimte_brug(self):
         response = self.client.get(

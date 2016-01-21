@@ -35,11 +35,9 @@ class SubjectSearchTest(APITestCase):
             woonadres=adres
         )
 
-        batch.execute(datasets.bag.batch.IndexJob())
+        # batch.execute(datasets.bag.batch.IndexBagJob())
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
-
-        time.sleep(1)   # this is stupid
 
     def test_match_subject(self):
         response = self.client.get(

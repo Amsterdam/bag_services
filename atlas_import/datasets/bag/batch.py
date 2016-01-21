@@ -1171,8 +1171,7 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         prefetch_related('verblijfsobject').\
         prefetch_related('standplaats').\
         prefetch_related('ligplaats').\
-        prefetch_related('openbare_ruimte').\
-        prefetch_related('standplaats')
+        prefetch_related('openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
@@ -1462,7 +1461,7 @@ class ImportBagJob(object):
         ]
 
 
-class IndexJob(object):
+class IndexBagJob(object):
     name = "Create new search-index for all BAG data from database"
 
     def tasks(self):
@@ -1470,9 +1469,9 @@ class IndexJob(object):
             DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
-            IndexLigplaatsTask(),
-            IndexStandplaatsTask(),
-            IndexVerblijfsobjectTask(),
+            # IndexLigplaatsTask(),
+            # IndexStandplaatsTask(),
+            # IndexVerblijfsobjectTask(),
             IndexNummerAanduidingTask()
         ]
 
