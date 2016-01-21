@@ -1,6 +1,8 @@
 import time
 from unittest import skip
 
+from django.conf import settings
+from elasticsearch import Elasticsearch
 from rest_framework.test import APITestCase
 
 import datasets.bag.batch
@@ -14,8 +16,6 @@ class TypeaheadTest(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        time.sleep(8)  # give elastic time to start in jekins docker
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
@@ -57,8 +57,8 @@ class TypeaheadTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        # should not be needed now..
-        time.sleep(1)   # give elastic time to propagate changes
+        es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        es.indices.refresh(index="_all")
 
     def test_match_openbare_ruimte(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
