@@ -110,6 +110,13 @@ class Adres(models.Model):
 
 
 class KadastraalSubject(mixins.ImportStatusMixin):
+    """
+    Een Kadastraal Subject is een persoon die
+    in de kadastrale registratie voorkomt.
+    Het betreft hier zowel natuurlijk- als niet natuurlijk personen.
+
+    https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/kadastraal-subject/
+    """
     SUBJECT_TYPE_NATUURLIJK = 0
     SUBJECT_TYPE_NIET_NATUURLIJK = 1
     SUBJECT_TYPE_CHOICES = (
