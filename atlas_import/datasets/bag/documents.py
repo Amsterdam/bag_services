@@ -140,12 +140,12 @@ def from_ligplaats(l: models.Ligplaats):
 
 
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
-    d = Nummeraanduiding(_id=n.id)
-    d.adres = n.adres()
-    d.postcode = "{}-{}".format(n.postcode, n.toevoeging)
-    d.straatnaam = n.openbare_ruimte.naam
-    d.huisnummer = n.huisnummer
-    d.huisnummer_variation = n.huisnummer
+    doc = Nummeraanduiding(_id=n.id)
+    doc.adres = n.adres()
+    doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
+    doc.straatnaam = n.openbare_ruimte.naam
+    doc.huisnummer = n.huisnummer
+    doc.huisnummer_variation = n.huisnummer
 
     # if n.buurt:
     #     d.buurt = n.buurt.naam
@@ -160,24 +160,26 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     #     d.buurtcombinatie = n.buurtcombinatie.naam
 
     if n.bron:
-        d.bron = n.bron.omschrijving
+        doc.bron = n.bron.omschrijving
 
-    d.subtype = n.get_type_display().lower()
+    if not doc.subtype:
+        return doc
 
-    if d.subtype == 'verblijfsobject':
-        add_verblijfsobject(d, n.verblijfsobject)
-    elif d.subtype == 'standplaats':
+    doc.subtype = n.get_type_doc.splay().lower()
+
+    if doc.subtype == 'verblijfsobject':
+        add_verblijfsobject(doc, n.verblijfsobject)
+    elif doc.subtype == 'standplaats':
+        doc.standplaats(doc, n.standplaats)
+    elif doc.subtype == 'ligplaats':
+        add_ligplaats(doc, n.ligplaats)
+
+    elif doc.subtype == 'overig gebouwd object':
         pass
-        add_standplaats(d, n.standplaats)
-    elif d.subtype == 'ligplaats':
-        add_ligplaats(d, n.ligplaats)
-
-    elif d.subtype == 'overig gebouwd object':
-        pass
-    elif d.subtype == 'overig terrein':
+    elif doc.subtype == 'overig terrein':
         pass
 
-    return d
+    return doc
 
 
 def from_standplaats(s: models.Standplaats):
