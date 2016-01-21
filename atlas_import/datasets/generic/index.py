@@ -24,7 +24,11 @@ class DeleteIndexTask(object):
         if not self.doc_types:
             raise ValueError("No doc_types specified")
 
-        connections.create_connection(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        connections.create_connection(
+            hosts=settings.ELASTIC_SEARCH_HOSTS,
+            sniff_on_start=True,
+            retry_on_timeout=True
+        )
 
     def execute(self):
 
@@ -81,7 +85,10 @@ class ImportIndexTask(object):
         Index data of specified queryset
         """
         client = elasticsearch.Elasticsearch(
-            hosts=settings.ELASTIC_SEARCH_HOSTS)
+            hosts=settings.ELASTIC_SEARCH_HOSTS,
+            sniff_on_start=True,
+            retry_on_timeout=True
+        )
 
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
 
@@ -125,7 +132,10 @@ class CopyIndexTask(object):
         Reindex elastic index using existing documents
         """
         client = elasticsearch.Elasticsearch(
-            hosts=settings.ELASTIC_SEARCH_HOSTS)
+            hosts=settings.ELASTIC_SEARCH_HOSTS,
+            sniff_on_start=True,
+            retry_on_timeout=True
+        )
 
         log.debug('Backup index %s to %s ', self.index, self.target)
         helpers.reindex(client, self.index, self.target)

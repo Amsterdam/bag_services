@@ -61,7 +61,7 @@ class Command(BaseCommand):
                             help='Build elastic index from postgres')
 
         parser.add_argument('--batch-size', default='10000', type=int,
-                            help='Change batch size')
+                            help='Change batch size on inport')
 
     def handle(self, *args, **options):
         dataset = options['dataset']
