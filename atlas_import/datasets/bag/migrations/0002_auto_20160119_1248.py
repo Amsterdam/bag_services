@@ -11,6 +11,21 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            sql="""
+            DROP VIEW IF EXISTS geo_bag_gebiedsgerichtwerken
+            """
+        ),
+        migrations.RunSQL(
+            sql="""
+            DROP VIEW IF EXISTS geo_bag_grootstedelijkgebied
+            """
+        ),
+        migrations.RunSQL(
+            sql="""
+            DROP VIEW IF EXISTS geo_bag_unesco
+            """
+        ),
         migrations.AlterField(
             model_name='gebiedsgerichtwerken',
             name='id',
@@ -26,4 +41,48 @@ class Migration(migrations.Migration):
             name='id',
             field=models.SlugField(primary_key=True, serialize=False, max_length=100),
         ),
+        migrations.RunSQL(
+                sql="""
+CREATE VIEW geo_bag_gebiedsgerichtwerken AS
+SELECT
+  g.id                                                           AS id,
+  g.code                                                         AS code,
+  g.naam                                                         AS naam,
+  g.geometrie                                                    AS geometrie,
+  g.naam                                                         AS display,
+  'gebieden/gebiedsgerichtwerken'                                AS type,
+  site.domain || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
+FROM bag_gebiedsgerichtwerken g, django_site site
+WHERE site.name = 'API Domain'
+""",
+        ),
+        migrations.RunSQL(
+            sql="""
+CREATE VIEW geo_bag_grootstedelijkgebied AS
+SELECT
+  gg.id                                                           AS id,
+  gg.naam                                                         AS naam,
+  gg.geometrie                                                    AS geometrie,
+  gg.naam                                                         AS display,
+  'gebieden/grootstedelijkgebied'                                 AS type,
+  site.domain || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
+FROM bag_grootstedelijkgebied gg, django_site site
+WHERE site.name = 'API Domain'
+            """
+        ),
+        migrations.RunSQL(
+                sql="""
+CREATE VIEW geo_bag_unesco AS
+SELECT
+  u.id                                             AS id,
+  u.naam                                           AS naam,
+  u.geometrie                                      AS geometrie,
+  u.naam                                           AS display,
+  'gebieden/unesco'                                AS type,
+  site.domain || 'gebieden/unesco/' || u.id || '/' AS uri
+FROM bag_unesco u, django_site site
+WHERE site.name = 'API Domain'
+""",
+        ),
+
     ]
