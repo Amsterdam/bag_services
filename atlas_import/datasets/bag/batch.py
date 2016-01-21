@@ -1463,11 +1463,12 @@ class ImportBagJob(object):
 
 
 class IndexJob(object):
-    name = "Create new search-index BAG from database"
+    name = "Create new search-index for all BAG data from database"
 
     def tasks(self):
         return [
             DeleteIndexTask(),
+            DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
             IndexLigplaatsTask(),
             IndexStandplaatsTask(),
