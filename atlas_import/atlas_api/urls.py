@@ -114,6 +114,12 @@ router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,
                 base_name='search/openbareruimte')
 
+if settings.DEBUG:
+    router.register(r'atlas/search/test',
+                    views.SearchTestViewSet,
+                    base_name='search/test')
+
+
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^', include(router.urls)),
