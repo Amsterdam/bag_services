@@ -113,18 +113,21 @@ def add_verblijfsobject(doc, vo: models.Verblijfsobject):
     if vo:
         doc.centroid = get_centroid(vo.geometrie)
         doc.subtype_id = vo.id
+        doc.order = analyzers.orderings['adres']
 
 
 def add_standplaats(doc, sp: models.Standplaats):
     if sp:
         doc.centroid = get_centroid(sp.geometrie)
         doc.subtype_id = sp.id
+        doc.order = analyzers.orderings['adres']
 
 
 def add_ligplaats(doc, lp: models.Ligplaats):
     if lp:
         doc.centroid = get_centroid(lp.geometrie)
         doc.subtype_id = lp.id
+        doc.order = analyzers.orderings['adres']
 
 
 def from_ligplaats(l: models.Ligplaats):
@@ -170,7 +173,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     if doc.subtype == 'verblijfsobject':
         add_verblijfsobject(doc, n.verblijfsobject)
     elif doc.subtype == 'standplaats':
-        doc.standplaats(doc, n.standplaats)
+        add_standplaats(doc, n.standplaats)
     elif doc.subtype == 'ligplaats':
         add_ligplaats(doc, n.ligplaats)
 

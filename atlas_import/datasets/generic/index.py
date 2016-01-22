@@ -78,7 +78,7 @@ class ImportIndexTask(object):
 
         for i, start in enumerate(range(0, total, batch_size)):
             end = min(start + batch_size, total)
-            yield (i+1, total_batches, start, end, total, qs[start:end])
+            yield (i+1, total_batches+1, start, end, total, qs[start:end])
 
     def execute(self):
         """
