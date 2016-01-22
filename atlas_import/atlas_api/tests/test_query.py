@@ -236,14 +236,14 @@ class QueryTest(APITestCase):
 
     def test_query_postcode_space_huisnummer_huisletter_toevoeging(self):
         response = self.client.get(
-                "/api/atlas/search/", dict(q="1016 SZ 228 a-1"))
+            "/api/atlas/search/", dict(q="1016 SZ 228 a-1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-                response.data['results'][0]['adres'], "Rozenstraat 228a-1")
+            response.data['results'][0]['adres'], "Rozenstraat 228a-1")
 
     def test_query_openbare_ruimte_brug(self):
         response = self.client.get(

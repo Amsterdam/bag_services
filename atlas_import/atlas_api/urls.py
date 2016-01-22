@@ -1,6 +1,8 @@
 from django.conf.urls import url, include
-from django.conf import settings
+
 from rest_framework import routers
+
+from django.conf import settings
 
 import datasets.bag.views
 import datasets.brk.views
@@ -99,6 +101,15 @@ router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 # Alias voor nummeraanduiding
 router.register(r'atlas/search/adres',
                 views.SearchNummeraanduidingViewSet, base_name='search/adres')
+
+# Alias voor nummeraanduiding
+router.register(r'atlas/search/postcode',
+                views.SearchNummeraanduidingViewSet,
+                base_name='search/postcode')
+
+router.register(r'atlas/search/kadestraalsubject',
+                views.SearchSubjectViewSet,
+                base_name='search/kadestraalsubject')
 
 # Alias voor nummeraanduiding
 router.register(r'atlas/search/postcode',

@@ -29,7 +29,6 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
 def _get_url(request, hit):
-
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
     if hasattr(hit, 'subtype_id'):
@@ -174,6 +173,43 @@ def mulitimatch_openbare_ruimte_Q(query):
                 'openbare_ruimte.postcode',
                 'openbare_ruimte.subtype',
             ]
+    )
+
+
+def mulitimatch_nummeraanduiding_Q(query):
+    """
+    Nummeraanduiding search
+    """
+    log.debug('%20s %s', mulitimatch_nummeraanduiding_Q.__name__, query)
+
+    """
+    "straatnaam": "Eerste Helmersstraat",
+    "buurtcombinatie": "Helmersbuurt",
+    "huisnummer": 104,
+    "huisnummer_variation": 104,
+    "subtype": "Verblijfsobject",
+    "postcode": "1054EG-104G",
+    "adres": "Eerste Helmersstraat 104G",
+    """
+
+    return Q(
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'straatnaam',
+            'aanduiding',
+            'adres',
+
+            'postcode',
+            'huisnummer'
+            'huisnummer_variation',
+        ]
     )
 
 
