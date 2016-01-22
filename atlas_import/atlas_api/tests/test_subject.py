@@ -41,20 +41,20 @@ class SubjectSearchTest(APITestCase):
 
     def test_match_subject(self):
         response = self.client.get(
-            '/api/atlas/search/subject/',
+            '/api/atlas/search/kadestraalsubject/',
             dict(q="Kikker"))
         self.assertEqual(response.status_code, 200)
         self.assertIn("Kermet de Kikker", str(response.data))
 
         response = self.client.get(
-            '/api/atlas/search/subject/',
+            '/api/atlas/search/kadestraalsubject/',
             dict(q="Kermet"))
         self.assertEqual(response.status_code, 200)
         self.assertIn("Kermet de Kikker", str(response.data))
 
     def test_match_subject2(self):
         response = self.client.get(
-            '/api/atlas/search/subject/',
+            '/api/atlas/search/kadestraalsubject/',
             dict(q="Stephan Preeker"))
         self.assertEqual(response.status_code, 200)
         self.assertIn("Stephan Jacob Preeker", str(response.data))

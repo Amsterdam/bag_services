@@ -148,10 +148,7 @@ def mulitimatch_object_Q(query):
         query=query,
         type="phrase_prefix",
         fields=[
-            'naam',
             'aanduiding',
-            'straatnaam',
-            'adres',
             'postcode',
             'huisnummer_variation',
             ]
@@ -242,7 +239,8 @@ def wildcard_Q2(query):
 
     return Q("multi_match",
              query=query, fuzziness="auto",
-             prefix_length=1, fields=fuzzy_fields)
+             max_expansions=150,
+             prefix_length=2, fields=fuzzy_fields)
 
 
 def add_sorting():
