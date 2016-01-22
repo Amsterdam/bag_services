@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+
 from rest_framework import routers
 
 from django.conf import settings
@@ -106,11 +107,12 @@ router.register(r'atlas/search/postcode',
                 views.SearchNummeraanduidingViewSet,
                 base_name='search/postcode')
 
-router.register(r'atlas/search/subject',
-                views.SearchSubjectViewSet, base_name='search/subject')
+router.register(r'atlas/search/kadestraalsubject',
+                views.SearchSubjectViewSet,
+                base_name='search/kadestraalsubject')
 
-router.register(r'atlas/search/object',
-                views.SearchObjectViewSet, base_name='search/object')
+router.register(r'atlas/search/kadestraalobject',
+                views.SearchObjectViewSet, base_name='search/kadestraalobject')
 
 router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,

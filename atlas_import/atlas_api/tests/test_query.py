@@ -1,5 +1,3 @@
-from django.conf import settings
-from elasticsearch import Elasticsearch
 from rest_framework.test import APITestCase
 
 import datasets.bag.batch
@@ -273,7 +271,7 @@ class QueryTest(APITestCase):
 
     def test_search_subject_api(self):
         response = self.client.get(
-            "/api/atlas/search/subject/", dict(q="kikker"))
+            "/api/atlas/search/kadestraalsubject/", dict(q="kikker"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
