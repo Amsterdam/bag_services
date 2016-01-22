@@ -4,8 +4,8 @@ from collections import OrderedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
+from elasticsearch_dsl import Search, Q, A
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -59,31 +59,6 @@ class QueryMetadata(metadata.SimpleMetadata):
                 )
         )
         return result
-
-
-def test_search(client, query):
-    """
-    Do test experiments here..
-    """
-
-    return (
-        Search(client)
-            .index(BAG)
-            .query(
-                Q(
-                        "fuzzy_like_this",
-                        like_text=query,
-                        fuzziness=1,
-                        fields=[
-                            'postcode',
-                            # "openbare_ruimte.postcode",
-                            # 'adres', 'naam',
-                            'straatnaam', 'aanduiding'
-                        ]
-                )
-                # | Q("wildcard", query=query, naam=dict(value=wildcard))
-        ).sort(*add_sorting())
-    )
 
 
 def mulitimatch_Q(query):
@@ -394,6 +369,54 @@ def search_nummeraanduiding_query(view, client, query):
     )
 
 
+def test_search_query(view, client, query):
+    """
+    Do test experiments here..
+    """
+    a = A('terms', field='subtype', size=100)
+    b = A('terms', field='_type', size=100)
+
+    tops = A('top_hits', size=1)
+
+    #
+    s = Search(client)\
+        .index(NUMMERAANDUIDING, BAG, BRK)\
+        .query(
+            Q("multi_match",
+              query=query,
+              # type="most_fields",
+              # type="phrase",
+              type="phrase_prefix",
+              slop=12,
+              # max_expansions=12,
+              fields=[
+                  'naam',
+                  'straatnaam',
+                  'aanduiding',
+                  'adres',
+
+                  'postcode',
+                  'huisnummer'
+                  'huisnummer_variation',
+                  'type'
+              ],
+              ),
+        )
+    # .sort(*add_sorting())
+    s.aggs.bucket('by_subtype', b)
+    s.aggs.bucket('by_type', a)    # .bucket('top', tops)
+
+    #s.aggs.bucket('by_type', a).bucket('top', tops)
+
+    print(s.to_dict())
+    # print(a.to_dict())
+
+    # x = s.aggs.bucket('lala', a)
+    # print(x.to_dict())
+
+    return s
+
+
 def autocomplete_query(client, query):
     """
     provice autocomplete suggestions
@@ -567,9 +590,20 @@ class SearchViewSet(viewsets.ViewSet):
 
         response = OrderedDict()
 
-        self._set_followup_url(request, result, end, response, query, page)
+        # self._set_followup_url(request, result, end, response, query, page)
+        # import pdb; pdb.set_trace()
 
         response['count'] = result.hits.total
+        response['summary'] = []
+
+        response['summary'] = [
+            self.normalize_bucket(field, request)
+            for field in result.aggregations['by_subtype']['buckets']]
+
+        response['summary2'] = [
+            self.normalize_bucket(field, request)
+            for field in result.aggregations['by_type']['buckets']]
+
         response['results'] = [
             self.normalize_hit(h, request) for h in result.hits]
 
@@ -585,6 +619,12 @@ class SearchViewSet(viewsets.ViewSet):
         #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
+        return result
+
+    def normalize_bucket(self, field, request):
+        # print(field)
+        result = OrderedDict()
+        result.update(field.to_dict())
         return result
 
 
@@ -659,3 +699,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     url_name = 'search/adres-list'
     search_query = search_nummeraanduiding_query
+
+
+class SearchTestViewSet(SearchViewSet):
+    url_name = 'search/test-list'
+    search_query = test_search_query
