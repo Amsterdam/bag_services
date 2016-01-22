@@ -102,8 +102,8 @@ class QueryTest(APITestCase):
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        es.indices.refresh(index="_all")
+        #es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        #es.indices.refresh(index="_all")
 
     def test_non_matching_query(self):
         response = self.client.get('/api/atlas/search/', dict(q="qqq"))
