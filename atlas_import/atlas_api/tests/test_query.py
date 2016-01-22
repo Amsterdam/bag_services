@@ -36,22 +36,26 @@ class QueryTest(APITestCase):
             naam="Brughuis", type='05')
 
         openbare_ruimte = bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat")
+            naam="Anjeliersstraat", type='01')
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='A',
+            type='01',
             postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='B',
+            type='01',
             postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=openbare_ruimte, huisnummer=11, huisletter='C',
+            type='01',
             postcode=1001)
 
         bag_factories.NummeraanduidingFactory.create(
             postcode=1001,
+            type='01',
             openbare_ruimte=openbare_ruimte, huisnummer=12)
 
         # Maak een woonboot

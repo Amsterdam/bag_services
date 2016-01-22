@@ -29,12 +29,14 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=192,
             huisletter='A',
+            type='01',  # Verblijfsobject
             openbare_ruimte=gracht
         )
 
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=42,
             huisletter='F',
+            type='01',  # Verblijfsobject
             openbare_ruimte=straat
         )
 

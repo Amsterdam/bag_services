@@ -162,10 +162,10 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     if n.bron:
         doc.bron = n.bron.omschrijving
 
-    if not doc.subtype:
-        return doc
+    #if not doc.subtype:
+    #    return doc
 
-    doc.subtype = n.get_type_doc.splay().lower()
+    doc.subtype = n.get_type_display().lower()
 
     if doc.subtype == 'verblijfsobject':
         add_verblijfsobject(doc, n.verblijfsobject)

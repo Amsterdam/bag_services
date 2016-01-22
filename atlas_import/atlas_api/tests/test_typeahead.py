@@ -17,6 +17,7 @@ class TypeaheadTest(APITestCase):
         super().setUpClass()
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
+
             naam="Anjeliersstraat")
 
         bag_factories.NummeraanduidingFactory.create(

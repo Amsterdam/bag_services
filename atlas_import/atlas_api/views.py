@@ -40,7 +40,10 @@ def _get_url(request, hit):
             view_name=_details[doc_type],
             kwargs=dict(pk=id), request=request)
 
-    if hasattr(hit, 'subtype') and hit.subtype in _details:
+    # hit must have subtype
+    assert hit.subtype
+
+    if hit.subtype in _details:
         return rest.get_links(
             view_name=_details[hit.subtype],
             kwargs=dict(pk=id), request=request)
@@ -408,7 +411,7 @@ def test_search_query(view, client, query):
 
     #s.aggs.bucket('by_type', a).bucket('top', tops)
 
-    print(s.to_dict())
+    #print(s.to_dict())
     # print(a.to_dict())
 
     # x = s.aggs.bucket('lala', a)
@@ -444,12 +447,12 @@ def autocomplete_query(client, query):
 
     return (
         Search(client)
-            .index(BAG, BRK)
-            .query(
-                Q("multi_match",
-                  query=query, type="phrase_prefix", fields=match_fields)
-                | wildcard_Q2(query))
-            .highlight(*completions, pre_tags=[''], post_tags=[''])
+        .index(BAG, BRK, NUMMERAANDUIDING)
+        .query(
+            Q("multi_match",
+                query=query, type="phrase_prefix", fields=match_fields)
+            | wildcard_Q2(query))
+        .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 
@@ -460,6 +463,9 @@ def get_autocomplete_response(client, query):
     # group_by doc_type
     for r in result:
         doc_type = r.meta.doc_type.replace('_', ' ')
+
+        if doc_type == 'nummeraanduiding':
+            doc_type = r.subtype
 
         if doc_type not in matches:
             matches[doc_type] = OrderedDict()
@@ -594,6 +600,23 @@ class SearchViewSet(viewsets.ViewSet):
         # import pdb; pdb.set_trace()
 
         response['count'] = result.hits.total
+
+        self.create_summary_aggregations(request, result, response)
+
+        response['results'] = [
+            self.normalize_hit(h, request) for h in result.hits]
+
+        return Response(response)
+
+    def create_summary_aggregations(self, request, result, response):
+        """
+        If there are aggregations within the search result.
+        show them
+        """
+        # do noting yet
+
+        return
+
         response['summary'] = []
 
         response['summary'] = [
@@ -603,11 +626,6 @@ class SearchViewSet(viewsets.ViewSet):
         response['summary2'] = [
             self.normalize_bucket(field, request)
             for field in result.aggregations['by_type']['buckets']]
-
-        response['results'] = [
-            self.normalize_hit(h, request) for h in result.hits]
-
-        return Response(response)
 
     def normalize_hit(self, hit, request):
         result = OrderedDict()

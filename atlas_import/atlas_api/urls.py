@@ -2,6 +2,8 @@ from django.conf.urls import url, include
 from django.conf import settings
 from rest_framework import routers
 
+from django.conf import settings
+
 import datasets.bag.views
 import datasets.brk.views
 import datasets.wkpb.views
