@@ -458,6 +458,15 @@ class ImportZakelijkRechtTask(batch.BasicTask):
             log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
+        ontstaan_uit = row['ZRT_ONTSTAAN_UIT']
+        if ontstaan_uit and ontstaan_uit not in self.kst:
+            log.warn("Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(tng_id, ontstaan_uit))
+            return
+
+        if betrokken_bij and betrokken_bij not in self.kst:
+            log.warn("Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(tng_id, betrokken_bij))
+            return
+
         teller = row['TNG_AANDEEL_TELLER']
         noemer = row['TNG_AANDEEL_NOEMER']
         return pk, models.ZakelijkRecht(
@@ -468,7 +477,7 @@ class ImportZakelijkRechtTask(batch.BasicTask):
                 aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
                 teller=int(teller) if teller else None,
                 noemer=int(noemer) if noemer else None,
-                ontstaan_uit_id=row['ZRT_ONTSTAAN_UIT'] or None,
+                ontstaan_uit_id=ontstaan_uit or None,
                 betrokken_bij_id=betrokken_bij or None,
                 kadastraal_object_id=kot_id,
                 kadastraal_subject_id=kst_id,
@@ -738,4 +747,3 @@ class RestoreKadasterJob(object):
             DeleteIndexTask(),
             RestoreKadasterTask(),
         ]
-
