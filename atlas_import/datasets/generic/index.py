@@ -26,8 +26,8 @@ class DeleteIndexTask(object):
 
         connections.create_connection(
             hosts=settings.ELASTIC_SEARCH_HOSTS,
-            sniff_on_start=True,
-            retry_on_timeout=True
+            # sniff_on_start=True,
+            retry_on_timeout=True,
         )
 
     def execute(self):
@@ -86,7 +86,7 @@ class ImportIndexTask(object):
         """
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS,
-            sniff_on_start=True,
+            # sniff_on_start=True,
             retry_on_timeout=True,
             refresh=True
         )
@@ -135,7 +135,7 @@ class CopyIndexTask(object):
         """
         client = elasticsearch.Elasticsearch(
             hosts=settings.ELASTIC_SEARCH_HOSTS,
-            sniff_on_start=True,
+            # sniff_on_start=True,
             retry_on_timeout=True
         )
 
