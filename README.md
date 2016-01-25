@@ -13,13 +13,9 @@ Requirements
 Developing
 ----------
 
-User `docker-compose` to start a local database.
+Use `docker-compose` to start a local database.
 
-	(sudo) docker-compose start
-
-or
-
-	docker-compose up
+	docker-compose up -d
 
 Create a new virtual env, and execute the following:
 
@@ -38,6 +34,28 @@ To run an import, execute:
 To see the various options for partial imports, execute:
 
 	./atlas_import/manage.py run_import --help
+	
+
+Importing the latest backup
+---------------------------
+	
+Run `docker-compose` to determine the name of your database image:
+
+	$ docker-compose ps
+               Name                          Command               State                       Ports                      
+    ---------------------------------------------------------------------------------------------------------------------
+    atlasimport_atlas_1           /bin/sh -c /app/docker-ent ...   Up      0.0.0.0:32772->8080/tcp                        
+    atlasimport_database_1        /docker-entrypoint.sh postgres   Up      0.0.0.0:5434->5432/tcp                         
+    atlasimport_elasticsearch_1   /docker-entrypoint.sh elas ...   Up      0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp 
+    
+    
+In this example, it's `atlasimport_database_1`. Use that name in the following command:
+    
+    docker exec atlasimport_database_1 atlas-update.sh
+     
+The import takes approximately 10 minutes. 
+	
+	
 	
 Update the database
 -------------------

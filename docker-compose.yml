@@ -1,6 +1,5 @@
 database:
-  build: docker-compose/postgres
-  cpuset: "0-2"
+  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
   ports:
     - "5434:5432"
   environment:
