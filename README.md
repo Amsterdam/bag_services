@@ -13,7 +13,7 @@ Requirements
 Developing
 ----------
 
-Use `docker-compose` to start a local database.
+Use `docker-compose` to start a local database. Use `sudo` is you're running on Linux.
 
 	docker-compose up -d
 
@@ -44,24 +44,19 @@ Run `docker-compose` to determine the name of your database image:
 	$ docker-compose ps
                Name                          Command               State                       Ports                      
     ---------------------------------------------------------------------------------------------------------------------
-    atlasimport_atlas_1           /bin/sh -c /app/docker-ent ...   Up      0.0.0.0:32772->8080/tcp                        
-    atlasimport_database_1        /docker-entrypoint.sh postgres   Up      0.0.0.0:5434->5432/tcp                         
-    atlasimport_elasticsearch_1   /docker-entrypoint.sh elas ...   Up      0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp 
+    atlasbackend_atlas_1           /bin/sh -c /app/docker-ent ...   Up      0.0.0.0:32772->8080/tcp                        
+    atlasbackend_database_1        /docker-entrypoint.sh postgres   Up      0.0.0.0:5434->5432/tcp                         
+    atlasbackend_elasticsearch_1   /docker-entrypoint.sh elas ...   Up      0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp 
     
     
-In this example, it's `atlasimport_database_1`. Use that name in the following command:
+In this example, it's `atlasbackend_database_1`. Use that name in the following command (using `sudo` if you're running
+on Linux):
     
-    docker exec atlasimport_database_1 atlas-update.sh
+    docker exec atlasbackend_database_1 atlas-update.sh
      
 The import takes approximately 10 minutes. 
 	
 	
 	
-Update the database
--------------------
-
-This command removes the current database and downloads and imports the latest Acceptance database
-
-    (sudo) docker exec -it atlasbackend_database_1 ./atlas-update.sh
 
     
