@@ -107,21 +107,21 @@ router.register(r'atlas/search/postcode',
                 views.SearchNummeraanduidingViewSet,
                 base_name='search/postcode')
 
-router.register(r'atlas/search/kadestraalsubject',
+router.register(r'atlas/search/kadastraalsubject',
                 views.SearchSubjectViewSet,
-                base_name='search/kadestraalsubject')
+                base_name='search/kadastraalsubject')
 
 # Alias voor nummeraanduiding
 router.register(r'atlas/search/postcode',
                 views.SearchNummeraanduidingViewSet,
                 base_name='search/postcode')
 
-router.register(r'atlas/search/kadestraalsubject',
+router.register(r'atlas/search/kadastraalsubject',
                 views.SearchSubjectViewSet,
-                base_name='search/kadestraalsubject')
+                base_name='search/kadastraalsubject')
 
-router.register(r'atlas/search/kadestraalobject',
-                views.SearchObjectViewSet, base_name='search/kadestraalobject')
+router.register(r'atlas/search/kadastraalobject',
+                views.SearchObjectViewSet, base_name='search/kadastraalobject')
 
 router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,

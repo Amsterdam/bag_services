@@ -1469,9 +1469,6 @@ class IndexBagJob(object):
             DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
-            # IndexLigplaatsTask(),
-            # IndexStandplaatsTask(),
-            # IndexVerblijfsobjectTask(),
             IndexNummerAanduidingTask()
         ]
 

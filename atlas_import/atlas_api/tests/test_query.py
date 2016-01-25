@@ -274,7 +274,7 @@ class QueryTest(APITestCase):
 
     def test_search_subject_api(self):
         response = self.client.get(
-            "/api/atlas/search/kadestraalsubject/", dict(q="kikker"))
+            "/api/atlas/search/kadastraalsubject/", dict(q="kikker"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

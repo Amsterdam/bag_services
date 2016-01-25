@@ -112,7 +112,7 @@ def mulitimatch_adres_Q(query):
                 'adres',
                 'postcode',
                 'huisnummer_variation',
-                'kadestraal_object.aanduiding']
+                'kadastraal_object.aanduiding']
     )
 
 
@@ -692,7 +692,7 @@ class SearchAdresViewSet(SearchViewSet):
 class SearchSubjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
-    kadestraal subjects (VVE, personen) objects
+    kadastraal subjects (VVE, personen) objects
     that match the elastic search query.
 
     Een Kadastraal Subject is een persoon die
