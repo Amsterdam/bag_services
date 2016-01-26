@@ -45,6 +45,8 @@ class HALSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class HALPagination(pagination.PageNumberPagination):
+    page_size_query_param = 'page_size'
+
     def get_paginated_response(self, data):
         self_link = self.request.build_absolute_uri()
         if self_link.endswith(".api"):
