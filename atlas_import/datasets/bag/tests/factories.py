@@ -119,6 +119,7 @@ class OpenbareRuimteFactory(factory.DjangoModelFactory):
     code = fuzzy.FuzzyText(length=5, chars=string.digits)
     woonplaats = factory.SubFactory(WoonplaatsFactory)
     naam = factory.LazyAttribute(lambda o: f.street_name())
+    type = '01'  # weg
 
 
 class NummeraanduidingFactory(factory.DjangoModelFactory):
@@ -130,6 +131,8 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     huisnummer = factory.LazyAttribute(lambda o: int(f.building_number()))
     openbare_ruimte = factory.SubFactory(OpenbareRuimteFactory)
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
+    type = '01'  # default verblijfsobject
+    postcode = '1000AN'  # default postcode..
 
 
 class StadsdeelFactory(factory.DjangoModelFactory):

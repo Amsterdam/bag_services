@@ -1,3 +1,4 @@
+import sys
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
@@ -5,6 +6,7 @@ import datasets.brk.batch
 import datasets.wkpb.batch
 
 from batch import batch
+from batch.models import JobExecution
 
 
 class Command(BaseCommand):
@@ -18,7 +20,7 @@ class Command(BaseCommand):
     )
 
     indexes = dict(
-        bag=[datasets.bag.batch.IndexJob],
+        bag=[datasets.bag.batch.IndexBagJob],
         brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
     )
@@ -67,9 +69,10 @@ class Command(BaseCommand):
                             default=True,
                             help='Skip elastic search indexing')
 
-        parser.add_argument('--noinput', '--no-input',
-                            action='store_false', dest='interactive', default=True,
-                            help='Tells Django to NOT prompt the user for input of any kind.')
+    def act_on_result(self, job_execution):
+        if job_execution.status == JobExecution.STATUS_FAILED:
+            self.stderr.write("Job {} failed, exiting".format(job_execution.name))
+            sys.exit(1)
 
     def handle(self, *args, **options):
         dataset = options['dataset']
@@ -77,7 +80,7 @@ class Command(BaseCommand):
         for ds in dataset:
             if ds not in self.imports.keys():
                 self.stderr.write("Unkown dataset: {}".format(ds))
-                return
+                sys.exit(1)
 
         sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
@@ -87,8 +90,10 @@ class Command(BaseCommand):
 
             if options['run-import']:
                 for job_class in self.imports[ds]:
-                    batch.execute(job_class())
+                    result = batch.execute(job_class())
+                    self.act_on_result(result)
 
             if options['run-index']:
                 for job_class in self.indexes[ds]:
-                    batch.execute(job_class())
+                    result = batch.execute(job_class())
+                    self.act_on_result(result)

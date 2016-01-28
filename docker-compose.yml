@@ -1,10 +1,10 @@
 database:
-  build: docker-compose/postgres
+  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
   ports:
     - "5434:5432"
   environment:
     POSTGRES_PASSWORD: insecure
-  
+
 elasticsearch:
   build: docker-compose/elasticsearch
   command: elasticsearch -Des.node.name="Atlas"

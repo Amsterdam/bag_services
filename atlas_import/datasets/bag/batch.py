@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
+from django.utils.text import slugify
 
 from batch import batch
 from datasets.generic import uva2, index, database, geo
@@ -102,7 +103,8 @@ class ImportGmeTask(batch.BasicTask):
 
     def process(self):
         gemeentes = uva2.process_uva2(self.path, "GME", self.process_row)
-        models.Gemeente.objects.bulk_create(gemeentes, batch_size=database.BATCH_SIZE)
+        models.Gemeente.objects.bulk_create(
+            gemeentes, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -130,17 +132,21 @@ class ImportSdlTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Stadsdeel)
-        self.gemeentes = set(models.Gemeente.objects.values_list("pk", flat=True))
+        self.gemeentes = set(
+            models.Gemeente.objects.values_list("pk", flat=True))
 
     def after(self):
         self.gemeentes.clear()
         self.stadsdelen.clear()
 
     def process(self):
-        self.stadsdelen = dict(uva2.process_uva2(self.bag_path, "SDL", self.process_row))
-        geo.process_shp(self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
+        self.stadsdelen = dict(
+            uva2.process_uva2(self.bag_path, "SDL", self.process_row))
+        geo.process_shp(
+            self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
 
-        models.Stadsdeel.objects.bulk_create(self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
+        models.Stadsdeel.objects.bulk_create(
+            self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -193,8 +199,10 @@ class ImportBrtTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Buurt)
-        self.stadsdelen = set(models.Stadsdeel.objects.values_list("pk", flat=True))
-        self.buurtcombinaties = dict(models.Buurtcombinatie.objects.values_list("code", "pk"))
+        self.stadsdelen = set(
+            models.Stadsdeel.objects.values_list("pk", flat=True))
+        self.buurtcombinaties = dict(
+            models.Buurtcombinatie.objects.values_list("code", "pk"))
 
     def after(self):
         self.stadsdelen.clear()
@@ -202,10 +210,13 @@ class ImportBrtTask(batch.BasicTask):
         self.buurtcombinaties.clear()
 
     def process(self):
-        self.buurten = dict(uva2.process_uva2(self.uva_path, "BRT", self.process_row))
-        geo.process_shp(self.shp_path, "GBD_Buurt.shp", self.process_feature)
+        self.buurten = dict(
+            uva2.process_uva2(self.uva_path, "BRT", self.process_row))
+        geo.process_shp(
+            self.shp_path, "GBD_Buurt.shp", self.process_feature)
 
-        models.Buurt.objects.bulk_create(self.buurten.values(), batch_size=database.BATCH_SIZE)
+        models.Buurt.objects.bulk_create(
+            self.buurten.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
@@ -235,11 +246,14 @@ class ImportBrtTask(batch.BasicTask):
             naam=r['Buurtnaam'],
             brondocument_naam=r['Brondocumentverwijzing'],
             brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
-            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             stadsdeel_id=stadsdeel_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             buurtcombinatie_id=bc_id,
         )
 
@@ -247,7 +261,8 @@ class ImportBrtTask(batch.BasicTask):
         vollcode = feat.get('VOLLCODE')
         code = vollcode[1:]
         if code not in self.buurten:
-            log.warning('Buurt/SHP {} references non-existing buurt; skipping'.format(code))
+            log.warning(
+                'Buurt/SHP {} references non-existing buurt; skipping'.format(code))
             return
 
         self.buurten[code].geometrie = geo.get_multipoly(feat.geom.wkt)
@@ -296,10 +311,13 @@ class ImportBbkTask(batch.BasicTask):
         return code, models.Bouwblok(
             pk=pk,
             code=code,
-            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             buurt_id=buurt_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def process_feature(self, feat):
@@ -320,14 +338,16 @@ class ImportWplTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Woonplaats)
-        self.gemeentes = set(models.Gemeente.objects.values_list("pk", flat=True))
+        self.gemeentes = set(
+            models.Gemeente.objects.values_list("pk", flat=True))
 
     def after(self):
         self.gemeentes.clear()
 
     def process(self):
         woonplaatsen = uva2.process_uva2(self.path, "WPL", self.process_row)
-        models.Woonplaats.objects.bulk_create(woonplaatsen, batch_size=database.BATCH_SIZE)
+        models.Woonplaats.objects.bulk_create(
+            woonplaatsen, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -1090,17 +1110,28 @@ class ImportPndVboTask(batch.BasicTask):
 
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG']
-    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
+
+
+class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    doc_types = [documents.Nummeraanduiding]
 
 
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    doc_types = [documents.Ligplaats, documents.Standplaats, documents.Verblijfsobject, documents.OpenbareRuimte]
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
     name = "index ligplaatsen"
-    queryset = models.Ligplaats.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Ligplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_ligplaats(obj)
@@ -1108,7 +1139,9 @@ class IndexLigplaatsTask(index.ImportIndexTask):
 
 class IndexStandplaatsTask(index.ImportIndexTask):
     name = "index standplaatsen"
-    queryset = models.Standplaats.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Standplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_standplaats(obj)
@@ -1116,7 +1149,9 @@ class IndexStandplaatsTask(index.ImportIndexTask):
 
 class IndexVerblijfsobjectTask(index.ImportIndexTask):
     name = "index verblijfsobjecten"
-    queryset = models.Verblijfsobject.objects.prefetch_related('adressen').prefetch_related('adressen__openbare_ruimte')
+    queryset = models.Verblijfsobject.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
 
     def convert(self, obj):
         return documents.from_verblijfsobject(obj)
@@ -1130,12 +1165,25 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
         return documents.from_openbare_ruimte(obj)
 
 
+class IndexNummerAanduidingTask(index.ImportIndexTask):
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats').\
+        prefetch_related('openbare_ruimte')
+
+    def convert(self, obj):
+        return documents.from_nummeraanduiding_ruimte(obj)
+
+
 # these files don't have a UVA file
 class ImportBuurtcombinatieTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR',
+     'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
     """
 
     name = "Import GBD Buurtcombinatie"
@@ -1146,14 +1194,18 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Buurtcombinatie)
-        self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "id"))
+        self.stadsdelen = dict(
+            models.Stadsdeel.objects.values_list("code", "id"))
 
     def after(self):
         self.stadsdelen.clear()
 
     def process(self):
-        bcs = geo.process_shp(self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
-        models.Buurtcombinatie.objects.bulk_create(bcs, batch_size=database.BATCH_SIZE)
+        bcs = geo.process_shp(
+            self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
+
+        models.Buurtcombinatie.objects.bulk_create(
+            bcs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         vollcode = feat.get('VOLLCODE')
@@ -1177,7 +1229,8 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM',
+     'EINDDATUM', 'DOCNR', 'DOCDATUM']
     """
 
     name = "Import GBD Gebiedsgerichtwerken"
@@ -1188,25 +1241,32 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.Gebiedsgerichtwerken)
-        self.stadsdelen = dict(models.Stadsdeel.objects.values_list("code", "pk"))
+        self.stadsdelen = dict(
+            models.Stadsdeel.objects.values_list("code", "pk"))
 
     def after(self):
         self.stadsdelen.clear()
 
     def process(self):
-        ggws = geo.process_shp(self.shp_path, "GBD_gebiedsgerichtwerken.shp", self.process_feature)
-        models.Gebiedsgerichtwerken.objects.bulk_create(ggws, batch_size=database.BATCH_SIZE)
+        ggws = geo.process_shp(
+            self.shp_path, "GBD_gebiedsgerichtwerken.shp",
+            self.process_feature)
+
+        models.Gebiedsgerichtwerken.objects.bulk_create(
+            ggws, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        code = feat.get('STADSDEEL')
-        if code not in self.stadsdelen:
-            log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(code, code))
+        sdl = feat.get('STADSDEEL')
+        if sdl not in self.stadsdelen:
+            log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
             return
 
+        code = feat.get('CODE').encode('utf-8')
         return models.Gebiedsgerichtwerken(
+            id=code,
             naam=feat.get('NAAM').encode('utf-8'),
-            code=feat.get('CODE').encode('utf-8'),
-            stadsdeel_id=self.stadsdelen[code],
+            code=code,
+            stadsdeel_id=self.stadsdelen[sdl],
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
@@ -1230,12 +1290,18 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         pass
 
     def process(self):
-        ggbs = geo.process_shp(self.shp_path, "GBD_grootstedelijke_projecten.shp", self.process_feature)
-        models.Grootstedelijkgebied.objects.bulk_create(ggbs, batch_size=database.BATCH_SIZE)
+        ggbs = geo.process_shp(
+            self.shp_path,
+            "GBD_grootstedelijke_projecten.shp", self.process_feature)
+
+        models.Grootstedelijkgebied.objects.bulk_create(
+            ggbs, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
+        naam = feat.get('NAAM').encode('utf-8')
         return models.Grootstedelijkgebied(
-            naam=feat.get('NAAM').encode('utf-8'),
+            id=slugify(naam),
+            naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
@@ -1259,12 +1325,16 @@ class ImportUnescoTask(batch.BasicTask):
         pass
 
     def process(self):
-        unesco = geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature)
-        models.Unesco.objects.bulk_create(unesco, batch_size=database.BATCH_SIZE)
+        unesco = geo.process_shp(
+            self.shp_path, "GBD_unesco.shp", self.process_feature)
+        models.Unesco.objects.bulk_create(
+            unesco, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
+        naam = feat.get('NAAM').encode('utf-8')
         return models.Unesco(
-            naam=feat.get('NAAM').encode('utf-8'),
+            id=slugify(naam),
+            naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         )
 
@@ -1391,16 +1461,25 @@ class ImportBagJob(object):
         ]
 
 
-class IndexJob(object):
-    name = "Create new search-index BAG from database"
+class IndexBagJob(object):
+    name = "Create new search-index for all BAG data from database"
 
     def tasks(self):
         return [
             DeleteIndexTask(),
+            DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
-            IndexLigplaatsTask(),
-            IndexStandplaatsTask(),
-            IndexVerblijfsobjectTask(),
+            IndexNummerAanduidingTask()
+        ]
+
+
+class IndexNummerAanduidingJob(object):
+    name = "Createnew search index for Nummeraanduiding"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            IndexNummerAanduidingTask()
         ]
 
 
@@ -1413,6 +1492,15 @@ class BackupBagIndexTask(index.CopyIndexTask):
     name = 'Backup BAG index in elastic'
 
 
+class BackupNummerAanduidingTask(index.CopyIndexTask):
+    """
+    Backup elastic BAG Index
+    """
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
+    name = 'Backup Aanduiding index in elastic'
+
+
 class RestoreBagIndexTask(index.CopyIndexTask):
     """
     Restore elastic BAG Index
@@ -1421,6 +1509,16 @@ class RestoreBagIndexTask(index.CopyIndexTask):
 
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
     target = settings.ELASTIC_INDICES['BAG']
+
+
+class RestoreNummerAanduidingIndexTask(index.CopyIndexTask):
+    """
+    Restore elastic BAG Index
+    """
+    name = 'Restore backup nummeraanduiding index in elastic'
+
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
+    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
 class BackupBagJob(object):
@@ -1435,6 +1533,7 @@ class BackupBagJob(object):
             BackupBagIndexTask(),
         ]
 
+
 class RestoreBagJob(object):
 
     name = "Restore Backup elastic-index BAG"
@@ -1445,3 +1544,28 @@ class RestoreBagJob(object):
             RestoreBagIndexTask()
         ]
 
+
+class BackupNummerAanduidingJob(object):
+    """
+    Nummeraanduiding elastic index Backup
+    """
+
+    name = "Backup elastic-index NUMMERAANDUIDING"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            BackupNummerAanduidingTask(),
+        ]
+
+
+class RestoreNummerAanduidingJob(object):
+    """
+    Nummeraanduiding elastic index Restore
+    """
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            RestoreNummerAanduidingIndexTask()
+        ]

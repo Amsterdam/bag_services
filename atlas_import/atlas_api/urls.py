@@ -1,5 +1,8 @@
 from django.conf.urls import url, include
+
 from rest_framework import routers
+
+from django.conf import settings
 
 import datasets.bag.views
 import datasets.brk.views
@@ -92,19 +95,43 @@ router.register(r'wkpb/broncode', datasets.wkpb.views.BroncodeView)
 
 router.register(r'atlas/typeahead',
                 views.TypeaheadViewSet, base_name='typeahead')
+
 router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
+# Alias voor nummeraanduiding
 router.register(r'atlas/search/adres',
-                views.SearchViewSet, base_name='search/adres')
+                views.SearchNummeraanduidingViewSet, base_name='search/adres')
 
-router.register(r'atlas/search/subject',
-                views.SearchSubjectViewSet, base_name='search/subject')
-router.register(r'atlas/search/object',
+# Alias voor nummeraanduiding
+router.register(r'atlas/search/postcode',
+                views.SearchNummeraanduidingViewSet,
+                base_name='search/postcode')
 
-                views.SearchObjectViewSet, base_name='search/object')
-router.register(r'atlas/search/opebareruimte',
+router.register(r'atlas/search/kadastraalsubject',
+                views.SearchSubjectViewSet,
+                base_name='search/kadastraalsubject')
+
+# Alias voor nummeraanduiding
+router.register(r'atlas/search/postcode',
+                views.SearchNummeraanduidingViewSet,
+                base_name='search/postcode')
+
+router.register(r'atlas/search/kadastraalsubject',
+                views.SearchSubjectViewSet,
+                base_name='search/kadastraalsubject')
+
+router.register(r'atlas/search/kadastraalobject',
+                views.SearchObjectViewSet, base_name='search/kadastraalobject')
+
+router.register(r'atlas/search/openbareruimte',
                 views.SearchOpenbareRuimteViewSet,
                 base_name='search/openbareruimte')
+
+if settings.DEBUG:
+    router.register(r'atlas/search/test',
+                    views.SearchTestViewSet,
+                    base_name='search/test')
+
 
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),

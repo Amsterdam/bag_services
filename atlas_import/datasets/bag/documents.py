@@ -7,8 +7,8 @@ from django.conf import settings
 
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
-    adres = es.String(analyzer=analyzers.adres)
 
+    adres = es.String(analyzer=analyzers.adres)
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
 
@@ -66,6 +66,31 @@ class OpenbareRuimte(es.DocType):
         index = settings.ELASTIC_INDICES['BAG']
 
 
+class Nummeraanduiding(es.DocType):
+    """
+    All bag objects should have one or more adresses
+
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
+    het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject, standplaats of
+    ligplaats.
+
+    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
+    """
+    straatnaam = es.String(analyzer=analyzers.adres)
+    adres = es.String(analyzer=analyzers.adres)
+    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer()
+    postcode = es.String(analyzer=analyzers.postcode)
+
+    order = es.Integer()
+
+    subtype = es.String(analyzer=analyzers.subtype)
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+
+
 def get_centroid(geom):
     if not geom:
         return None
@@ -84,18 +109,88 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.huisnummer_variation = adres.huisnummer
 
 
+def add_verblijfsobject(doc, vo: models.Verblijfsobject):
+    if vo:
+        doc.centroid = get_centroid(vo.geometrie)
+        doc.subtype_id = vo.id
+        doc.order = analyzers.orderings['adres']
+
+
+def add_standplaats(doc, sp: models.Standplaats):
+    if sp:
+        doc.centroid = get_centroid(sp.geometrie)
+        doc.subtype_id = sp.id
+        doc.order = analyzers.orderings['adres']
+
+
+def add_ligplaats(doc, lp: models.Ligplaats):
+    if lp:
+        doc.centroid = get_centroid(lp.geometrie)
+        doc.subtype_id = lp.id
+        doc.order = analyzers.orderings['adres']
+
+
 def from_ligplaats(l: models.Ligplaats):
+    # id unique
     d = Ligplaats(_id=l.id)
+
     update_adres(d, l.hoofdadres)
+
     d.centroid = get_centroid(l.geometrie)
     d.order = analyzers.orderings['adres']
 
     return d
 
 
+def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
+    doc = Nummeraanduiding(_id=n.id)
+    doc.adres = n.adres()
+    doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
+    doc.straatnaam = n.openbare_ruimte.naam
+    doc.huisnummer = n.huisnummer
+    doc.huisnummer_variation = n.huisnummer
+
+    # if n.buurt:
+    #     d.buurt = n.buurt.naam
+
+    # if n.stadsdeel:
+    #     d.stadsdeel = n.stadsdeel.naam
+
+    # if n.woonplaats:
+    #     d.woonplaats = n.woonplaats.naam
+
+    # if n.buurtcombinatie:
+    #     d.buurtcombinatie = n.buurtcombinatie.naam
+
+    if n.bron:
+        doc.bron = n.bron.omschrijving
+
+    #if not doc.subtype:
+    #    return doc
+
+    doc.subtype = n.get_type_display().lower()
+
+    if doc.subtype == 'verblijfsobject':
+        add_verblijfsobject(doc, n.verblijfsobject)
+    elif doc.subtype == 'standplaats':
+        add_standplaats(doc, n.standplaats)
+    elif doc.subtype == 'ligplaats':
+        add_ligplaats(doc, n.ligplaats)
+
+    elif doc.subtype == 'overig gebouwd object':
+        pass
+    elif doc.subtype == 'overig terrein':
+        pass
+
+    return doc
+
+
 def from_standplaats(s: models.Standplaats):
+
     d = Standplaats(_id=s.id)
+
     update_adres(d, s.hoofdadres)
+
     d.centroid = get_centroid(s.geometrie)
     d.order = analyzers.orderings['adres']
 
@@ -117,9 +212,11 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
+    d.type = 'Openbare ruimte'
     d.subtype = o.get_type_display()
     d.naam = o.naam
     postcodes = set()
+
     for a in o.adressen.all():
         if a.postcode:
             postcodes.add(a.postcode)
