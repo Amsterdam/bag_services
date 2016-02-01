@@ -275,7 +275,7 @@ def wildcard_Q2(query):
 
     return Q("multi_match",
              query=query, fuzziness="auto",
-             max_expansions=150,
+             max_expansions=50,
              prefix_length=2, fields=fuzzy_fields)
 
 

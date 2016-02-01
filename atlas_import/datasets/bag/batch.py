@@ -1120,6 +1120,11 @@ class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
     doc_types = [documents.Nummeraanduiding]
 
 
+class DeleteNummerAanduidingBackupIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
+    doc_types = [documents.Nummeraanduiding]
+
+
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
     doc_types = [
@@ -1554,7 +1559,7 @@ class BackupNummerAanduidingJob(object):
 
     def tasks(self):
         return [
-            DeleteNummerAanduidingIndexTask(),
+            DeleteNummerAanduidingBackupIndexTask(),
             BackupNummerAanduidingTask(),
         ]
 
