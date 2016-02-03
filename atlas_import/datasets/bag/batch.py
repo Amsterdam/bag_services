@@ -1415,6 +1415,13 @@ FROM (
 WHERE sta.id = t.sta_id;
             """)
 
+            c.execute("""
+UPDATE bag_nummeraanduiding num
+SET _openbare_ruimte_naam = opr.naam
+FROM bag_openbareruimte opr
+WHERE opr.id = num.openbare_ruimte_id
+            """)
+
 
 class ImportBagJob(object):
     name = "Import BAG"
