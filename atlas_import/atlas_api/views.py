@@ -3,9 +3,11 @@ import logging
 from collections import OrderedDict
 
 from django.conf import settings
+
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q, A
 from elasticsearch.exceptions import TransportError
+
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -80,6 +82,8 @@ def mulitimatch_Q(query):
         fields=[
             'naam',
             'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
             'aanduiding',
             'adres',
 
@@ -108,6 +112,8 @@ def mulitimatch_adres_Q(query):
             fields=[
                 'naam',
                 'straatnaam',
+                'straatnaam_nen',
+                'straatnaam_ptt',
                 'aanduiding',
                 'adres',
                 'postcode',
@@ -203,6 +209,8 @@ def mulitimatch_nummeraanduiding_Q(query):
         fields=[
             'naam',
             'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
             'aanduiding',
             'adres',
 
@@ -240,6 +248,8 @@ def mulitimatch_nummeraanduiding_Q(query):
         fields=[
             'naam',
             'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
             'aanduiding',
             'adres',
 
@@ -429,6 +439,8 @@ def test_search_query(view, client, query):
               fields=[
                   'naam',
                   'straatnaam',
+                  'straatnaam_nen',
+                  'straatnaam_ptt',
                   'aanduiding',
                   'adres',
 
@@ -517,7 +529,7 @@ def get_autocomplete_response(client, query):
     return matches
 
 
-class TypeaheadViewSet(viewsets.ViewSet):
+class TypeaheadViewSetOld(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a
     subset of all objects
@@ -530,6 +542,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     """
 
+    def get_autocomplete_response(self, client, query):
+        return {}
+
     metadata_class = QueryMetadata
 
     def __init__(self, **kwargs):
@@ -541,9 +556,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
+        query = query.lower()
 
         response = get_autocomplete_response(self.client, query)
         return Response(response)
+
+
+class TypeaheadViewSet(TypeaheadViewSetOld):
+
+    def get_autocomplete_response(self, client, query):
+        return get_autocomplete_response(client, query)
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -612,6 +634,7 @@ class SearchViewSet(viewsets.ViewSet):
         end = (page * self.page_size)
 
         query = request.query_params['q']
+        query = query.lower()
 
         client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
@@ -661,9 +684,14 @@ class SearchViewSet(viewsets.ViewSet):
             self.normalize_bucket(field, request)
             for field in result.aggregations['by_type']['buckets']]
 
+    def get_url(self, request, hit):
+        """
+        """
+        return _get_url(request, hit)
+
     def normalize_hit(self, hit, request):
         result = OrderedDict()
-        result['_links'] = _get_url(request, hit)
+        result['_links'] = self.get_url(request, hit)
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index

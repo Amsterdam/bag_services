@@ -20,6 +20,16 @@ class SubjectSearchTest(APITestCase):
 
         super().setUpClass()
 
+        ptt_straat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Marius Cornelis straat",
+            naam_ptt="M Cornelisstr",
+            type='01')
+
+        nen_straat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Stoom Maker Weg",
+            naam_nen="S Maker wg",
+            type='01')
+
         straat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat", type='01')
 
@@ -38,6 +48,20 @@ class SubjectSearchTest(APITestCase):
             huisletter='F',
             type='01',  # Verblijfsobject
             openbare_ruimte=straat
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=99,
+            huisletter='',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=ptt_straat
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=100,
+            huisletter='',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=nen_straat
         )
 
         batch.execute(datasets.bag.batch.IndexBagJob())
@@ -64,3 +88,25 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Prinsengracht 192A")
+
+    def test_nen_query(self):
+        response = self.client.get(
+            "/api/atlas/search/adres/", dict(q="s maker wg"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Stoom Maker Weg 100")
+
+    def test_ptt_query(self):
+        response = self.client.get(
+            "/api/atlas/search/adres/", dict(q="M Cornelisstr"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Marius Cornelis straat 99")
