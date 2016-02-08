@@ -276,6 +276,11 @@ def wildcard_Q2(query):
         "openbare_ruimte.naam",
         "kadastraal_subject.geslachtsnaam",
         "adres",
+
+        'straatnaam',
+        'straatnaam_nen',
+        'straatnaam_ptt',
+
         # "postcode",
 
         # "ligplaats.adres",
@@ -420,12 +425,7 @@ def test_search_query(view, client, query):
     """
     Do test experiments here..
     """
-    a = A('terms', field='subtype', size=100)
-    b = A('terms', field='_type', size=100)
 
-    tops = A('top_hits', size=1)
-
-    #
     s = Search(client)\
         .index(NUMMERAANDUIDING, BAG, BRK)\
         .query(
@@ -451,17 +451,20 @@ def test_search_query(view, client, query):
               ],
               ),
         )
+
     # .sort(*add_sorting())
-    s.aggs.bucket('by_subtype', b)
-    s.aggs.bucket('by_type', a)    # .bucket('top', tops)
 
-    #s.aggs.bucket('by_type', a).bucket('top', tops)
+    # add aggregations
+    a = A('terms', field='subtype', size=100)
+    b = A('terms', field='_type', size=100)
 
-    #print(s.to_dict())
-    # print(a.to_dict())
+    # tops = A('top_hits', size=1)
 
-    # x = s.aggs.bucket('lala', a)
-    # print(x.to_dict())
+    s.aggs.bucket('by_subtype', a)
+    # s.aggs.bucket('by_type', b)
+
+    # give back top results
+    # s.aggs.bucket('by_type', b).bucket('top', tops)
 
     return s
 
@@ -475,8 +478,13 @@ def autocomplete_query(client, query):
         "naam",
         "postcode",
 
-        "huisnummer_variation",
+        'straatnaam',
+        'straatnaam_nen',
+        'straatnaam_ptt',
+
         "adres",
+
+        "huisnummer_variation",
 
         "kadastraal_subject.geslachtsnaam",
         "kadastraal_subject.naam",
@@ -653,7 +661,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         response = OrderedDict()
 
-        # self._set_followup_url(request, result, end, response, query, page)
+        self._set_followup_url(request, result, end, response, query, page)
         # import pdb; pdb.set_trace()
 
         response['count'] = result.hits.total
@@ -670,19 +678,14 @@ class SearchViewSet(viewsets.ViewSet):
         If there are aggregations within the search result.
         show them
         """
-        # do noting yet
+        if not hasattr(response, 'aggregations'):
+            return
 
-        return
+        response['type_summary'] = []
 
-        response['summary'] = []
-
-        response['summary'] = [
+        response['type_summary'] = [
             self.normalize_bucket(field, request)
             for field in result.aggregations['by_subtype']['buckets']]
-
-        response['summary2'] = [
-            self.normalize_bucket(field, request)
-            for field in result.aggregations['by_type']['buckets']]
 
     def get_url(self, request, hit):
         """
@@ -731,7 +734,7 @@ class SearchSubjectViewSet(SearchViewSet):
 
     """
 
-    url_name = 'search/subject-list'
+    url_name = 'search/kadastraalsubject-list'
     search_query = search_subject_query
 
 
