@@ -613,6 +613,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         if end >= total:
             next_page = None
+        elif page > 9:
+            next_page = "pageing over search results is stupid!"
         else:
             next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
 
@@ -636,7 +638,10 @@ class SearchViewSet(viewsets.ViewSet):
 
         page = 1
         if 'page' in request.query_params:
+            # limit search results pageing in elastic is slow
             page = int(request.query_params['page'])
+            if page > 10:
+                page = 10
 
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
@@ -744,7 +749,7 @@ class SearchObjectViewSet(SearchViewSet):
     grond percelen objects that match the elastic search query.
     """
 
-    url_name = 'search/object-list'
+    url_name = 'search/kadastraalobject-list'
     search_query = search_object_query
 
 
