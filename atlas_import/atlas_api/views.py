@@ -3,11 +3,9 @@ import logging
 from collections import OrderedDict
 
 from django.conf import settings
-
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q, A
 from elasticsearch.exceptions import TransportError
-
+from elasticsearch_dsl import Search, Q, A
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -38,16 +36,16 @@ def _get_url(request, hit):
 
     if doc_type in _details:
         return rest.get_links(
-            view_name=_details[doc_type],
-            kwargs=dict(pk=id), request=request)
+                view_name=_details[doc_type],
+                kwargs=dict(pk=id), request=request)
 
     # hit must have subtype
     assert hit.subtype
 
     if hit.subtype in _details:
         return rest.get_links(
-            view_name=_details[hit.subtype],
-            kwargs=dict(pk=id), request=request)
+                view_name=_details[hit.subtype],
+                kwargs=dict(pk=id), request=request)
 
     return None
 
@@ -72,25 +70,25 @@ def mulitimatch_Q(query):
     log.debug('%20s %s', mulitimatch_Q.__name__, query)
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'straatnaam',
+                'straatnaam_nen',
+                'straatnaam_ptt',
+                'aanduiding',
+                'adres',
 
-            'postcode',
-            'huisnummer'
-            'huisnummer_variation',
-        ]
+                'postcode',
+                'huisnummer'
+                'huisnummer_variation',
+            ]
     )
 
 
@@ -149,13 +147,13 @@ def mulitimatch_object_Q(query):
     log.debug('%20s %s', mulitimatch_object_Q.__name__, query)
 
     return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        fields=[
-            'aanduiding',
-            'postcode',
-            'huisnummer_variation',
+            "multi_match",
+            query=query,
+            type="phrase_prefix",
+            fields=[
+                'aanduiding',
+                'postcode',
+                'huisnummer_variation',
             ]
     )
 
@@ -199,25 +197,25 @@ def mulitimatch_nummeraanduiding_Q(query):
     """
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'straatnaam',
+                'straatnaam_nen',
+                'straatnaam_ptt',
+                'aanduiding',
+                'adres',
 
-            'postcode',
-            'huisnummer'
-            'huisnummer_variation',
-        ]
+                'postcode',
+                'huisnummer'
+                'huisnummer_variation',
+            ]
     )
 
 
@@ -238,25 +236,25 @@ def mulitimatch_nummeraanduiding_Q(query):
     """
 
     return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,     # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            fields=[
+                'naam',
+                'straatnaam',
+                'straatnaam_nen',
+                'straatnaam_ptt',
+                'aanduiding',
+                'adres',
 
-            'postcode',
-            'huisnummer'
-            'huisnummer_variation',
-        ]
+                'postcode',
+                'huisnummer'
+                'huisnummer_variation',
+            ]
     )
 
 
@@ -331,7 +329,6 @@ def add_nummerduiding_sorting():
 
 
 def default_search_query(view, client, query):
-
     """
     Execute search.
 
@@ -341,12 +338,13 @@ def default_search_query(view, client, query):
     log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
 
     return (
-        Search(client)
-        .index(NUMMERAANDUIDING, BAG, BRK)
-        .query(
-            mulitimatch_Q(query)
+        Search()
+            .using(client)
+            .index(NUMMERAANDUIDING, BAG, BRK)
+            .query(
+                mulitimatch_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -355,12 +353,13 @@ def search_adres_query(view, client, query):
     Execute search on adresses
     """
     return (
-        Search(client)
-        .index(BAG, BRK, NUMMERAANDUIDING)
-        .query(
-            mulitimatch_adres_Q(query)
+        Search()
+            .using(client)
+            .index(BAG, BRK, NUMMERAANDUIDING)
+            .query(
+                mulitimatch_adres_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -369,7 +368,8 @@ def search_subject_query(view, client, query):
     Execute search on adresses
     """
     return (
-        Search(client)
+        Search()
+            .using(client)
             # .filter("term", category="search")
             .index(BRK)
             .query(
@@ -384,12 +384,13 @@ def search_object_query(view, client, query):
     Execute search in Objects
     """
     return (
-        Search(client)
-        .index(BRK)
-        .query(
-            mulitimatch_object_Q(query)
+        Search()
+            .using(client)
+            .index(BRK)
+            .query(
+                mulitimatch_object_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -398,12 +399,13 @@ def search_openbare_ruimte_query(view, client, query):
     Execute search in Objects
     """
     return (
-        Search(client)
-        .index(BAG)
-        .query(
-            mulitimatch_openbare_ruimte_Q(query)
+        Search()
+            .using(client)
+            .index(BAG)
+            .query(
+                mulitimatch_openbare_ruimte_Q(query)
         )
-        .sort(*add_sorting())
+            .sort(*add_sorting())
     )
 
 
@@ -412,12 +414,13 @@ def search_nummeraanduiding_query(view, client, query):
     Execute search in Objects
     """
     return (
-        Search(client)
-        .index(NUMMERAANDUIDING)
-        .query(
-            mulitimatch_nummeraanduiding_Q(query)
+        Search()
+            .using(client)
+            .index(NUMMERAANDUIDING)
+            .query(
+                mulitimatch_nummeraanduiding_Q(query)
         )
-        .sort(*add_nummerduiding_sorting())
+            .sort(*add_nummerduiding_sorting())
     )
 
 
@@ -426,8 +429,9 @@ def test_search_query(view, client, query):
     Do test experiments here..
     """
 
-    s = Search(client)\
-        .index(NUMMERAANDUIDING, BAG, BRK)\
+    s = Search() \
+        .using(client) \
+        .index(NUMMERAANDUIDING, BAG, BRK) \
         .query(
             Q("multi_match",
               query=query,
@@ -450,7 +454,7 @@ def test_search_query(view, client, query):
                   'type'
               ],
               ),
-        )
+    )
 
     # .sort(*add_sorting())
 
@@ -500,13 +504,14 @@ def autocomplete_query(client, query):
     ]
 
     return (
-        Search(client)
-        .index(BAG, BRK, NUMMERAANDUIDING)
-        .query(
-            Q("multi_match",
-                query=query, type="phrase_prefix", fields=match_fields)
-            | wildcard_Q2(query))
-        .highlight(*completions, pre_tags=[''], post_tags=[''])
+        Search()
+            .using(client)
+            .index(BAG, BRK, NUMMERAANDUIDING)
+            .query(
+                Q("multi_match",
+                  query=query, type="phrase_prefix", fields=match_fields)
+                | wildcard_Q2(query))
+            .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
 
 
@@ -532,7 +537,7 @@ def get_autocomplete_response(client, query):
 
     for doc_type in matches.keys():
         matches[doc_type] = [
-            dict(item=m) for m in matches[doc_type].keys()][:5]
+                                dict(item=m) for m in matches[doc_type].keys()][:5]
 
     return matches
 
@@ -571,7 +576,6 @@ class TypeaheadViewSetOld(viewsets.ViewSet):
 
 
 class TypeaheadViewSet(TypeaheadViewSetOld):
-
     def get_autocomplete_response(self, client, query):
         return get_autocomplete_response(client, query)
 
@@ -645,8 +649,8 @@ class SearchViewSet(viewsets.ViewSet):
         query = query.lower()
 
         client = Elasticsearch(
-            settings.ELASTIC_SEARCH_HOSTS,
-            raise_on_error=True
+                settings.ELASTIC_SEARCH_HOSTS,
+                raise_on_error=True
         )
 
         search = self.search_query(client, query)[start:end]
