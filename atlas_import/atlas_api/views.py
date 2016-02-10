@@ -56,11 +56,11 @@ class QueryMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
-                q=dict(
-                        type="string",
-                        description="The query to search for",
-                        required=False
-                )
+            q=dict(
+                type="string",
+                description="The query to search for",
+                required=False
+            )
         )
         return result
 
@@ -142,21 +142,15 @@ def mulitimatch_subject_Q(query):
     )
 
 
-def mulitimatch_object_Q(query):
+def match_object_Q(query):
     """
     Object search
     """
-    log.debug('%20s %s', mulitimatch_object_Q.__name__, query)
+    log.debug('%20s %s', match_object_Q.__name__, query)
 
     return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        fields=[
-            'aanduiding',
-            'postcode',
-            'huisnummer_variation',
-            ]
+        'match',
+        _all=query,
     )
 
 
@@ -383,14 +377,13 @@ def search_object_query(view, client, query):
     """
     Execute search in Objects
     """
-    return (
+    search = (
         Search(client)
         .index(BRK)
-        .query(
-            mulitimatch_object_Q(query)
-        )
-        .sort(*add_sorting())
+        .query(match_object_Q(query))
     )
+
+    return search
 
 
 def search_openbare_ruimte_query(view, client, query):

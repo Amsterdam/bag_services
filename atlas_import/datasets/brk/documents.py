@@ -49,7 +49,8 @@ def from_kadastraal_subject(ks):
 def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.pk)
 
-    d.aanduiding = ko.aanduiding
+    d.aanduiding = ko.get_aanduiding_spaties()
+
     d.order = analyzers.orderings['kadastraal_object']
 
     d.subtype = 'kadestraal_object'
