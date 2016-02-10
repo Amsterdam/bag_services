@@ -326,7 +326,7 @@ def search_subject_query(view, client, query):
     Execute search on adresses
     """
     return (
-        Search(client)
+        Search()
         .using(client)
         .index(BRK)
         .query(
