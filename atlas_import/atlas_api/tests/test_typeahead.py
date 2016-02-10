@@ -17,7 +17,6 @@ class TypeaheadTest(APITestCase):
         super().setUpClass()
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
-
             naam="Anjeliersstraat")
 
         bag_factories.NummeraanduidingFactory.create(
@@ -75,14 +74,15 @@ class TypeaheadTest(APITestCase):
         response = self.client.get('/api/atlas/typeahead/', dict(q="a"))
         self.assertEqual(response.status_code, 200)
 
-        lst = response.data['verblijfsobject']
+        # self.assertIn("verblijfsobject", str(response.data))
+        lst = response.data['verblijfsobject ~ 6']
         self.assertEqual(len(lst), 5)
 
     def test_match_adresseerbaar_object(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="anjelier"))
         self.assertEqual(response.status_code, 200)
-        # vbos = response.data['verblijfsobject']
-        obs = [ob['item'] for ob in response.data['openbare ruimte']]
+
+        obs = [ob['item'] for ob in response.data['weg ~ 1']]
         self.assertIn("Anjeliersstraat", str(obs))
         self.assertIn("Anjeliersstraat 11", str(response.data))
 

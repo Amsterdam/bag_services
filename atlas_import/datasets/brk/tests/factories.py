@@ -110,6 +110,7 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     geometrie = random_poly()
 
 
+
 class ZakelijkRechtFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.ZakelijkRecht

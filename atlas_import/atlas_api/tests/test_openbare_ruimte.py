@@ -62,5 +62,5 @@ class SubjectSearchTest(APITestCase):
             response.data['results'][1]['subtype']
         ]
 
-        self.assertIn("Weg", results)
-        self.assertIn("Water", results)
+        self.assertIn("weg", results)
+        self.assertIn("water", results)

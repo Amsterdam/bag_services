@@ -392,6 +392,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         ]
 
     def __str__(self):
+
         result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
         if self._huisletter:
             result += self._huisletter

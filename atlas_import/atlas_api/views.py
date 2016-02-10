@@ -28,6 +28,10 @@ BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
+if 'test' not in BRK:
+    BRK += 'test'
+
+
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
@@ -36,16 +40,16 @@ def _get_url(request, hit):
 
     if doc_type in _details:
         return rest.get_links(
-                view_name=_details[doc_type],
-                kwargs=dict(pk=id), request=request)
+            view_name=_details[doc_type],
+            kwargs=dict(pk=id), request=request)
 
     # hit must have subtype
     assert hit.subtype
 
     if hit.subtype in _details:
         return rest.get_links(
-                view_name=_details[hit.subtype],
-                kwargs=dict(pk=id), request=request)
+            view_name=_details[hit.subtype],
+            kwargs=dict(pk=id), request=request)
 
     return None
 
@@ -70,25 +74,25 @@ def mulitimatch_Q(query):
     log.debug('%20s %s', mulitimatch_Q.__name__, query)
 
     return Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'naam',
-                'straatnaam',
-                'straatnaam_nen',
-                'straatnaam_ptt',
-                'aanduiding',
-                'adres',
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
+            'aanduiding',
+            'adres',
 
-                'postcode',
-                'huisnummer'
-                'huisnummer_variation',
-            ]
+            'postcode',
+            'huisnummer'
+            'huisnummer_variation',
+        ]
     )
 
 
@@ -263,17 +267,18 @@ def wildcard_Q(query):
     )
 
 
-def wildcard_Q2(query):
+def fuzzy_Q(query):
+
     fuzzy_fields = [
-        "openbare_ruimte.naam",
-        "kadastraal_subject.geslachtsnaam",
-        "adres",
+        'openbare_ruimte.naam',
+        'kadastraal_subject.geslachtsnaam',
+        'adres',
 
         'straatnaam',
         'straatnaam_nen',
         'straatnaam_ptt',
 
-        # "postcode",
+        'postcode^2',
 
         # "ligplaats.adres",
         # "standplaats.adres",
@@ -282,7 +287,8 @@ def wildcard_Q2(query):
 
     return Q("multi_match",
              query=query, fuzziness="auto",
-             max_expansions=50,
+             type="cross_fields",
+             max_expansions=10,
              prefix_length=2, fields=fuzzy_fields)
 
 
@@ -348,12 +354,12 @@ def search_adres_query(view, client, query):
     """
     return (
         Search()
-            .using(client)
-            .index(BAG, BRK, NUMMERAANDUIDING)
-            .query(
-                mulitimatch_adres_Q(query)
+        .using(client)
+        .index(BAG, BRK, NUMMERAANDUIDING)
+        .query(
+            mulitimatch_adres_Q(query)
         )
-            .sort(*add_sorting())
+        .sort(*add_sorting())
     )
 
 
@@ -362,14 +368,12 @@ def search_subject_query(view, client, query):
     Execute search on adresses
     """
     return (
-        Search()
-            .using(client)
-            # .filter("term", category="search")
-            .index(BRK)
-            .query(
-                mulitimatch_subject_Q(query)
-        )
-            .sort(*add_sorting())
+        Search(client)
+        .using(client)
+        .index(BRK)
+        .query(
+            mulitimatch_subject_Q(query)
+        ).sort(*add_sorting())
     )
 
 
@@ -454,7 +458,7 @@ def test_search_query(view, client, query):
 
     # add aggregations
     a = A('terms', field='subtype', size=100)
-    b = A('terms', field='_type', size=100)
+    # b = A('terms', field='_type', size=100)
 
     # tops = A('top_hits', size=1)
 
@@ -484,54 +488,105 @@ def autocomplete_query(client, query):
 
         "huisnummer_variation",
 
-        "kadastraal_subject.geslachtsnaam",
+        "kadastraal_subject.geslachtsnaam^2",
         "kadastraal_subject.naam",
         "kadastraal_object.aanduiding",
     ]
 
     completions = [
         "naam",
+        "straatnaam",
+        "straatnaam_nen",
+        "straatnaam_ptt",
         "adres",
         "postcode",
         "geslachtsnaam",
         "aanduiding",
     ]
 
-    return (
+    # aggregation
+    a = A('terms', field='subtype', size=8)
+
+    tops = A('top_hits', size=4)
+
+    search = (
         Search()
-            .using(client)
-            .index(BAG, BRK, NUMMERAANDUIDING)
-            .query(
-                Q("multi_match",
-                  query=query, type="phrase_prefix", fields=match_fields)
-                | wildcard_Q2(query))
-            .highlight(*completions, pre_tags=[''], post_tags=[''])
+        .using(client)
+        .index(BAG, BRK, NUMMERAANDUIDING)
+        .query(
+            Q("multi_match",
+                query=query,
+                type="phrase_prefix",
+                # slob=2,
+                prefix_length=2,
+                fields=match_fields)
+            | fuzzy_Q(query))
+        .highlight(*completions, pre_tags=[''], post_tags=[''])
     )
+
+    search.aggs.bucket('by_subtype', a).bucket('top', tops)
+
+    # search.aggs.bucket('by_subtype', a)  # .bucket('top', tops)
+
+    return search
+
+
+def _add_aggregation_counts(result, matches):
+    # go add aggregations counts to keys
+    for bucket in result.aggregations['by_subtype']['buckets']:
+        items = matches.get(bucket.key, [])
+        subtype_key = '%s ~ %s' % (bucket.key, bucket.doc_count)
+        matches.pop(bucket.key, None)
+        matches[subtype_key] = items
+
+
+def _order_matches(matches):
+    for sub_type in matches.keys():
+        count_values = sorted(
+            [(count, m)
+                for m, count in matches[sub_type].items()], reverse=True)
+
+        matches[sub_type] = [
+            dict(item=m, score=count) for count, m in count_values]
+
+
+def _filter_highlights(highlight, sub_type, query, matches):
+    """
+    Given auto complete highligts make sure query matches suggestion
+    """
+    for key in highlight:
+        found_highlights = highlight[key]
+
+        for match_field_value in found_highlights:
+            # #make sure query is in the match
+            if not match_field_value.lower().startswith(query.lower()):
+                continue
+            old = matches[sub_type].setdefault(match_field_value, 0)
+            # import ipdb; ipdb.set_trace()
+            matches[sub_type][match_field_value] = old + 1
 
 
 def get_autocomplete_response(client, query):
-    result = autocomplete_query(client, query)[0:20].execute()
+
+    result = autocomplete_query(client, query).execute()
+
     matches = OrderedDict()
 
-    # group_by doc_type
-    for r in result:
-        doc_type = r.meta.doc_type.replace('_', ' ')
+    # group_sugestions by sub_type
+    for hit in result:
 
-        if doc_type == 'nummeraanduiding':
-            doc_type = r.subtype
+        sub_type = hit.subtype
 
-        if doc_type not in matches:
-            matches[doc_type] = OrderedDict()
+        if sub_type not in matches:
+            matches[sub_type] = OrderedDict()
 
-        h = r.meta.highlight
-        for key in h:
-            highlights = h[key]
-            for match in highlights:
-                matches[doc_type][match] = 1
+        highlight = hit.meta.highlight
 
-    for doc_type in matches.keys():
-        matches[doc_type] = [
-                                dict(item=m) for m in matches[doc_type].keys()][:5]
+        _filter_highlights(highlight, sub_type, query, matches)
+
+    _order_matches(matches)
+
+    _add_aggregation_counts(result, matches)
 
     return matches
 
@@ -563,9 +618,10 @@ class TypeaheadViewSetOld(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
-        query = query.lower()
+        # query = query.lower()
 
         response = get_autocomplete_response(self.client, query)
+
         return Response(response)
 
 
@@ -645,14 +701,16 @@ class SearchViewSet(viewsets.ViewSet):
         end = (page * self.page_size)
 
         query = request.query_params['q']
-        query = query.lower()
 
         client = Elasticsearch(
-                settings.ELASTIC_SEARCH_HOSTS,
-                raise_on_error=True
+            settings.ELASTIC_SEARCH_HOSTS,
+            raise_on_error=True
         )
 
         search = self.search_query(client, query)[start:end]
+
+        if settings.DEBUG:
+            log.debug(search.to_dict())
 
         try:
             result = search.execute()
@@ -690,6 +748,11 @@ class SearchViewSet(viewsets.ViewSet):
             self.normalize_bucket(field, request)
             for field in result.aggregations['by_subtype']['buckets']]
 
+    def normalize_bucket(self, field, request):
+        result = OrderedDict()
+        result.update(field.to_dict())
+        return result
+
     def get_url(self, request, hit):
         """
         """
@@ -705,12 +768,6 @@ class SearchViewSet(viewsets.ViewSet):
         #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
-        return result
-
-    def normalize_bucket(self, field, request):
-        # print(field)
-        result = OrderedDict()
-        result.update(field.to_dict())
         return result
 
 

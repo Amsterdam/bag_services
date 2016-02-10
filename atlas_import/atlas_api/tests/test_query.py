@@ -232,7 +232,7 @@ class QueryTest(APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-                response.data['results'][0]['adres'], "Rozenstraat 228a-1")
+            response.data['results'][0]['adres'], "Rozenstraat 228a-1")
 
     def test_query_postcode_space_huisnummer_huisletter_toevoeging(self):
         response = self.client.get(
@@ -247,7 +247,7 @@ class QueryTest(APITestCase):
 
     def test_query_openbare_ruimte_brug(self):
         response = self.client.get(
-                "/api/atlas/search/", dict(q="brug"))
+            "/api/atlas/search/", dict(q="brug"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -256,21 +256,21 @@ class QueryTest(APITestCase):
         self.assertIn('Brug', response.data['results'][0]['naam'])
 
         self.assertEqual(
-                response.data['results'][0]['subtype'], "Kunstwerk")
+            response.data['results'][0]['subtype'], "kunstwerk")
 
     def test_search_openbare_ruimte_api(self):
         response = self.client.get(
-                "/api/atlas/search/openbareruimte/", dict(q="Prinsengracht"))
+            "/api/atlas/search/openbareruimte/", dict(q="Prinsengracht"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-                response.data['results'][0]['naam'], "Prinsengracht")
+            response.data['results'][0]['naam'], "Prinsengracht")
 
         self.assertEqual(
-                response.data['results'][0]['subtype'], "Water")
+            response.data['results'][0]['subtype'], "water")
 
     def test_search_subject_api(self):
         response = self.client.get(
@@ -281,26 +281,26 @@ class QueryTest(APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-                response.data['results'][0]['naam'], "Kermet de Kikker")
+            response.data['results'][0]['naam'], "Kermet de Kikker")
 
     @skip
     def test_search_object_api(self):
         response = self.client.get(
-                "/api/atlas/search/object/", dict(q="Ligplaatsenstraat 33"))
+            "/api/atlas/search/object/", dict(q="Ligplaatsenstraat 33"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(
-                response.data['results'][0]['adres'], "Ligplaatsenstraat 33")
+            response.data['results'][0]['adres'], "Ligplaatsenstraat 33")
 
     def test_search_adres_api(self):
         response = self.client.get(
-                "/api/atlas/search/adres/", dict(q="1016 SZ 228 a-1"))
+            "/api/atlas/search/adres/", dict(q="1016 SZ 228 a-1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
-                response.data['results'][0]['adres'], "Rozenstraat 228a-1")
+            response.data['results'][0]['adres'], "Rozenstraat 228a-1")

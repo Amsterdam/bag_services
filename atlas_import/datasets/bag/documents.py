@@ -219,7 +219,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.type = 'Openbare ruimte'
-    d.subtype = o.get_type_display()
+    d.subtype = o.get_type_display().lower()
     d.naam = o.naam
     postcodes = set()
 
