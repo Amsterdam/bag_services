@@ -104,23 +104,23 @@ def mulitimatch_adres_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'naam',
-                'straatnaam',
-                'straatnaam_nen',
-                'straatnaam_ptt',
-                'aanduiding',
-                'adres',
-                'postcode',
-                'huisnummer_variation',
-                'kadastraal_object.aanduiding']
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
+            'aanduiding',
+            'adres',
+            'postcode',
+            'huisnummer_variation',
+            'kadastraal_object.aanduiding']
     )
 
 
@@ -132,15 +132,15 @@ def mulitimatch_subject_Q(query):
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
-            "multi_match",
-            query=query,
-            type="phrase_prefix",
-            slop=14,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'naam',
-                'geslachtsnaam',
-            ]
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        slop=14,  # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'geslachtsnaam',
+        ]
     )
 
 
@@ -163,18 +163,18 @@ def mulitimatch_openbare_ruimte_Q(query):
     log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
 
     return Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'openbare_ruimte.naam',
-                'openbare_ruimte.postcode',
-                'openbare_ruimte.subtype',
-            ]
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'openbare_ruimte.naam',
+            'openbare_ruimte.postcode',
+            'openbare_ruimte.subtype',
+        ]
     )
 
 
@@ -195,64 +195,25 @@ def mulitimatch_nummeraanduiding_Q(query):
     """
 
     return Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'naam',
-                'straatnaam',
-                'straatnaam_nen',
-                'straatnaam_ptt',
-                'aanduiding',
-                'adres',
+        "multi_match",
+        query=query,
+        # type="most_fields",
+        # type="phrase",
+        type="phrase_prefix",
+        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+        max_expansions=12,
+        fields=[
+            'naam',
+            'straatnaam',
+            'straatnaam_nen',
+            'straatnaam_ptt',
+            'aanduiding',
+            'adres',
 
-                'postcode',
-                'huisnummer'
-                'huisnummer_variation',
-            ]
-    )
-
-
-def mulitimatch_nummeraanduiding_Q(query):
-    """
-    Nummeraanduiding search
-    """
-    log.debug('%20s %s', mulitimatch_nummeraanduiding_Q.__name__, query)
-
-    """
-    "straatnaam": "Eerste Helmersstraat",
-    "buurtcombinatie": "Helmersbuurt",
-    "huisnummer": 104,
-    "huisnummer_variation": 104,
-    "subtype": "Verblijfsobject",
-    "postcode": "1054EG-104G",
-    "adres": "Eerste Helmersstraat 104G",
-    """
-
-    return Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-            max_expansions=12,
-            fields=[
-                'naam',
-                'straatnaam',
-                'straatnaam_nen',
-                'straatnaam_ptt',
-                'aanduiding',
-                'adres',
-
-                'postcode',
-                'huisnummer'
-                'huisnummer_variation',
-            ]
+            'postcode',
+            'huisnummer'
+            'huisnummer_variation',
+        ]
     )
 
 
@@ -262,8 +223,8 @@ def wildcard_Q(query):
     """
     wildcard = '*{}*'.format(query)
     return Q(
-            "wildcard",
-            naam=dict(value=wildcard),
+        "wildcard",
+        naam=dict(value=wildcard),
     )
 
 
@@ -285,11 +246,12 @@ def fuzzy_Q(query):
         # "verblijfsobject.adres",
     ]
 
-    return Q("multi_match",
-             query=query, fuzziness="auto",
-             type="cross_fields",
-             max_expansions=10,
-             prefix_length=2, fields=fuzzy_fields)
+    return Q(
+        "multi_match",
+        query=query, fuzziness="auto",
+        type="cross_fields",
+        max_expansions=10,
+        prefix_length=2, fields=fuzzy_fields)
 
 
 def add_sorting():
@@ -339,12 +301,12 @@ def default_search_query(view, client, query):
 
     return (
         Search()
-            .using(client)
-            .index(NUMMERAANDUIDING, BAG, BRK)
-            .query(
-                mulitimatch_Q(query)
+        .using(client)
+        .index(NUMMERAANDUIDING, BAG, BRK)
+        .query(
+            mulitimatch_Q(query)
         )
-            .sort(*add_sorting())
+        .sort(*add_sorting())
     )
 
 
