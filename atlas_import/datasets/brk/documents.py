@@ -41,7 +41,7 @@ def from_kadastraal_subject(ks):
 
     d.naam = ks.volledige_naam()
     d.order = analyzers.orderings['kadastraal_subject']
-    d.subtype = 'kadestraal_subject'
+    d.subtype = 'kadastraal_subject'
 
     return d
 
@@ -53,7 +53,7 @@ def from_kadastraal_object(ko):
 
     d.order = analyzers.orderings['kadastraal_object']
 
-    d.subtype = 'kadestraal_object'
+    d.subtype = 'kadastraal_object'
 
     if ko.geometrie:
         centroid = ko.geometrie.centroid
