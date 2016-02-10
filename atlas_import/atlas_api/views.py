@@ -246,7 +246,7 @@ def fuzzy_Q(query):
         "multi_match",
         query=query, fuzziness="auto",
         type="cross_fields",
-        max_expansions=10,
+        max_expansions=50,
         prefix_length=2, fields=fuzzy_fields)
 
 
@@ -429,35 +429,98 @@ def test_search_query(view, client, query):
     return s
 
 
+def kadaster_Q(query):
+
+    match_fields = [
+        "openbare_ruimte.naam^3",
+        "aanduiding",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        boost=3,
+        type="phrase_prefix",
+        fields=match_fields)
+
+
+def straatnaam_Q(query):
+
+    match_fields = [
+        "straatnaam",
+        "straatnaam_nen",
+        "straatnaam_ptt",
+        "adres",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        boost=2,
+        fields=match_fields)
+
+
+def huisnummer_Q(query):
+
+    match_fields = [
+        "huisnummer_variation",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        boost=1,
+        fields=match_fields)
+
+
+def naam_Q(query):
+
+    match_fields = [
+        "geslachtsnaam",
+        "kadastraal_subject.naam",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        boost=1,
+        type="phrase_prefix",
+        fields=match_fields)
+
+
+def postcode_Q(query):
+
+    match_fields = [
+        "postcode",
+        "adres",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        prefix_length=2,
+        fields=match_fields
+    )
+
+
 def autocomplete_query(client, query):
     """
     provice autocomplete suggestions
     """
 
-    match_fields = [
-        "naam",
-        "postcode",
-
-        'straatnaam',
-        'straatnaam_nen',
-        'straatnaam_ptt',
-
-        "adres",
-
-        "huisnummer_variation",
-
-        "kadastraal_subject.geslachtsnaam^2",
-        "kadastraal_subject.naam",
-        "kadastraal_object.aanduiding",
-    ]
-
     completions = [
         "naam",
+
         "straatnaam",
         "straatnaam_nen",
         "straatnaam_ptt",
+
         "adres",
         "postcode",
+
         "geslachtsnaam",
         "aanduiding",
     ]
@@ -470,19 +533,29 @@ def autocomplete_query(client, query):
     search = (
         Search()
         .using(client)
-        .index(BAG, BRK, NUMMERAANDUIDING)
+        # .index(BAG, BRK, NUMMERAANDUIDING)
         .query(
-            Q("multi_match",
-                query=query,
-                type="phrase_prefix",
-                # slob=2,
-                prefix_length=2,
-                fields=match_fields)
-            | fuzzy_Q(query))
+            'bool',
+            should=[
+                postcode_Q(query),
+                kadaster_Q(query),
+                straatnaam_Q(query),
+                huisnummer_Q(query),
+                naam_Q(query),
+                fuzzy_Q(query)
+            ],
+            minimum_should_match=1
+        )
         .highlight(*completions, pre_tags=[''], post_tags=[''])
+        .sort(*add_sorting())
     )
 
     search.aggs.bucket('by_subtype', a).bucket('top', tops)
+
+    if settings.DEBUG:
+        sq = search.to_dict()
+        import json
+        print(json.dumps(sq, indent=4))
 
     # search.aggs.bucket('by_subtype', a)  # .bucket('top', tops)
 
@@ -517,11 +590,27 @@ def _filter_highlights(highlight, sub_type, query, matches):
 
         for match_field_value in found_highlights:
             # #make sure query is in the match
-            if not match_field_value.lower().startswith(query.lower()):
-                continue
+            q = query.lower()
+            mf = match_field_value.lower()
+            if not mf.startswith(q):
+                if q not in mf:
+                    continue
+
             old = matches[sub_type].setdefault(match_field_value, 0)
             # import ipdb; ipdb.set_trace()
             matches[sub_type][match_field_value] = old + 1
+
+
+def _determine_sub_type(hit):
+
+    if not hasattr(hit, 'subtype'):
+        sub_type = hit.meta.doc_type
+        log.debug('subtype missing %s' % hit)
+    else:
+        # this should always be the case
+        sub_type = hit.subtype
+
+    return sub_type
 
 
 def get_autocomplete_response(client, query):
@@ -533,7 +622,8 @@ def get_autocomplete_response(client, query):
     # group_sugestions by sub_type
     for hit in result:
 
-        sub_type = hit.subtype
+        # import ipdb; ipdb.set_trace()
+        sub_type = _determine_sub_type(hit)
 
         if sub_type not in matches:
             matches[sub_type] = OrderedDict()
