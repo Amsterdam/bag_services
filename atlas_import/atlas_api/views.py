@@ -28,10 +28,6 @@ BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
-if 'test' not in BRK:
-    BRK += 'test'
-
-
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
