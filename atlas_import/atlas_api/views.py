@@ -63,11 +63,11 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def mulitimatch_Q(query):
+def multimatch_Q(query):
     """
     main 'One size fits all' search query used
     """
-    log.debug('%20s %s', mulitimatch_Q.__name__, query)
+    log.debug('%20s %s', multimatch_Q.__name__, query)
 
     return Q(
         "multi_match",
@@ -92,11 +92,11 @@ def mulitimatch_Q(query):
     )
 
 
-def mulitimatch_adres_Q(query):
+def multimatch_adres_Q(query):
     """
     Adres search query used
     """
-    log.debug('%20s %s', mulitimatch_adres_Q.__name__, query)
+    log.debug('%20s %s', multimatch_adres_Q.__name__, query)
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
@@ -120,11 +120,11 @@ def mulitimatch_adres_Q(query):
     )
 
 
-def mulitimatch_subject_Q(query):
+def multimatch_subject_Q(query):
     """
     Adres search query used
     """
-    log.debug('%20s %s', mulitimatch_subject_Q.__name__, query)
+    log.debug('%20s %s', multimatch_subject_Q.__name__, query)
     log.debug('using indices %s %s', BAG, BRK)
 
     return Q(
@@ -152,11 +152,11 @@ def match_object_Q(query):
     )
 
 
-def mulitimatch_openbare_ruimte_Q(query):
+def multimatch_openbare_ruimte_Q(query):
     """
     Openbare ruimte search
     """
-    log.debug('%20s %s', mulitimatch_openbare_ruimte_Q.__name__, query)
+    log.debug('%20s %s', multimatch_openbare_ruimte_Q.__name__, query)
 
     return Q(
         "multi_match",
@@ -174,11 +174,11 @@ def mulitimatch_openbare_ruimte_Q(query):
     )
 
 
-def mulitimatch_nummeraanduiding_Q(query):
+def multimatch_nummeraanduiding_Q(query):
     """
     Nummeraanduiding search
     """
-    log.debug('%20s %s', mulitimatch_nummeraanduiding_Q.__name__, query)
+    log.debug('%20s %s', multimatch_nummeraanduiding_Q.__name__, query)
 
     """
     "straatnaam": "Eerste Helmersstraat",
@@ -300,7 +300,7 @@ def default_search_query(view, client, query):
         .using(client)
         .index(NUMMERAANDUIDING, BAG, BRK)
         .query(
-            mulitimatch_Q(query)
+            multimatch_Q(query)
         )
         .sort(*add_sorting())
     )
@@ -315,7 +315,7 @@ def search_adres_query(view, client, query):
         .using(client)
         .index(BAG, BRK, NUMMERAANDUIDING)
         .query(
-            mulitimatch_adres_Q(query)
+            multimatch_adres_Q(query)
         )
         .sort(*add_sorting())
     )
@@ -330,7 +330,7 @@ def search_subject_query(view, client, query):
         .using(client)
         .index(BRK)
         .query(
-            mulitimatch_subject_Q(query)
+            multimatch_subject_Q(query)
         ).sort(*add_sorting())
     )
 
@@ -359,7 +359,7 @@ def search_openbare_ruimte_query(view, client, query):
         .using(client)
         .index(BAG)
         .query(
-            mulitimatch_openbare_ruimte_Q(query)
+            multimatch_openbare_ruimte_Q(query)
         )
         .sort(*add_sorting())
     )
@@ -374,7 +374,7 @@ def search_nummeraanduiding_query(view, client, query):
         .using(client)
         .index(NUMMERAANDUIDING)
         .query(
-            mulitimatch_nummeraanduiding_Q(query)
+            multimatch_nummeraanduiding_Q(query)
         )
         .sort(*add_nummerduiding_sorting())
     )
@@ -533,7 +533,7 @@ def autocomplete_query(client, query):
     search = (
         Search()
         .using(client)
-        # .index(BAG, BRK, NUMMERAANDUIDING)
+        .index(BAG, BRK, NUMMERAANDUIDING)
         .query(
             'bool',
             should=[
@@ -578,7 +578,7 @@ def _order_matches(matches):
                 for m, count in matches[sub_type].items()], reverse=True)
 
         matches[sub_type] = [
-            dict(item=m, score=count) for count, m in count_values]
+            dict(item=m, score=count) for count, m in count_values[:5]]
 
 
 def _filter_highlights(highlight, sub_type, query, matches):
