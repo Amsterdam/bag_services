@@ -91,11 +91,15 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
         model = models.KadastraalObject
 
     pk = fuzzy.FuzzyText(length=60)
-    aanduiding = factory.LazyAttribute(lambda obj: kadaster.get_aanduiding(obj.kadastrale_gemeente.id,
-                                                                           obj.sectie.sectie,
-                                                                           obj.perceelnummer,
-                                                                           obj.index_letter,
-                                                                           obj.index_nummer))
+    aanduiding = factory.LazyAttribute(
+        lambda obj: kadaster.get_aanduiding(
+            obj.kadastrale_gemeente.id,
+            obj.sectie.sectie,
+            obj.perceelnummer,
+            obj.index_letter,
+            obj.index_nummer))
+
+
     kadastrale_gemeente = factory.SubFactory(KadastraleGemeenteFactory)
     sectie = factory.SubFactory(KadastraleSectieFactory)
     perceelnummer = fuzzy.FuzzyInteger(low=0, high=9999)
@@ -104,6 +108,7 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     grootte = fuzzy.FuzzyInteger(low=10, high=1000)
     register9_tekst = fuzzy.FuzzyText(length=50)
     geometrie = random_poly()
+
 
 
 class ZakelijkRechtFactory(factory.DjangoModelFactory):

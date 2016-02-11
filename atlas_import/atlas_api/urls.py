@@ -82,6 +82,7 @@ router.register(r'brk/kadastrale-gemeente',
                 datasets.brk.views.KadastraleGemeenteViewSet)
 router.register(r'brk/kadastrale-sectie',
                 datasets.brk.views.KadastraleSectieViewSet)
+
 router.register(r'brk/subject', datasets.brk.views.KadastraalSubjectViewSet)
 router.register(r'brk/object', datasets.brk.views.KadastraalObjectViewSet)
 router.register(r'brk/zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)

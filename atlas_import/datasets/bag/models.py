@@ -265,36 +265,35 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     huisletter = models.CharField(max_length=1, null=True)
     huisnummer_toevoeging = models.CharField(max_length=4, null=True)
     postcode = models.CharField(max_length=6, null=True)
-    type = models.CharField(
-        max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
+    type = models.CharField(max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     adres_nummer = models.CharField(max_length=10, null=True)
     vervallen = models.BooleanField(default=False)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    openbare_ruimte = models.ForeignKey(
-        OpenbareRuimte, related_name='adressen')
+    openbare_ruimte = models.ForeignKey(OpenbareRuimte, related_name='adressen')
 
-    ligplaats = models.ForeignKey(
-        'Ligplaats', null=True, related_name='adressen')
-    standplaats = models.ForeignKey(
-        'Standplaats', null=True, related_name='adressen')
-    verblijfsobject = models.ForeignKey(
-        'Verblijfsobject', null=True, related_name='adressen')
+    ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
+    standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')
+    verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
 
     hoofdadres = models.NullBooleanField(default=None)
+
+    # gedenormaliseerde velden
+    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
 
     class Meta:
         verbose_name = "Nummeraanduiding"
         verbose_name_plural = "Nummeraanduidingen"
-        ordering = (
-            'openbare_ruimte__naam',
-            'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+        ordering = ('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+        index_together = (
+            ('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+        )
 
     def __str__(self):
         return self.adres()
 
     def adres(self):
-        return '%s %s' % (self.openbare_ruimte.naam, self.toevoeging)
+        return '%s %s' % (self._openbare_ruimte_naam, self.toevoeging)
 
     @property
     def toevoeging(self):
@@ -393,6 +392,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         ]
 
     def __str__(self):
+
         result = '{} {}'.format(self._openbare_ruimte_naam, self._huisnummer)
         if self._huisletter:
             result += self._huisletter

@@ -1120,6 +1120,11 @@ class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
     doc_types = [documents.Nummeraanduiding]
 
 
+class DeleteNummerAanduidingBackupIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
+    doc_types = [documents.Nummeraanduiding]
+
+
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
     doc_types = [
@@ -1410,6 +1415,13 @@ FROM (
 WHERE sta.id = t.sta_id;
             """)
 
+            c.execute("""
+UPDATE bag_nummeraanduiding num
+SET _openbare_ruimte_naam = opr.naam
+FROM bag_openbareruimte opr
+WHERE opr.id = num.openbare_ruimte_id
+            """)
+
 
 class ImportBagJob(object):
     name = "Import BAG"
@@ -1554,7 +1566,7 @@ class BackupNummerAanduidingJob(object):
 
     def tasks(self):
         return [
-            DeleteNummerAanduidingIndexTask(),
+            DeleteNummerAanduidingBackupIndexTask(),
             BackupNummerAanduidingTask(),
         ]
 
