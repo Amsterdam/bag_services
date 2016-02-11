@@ -343,6 +343,10 @@ def search_object_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_object']
+        )
         .query(
             match_object_Q(query)
         )
