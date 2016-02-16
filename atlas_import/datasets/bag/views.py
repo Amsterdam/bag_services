@@ -271,6 +271,8 @@ class UnescoViewSet(rest.AtlasViewSet):
 
 class BouwblokCodeView(RedirectView):
 
+    permanent = True
+
     def get_redirect_url(self, *args, **kwargs):
         bouwblok = get_object_or_404(models.Bouwblok, code__iexact=kwargs['code'])
         return reverse('bouwblok-detail', kwargs=dict(pk=bouwblok.pk))
