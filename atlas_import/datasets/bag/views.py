@@ -1,5 +1,8 @@
 from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
+from django.views.generic import RedirectView
 from rest_framework import metadata
+from rest_framework.reverse import reverse
 
 from datasets.generic import rest
 from . import serializers, models
@@ -264,3 +267,10 @@ class UnescoViewSet(rest.AtlasViewSet):
     queryset = models.Unesco.objects.all()
     serializer_detail_class = serializers.UnescoDetail
     serializer_class = serializers.Unesco
+
+
+class BouwblokCodeView(RedirectView):
+
+    def get_redirect_url(self, *args, **kwargs):
+        bouwblok = get_object_or_404(models.Bouwblok, code__iexact=kwargs['code'])
+        return reverse('bouwblok-detail', kwargs=dict(pk=bouwblok.pk))

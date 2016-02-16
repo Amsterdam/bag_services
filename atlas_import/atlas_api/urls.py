@@ -136,5 +136,7 @@ if settings.DEBUG:
 
 urlpatterns = [
     url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
+
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
     url(r'^', include(router.urls)),
 ]
