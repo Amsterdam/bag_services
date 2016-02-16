@@ -659,6 +659,7 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     panden = rest.RelatedSummaryField()
     buurt = Buurt()
+    meetbouten = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Bouwblok
@@ -673,7 +674,16 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
             'einde_geldigheid',
             'geometrie',
             'panden',
+            'meetbouten',
         )
+
+    def get_meetbouten(self, obj):
+        link = "/meetbouten/meetbout/?bouwbloknummer={}".format(obj.code)
+        req = self.context.get('request')
+        if req:
+            return req.build_absolute_uri(link)
+
+        return link
 
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
