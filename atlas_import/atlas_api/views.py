@@ -5,7 +5,7 @@ from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Search, Q, A, F
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -63,35 +63,6 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def multimatch_Q(query):
-    """
-    main 'One size fits all' search query used
-    """
-    log.debug('%20s %s', multimatch_Q.__name__, query)
-
-    return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
-
-            'postcode',
-            'huisnummer'
-            'huisnummer_variation',
-        ]
-    )
-
-
 def multimatch_adres_Q(query):
     """
     Adres search query used
@@ -109,13 +80,11 @@ def multimatch_adres_Q(query):
         max_expansions=12,
         fields=[
             'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
+            'straatnaam_all',
             'adres',
             'postcode',
             'huisnummer_variation',
+            'toevoeging_variation',
             'kadastraal_object.aanduiding']
     )
 
@@ -200,14 +169,11 @@ def multimatch_nummeraanduiding_Q(query):
         max_expansions=12,
         fields=[
             'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
+            'straatnaam_all',
             'aanduiding',
             'adres',
 
             'postcode',
-            'huisnummer'
             'huisnummer_variation',
         ]
     )
@@ -231,15 +197,9 @@ def fuzzy_Q(query):
         'kadastraal_subject.geslachtsnaam',
         'adres',
 
-        'straatnaam',
-        'straatnaam_nen',
-        'straatnaam_ptt',
+        'straatnaam_all',
 
-        'postcode^2',
-
-        # "ligplaats.adres",
-        # "standplaats.adres",
-        # "verblijfsobject.adres",
+        'postcode',
     ]
 
     return Q(
@@ -255,16 +215,57 @@ def add_sorting():
     Give human understandable sorting to the output
     """
     return (
+
         {"order": {
             "order": "asc", "missing": "_last", "unmapped_type": "long"}},
+
+        '_score',
+
         {"straatnaam": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+
         {"huisnummer": {
             "order": "asc", "missing": "_first", "unmapped_type": "long"}},
-        {"adres": {
+
+        {"toevoeging": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        '-_score',
+
         # 'naam',
+    )
+
+
+def add_default_sorting():
+    """
+    Give human understandable sorting to the output
+    """
+    return (
+
+        '_score',
+
+        {"straatnaam": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+
+        {"huisnummer": {
+            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
+
+        {"toevoeging": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+
+    )
+
+
+def add_sorting_ob():
+    """
+    Give human understandable sorting to the output
+    """
+    return (
+        {"order": {
+            "order": "asc", "missing": "_last", "unmapped_type": "long"}},
+
+        '_score',
+
+        {"straatnaam": {
+            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
     )
 
 
@@ -275,14 +276,18 @@ def add_nummerduiding_sorting():
     return (
         {"order": {
             "order": "asc", "missing": "_last", "unmapped_type": "long"}},
+
+        '_score',
+
         {"straatnaam": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+
         {"huisnummer": {
             "order": "asc", "missing": "_first", "unmapped_type": "long"}},
-        {"adres": {
+
+        {"toevoeging": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        '-_score',
-        'adres'
+
     )
 
 
@@ -297,12 +302,28 @@ def default_search_query(view, client, query):
 
     return (
         Search()
+        # .params(search_type='dfs_query_then_fetch')
         .using(client)
         .index(NUMMERAANDUIDING, BAG, BRK)
         .query(
-            multimatch_Q(query)
+            'bool',
+            should=[
+                straatnaam_Q(query),
+                postcode_Q(query),
+
+                huisnummer_Q(query),
+                huisletters_Q(query),
+
+                adres_Q(query),
+                aanduiding_Q(query),
+                multimatch_subject_Q(query),
+
+                huisnummer_variation_Q(query)
+
+            ],
+            minimum_should_match=1
         )
-        .sort(*add_sorting())
+        .sort(*add_default_sorting())
     )
 
 
@@ -315,8 +336,13 @@ def search_adres_query(view, client, query):
         .using(client)
         .index(BAG, BRK, NUMMERAANDUIDING)
         .query(
-            multimatch_adres_Q(query)
-        )
+            'bool',
+            should=[
+                straatnaam_Q(query),
+                huisnummer_Q(query),
+                postcode_Q(query),
+            ],
+            minimum_should_match=1)
         .sort(*add_sorting())
     )
 
@@ -365,7 +391,7 @@ def search_openbare_ruimte_query(view, client, query):
         .query(
             multimatch_openbare_ruimte_Q(query)
         )
-        .sort(*add_sorting())
+        .sort(*add_sorting_ob())
     )
 
 
@@ -375,10 +401,28 @@ def search_nummeraanduiding_query(view, client, query):
     """
     return (
         Search()
+        .params(search_type='dfs_query_then_fetch')
         .using(client)
         .index(NUMMERAANDUIDING)
         .query(
-            multimatch_nummeraanduiding_Q(query)
+            Q(
+                'bool',
+                should=[
+                    straatnaam_Q(query),
+                    huisnummer_Q(query),
+                    toevoeging_Q(query),
+                    huisletters_Q(query),
+
+                    multimatch_adres_Q(query),
+
+                    postcode_Q(query),
+                    adres_Q(query),
+
+                    huisnummer_variation_Q(query)
+
+                ],
+                minimum_should_match=1,
+            )
         )
         .sort(*add_nummerduiding_sorting())
     )
@@ -402,14 +446,11 @@ def test_search_query(view, client, query):
               # max_expansions=12,
               fields=[
                   'naam',
-                  'straatnaam',
-                  'straatnaam_nen',
-                  'straatnaam_ptt',
+                  'straatnaam_all',
                   'aanduiding',
                   'adres',
 
                   'postcode',
-                  'huisnummer'
                   'huisnummer_variation',
                   'type'
               ],
@@ -436,14 +477,13 @@ def test_search_query(view, client, query):
 def kadaster_Q(query):
 
     match_fields = [
-        "openbare_ruimte.naam^3",
+        "openbare_ruimte.naam",
         "aanduiding",
     ]
 
     return Q(
         "multi_match",
         query=query,
-        boost=3,
         type="phrase_prefix",
         fields=match_fields)
 
@@ -451,31 +491,68 @@ def kadaster_Q(query):
 def straatnaam_Q(query):
 
     match_fields = [
-        "straatnaam",
-        "straatnaam_nen",
-        "straatnaam_ptt",
-        "adres",
+        "straatnaam_all",
     ]
 
     return Q(
         "multi_match",
-        query=query,
         type="phrase_prefix",
-        boost=2,
+        query=query,
+        prefix_length=2,
         fields=match_fields)
 
 
 def huisnummer_Q(query):
 
     match_fields = [
+        "huisnummer_str",
+        ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        fields=match_fields)
+
+
+def huisnummer_variation_Q(query):
+
+    match_fields = [
         "huisnummer_variation",
+        "toevoeging_variation",
+
     ]
 
     return Q(
         "multi_match",
         query=query,
-        type="phrase_prefix",
-        boost=1,
+        boost=0.1,
+        fields=match_fields)
+
+
+def toevoeging_Q(query):
+
+    match_fields = [
+        "toevoeging",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        boost=1.5,
+        fields=match_fields)
+
+
+def huisletters_Q(query):
+
+    match_fields = [
+        "huisletter",
+        "huistoevoeging"
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        boost=3,
         fields=match_fields)
 
 
@@ -489,8 +566,9 @@ def naam_Q(query):
     return Q(
         "multi_match",
         query=query,
-        boost=1,
         type="phrase_prefix",
+        slop=12,
+        prefix_length=2,
         fields=match_fields)
 
 
@@ -498,7 +576,35 @@ def postcode_Q(query):
 
     match_fields = [
         "postcode",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        prefix_length=2,
+        fields=match_fields
+    )
+
+
+def adres_Q(query):
+
+    match_fields = [
         "adres",
+    ]
+
+    return Q(
+        "multi_match",
+        query=query,
+        type="phrase_prefix",
+        prefix_length=2,
+        fields=match_fields
+    )
+
+
+def aanduiding_Q(query):
+
+    match_fields = [
+        "aanduiding",
     ]
 
     return Q(
@@ -541,11 +647,18 @@ def autocomplete_query(client, query):
         .query(
             'bool',
             should=[
+
                 postcode_Q(query),
-                kadaster_Q(query),
                 straatnaam_Q(query),
+
                 huisnummer_Q(query),
+                toevoeging_Q(query),
+                huisletters_Q(query),
+
                 naam_Q(query),
+
+                kadaster_Q(query),
+
                 fuzzy_Q(query)
             ],
             minimum_should_match=1
@@ -556,7 +669,7 @@ def autocomplete_query(client, query):
 
     search.aggs.bucket('by_subtype', a).bucket('top', tops)
 
-    if settings.DEBUG:
+    if settings.DEBUG or settings.TESTING:
         sq = search.to_dict()
         import json
         print(json.dumps(sq, indent=4))
@@ -573,6 +686,8 @@ def _add_aggregation_counts(result, matches):
         subtype_key = '%s ~ %s' % (bucket.key, bucket.doc_count)
         matches.pop(bucket.key, None)
         matches[subtype_key] = items
+
+    # if items are empty. add top hits?
 
 
 def _order_matches(matches):
@@ -761,8 +876,12 @@ class SearchViewSet(viewsets.ViewSet):
 
         search = self.search_query(client, query)[start:end]
 
-        if settings.DEBUG:
-            log.debug(search.to_dict())
+        if settings.DEBUG or settings.TESTING:
+            sq = search.to_dict()
+            import json
+            print(json.dumps(sq, indent=4))
+
+        log.debug(search.to_dict())
 
         try:
             result = search.execute()
@@ -816,6 +935,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
+        result['score'] = hit.meta.score
         # result['uri'] = _get_url(
         #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
@@ -894,6 +1014,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     url_name = 'search/adres-list'
     search_query = search_nummeraanduiding_query
+    # search_query = search_adres_query
 
 
 class SearchTestViewSet(SearchViewSet):

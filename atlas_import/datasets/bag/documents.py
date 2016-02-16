@@ -7,9 +7,13 @@ from django.conf import settings
 
 class Ligplaats(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
-
     adres = es.String(analyzer=analyzers.adres)
+
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+
+    huisletter = es.String(analyzers=analyzers.toevoeging)
+    huistoevoeging = es.String(analyzers=analyzers.toevoeging)
+
     huisnummer = es.Integer()
 
     postcode = es.String(analyzer=analyzers.postcode)
@@ -68,7 +72,7 @@ class OpenbareRuimte(es.DocType):
 
 class Nummeraanduiding(es.DocType):
     """
-    All bag objects should have one or more adresses
+    All BAG objects should have one or more adresses
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -78,12 +82,16 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(analyzer=analyzers.adres)
-    straatnaam_nen = es.String(analyzers=analyzers.adres)
-    straatnaam_ptt = es.String(analyzers=analyzers.adres)
+    straatnaam_all = es.String(analyzer=analyzers.adres)
+    # straatnaam_nen = es.String(analyzers=analyzers.adres)
+    # straatnaam_ptt = es.String(analyzers=analyzers.adres)
 
     adres = es.String(analyzer=analyzers.adres)
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
     huisnummer = es.Integer()
+    huisnummer_str = es.String()
+    toevoeging = es.String()
+    toevoeging_variation = es.String(analyzers=analyzers.toevoeging)
     postcode = es.String(analyzer=analyzers.postcode)
 
     order = es.Integer()
@@ -106,7 +114,7 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
+        dest.postcode = "{} {}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
 
         dest.huisnummer = adres.huisnummer
@@ -148,14 +156,45 @@ def from_ligplaats(l: models.Ligplaats):
 
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
+
     doc.adres = n.adres()
-    doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
+
+    doc.postcode = "{} {}".format(n.postcode, n.toevoeging)
+
+    doc.straatnaam_all = "{} {} {}".format(
+        n.openbare_ruimte.naam,
+        n.openbare_ruimte.naam_nen,
+        n.openbare_ruimte.naam_ptt
+    )
+
+    # all variations of streets
     doc.straatnaam = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
+
     doc.huisnummer = n.huisnummer
+    # we can use this one in matchers
+    doc.huisnummer_str = n.huisnummer
+
+    huisnummer_all = "{} {} {}".format(
+        n.huisnummer,
+        n.huisletter if n.huisletter else "",
+        n.huisnummer_toevoeging if n.huisnummer_toevoeging else "")
+
+    doc.huisletter = n.huisletter if n.huisletter else ""
+
+    if n.huisnummer_toevoeging:
+        doc.huistoevoeging = n.huisnummer_toevoeging
+
+    # we use this field for ordering
+    # doc.huisnummer_ord = ummer_all.replace(' ', '')
+
+    # we use this field for searching
+    doc.huisnummer_all = huisnummer_all
+
     doc.huisnummer_variation = n.huisnummer
 
+    #
     # if n.buurt:
     #     d.buurt = n.buurt.naam
 
@@ -170,9 +209,6 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
     if n.bron:
         doc.bron = n.bron.omschrijving
-
-    #if not doc.subtype:
-    #    return doc
 
     doc.subtype = n.get_type_display().lower()
 

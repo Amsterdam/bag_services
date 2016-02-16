@@ -4,6 +4,9 @@ from django.conf import settings
 from elasticsearch import helpers
 import elasticsearch
 import elasticsearch_dsl as es
+
+from elasticsearch.client import IndicesClient
+
 from elasticsearch_dsl.connections import connections
 
 from tqdm import tqdm
@@ -104,6 +107,14 @@ class ImportIndexTask(object):
                 raise_on_error=True,
                 refresh=True
             )
+
+        # Testshards put all docs in one shard to make sure we have
+        # correct scores/doc counts and test will succeed
+
+        if settings.TESTING:
+            print('testing')
+            es_index = IndicesClient(client)
+            es_index.optimize('*test', max_num_segments=1)
 
 
 class CopyIndexTask(object):

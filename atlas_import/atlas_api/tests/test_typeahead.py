@@ -55,8 +55,8 @@ class TypeaheadTest(APITestCase):
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        es.indices.refresh(index="_all")
+        #es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
+        #es.indices.refresh(index="_all")
 
     def test_match_openbare_ruimte(self):
         response = self.client.get('/api/atlas/typeahead/', dict(q="an"))
@@ -74,7 +74,6 @@ class TypeaheadTest(APITestCase):
         response = self.client.get('/api/atlas/typeahead/', dict(q="a"))
         self.assertEqual(response.status_code, 200)
 
-        # self.assertIn("verblijfsobject", str(response.data))
         lst = response.data['verblijfsobject ~ 6']
         self.assertEqual(len(lst), 5)
 

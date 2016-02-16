@@ -13,7 +13,7 @@ import datasets.brk.batch
 from batch import batch
 
 
-class SubjectSearchTest(APITestCase):
+class AanduidingenSearchTest(APITestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -64,6 +64,28 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=nen_straat
         )
 
+        metro_station_straat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Metrostation Weesperplein",
+            type='01')
+
+        metro_straat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Weesperplein",
+            type='01')
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=1,
+            huisletter='',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=metro_station_straat
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=1,
+            huisletter='',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=metro_straat
+        )
+
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -73,6 +95,7 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
+
         self.assertEqual(response.data['count'], 1)
 
         first = response.data['results'][0]
@@ -84,7 +107,6 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Prinsengracht 192A")
@@ -106,7 +128,40 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
+        # self.assertEqual(response.data['count'], 1)
+        results = str(response.data['results'][:3])
+
+        self.assertIn(
+            "Marius Cornelis straat 99", results)
+
+    def test_straat_volgorde(self):
+        response = self.client.get(
+            "/api/atlas/search/adres/", dict(q="Weesperplein"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 2)
+
+        score_1 = response.data['results'][0]['score']
+        score_2 = response.data['results'][1]['score']
+
+        # it is possible to mess up oder-ing
+        self.assertTrue(score_1 > score_2)
 
         self.assertEqual(
-            response.data['results'][0]['adres'], "Marius Cornelis straat 99")
+            response.data['results'][0]['adres'], "Weesperplein 1")
+
+        self.assertEqual(
+            response.data['results'][1]['adres'],
+            "Metrostation Weesperplein 1")
+
+    def test_gracht_dash_query(self):
+        response = self.client.get(
+            "/api/atlas/search/adres/", dict(q="prinsengracht 192-A"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        # self.assertEqual(response.data['count'], 1)
+        result = str(response.data['results'][:3])
+
+        self.assertIn("Prinsengracht 192A", result)
