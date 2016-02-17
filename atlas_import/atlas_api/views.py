@@ -300,9 +300,8 @@ def default_search_query(view, client, query):
     """
     log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
 
-    return (
+    search = (
         Search()
-        # .params(search_type='dfs_query_then_fetch')
         .using(client)
         .index(NUMMERAANDUIDING, BAG, BRK)
         .query(
@@ -325,6 +324,11 @@ def default_search_query(view, client, query):
         )
         .sort(*add_default_sorting())
     )
+
+    if settings.TESTING:
+        search.params(search_type='dfs_query_then_fetch')
+
+    return search
 
 
 def search_adres_query(view, client, query):
@@ -399,9 +403,9 @@ def search_nummeraanduiding_query(view, client, query):
     """
     Execute search in Objects
     """
-    return (
+
+    search = (
         Search()
-        .params(search_type='dfs_query_then_fetch')
         .using(client)
         .index(NUMMERAANDUIDING)
         .query(
@@ -426,6 +430,11 @@ def search_nummeraanduiding_query(view, client, query):
         )
         .sort(*add_nummerduiding_sorting())
     )
+
+    if settings.TESTING:
+        search.params(search_type='dfs_query_then_fetch')
+
+    return search
 
 
 def test_search_query(view, client, query):

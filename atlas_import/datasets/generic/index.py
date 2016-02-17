@@ -108,11 +108,10 @@ class ImportIndexTask(object):
                 refresh=True
             )
 
-        # Testshards put all docs in one shard to make sure we have
+        # When testing put all docs in one shard to make sure we have
         # correct scores/doc counts and test will succeed
-
+        # because relavancy score will make more sense
         if settings.TESTING:
-            print('testing')
             es_index = IndicesClient(client)
             es_index.optimize('*test', max_num_segments=1)
 
