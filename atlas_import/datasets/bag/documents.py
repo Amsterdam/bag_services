@@ -91,7 +91,7 @@ class Nummeraanduiding(es.DocType):
     huisnummer = es.Integer()
     huisnummer_str = es.String()
     toevoeging = es.String()
-    toevoeging_variation = es.String(analyzers=analyzers.toevoeging)
+    toevoeging_variation = es.String(analyzer=analyzers.toevoeging)
     postcode = es.String(analyzer=analyzers.postcode)
 
     order = es.Integer()
@@ -164,7 +164,8 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.straatnaam_all = "{} {} {}".format(
         n.openbare_ruimte.naam,
         n.openbare_ruimte.naam_nen,
-        n.openbare_ruimte.naam_ptt
+        n.openbare_ruimte.naam_ptt,
+        n.postcode,
     )
 
     # all variations of streets

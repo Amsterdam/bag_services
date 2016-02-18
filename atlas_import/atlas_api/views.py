@@ -5,7 +5,9 @@ from collections import OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q, A, F
+from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import query as query_dsl
+
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -274,6 +276,7 @@ def add_nummerduiding_sorting():
     Give human understandable sorting to the output
     """
     return (
+
         {"order": {
             "order": "asc", "missing": "_last", "unmapped_type": "long"}},
 
@@ -404,35 +407,45 @@ def search_nummeraanduiding_query(view, client, query):
     Execute search in Objects
     """
 
+    straatnaam = query.split()[0]
+
     search = (
         Search()
         .using(client)
         .index(NUMMERAANDUIDING)
         .query(
-            Q(
+            'function_score',
+            query=Q(
                 'bool',
+                filter=[straatnaam_Q(straatnaam)],
                 should=[
-                    straatnaam_Q(query),
                     huisnummer_Q(query),
                     toevoeging_Q(query),
                     huisletters_Q(query),
 
-                    multimatch_adres_Q(query),
-
+                    # multimatch_adres_Q(query),
+                    straatnaam_Q(straatnaam),
                     postcode_Q(query),
+
                     adres_Q(query),
 
                     huisnummer_variation_Q(query)
 
                 ],
-                minimum_should_match=1,
-            )
+                minimum_should_match=2,
+            ),
+            functions=[
+                query_dsl.SF(
+                    'script_score',
+                    script="_score + (_score/(doc['huisnummer'].value + 1.0))"
+                )
+            ]
         )
-        .sort(*add_nummerduiding_sorting())
+        # .sort(*add_nummerduiding_sorting())
     )
 
-    if settings.TESTING:
-        search.params(search_type='dfs_query_then_fetch')
+    # if settings.TESTING:
+    #    search.params(search_type='dfs_query_then_fetch')
 
     return search
 
@@ -497,17 +510,20 @@ def kadaster_Q(query):
         fields=match_fields)
 
 
+# matches at least with a straatnaam
 def straatnaam_Q(query):
 
     match_fields = [
         "straatnaam_all",
+        "adres",
+        "postcode",
     ]
 
     return Q(
         "multi_match",
         type="phrase_prefix",
         query=query,
-        prefix_length=2,
+        prefix_length=3,
         fields=match_fields)
 
 
@@ -604,6 +620,7 @@ def adres_Q(query):
     return Q(
         "multi_match",
         query=query,
+        boost=2,
         type="phrase_prefix",
         prefix_length=2,
         fields=match_fields

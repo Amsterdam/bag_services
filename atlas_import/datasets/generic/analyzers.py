@@ -137,7 +137,7 @@ toevoeging = es.analyzer(
     'toevoeging',
     tokenizer='standard',
     filter=['standard', 'lowercase'],
-    char_filter=[naam_stripper],
+    char_filter=[naam_stripper]
 )
 
 
