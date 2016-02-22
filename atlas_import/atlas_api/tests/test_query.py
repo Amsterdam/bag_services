@@ -1,3 +1,5 @@
+import unittest
+
 from rest_framework.test import APITestCase
 
 import datasets.bag.batch
@@ -125,15 +127,17 @@ class QueryTest(APITestCase):
         es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
         es.indices.refresh(index="_all")
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_non_matching_query(self):
-        response = self.client.get('/api/atlas/search/', dict(q="qqq"))
+        response = self.client.get('/atlas/search/', dict(q="qqq"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         # self.assertEqual(response.data['count'], 0)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_matching_query(self):
-        response = self.client.get('/api/atlas/search/', dict(q="anjel"))
+        response = self.client.get('/atlas/search/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -145,8 +149,9 @@ class QueryTest(APITestCase):
         self.assertIn("Anjeliersstraat", results)
         self.assertIn("Openbare ruimte", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_case_insensitive(self):
-        response = self.client.get('/api/atlas/search/', dict(q="ANJEl"))
+        response = self.client.get('/atlas/search/', dict(q="ANJEl"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -155,9 +160,10 @@ class QueryTest(APITestCase):
         first = str(response.data['results'][:5])
         self.assertIn("Anjeliersstraat", first)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_adresseerbaar_object(self):
         response = self.client.get(
-            '/api/atlas/search/', dict(q="anjeliersstraat 11"))
+            '/atlas/search/', dict(q="anjeliersstraat 11"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -167,8 +173,9 @@ class QueryTest(APITestCase):
             response.data['results'][0]['adres'].startswith(
                 "Anjeliersstraat 11"))
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_postcode(self):
-        response = self.client.get("/api/atlas/search/", dict(q="1015 x"))
+        response = self.client.get("/atlas/search/", dict(q="1015 x"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -177,9 +184,10 @@ class QueryTest(APITestCase):
         self.assertIn("Marnixkade", str(response.data['results']))
         self.assertIn("Marnixkade 36F", str(response.data['results']))
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_straat_huisnummer_huisletter(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="Rozenstraat 228 a"))
+            "/atlas/search/", dict(q="Rozenstraat 228 a"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -188,9 +196,10 @@ class QueryTest(APITestCase):
         results = str(response.data['results'][:3])
         self.assertIn("Rozenstraat 228a-1", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_straat_huisnummer_huisnummer(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="Rozenstraat 229-1"))
+            "/atlas/search/", dict(q="Rozenstraat 229-1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -199,9 +208,10 @@ class QueryTest(APITestCase):
         self.assertEqual(
             response.data['results'][0]['adres'], "Rozenstraat 229-1")
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_straat_huisnummer_huisletter_toevoeging(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="Rozenstraat 228 a 1"))
+            "/atlas/search/", dict(q="Rozenstraat 228 a 1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -210,9 +220,10 @@ class QueryTest(APITestCase):
 
         self.assertIn("Rozenstraat 228a-1", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_straat_huisnummer_huisletter_toevoeging_enkel(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="Rozenstraat 228 a-1"))
+            "/atlas/search/", dict(q="Rozenstraat 228 a-1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -220,8 +231,9 @@ class QueryTest(APITestCase):
         self.assertEqual(
             response.data['results'][0]['adres'], "Rozenstraat 228a-1")
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_postcode_space(self):
-        response = self.client.get("/api/atlas/search/", dict(q="1016 SZ"))
+        response = self.client.get("/atlas/search/", dict(q="1016 SZ"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -234,8 +246,9 @@ class QueryTest(APITestCase):
         self.assertTrue(
             response.data['results'][1]['adres'].startswith("Rozenstraat"))
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_postcode_space_huisnummer(self):
-        response = self.client.get("/api/atlas/search/", dict(q="1016 SZ 228"))
+        response = self.client.get("/atlas/search/", dict(q="1016 SZ 228"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -244,9 +257,10 @@ class QueryTest(APITestCase):
 
         self.assertIn("Rozenstraat 228", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_postcode_space_huisnummer_huisletter(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="1016 SZ 228 a"))
+            "/atlas/search/", dict(q="1016 SZ 228 a"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -254,9 +268,10 @@ class QueryTest(APITestCase):
         results = str(response.data['results'][:3])
         self.assertIn("Rozenstraat 228a-1", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_postcode_space_huisnummer_huisletter_toevoeging(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="1016 SZ 228 a-1"))
+            "/atlas/search/", dict(q="1016 SZ 228 a-1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -266,9 +281,10 @@ class QueryTest(APITestCase):
         results = str(response.data['results'][:3])
         self.assertIn("Rozenstraat 228a-1", results)
 
+    @unittest.skip("/atlas/search is no longer used")
     def test_query_openbare_ruimte_brug(self):
         response = self.client.get(
-            "/api/atlas/search/", dict(q="brug"))
+            "/atlas/search/", dict(q="brug"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -281,7 +297,7 @@ class QueryTest(APITestCase):
 
     def test_search_openbare_ruimte_api(self):
         response = self.client.get(
-            "/api/atlas/search/openbareruimte/", dict(q="Prinsengracht"))
+            "/atlas/search/openbareruimte/", dict(q="Prinsengracht"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -295,7 +311,7 @@ class QueryTest(APITestCase):
 
     def test_search_subject_api(self):
         response = self.client.get(
-            "/api/atlas/search/kadastraalsubject/", dict(q="kikker"))
+            "/atlas/search/kadastraalsubject/", dict(q="kikker"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -306,7 +322,7 @@ class QueryTest(APITestCase):
 
     def test_search_adres_api(self):
         response = self.client.get(
-            "/api/atlas/search/adres/", dict(q="1016 SZ 228 a 1"))
+            "/atlas/search/adres/", dict(q="1016 SZ 228 a 1"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

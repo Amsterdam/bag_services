@@ -49,7 +49,7 @@ class ObjectSearchTest(APITestCase):
 
     def test_match_object(self):
         response = self.client.get(
-            '/api/atlas/search/kadastraalobject/',
+            '/atlas/search/kadastraalobject/',
             dict(q="ACD00"))
 
         self.assertEqual(response.status_code, 200)
@@ -57,7 +57,7 @@ class ObjectSearchTest(APITestCase):
 
     def test_match_perceelnummer(self):
         response = self.client.get(
-            '/api/atlas/search/kadastraalobject/',
+            '/atlas/search/kadastraalobject/',
             dict(q="10000"))
         self.assertEqual(response.status_code, 200)
         self.assertIn("10000", str(response.data))
