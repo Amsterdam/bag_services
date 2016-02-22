@@ -15,13 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from django.views import generic
 import atlas_api.urls
+import datasets.bag.views
 
 import batch.views as b_views
 
 urlpatterns = [
-    url(r'^api/', include('atlas_api.urls'), name="homepage"),
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
+
+    url(r'^bag/', include(atlas_api.urls.bag.urls)),
+    url(r'^gebieden/', include(atlas_api.urls.gebieden.urls)),
+    url(r'^brk/', include(atlas_api.urls.brk.urls)),
+    url(r'^wkpb/', include(atlas_api.urls.wkpb.urls)),
+    url(r'^atlas/', include(atlas_api.urls.atlas.urls)),
+
     url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
     url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),
     url(r'^admin/', include(admin.site.urls)),
