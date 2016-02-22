@@ -6,6 +6,8 @@ from datasets.generic.rest import AtlasViewSet
 
 class BroncodeView(AtlasViewSet):
     """
+    BroncodeView
+
     Het orgaan dat de beperking heeft opgelegd.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/bronleverancier/)
@@ -18,6 +20,8 @@ class BroncodeView(AtlasViewSet):
 
 class BeperkingView(AtlasViewSet):
     """
+    Wkpd
+
     De Wkpb is de afkorting voor de Wet kenbaarheid publiekrechtelijke beperkingen onroerende zaken.
 
     Sinds 1 juli 2007 verplicht de Wet kenbaarheid publiekrechtelijke beperkingen onroerende zaken (Wkpb) burgemeester
@@ -45,11 +49,14 @@ class BeperkingView(AtlasViewSet):
 
 class BrondocumentView(AtlasViewSet):
     """
+    Brondocument
+
     Het document dat aan de beperking ten grondslag ligt.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/brondocument/)
     """
     serializer_class = serializers.Brondocument
     serializer_detail_class = serializers.BrondocumentDetail
+
     queryset = models.Brondocument.objects.all()
     filter_fields = ('bron', 'beperking', )

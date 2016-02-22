@@ -706,6 +706,7 @@ def autocomplete_query(client, query):
 
 
 def _add_aggregation_counts(result, matches):
+
     # go add aggregations counts to keys
     for bucket in result.aggregations['by_subtype']['buckets']:
         items = matches.get(bucket.key, [])
@@ -819,21 +820,41 @@ class TypeaheadViewSetOld(viewsets.ViewSet):
 
 
 class TypeaheadViewSet(TypeaheadViewSetOld):
+
     def get_autocomplete_response(self, client, query):
         return get_autocomplete_response(client, query)
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show autocomplete results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Autcomplete straatnaam / kadaster
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(TypeaheadViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all objects
-    that match the elastic search query.
+    that match the elastic search query in the 'basisregistratie'
 
     *NOTE*
 
     We assume the input is correct but could be incomplete
 
     for example: seaching for a not existing
-    Rozengracht 3 will rerurn Rozengracht 3-1 which does exist
+    Rozengracht 3 will return Rozengracht 3-1 which does exist.
+
     """
 
     metadata_class = QueryMetadata
@@ -880,6 +901,18 @@ class SearchViewSet(viewsets.ViewSet):
             response['_links']['previous'] = None
 
     def list(self, request, *args, **kwargs):
+        """
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek in basisregistraties
+              required: true
+              type: string
+              paramType: query
+        """
+
         if 'q' not in request.query_params:
             return Response([])
 
@@ -969,15 +1002,6 @@ class SearchViewSet(viewsets.ViewSet):
         return result
 
 
-class SearchAdresViewSet(SearchViewSet):
-    """
-    Given a query parameter `q`, this function returns a subset of
-    all adressable objects that match the adres elastic search query.
-    """
-    url_name = 'search/adres-list'
-    search_query = search_adres_query
-
-
 class SearchSubjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -995,6 +1019,24 @@ class SearchSubjectViewSet(SearchViewSet):
     url_name = 'search/kadastraalsubject-list'
     search_query = search_subject_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show kadastraal subject search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek op kadastraal subject
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchSubjectViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchObjectViewSet(SearchViewSet):
     """
@@ -1004,6 +1046,24 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
     search_query = search_object_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show kadastral object search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek kadastraal object
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchObjectViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -1024,6 +1084,24 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     url_name = 'search/openbareruimte-list'
     search_query = search_openbare_ruimte_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show openbare ruimte results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek op openbare ruimte
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchOpenbareRuimteViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """
@@ -1042,7 +1120,43 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     search_query = search_nummeraanduiding_query
     # search_query = search_adres_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show adres/nummeraanduiding search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek op adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchNummeraanduidingViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchTestViewSet(SearchViewSet):
     url_name = 'search/test-list'
     search_query = test_search_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show test search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Zoek op met test functie..(DEVELOPMENT ONLY)
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchTestViewSet, self).list(
+            request, *args, **kwargs)

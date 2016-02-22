@@ -35,4 +35,6 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^status/', include('health.urls', namespace='health')),
+
+    url(r'^docs/', include('rest_framework_swagger.urls')),
 ]

@@ -12,20 +12,25 @@ class ExpansionMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
-                full=dict(
-                        type="string",
-                        description="If present, related entities are inlined",
-                        required=False
-                )
+            full=dict(
+                type="string",
+                description="If present, related entities are inlined",
+                required=False
+            )
         )
         return result
 
 
 class LigplaatsViewSet(rest.AtlasViewSet):
     """
-    Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
-    al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
-    die bestemd is voor het permanent afmeren van een voor woon-, bedrijfsmatige of recreatieve doeleinden geschikt
+    Ligplaats
+
+    Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan
+    als zodanig aangewezen plaats in het water
+    al dan niet aangevuld met een op de oever aanwezig
+    terrein of een gedeelte daarvan,
+    die bestemd is voor het permanent afmeren van een voor woon-,
+    bedrijfsmatige of recreatieve doeleinden geschikt
     vaartuig.
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/)
@@ -40,8 +45,12 @@ class LigplaatsViewSet(rest.AtlasViewSet):
 
 class StandplaatsViewSet(rest.AtlasViewSet):
     """
-    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen terrein of gedeelte daarvan
-    dat bestemd is voor het permanent plaatsen van een niet direct en niet duurzaam met de aarde verbonden en voor
+    Standplaats
+
+    Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan
+    als zodanig aangewezen terrein of gedeelte daarvan
+    dat bestemd is voor het permanent plaatsen van een
+    niet direct en niet duurzaam met de aarde verbonden en voor
     woon -, bedrijfsmatige, of recreatieve doeleinden geschikte ruimte.
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/)
@@ -56,9 +65,14 @@ class StandplaatsViewSet(rest.AtlasViewSet):
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
     """
-    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en voor woon -, bedrijfsmatige, of recreatieve
-    doeleinden geschikte eenheid van gebruik die ontsloten wordt via een eigen afsluitbare toegang vanaf de openbare
-    weg, een erf of een gedeelde verkeersruimte, onderwerp kan zijn van goederenrechtelijke rechtshandelingen en in
+    Verblijfsobject
+
+    Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden
+    gelegen en voor woon -, bedrijfsmatige, of recreatieve
+    doeleinden geschikte eenheid van gebruik die ontsloten wordt
+    via een eigen afsluitbare toegang vanaf de openbare
+    weg, een erf of een gedeelde verkeersruimte, onderwerp kan
+    zijn van goederenrechtelijke rechtshandelingen en in
     functioneel opzicht zelfstandig is.
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/)
@@ -73,8 +87,12 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
-    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door het bevoegde gemeentelijke orgaan als
-    zodanig toegekende aanduiding van een verblijfsobject, standplaats of ligplaats.
+    Nummeraanduiding
+
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd,
+    is een door het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject,
+    standplaats of ligplaats.
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
@@ -82,7 +100,8 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Nummeraanduiding.objects.all()
     queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
-            Prefetch('verblijfsobject__panden', queryset=models.Pand.objects.select_related('bouwblok'))
+        Prefetch('verblijfsobject__panden',
+                 queryset=models.Pand.objects.select_related('bouwblok'))
     ).select_related(
             'status',
             'openbare_ruimte',
@@ -94,13 +113,18 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
-    filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
+    filter_fields = (
+        'verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
 
 
 class PandViewSet(rest.AtlasViewSet):
     """
-    Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die
-    direct en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
+    Pand
+
+    Een PAND is de kleinste bij de totstandkoming functioneel en
+    bouwkundig-constructief zelfstandige eenheid die
+    direct en duurzaam met de aarde is verbonden en
+    betreedbaar en afsluitbaar is.
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
     """
@@ -114,11 +138,16 @@ class PandViewSet(rest.AtlasViewSet):
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
     """
-    Een OPENBARE RUIMTE is een door het [bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam
-    voorziene buitenruimte](http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
+    OpenbareRuimte
+
+    Een OPENBARE RUIMTE is een door het [bevoegde gemeentelijke orgaan
+    als zodanig aangewezen en van een naam
+    voorziene
+    [buitenruimte](http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
     die binnen één woonplaats is gelegen.
 
-    Als openbare ruimte worden onder meer aangemerkt weg, water, terrein, spoorbaan en landschappelijk gebied.
+    Als openbare ruimte worden onder meer aangemerkt weg, water,
+    terrein, spoorbaan en landschappelijk gebied.
 
     Bron: [Catalogus BAG (ministerie van VROM, 2009)](
     http://www.kadaster.nl/web/artikel/download/BAG-grondslagen-catalogus.htm).
@@ -134,9 +163,12 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
     """
-    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen en van een naam voorzien
-    gedeelte
-    van het grondgebied van de gemeente. Vanaf 10 januari 2014 bestaat alleen nog de woonplaats Amsterdam met
+    Woonplaats
+
+    Een WOONPLAATS is een door het bevoegde gemeentelijke orgaan
+    als zodanig aangewezen en van een naam voorzien gedeelte
+    van het grondgebied van de gemeente. Vanaf 10 januari 2014
+    bestaat alleen nog de woonplaats Amsterdam met
     Woonplaatsidentificatie 3594.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
@@ -151,13 +183,18 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 # gebieden
 class GemeenteViewSet(rest.AtlasViewSet):
     """
-    Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
+    Gemeente
+
+    Een gemeente is een afgebakend gedeelte van het grondgebied
+    van Nederland, ingesteld op basis van artikel 123 van
     de Grondwet.
 
-    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en is onderdeel van de staat. Zij staat onder bestuur van
+    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en
+    is onderdeel van de staat. Zij staat onder bestuur van
     een raad, een burgemeester en wethouders.
 
-    De gemeentegrens wordt door de centrale overheid vastgesteld, en door het Kadaster vastgelegd.
+    De gemeentegrens wordt door de centrale overheid vastgesteld,
+    en door het Kadaster vastgelegd.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
     """
@@ -171,7 +208,10 @@ class GemeenteViewSet(rest.AtlasViewSet):
 
 class StadsdeelViewSet(rest.AtlasViewSet):
     """
-    Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
+    Stadsdeel
+
+    Door de Amsterdamse gemeenteraad vastgestelde begrenzing van
+    een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/)
     """
@@ -184,7 +224,10 @@ class StadsdeelViewSet(rest.AtlasViewSet):
 
 class BuurtViewSet(rest.AtlasViewSet):
     """
-    Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
+    Buurt
+
+    Een aaneengesloten gedeelte van een buurt, waarvan de grenzen
+    zo veel mogelijk gebaseerd zijn op topografische
     elementen.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/)
@@ -199,8 +242,12 @@ class BuurtViewSet(rest.AtlasViewSet):
 
 class BouwblokViewSet(rest.AtlasViewSet):
     """
-    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
-    grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
+    Bouwblok
+
+    Een bouwblok is het kleinst mogelijk afgrensbare gebied,
+    in zijn geheel tot een buurt behorend, dat geheel of
+    grotendeels door bestaande of aan te leggen wegen
+    en/of waterlopen is of zal zijn ingesloten en waarop tenminste
     één gebouw staat.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
@@ -215,7 +262,10 @@ class BouwblokViewSet(rest.AtlasViewSet):
 
 class BuurtcombinatieViewSet(rest.AtlasViewSet):
     """
-    Een aaneengesloten gedeelte van het grondgebied van een gemeente, waarvan de grenzen zo veel mogelijk zijn
+    Buurtcombinatie
+
+    Een aaneengesloten gedeelte van het grondgebied van een
+    gemeente, waarvan de grenzen zo veel mogelijk zijn
     gebaseerd op sociaal-geografische kenmerken.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurtcombinatie/)
@@ -229,8 +279,12 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
 
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     """
-    Gebiedsgericht werken is een manier van werken om samenwerken in de stad te verbeteren. De samenwerking betreft
-    gemeente, bewoners, ondernemers, (lokale) partners en maatschappelijke organisaties.
+    Gebiedsgerichtwerken
+
+    Gebiedsgericht werken is een manier van werken om samenwerken in
+    de stad te verbeteren. De samenwerking betreft
+    gemeente, bewoners, ondernemers, (lokale) partners
+    en maatschappelijke organisaties.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/gebiedsgericht/)
     """
@@ -244,7 +298,10 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     """
-    Grootstedelijke gebieden zijn gebieden binnen de gemeente Amsterdam, waar de gemeenteraad, het college van
+    Grootstedelijkgebied
+
+    Grootstedelijke gebieden zijn gebieden binnen de gemeente
+    Amsterdam, waar de gemeenteraad, het college van
     burgemeester en wethouders of de burgemeester bevoegd is.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
@@ -257,8 +314,12 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
 
 class UnescoViewSet(rest.AtlasViewSet):
     """
-    De Amsterdamse grachtengordel staat op de UNESCO Werelderfgoedlijst, wat betekent dat er internationale erkenning
-    is van het bijzondere karakter van dit deel van de historische binnenstad. Het aanwijzen van cultureel erfgoed is
+    Unseco
+
+    De Amsterdamse grachtengordel staat op de UNESCO Werelderfgoedlijst,
+    wat betekent dat er internationale erkenning
+    is van het bijzondere karakter van dit deel van de historische
+    binnenstad. Het aanwijzen van cultureel erfgoed is
     bedoeld om het beter te kunnen bewaren voor toekomstige generaties.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/unesco-werelderfgoed/)
@@ -270,11 +331,15 @@ class UnescoViewSet(rest.AtlasViewSet):
 
 
 class BouwblokCodeView(RedirectView):
+    """
+    Bouwblokcode
+    """
 
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        bouwblok = get_object_or_404(models.Bouwblok, code__iexact=kwargs['code'])
+        bouwblok = get_object_or_404(
+            models.Bouwblok, code__iexact=kwargs['code'])
         return reverse('bouwblok-detail', kwargs=dict(pk=bouwblok.pk))
 
 
@@ -283,5 +348,6 @@ class StadsdeelCodeView(RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        stadsdeel = get_object_or_404(models.Stadsdeel, code__iexact=kwargs['code'])
+        stadsdeel = get_object_or_404(
+            models.Stadsdeel, code__iexact=kwargs['code'])
         return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))

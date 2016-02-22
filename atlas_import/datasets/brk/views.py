@@ -2,11 +2,15 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from datasets.brk import models, serializers
-from datasets.generic import rest
 
 
-class GemeenteViewSet(rest.AtlasViewSet):
+from datasets.generic.rest import AtlasViewSet
+
+
+class GemeenteViewSet(AtlasViewSet):
     """
+    Gemeente.
+
     Een gemeente is een afgebakend gedeelte van het grondgebied van Nederland, ingesteld op basis van artikel 123 van
     de Grondwet.
 
@@ -16,15 +20,72 @@ class GemeenteViewSet(rest.AtlasViewSet):
     De gemeentegrens wordt door de centrale overheid vastgesteld, en door het Kadaster vastgelegd.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+
+    ---
+
     """
     queryset = models.Gemeente.objects.all()
     serializer_class = serializers.Gemeente
     serializer_detail_class = serializers.GemeenteDetail
     lookup_value_regex = '[^/]+'
 
+    def list(self, request, *args, **kwargs):
+        """
+        list results
 
-class KadastraleGemeenteViewSet(rest.AtlasViewSet):
+        ---
+        type:
+          _links:
+            required: true
+            description: paginate links
+            type: links
+          count:
+            required: true
+            type: integer
+          results:
+            required: true
+            type: array
+            items:
+              required: true
+              type: gemeenten
+        """
+
+        return super().list(
+            request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve results
+
+        ---
+
+        type:
+          _links:
+            required: true
+            description: api link naar 'self'
+            type: object
+          gemeente:
+            required: true
+            description: officiële naam
+            type: string
+          geometrie:
+            required: true
+            description: De RD geo-coordinaten
+            type: array
+          dataset:
+            required: true
+            description: officiele data-bron
+            type: string
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
+
+class KadastraleGemeenteViewSet(AtlasViewSet):
     """
+    Kadastrale gemeente
+
     De kadastrale gemeente is het eerste gedeelte van de aanduiding van een kadastraal perceel.
 
     http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
@@ -36,9 +97,24 @@ class KadastraleGemeenteViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.KadastraleGemeenteDetail
     lookup_value_regex = '[^/]+'
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve results
 
-class KadastraleSectieViewSet(rest.AtlasViewSet):
+        ---
+
+        response_serializer: serializers.KadastraleGemeenteDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
+
+class KadastraleSectieViewSet(AtlasViewSet):
     """
+    Kadastrale sectie
+
     Een sectie is een onderdeel van een kadastrale gemeente en als zodanig een onderdeel van de
     kadastrale aanduiding waarbinnen uniek genummerde percelen zijn gelegen.
 
@@ -52,8 +128,10 @@ class KadastraleSectieViewSet(rest.AtlasViewSet):
     filter_fields = ('kadastrale_gemeente',)
 
 
-class KadastraalSubjectViewSet(rest.AtlasViewSet):
+class KadastraalSubjectViewSet(AtlasViewSet):
     """
+    Kadastraal subject
+
     Een subject is een persoon die in de kadastrale vastgoedregistratie voorkomt.
 
     Het betreft hier zowel natuurlijke als niet natuurlijke personen die verschillende rollen kunnen hebben in de
@@ -74,8 +152,10 @@ class KadastraalSubjectViewSet(rest.AtlasViewSet):
     lookup_value_regex = '[^/]+'
 
 
-class KadastraalObjectViewSet(rest.AtlasViewSet):
+class KadastraalObjectViewSet(AtlasViewSet):
     """
+    Kadastraal object
+
     Een kadastraal object een onroerende zaak of een appartementsrecht waarvoor bij overdracht of vestiging van rechten
     inschrijving in de [openbare registers](http://wetten.overheid.nl/BWBR0005291/Boek3/Titel1/Afdeling2/Artikel16/)
     van het Kadaster is vereist.
@@ -174,8 +254,10 @@ class KadastraalObjectViewSet(rest.AtlasViewSet):
     lookup_value_regex = '[^/]+'
 
 
-class ZakelijkRechtViewSet(rest.AtlasViewSet):
+class ZakelijkRechtViewSet(AtlasViewSet):
     """
+    Zakelijkrecht
+
     Een recht is een door een complex van rechtsregels verleende en beschermende bevoegdheid van een persoon.
 
     Het meest omvattende recht dat een persoon op een zaak kan hebben is de eigendom (art. 5:1 BW).
@@ -209,8 +291,10 @@ class ZakelijkRechtViewSet(rest.AtlasViewSet):
         return Response(serializer.data)
 
 
-class AantekeningViewSet(rest.AtlasViewSet):
+class AantekeningViewSet(AtlasViewSet):
     """
+    Aantekening
+
     Een Aantekening Kadastraal Object vormt de relatie tussen een Stukdeel en een Kadastraal Object en geeft
     aanvullende informatie over een bestaand feit, genoemd in een stuk, dat betrekking heeft op een object en
     dat gevolgen kan hebben voor de uitoefening van rechten op het object.
