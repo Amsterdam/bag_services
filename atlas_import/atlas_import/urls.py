@@ -22,6 +22,7 @@ import batch.views as b_views
 
 urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
+    url(r'^gebieden/stadsdeel/(?P<code>.)/?$', datasets.bag.views.StadsdeelCodeView.as_view()),
 
     url(r'^bag/', include(atlas_api.urls.bag.urls)),
     url(r'^gebieden/', include(atlas_api.urls.gebieden.urls)),

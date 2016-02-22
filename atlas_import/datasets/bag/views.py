@@ -271,8 +271,17 @@ class UnescoViewSet(rest.AtlasViewSet):
 
 class BouwblokCodeView(RedirectView):
 
-    permanent = True
+    permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
         bouwblok = get_object_or_404(models.Bouwblok, code__iexact=kwargs['code'])
         return reverse('bouwblok-detail', kwargs=dict(pk=bouwblok.pk))
+
+
+class StadsdeelCodeView(RedirectView):
+
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        stadsdeel = get_object_or_404(models.Stadsdeel, code__iexact=kwargs['code'])
+        return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))
