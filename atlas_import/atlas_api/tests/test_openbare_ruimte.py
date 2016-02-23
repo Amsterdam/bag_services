@@ -31,8 +31,6 @@ class SubjectSearchTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        time.sleep(1)   # this is stupid
-
     def test_matching_query(self):
         response = self.client.get(
             '/atlas/search/openbareruimte/', dict(q="anjel"))

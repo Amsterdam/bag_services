@@ -7,6 +7,8 @@ import elasticsearch_dsl as es
 
 from elasticsearch.client import IndicesClient
 
+from elasticsearch.exceptions import NotFoundError
+
 from elasticsearch_dsl.connections import connections
 
 from tqdm import tqdm
@@ -41,6 +43,8 @@ class DeleteIndexTask(object):
             idx.delete(ignore=404)
             log.info("Deleted index %s", self.index)
         except AttributeError:
+            log.warning("Could not delete index '%s', ignoring", self.index)
+        except NotFoundError:
             log.warning("Could not delete index '%s', ignoring", self.index)
 
         for dt in self.doc_types:

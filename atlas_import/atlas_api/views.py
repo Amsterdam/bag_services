@@ -138,9 +138,10 @@ def multimatch_openbare_ruimte_Q(query):
         slop=12,  # match "stephan preeker" with "stephan jacob preeker"
         max_expansions=12,
         fields=[
-            'openbare_ruimte.naam',
-            'openbare_ruimte.postcode',
-            'openbare_ruimte.subtype',
+            'naam',
+            'naam_var',
+            'postcode',
+            'subtype',
         ]
     )
 
@@ -349,7 +350,7 @@ def search_adres_query(view, client, query):
                 huisnummer_Q(query),
                 postcode_Q(query),
             ],
-            minimum_should_match=1)
+            minimum_should_match=2)
         .sort(*add_sorting())
     )
 
@@ -362,6 +363,10 @@ def search_subject_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_subject']
+        )
         .query(
             multimatch_subject_Q(query)
         ).sort(*add_sorting())
@@ -523,7 +528,68 @@ def straatnaam_Q(query):
         "multi_match",
         type="phrase_prefix",
         query=query,
-        prefix_length=3,
+        prefix_length=1,
+        fields=match_fields)
+
+
+def openbare_ruimte_variation_Q(query):
+
+    match_fields = [
+        "naam_var",
+    ]
+
+    return Q(
+        "multi_match",
+        type="phrase_prefix",
+        query=query,
+        boost=3,
+        prefix_length=1,
+        fields=match_fields)
+
+
+def straatnaam_variation_Q(query):
+
+    match_fields = [
+        "straatnaam_var",
+    ]
+
+    return Q(
+        "multi_match",
+        type="phrase_prefix",
+        query=query,
+        boost=0.1,
+        prefix_length=1,
+        fields=match_fields)
+
+
+def nummeraanduiding_must_Q(query):
+
+    match_fields = [
+        "straatnaam_var",
+        "postcode"
+    ]
+
+    return Q(
+        "multi_match",
+        type="phrase_prefix",
+        query=query,
+        boost=0.1,
+        prefix_length=1,
+        fields=match_fields)
+
+
+# matches at least with a straatnaam
+def straatnaam_auto_Q(query):
+
+    match_fields = [
+        "straatnaam_all",
+    ]
+
+    return Q(
+        "multi_match",
+        type="phrase_prefix",
+        query=query,
+        prefix_length=2,
         fields=match_fields)
 
 
@@ -662,9 +728,9 @@ def autocomplete_query(client, query):
     ]
 
     # aggregation
-    a = A('terms', field='subtype', size=8)
+    a = A('terms', field='subtype', size=4)
 
-    tops = A('top_hits', size=4)
+    tops = A('top_hits', size=5)
 
     search = (
         Search()
@@ -675,7 +741,10 @@ def autocomplete_query(client, query):
             should=[
 
                 postcode_Q(query),
+
                 straatnaam_Q(query),
+                openbare_ruimte_variation_Q(query),
+                straatnaam_variation_Q(query),
 
                 huisnummer_Q(query),
                 toevoeging_Q(query),
@@ -690,7 +759,7 @@ def autocomplete_query(client, query):
             minimum_should_match=1
         )
         .highlight(*completions, pre_tags=[''], post_tags=[''])
-        .sort(*add_sorting())
+        # .sort(*add_sorting())
     )
 
     search.aggs.bucket('by_subtype', a).bucket('top', tops)
@@ -773,6 +842,9 @@ def get_autocomplete_response(client, query):
 
         if sub_type not in matches:
             matches[sub_type] = OrderedDict()
+
+        if 'highlight' not in hit.meta:
+            continue
 
         highlight = hit.meta.highlight
 
@@ -944,8 +1016,6 @@ class SearchViewSet(viewsets.ViewSet):
             sq = search.to_dict()
             import json
             print(json.dumps(sq, indent=4))
-
-        log.debug(search.to_dict())
 
         try:
             result = search.execute()

@@ -67,17 +67,25 @@ adres_split = analysis.char_filter(
 
 postcode_ngram = analysis.NGramTokenizer(
     name='postcode_ngram',
-    min_gram=4,
+    min_gram=2,
     max_gram=6,
     token_chars=['letter', 'digit']
 )
 
 
-toevoeing_ngram = analysis.NGramTokenizer(
-    name='toevoeing_ngram',
+toevoeging_ngram = analysis.NGramTokenizer(
+    name='toevoeging_ngram',
     min_gram=1,
     max_gram=4,
     token_chars=['letter', 'digit']
+)
+
+
+straatnaam_ngram = analysis.EdgeNGramTokenizer(
+    name='straatnaam_ngram',
+    min_gram=1,
+    max_gram=10,
+    token_chars=['letter']
 )
 
 
@@ -113,6 +121,15 @@ adres = es.analyzer(
     char_filter=[
         adres_split,
         huisnummer_generate
+    ],
+)
+
+adres_edgegram = es.analyzer(
+    'adres_edgegram',
+    tokenizer=straatnaam_ngram,
+    filter=['standard', 'lowercase'],
+    char_filter=[
+        adres_split,
     ],
 )
 

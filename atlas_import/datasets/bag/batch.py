@@ -1108,12 +1108,11 @@ class ImportPndVboTask(batch.BasicTask):
         )
 
 
-#class DeleteIndexTask(index.DeleteIndexTask):
-#    index = settings.ELASTIC_INDICES['BAG']
-#    doc_types = [
-#        documents.N
-#        documents.Ligplaats, documents.Standplaats,
-#        documents.Verblijfsobject, documents.OpenbareRuimte]
+class DeleteIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG']
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
 
 
 class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
@@ -1126,12 +1125,12 @@ class DeleteNummerAanduidingBackupIndexTask(index.DeleteIndexTask):
     doc_types = [documents.Nummeraanduiding]
 
 
-#class DeleteBackupIndexTask(index.DeleteIndexTask):
-#    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-#    doc_types = [
-#        documents.Ligplaats, documents.Standplaats,
-#        documents.Verblijfsobject, documents.OpenbareRuimte]
-#
+class DeleteBackupIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
+    doc_types = [
+        documents.Ligplaats, documents.Standplaats,
+        documents.Verblijfsobject, documents.OpenbareRuimte]
+
 
 class IndexLigplaatsTask(index.ImportIndexTask):
     name = "index ligplaatsen"
@@ -1479,6 +1478,7 @@ class IndexBagJob(object):
 
     def tasks(self):
         return [
+            DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
             IndexNummerAanduidingTask()

@@ -11,8 +11,8 @@ class Ligplaats(es.DocType):
 
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
 
-    huisletter = es.String(analyzers=analyzers.toevoeging)
-    huistoevoeging = es.String(analyzers=analyzers.toevoeging)
+    huisletter = es.String(analyzer=analyzers.toevoeging)
+    huistoevoeging = es.String(analyzer=analyzers.toevoeging)
 
     huisnummer = es.Integer()
 
@@ -61,6 +61,7 @@ class Verblijfsobject(es.DocType):
 
 class OpenbareRuimte(es.DocType):
     naam = es.String(analyzer=analyzers.adres)
+    naam_var = es.String(analyzer=analyzers.adres_edgegram)
     postcode = es.String(analyzer=analyzers.postcode)
     order = es.Integer()
 
@@ -82,9 +83,11 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(analyzer=analyzers.adres)
+    straatnaam_var = es.String(analyzer=analyzers.adres_edgegram)
     straatnaam_all = es.String(analyzer=analyzers.adres)
-    # straatnaam_nen = es.String(analyzers=analyzers.adres)
-    # straatnaam_ptt = es.String(analyzers=analyzers.adres)
+
+    # straatnaam_nen = es.String(analyzers=analyzer.adres)
+    # straatnaam_ptt = es.String(analyzers=analyzer.adres)
 
     adres = es.String(analyzer=analyzers.adres)
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
@@ -170,6 +173,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
     # all variations of streets
     doc.straatnaam = n.openbare_ruimte.naam
+    doc.straatnaam_var = n.openbare_ruimte.naam     # partial matches
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
 
@@ -258,6 +262,8 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.type = 'Openbare ruimte'
     d.subtype = o.get_type_display().lower()
     d.naam = o.naam
+    d.naam_var = o.naam
+
     postcodes = set()
 
     for a in o.adressen.all():
