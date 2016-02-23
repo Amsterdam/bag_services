@@ -507,11 +507,16 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].query_params
+
+        expand = False
+        if 'request' in self.context:
+            expand = 'full' in self.context['request'].query_params
 
         if expand:
-            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
-            self.fields['panden'] = serializers.ManyRelatedField(child_relation=Pand())
+            self.fields['adressen'] = serializers.ManyRelatedField(
+                child_relation=Nummeraanduiding())
+            self.fields['panden'] = serializers.ManyRelatedField(
+                child_relation=Pand())
 
     def get_gebruiksdoel(self, obj):
         return dict(

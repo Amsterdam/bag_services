@@ -1,4 +1,5 @@
 from rest_framework.decorators import detail_route
+
 from rest_framework.response import Response
 
 from datasets.brk import models, serializers
@@ -65,8 +66,8 @@ class GemeenteViewSet(AtlasViewSet):
         type:
           _links:
             required: true
-            description: api link naar 'self'
-            type: object
+            description: link naar self
+            type: links
           gemeente:
             required: true
             description: officiële naam
@@ -74,11 +75,14 @@ class GemeenteViewSet(AtlasViewSet):
           geometrie:
             required: true
             description: De RD geo-coordinaten
-            type: array
+            type: object
           dataset:
             required: true
             description: officiele data-bron
             type: string
+
+        serializer: serializers.GemeenteDetail
+
         """
 
         return super().retrieve(
@@ -427,31 +431,59 @@ class ZakelijkRechtViewSet(AtlasViewSet):
         zakelijk_recht = self.get_object()
         subject = zakelijk_recht.kadastraal_subject
         serializer = serializers.KadastraalSubjectDetailWithPersonalData(
-                instance=subject, context=dict(request=request)
+            instance=subject, context=dict(request=request)
         )
         return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve results
+
+        ---
+
+        serializer: serializers.ZakelijkRechtDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class AantekeningViewSet(AtlasViewSet):
     """
     Aantekening
 
-    Een Aantekening Kadastraal Object vormt de relatie tussen een Stukdeel en een Kadastraal Object en geeft
-    aanvullende informatie over een bestaand feit, genoemd in een stuk, dat betrekking heeft op een object en
-    dat gevolgen kan hebben voor de uitoefening van rechten op het object.
+    Een Aantekening Kadastraal Object vormt de relatie tussen een Stukdeel en
+    een Kadastraal Object en geeft aanvullende informatie over een bestaand
+    feit, genoemd in een stuk, dat betrekking heeft op een object en dat
+    gevolgen kan hebben voor de uitoefening van rechten op het object.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
     """
     queryset = (models.Aantekening.objects
                 .select_related('aard_aantekening', 'opgelegd_door')
                 .all())
-    queryset_detail = (models.Aantekening.objects
-                       .select_related('aard_aantekening', 'opgelegd_door',
-                                       'kadastraal_object', 'kadastraal_object__sectie',
-                                       'kadastraal_object__kadastrale_gemeente')
-
-                       )
+    queryset_detail = (
+        models.Aantekening.objects
+        .select_related(
+            'aard_aantekening', 'opgelegd_door',
+            'kadastraal_object', 'kadastraal_object__sectie',
+            'kadastraal_object__kadastrale_gemeente')
+    )
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
     filter_fields = ('opgelegd_door', 'kadastraal_object')
     lookup_value_regex = '[^/]+'
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve results
+
+        ---
+
+        serializer: serializers.AantekeningDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)

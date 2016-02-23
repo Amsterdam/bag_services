@@ -64,6 +64,19 @@ class BeperkingView(AtlasViewSet):
     template_name = "wkpb/beperking.html"
     filter_fields = ('kadastrale_objecten__id', 'verblijfsobjecten__id')
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BeperkingDetail
+
+        ---
+
+        serializer: serializers.BeperkingDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class BrondocumentView(AtlasViewSet):
     """
@@ -78,3 +91,16 @@ class BrondocumentView(AtlasViewSet):
 
     queryset = models.Brondocument.objects.all()
     filter_fields = ('bron', 'beperking', )
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BrondocumentDetail
+
+        ---
+
+        serializer: serializers.BrondocumentDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)

@@ -42,6 +42,19 @@ class LigplaatsViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Ligplaats
     filter_fields = ('buurt',)
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve LigplaatsDetail
+
+        ---
+
+        serializer: serializers.LigplaatsDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class StandplaatsViewSet(rest.AtlasViewSet):
     """
@@ -61,6 +74,19 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
     filter_fields = ('buurt',)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve StandplaatsDetail
+
+        ---
+
+        serializer: serializers.LigplaatsDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
@@ -84,6 +110,19 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Verblijfsobject
     filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt',)
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve VerblijfsobjectDetail
+
+        ---
+
+        serializer: serializers.VerblijfsobjectDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
@@ -103,18 +142,31 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
         Prefetch('verblijfsobject__panden',
                  queryset=models.Pand.objects.select_related('bouwblok'))
     ).select_related(
-            'status',
-            'openbare_ruimte',
-            'openbare_ruimte__woonplaats',
-            'verblijfsobject',
-            'verblijfsobject__buurt',
-            'verblijfsobject__buurt__buurtcombinatie',
-            'verblijfsobject__buurt__stadsdeel',
+        'status',
+        'openbare_ruimte',
+        'openbare_ruimte__woonplaats',
+        'verblijfsobject',
+        'verblijfsobject__buurt',
+        'verblijfsobject__buurt__buurtcombinatie',
+        'verblijfsobject__buurt__stadsdeel',
     )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
     filter_fields = (
         'verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve NummeraanduidingDetail
+
+        ---
+
+        serializer: serializers.NummeraanduidingDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class PandViewSet(rest.AtlasViewSet):
@@ -134,6 +186,19 @@ class PandViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
     filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve PandDetail
+
+        ---
+
+        serializer: serializers.PandDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
@@ -160,6 +225,19 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve OpenbareRuimteDetail
+
+        ---
+
+        serializer: serializers.OpenbareRuimteDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
     """
@@ -178,6 +256,19 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
     queryset = models.Woonplaats.objects.all()
     serializer_detail_class = serializers.WoonplaatsDetail
     serializer_class = serializers.Woonplaats
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve WoonplaatsDetail
+
+        ---
+
+        serializer: serializers.WoonplaatsDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 # gebieden
@@ -205,6 +296,19 @@ class GemeenteViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Gemeente
     template_name = "gebieden/gemeente.html"
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve VerblijfsobjectDetail
+
+        ---
+
+        serializer: serializers.GemeenteDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class StadsdeelViewSet(rest.AtlasViewSet):
     """
@@ -220,6 +324,19 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     queryset = models.Stadsdeel.objects.all()
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve StadsdeelDetail
+
+        ---
+
+        serializer: serializers.StadsdeelDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class BuurtViewSet(rest.AtlasViewSet):
@@ -238,6 +355,19 @@ class BuurtViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
     filter_fields = ('stadsdeel', 'buurtcombinatie')
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BuurtDetail
+
+        ---
+
+        serializer: serializers.BuurtDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
@@ -259,6 +389,19 @@ class BouwblokViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Bouwblok
     filter_fields = ('buurt',)
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BouwblokDetail
+
+        ---
+
+        serializer: serializers.BouwblokDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class BuurtcombinatieViewSet(rest.AtlasViewSet):
     """
@@ -275,6 +418,19 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
     filter_fields = ('stadsdeel',)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BuurtcombinatieDetail
+
+        ---
+
+        serializer: serializers.BuurtcombinatieDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
@@ -295,6 +451,19 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Gebiedsgerichtwerken
     filter_fields = ('stadsdeel',)
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve GebiedsgerichtwerkenDetail
+
+        ---
+
+        serializer: serializers.GebiedsgerichtwerkenDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     """
@@ -310,6 +479,19 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     queryset = models.Grootstedelijkgebied.objects.all()
     serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve GrootstedelijkgebiedDetail
+
+        ---
+
+        serializer: serializers.GrootstedelijkgebiedDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class UnescoViewSet(rest.AtlasViewSet):
@@ -328,6 +510,19 @@ class UnescoViewSet(rest.AtlasViewSet):
     queryset = models.Unesco.objects.all()
     serializer_detail_class = serializers.UnescoDetail
     serializer_class = serializers.Unesco
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve UnescoDetail
+
+        ---
+
+        serializer: serializers.UnescoDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
 
 
 class BouwblokCodeView(RedirectView):

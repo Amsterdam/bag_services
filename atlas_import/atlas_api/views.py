@@ -828,12 +828,17 @@ class TypeaheadViewSet(TypeaheadViewSetOld):
         """
         Show autocomplete results
 
+        *NOTE*
+
+        We assume spelling errors and therefore it is possible
+        to have unexpected results
+
         ---
         parameters_strategy: merge
 
         parameters:
             - name: q
-              description: Autcomplete straatnaam / kadaster
+              description: Autcomplete straatnaam / kadaster..
               required: true
               type: string
               paramType: query
