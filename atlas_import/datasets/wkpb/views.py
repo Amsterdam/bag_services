@@ -17,17 +17,35 @@ class BroncodeView(AtlasViewSet):
     queryset = models.Broncode.objects.all()
     template_name = "wkpb/broncode.html"
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        retrieve BroncodeDetail
+
+        ---
+
+        serializer: serializers.BroncodeDetail
+
+        """
+
+        return super().retrieve(
+            request, *args, **kwargs)
+
 
 class BeperkingView(AtlasViewSet):
     """
     Wkpd
 
-    De Wkpb is de afkorting voor de Wet kenbaarheid publiekrechtelijke beperkingen onroerende zaken.
+    De Wkpb is de afkorting voor de Wet kenbaarheid publiekrechtelijke
+    beperkingen onroerende zaken.
 
-    Sinds 1 juli 2007 verplicht de Wet kenbaarheid publiekrechtelijke beperkingen onroerende zaken (Wkpb) burgemeester
-    en wethouders (B&W) van de gemeente Amsterdam om alle bij wet genoemde beperkingenbesluiten, daarop betrekking
-    hebbende beslissingen in administratief beroep of rechterlijke uitspraken en vervallenverklaringen, bedoeld in
-    art. 7 lid 4 van de Wkpb, op te nemen in een register en een registratie, deze te beheren en daaruit informatie te
+    Sinds 1 juli 2007 verplicht de Wet kenbaarheid publiekrechtelijke
+    beperkingen onroerende zaken (Wkpb) burgemeester
+    en wethouders (B&W) van de gemeente Amsterdam om alle bij wet genoemde
+    beperkingenbesluiten, daarop betrekking
+    hebbende beslissingen in administratief beroep of rechterlijke uitspraken
+    en vervallenverklaringen, bedoeld in
+    art. 7 lid 4 van de Wkpb, op te nemen in een register en een registratie,
+    deze te beheren en daaruit informatie te
     verschaffen.
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/)

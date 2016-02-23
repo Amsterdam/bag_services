@@ -12,9 +12,12 @@ from atlas_api import views
 
 class BagRouter(routers.DefaultRouter):
     """
+    BAG.
+
     De [Basisregistraties adressen en gebouwen (BAG)](http://www.amsterdam.nl/stelselpedia/bag-index/)
     bevatten gegevens over panden, verblijfsobjecten, standplaatsen en
-    ligplaatsen en de bijbehorende adressen en de benoeming van woonplaatsen en openbare ruimten.
+    ligplaatsen en de bijbehorende adressen en de benoeming van
+    woonplaatsen en openbare ruimten.
     """
     def get_api_root_view(self):
         view = super().get_api_root_view()
@@ -29,6 +32,8 @@ class BagRouter(routers.DefaultRouter):
 
 class GebiedenRouter(routers.DefaultRouter):
     """
+    Gebieden
+
     In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
     worden de Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken vastgelegd. Verder bevat de
     registratie gegevens van de grootstedelijke gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de
@@ -47,6 +52,8 @@ class GebiedenRouter(routers.DefaultRouter):
 
 class BrkRouter(routers.DefaultRouter):
     """
+    BRK Basisregistratie kadaster
+
     De [Basisregistratie kadaster (BRK)](https://www.amsterdam.nl/stelselpedia/brk-index/)
     bevat informatie over percelen, eigendom, hypotheken, beperkte rechten (zoals recht van erfpacht, opstal en
     vruchtgebruik) en leidingnetwerken. Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
@@ -65,6 +72,8 @@ class BrkRouter(routers.DefaultRouter):
 
 class WkpbRouter(routers.DefaultRouter):
     """
+    Wkpd
+
     De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
     bevat alle bij wet genoemde beperkingenbesluiten op onroerende zaken, die het gemeentebestuur heeft opgelegd.
     """
