@@ -320,7 +320,7 @@ def default_search_query(view, client, query):
                 huisnummer_variation_Q(query)
 
             ],
-            minimum_should_match=1
+            minimum_should_match=2
         )
         .sort(*add_default_sorting())
     )
