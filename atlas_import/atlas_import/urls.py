@@ -24,6 +24,8 @@ urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
     url(r'^gebieden/stadsdeel/(?P<code>.)/?$', datasets.bag.views.StadsdeelCodeView.as_view()),
 
+    url(r'^bag/docs/', include('rest_framework_swagger.urls')),
+
     url(r'^bag/', include(atlas_api.urls.bag.urls)),
     url(r'^gebieden/', include(atlas_api.urls.gebieden.urls)),
     url(r'^brk/', include(atlas_api.urls.brk.urls)),
@@ -35,6 +37,4 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^status/', include('health.urls', namespace='health')),
-
-    url(r'^docs/', include('rest_framework_swagger.urls')),
 ]

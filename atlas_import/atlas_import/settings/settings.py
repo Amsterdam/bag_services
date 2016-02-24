@@ -174,10 +174,10 @@ X_FRAME_OPTIONS = 'DENY'
 
 # SWAGGER
 
-swag_path = 'api-acc.datapunt.amsterdam.nl/stelsel/docs'
+swag_path = 'api-acc.datapunt.amsterdam.nl/bag/docs'
 
 if DEBUG:
-    swag_path = '127.0.0.1:8000/docs'
+    swag_path = '127.0.0.1:8000/bag/docs'
 
 SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
