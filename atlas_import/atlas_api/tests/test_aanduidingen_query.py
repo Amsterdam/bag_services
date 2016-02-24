@@ -135,6 +135,7 @@ class AanduidingenSearchTest(APITestCase):
         self.assertIn(
             "Marius Cornelis straat 99", results)
 
+    @unittest.skip("conflicting-wishes product owner.")
     def test_straat_volgorde(self):
         response = self.client.get(
             "/atlas/search/adres/", dict(q="Weesperplein"))

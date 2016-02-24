@@ -279,8 +279,6 @@ def add_nummerduiding_sorting():
         {"order": {
             "order": "asc", "missing": "_last", "unmapped_type": "long"}},
 
-        '_score',
-
         {"straatnaam": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
 
@@ -436,16 +434,17 @@ def search_nummeraanduiding_query(view, client, query):
 
                 ],
                 minimum_should_match=2,
-            ),
-            functions=[
-                query_dsl.SF(
-                    'script_score',
-                    script="_score + (_score/(doc['huisnummer'].value + 1.0))"
-                )
-            ]
-        )
-        # .sort(*add_nummerduiding_sorting())
+            )
+        ).sort(*add_nummerduiding_sorting())
     )
+
+
+     #functions=[
+     #    query_dsl.SF(
+     #        'script_score',
+     #        script="_score + (_score/(doc['huisnummer'].value + 1.0))"
+     #    )
+     #]
 
     # if settings.TESTING:
     #    search.params(search_type='dfs_query_then_fetch')
