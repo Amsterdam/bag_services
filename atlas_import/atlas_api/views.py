@@ -196,7 +196,7 @@ def wildcard_Q(query):
 def fuzzy_Q(query):
 
     fuzzy_fields = [
-        'openbare_ruimte.naam',
+        'naam',
         'kadastraal_subject.geslachtsnaam',
         'adres',
 
@@ -232,8 +232,6 @@ def add_sorting():
 
         {"toevoeging": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-
-        # 'naam',
     )
 
 
@@ -519,6 +517,7 @@ def kadaster_Q(query):
 def straatnaam_Q(query):
 
     match_fields = [
+        "naam",
         "straatnaam_all",
         "adres",
         "postcode",
@@ -767,9 +766,9 @@ def autocomplete_query(client, query):
     if settings.DEBUG or settings.TESTING:
         sq = search.to_dict()
         import json
+        print
         print(json.dumps(sq, indent=4))
-
-    # search.aggs.bucket('by_subtype', a)  # .bucket('top', tops)
+        print
 
     return search
 
@@ -884,7 +883,6 @@ class TypeaheadViewSetOld(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
-        # query = query.lower()
 
         response = get_autocomplete_response(self.client, query)
 
