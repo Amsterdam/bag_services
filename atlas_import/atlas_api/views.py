@@ -6,6 +6,7 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search, Q, A
+
 from elasticsearch_dsl import query as query_dsl
 
 from rest_framework import viewsets, metadata
@@ -411,7 +412,7 @@ def search_nummeraanduiding_query(view, client, query):
     def straatnaam_split(s):
         straatnamen = s.rstrip('01234567890')
         # default
-        toevoeging = straatnamen
+        toevoeging = s
 
         if not straatnamen == s:
             toevoeging = s[len(straatnamen)]
@@ -430,22 +431,32 @@ def search_nummeraanduiding_query(view, client, query):
                 'bool',
                 filter=[straatnaam_Q(straatnaam)],
                 should=[
+
                     huisnummer_Q(toevoeging),
                     toevoeging_Q(toevoeging),
                     huisletters_Q(toevoeging),
 
                     multimatch_adres_Q(straatnaam),
+
                     straatnaam_Q(straatnaam),
 
                     postcode_Q(query),
                     adres_Q(query),
 
-                    # huisnummer_variation_Q(query)
+                    huisnummer_variation_Q(query)
 
                 ],
                 minimum_should_match=2,
-            )
-        ).sort(*add_nummerduiding_sorting())
+            ),
+
+            functions=[
+                query_dsl.SF(
+                    'script_score',
+                    script="_score + (_score/(doc['huisnummer'].value + 1.0))"
+                )
+            ]
+        )
+        #  .sort(*add_nummerduiding_sorting())
     )
 
 
@@ -560,6 +571,7 @@ def straatnaam_variation_Q(query):
 
     match_fields = [
         "straatnaam_var",
+        "straatnaam_all",
     ]
 
     return Q(
@@ -752,6 +764,7 @@ def autocomplete_query(client, query):
                 postcode_Q(query),
 
                 straatnaam_Q(query),
+
                 openbare_ruimte_variation_Q(query),
                 straatnaam_variation_Q(query),
 

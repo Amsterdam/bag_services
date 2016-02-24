@@ -164,6 +164,17 @@ class AanduidingenSearchTest(APITestCase):
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         # self.assertEqual(response.data['count'], 1)
-        result = str(response.data['results'][:3])
+        result = str(response.data['results'][:5])
+
+        self.assertIn("Prinsengracht 192A", result)
+
+    def test_gracht_toevoeging_query(self):
+        response = self.client.get(
+            "/atlas/search/adres/", dict(q="prinsengracht 192 A"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        # self.assertEqual(response.data['count'], 1)
+        result = str(response.data['results'][:5])
 
         self.assertIn("Prinsengracht 192A", result)
