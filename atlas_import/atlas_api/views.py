@@ -408,7 +408,17 @@ def search_nummeraanduiding_query(view, client, query):
     Execute search in Objects
     """
 
-    straatnaam = query.split()[0]
+    def straatnaam_split(s):
+        straatnamen = s.rstrip('01234567890')
+        # default
+        toevoeging = straatnamen
+
+        if not straatnamen == s:
+            toevoeging = s[len(straatnamen)]
+
+        return straatnamen, toevoeging
+
+    straatnaam, toevoeging = straatnaam_split(query)
 
     search = (
         Search()
@@ -420,14 +430,14 @@ def search_nummeraanduiding_query(view, client, query):
                 'bool',
                 filter=[straatnaam_Q(straatnaam)],
                 should=[
-                    huisnummer_Q(query),
-                    toevoeging_Q(query),
-                    huisletters_Q(query),
+                    huisnummer_Q(toevoeging),
+                    toevoeging_Q(toevoeging),
+                    huisletters_Q(toevoeging),
 
-                    multimatch_adres_Q(query),
+                    multimatch_adres_Q(straatnaam),
                     straatnaam_Q(straatnaam),
-                    postcode_Q(query),
 
+                    postcode_Q(query),
                     adres_Q(query),
 
                     # huisnummer_variation_Q(query)
