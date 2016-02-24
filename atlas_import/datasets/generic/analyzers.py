@@ -127,7 +127,7 @@ adres = es.analyzer(
 adres_edgegram = es.analyzer(
     'adres_edgegram',
     tokenizer=straatnaam_ngram,
-    filter=['standard', 'lowercase'],
+    filter=['standard', 'lowercase', 'asciifolding'],
     char_filter=[
         adres_split,
     ],

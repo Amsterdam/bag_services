@@ -424,13 +424,13 @@ def search_nummeraanduiding_query(view, client, query):
                     toevoeging_Q(query),
                     huisletters_Q(query),
 
-                    # multimatch_adres_Q(query),
+                    multimatch_adres_Q(query),
                     straatnaam_Q(straatnaam),
                     postcode_Q(query),
 
                     adres_Q(query),
 
-                    huisnummer_variation_Q(query)
+                    # huisnummer_variation_Q(query)
 
                 ],
                 minimum_should_match=2,
@@ -501,7 +501,7 @@ def test_search_query(view, client, query):
 def kadaster_Q(query):
 
     match_fields = [
-        "openbare_ruimte.naam",
+        "naam",
         "aanduiding",
     ]
 
@@ -517,6 +517,7 @@ def straatnaam_Q(query):
 
     match_fields = [
         "naam",
+        "straatnaam_var",
         "straatnaam_all",
         "adres",
         "postcode",
