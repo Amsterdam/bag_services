@@ -6,12 +6,13 @@ database:
     POSTGRES_PASSWORD: insecure
 
 elasticsearch:
-#  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
-  build: docker-compose/elasticsearch
-  command: elasticsearch -Des.node.name="Atlas"
+  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
+  command: elasticsearch -Des.network.host=0.0.0.0
   ports:
     - "9200:9200"
     - "9300:9300"
+  #volumes:
+  #  - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
 atlas:
   build: .
