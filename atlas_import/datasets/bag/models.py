@@ -293,7 +293,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return self.adres()
 
     def adres(self):
-        assert self._openbare_ruimte_naam
         return '%s %s' % (self._openbare_ruimte_naam, self.toevoeging)
 
     @property
