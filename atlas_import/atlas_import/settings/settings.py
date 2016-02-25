@@ -202,11 +202,11 @@ SWAGGER_SETTINGS = {
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
-        'description': 'This is a meetbouten metingen api server. ',
-        'license': 'Not known yet.',
+        'description': 'This is the BAG API server.',
+        'license': 'license Not known yet.',
         'licenseUrl': '://www.amsterdam.nl/stelselpedia/',
         'termsOfServiceUrl': 'https://atlas.amsterdam.nl/terms/',
-        'title': 'Meetbouten en metingen App',
+        'title': 'BAG, BRK en WKPD API',
     },
 
     'doc_expansion': 'none',
