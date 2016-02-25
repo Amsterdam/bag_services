@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
+    'rest_framework_swagger',
     'corsheaders',
 )
 
@@ -151,7 +152,6 @@ REST_FRAMEWORK = dict(
     DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
     DEFAULT_PARSER_CLASSES=('drf_hal_json.parsers.JsonHalParser',),
     DEFAULT_RENDERER_CLASSES=(
-        'drf_hal_json.renderers.JsonHalRenderer',
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer'
     ),
@@ -171,6 +171,46 @@ SECURE_BROWSER_XSS_FILTER = True
 # CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
+
+# SWAGGER
+
+swag_path = 'api-acc.datapunt.amsterdam.nl/bag/docs'
+
+if DEBUG:
+    swag_path = '127.0.0.1:8000/bag/docs'
+
+SWAGGER_SETTINGS = {
+    'exclude_namespaces': [],
+    'api_version': '0.1',
+    'api_path': '/',
+
+    'enabled_methods': [
+        'get',
+    ],
+
+    'api_key': '',
+
+    'is_authenticated': False,
+    'is_superuser': False,
+
+    'unauthenticated_user': 'django.contrib.auth.models.AnonymousUser',
+    'permission_denied_handler': None,
+    'resource_access_handler': None,
+
+    'protocol': 'https' if not DEBUG else '',
+    'base_path': swag_path,
+
+    'info': {
+        'contact': 'atlas.basisinformatie@amsterdam.nl',
+        'description': 'This is the BAG API server.',
+        'license': 'license Not known yet.',
+        'licenseUrl': '://www.amsterdam.nl/stelselpedia/',
+        'termsOfServiceUrl': 'https://atlas.amsterdam.nl/terms/',
+        'title': 'BAG, BRK en WKPD API',
+    },
+
+    'doc_expansion': 'none',
+}
 
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

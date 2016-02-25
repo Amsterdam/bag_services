@@ -1,4 +1,3 @@
-
 # from unittest import skip
 
 from rest_framework.test import APITestCase
@@ -69,7 +68,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_straat_query(self):
         response = self.client.get(
-            '/api/atlas/search/adres/', dict(q="anjel"))
+            '/atlas/search/adres/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -80,7 +79,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_gracht_query(self):
         response = self.client.get(
-            "/api/atlas/search/adres/", dict(q="prinsengracht 192"))
+            "/atlas/search/adres/", dict(q="prinsengracht 192"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -91,7 +90,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_nen_query(self):
         response = self.client.get(
-            "/api/atlas/search/adres/", dict(q="s maker wg"))
+            "/atlas/search/adres/", dict(q="s maker wg"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -102,7 +101,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_ptt_query(self):
         response = self.client.get(
-            "/api/atlas/search/adres/", dict(q="M Cornelisstr"))
+            "/atlas/search/adres/", dict(q="M Cornelisstr"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

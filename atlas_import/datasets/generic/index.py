@@ -4,6 +4,11 @@ from django.conf import settings
 from elasticsearch import helpers
 import elasticsearch
 import elasticsearch_dsl as es
+
+from elasticsearch.client import IndicesClient
+
+from elasticsearch.exceptions import NotFoundError
+
 from elasticsearch_dsl.connections import connections
 
 from tqdm import tqdm
@@ -38,6 +43,8 @@ class DeleteIndexTask(object):
             idx.delete(ignore=404)
             log.info("Deleted index %s", self.index)
         except AttributeError:
+            log.warning("Could not delete index '%s', ignoring", self.index)
+        except NotFoundError:
             log.warning("Could not delete index '%s', ignoring", self.index)
 
         for dt in self.doc_types:
@@ -104,6 +111,13 @@ class ImportIndexTask(object):
                 raise_on_error=True,
                 refresh=True
             )
+
+        # When testing put all docs in one shard to make sure we have
+        # correct scores/doc counts and test will succeed
+        # because relavancy score will make more sense
+        if settings.TESTING:
+            es_index = IndicesClient(client)
+            es_index.optimize('*test', max_num_segments=1)
 
 
 class CopyIndexTask(object):

@@ -507,11 +507,16 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        expand = 'full' in self.context['request'].query_params
+
+        expand = False
+        if 'request' in self.context:
+            expand = 'full' in self.context['request'].query_params
 
         if expand:
-            self.fields['adressen'] = serializers.ManyRelatedField(child_relation=Nummeraanduiding())
-            self.fields['panden'] = serializers.ManyRelatedField(child_relation=Pand())
+            self.fields['adressen'] = serializers.ManyRelatedField(
+                child_relation=Nummeraanduiding())
+            self.fields['panden'] = serializers.ManyRelatedField(
+                child_relation=Pand())
 
     def get_gebruiksdoel(self, obj):
         return dict(
@@ -659,6 +664,7 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     panden = rest.RelatedSummaryField()
     buurt = Buurt()
+    meetbouten = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Bouwblok
@@ -673,7 +679,16 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
             'einde_geldigheid',
             'geometrie',
             'panden',
+            'meetbouten',
         )
+
+    def get_meetbouten(self, obj):
+        link = "/meetbouten/meetbout/?bouwbloknummer={}".format(obj.code)
+        req = self.context.get('request')
+        if req:
+            return req.build_absolute_uri(link)
+
+        return link
 
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):

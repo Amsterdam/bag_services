@@ -78,8 +78,8 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(analyzer=analyzers.adres)
-    straatnaam_nen = es.String(analyzers=analyzers.adres)
-    straatnaam_ptt = es.String(analyzers=analyzers.adres)
+    straatnaam_nen = es.String(analyzer=analyzers.adres)
+    straatnaam_ptt = es.String(analyzer=analyzers.adres)
 
     adres = es.String(analyzer=analyzers.adres)
     huisnummer_variation = es.String(analyzer=analyzers.huisnummer)

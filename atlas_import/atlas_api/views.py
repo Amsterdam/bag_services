@@ -167,9 +167,9 @@ def multimatch_openbare_ruimte_Q(query):
         slop=12,  # match "stephan preeker" with "stephan jacob preeker"
         max_expansions=12,
         fields=[
-            'openbare_ruimte.naam',
-            'openbare_ruimte.postcode',
-            'openbare_ruimte.subtype',
+            'naam',
+            'postcode',
+            'subtype',
         ]
     )
 
