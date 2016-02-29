@@ -542,7 +542,7 @@ def autocomplete_query(client, query):
                 straatnaam_Q(query),
                 huisnummer_Q(query),
                 naam_Q(query),
-                fuzzy_Q(query)
+                # fuzzy_Q(query)
             ],
             minimum_should_match=1
         )
