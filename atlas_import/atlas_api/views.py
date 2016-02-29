@@ -329,6 +329,10 @@ def search_subject_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_subject']
+        )
         .query(
             multimatch_subject_Q(query)
         ).sort(*add_sorting())
@@ -343,6 +347,10 @@ def search_object_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_object']
+        )
         .query(
             match_object_Q(query)
         )
