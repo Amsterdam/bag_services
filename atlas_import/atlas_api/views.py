@@ -547,7 +547,7 @@ def autocomplete_query(client, query):
             minimum_should_match=1
         )
         .highlight(*completions, pre_tags=[''], post_tags=[''])
-        .sort(*add_sorting())
+        # .sort(*add_sorting())
     )
 
     search.aggs.bucket('by_subtype', a).bucket('top', tops)
