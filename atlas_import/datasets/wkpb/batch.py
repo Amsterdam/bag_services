@@ -102,7 +102,7 @@ class ImportBeperkingTask(batch.BasicTask):
         datum_einde = self.get_date(r[4])
         vandaag = datetime.date.today()
         if datum_einde and datum_einde < vandaag:
-            log.warning('Beperking {} no longer valid; end date {} was before {}'.format(datum_einde, vandaag))
+            log.warning('Beperking {} no longer valid; end date {} was before {}'.format(r[0], datum_einde, vandaag))
             return None
 
         return models.Beperking(
