@@ -329,6 +329,10 @@ def search_subject_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_subject']
+        )
         .query(
             multimatch_subject_Q(query)
         ).sort(*add_sorting())
@@ -343,6 +347,10 @@ def search_object_query(view, client, query):
         Search()
         .using(client)
         .index(BRK)
+        .filter(
+            'terms',
+            subtype=['kadastraal_object']
+        )
         .query(
             match_object_Q(query)
         )
@@ -542,12 +550,12 @@ def autocomplete_query(client, query):
                 straatnaam_Q(query),
                 huisnummer_Q(query),
                 naam_Q(query),
-                fuzzy_Q(query)
+                # fuzzy_Q(query)
             ],
             minimum_should_match=1
         )
         .highlight(*completions, pre_tags=[''], post_tags=[''])
-        .sort(*add_sorting())
+        # .sort(*add_sorting())
     )
 
     search.aggs.bucket('by_subtype', a).bucket('top', tops)
