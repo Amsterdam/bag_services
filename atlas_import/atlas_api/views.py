@@ -618,7 +618,6 @@ def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query).execute()
 
     matches = OrderedDict()
-
     # group_sugestions by sub_type
     for hit in result:
 

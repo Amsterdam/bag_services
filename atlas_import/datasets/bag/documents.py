@@ -78,7 +78,12 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(analyzer=analyzers.adres)
+    straatnaam_raw = es.String(
+        analyzer=analyzers.adres,
+        fields={'raw': es.String(index='not_analyzed')}
+    )
     straatnaam_nen = es.String(analyzer=analyzers.adres)
+    straatnaam_nen_raw = es.String(fields={'raw': es.String(index='not_analyzed')})
     straatnaam_ptt = es.String(analyzer=analyzers.adres)
 
     adres = es.String(analyzer=analyzers.adres)
@@ -108,6 +113,7 @@ def update_adres(dest, adres: models.Nummeraanduiding):
         dest.adres = adres.adres()
         dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
         dest.straatnaam = adres.openbare_ruimte.naam
+        dest.straatnaam_raw = adres.openbare_ruimte.naam
 
         dest.huisnummer = adres.huisnummer
         dest.huisnummer_variation = adres.huisnummer
@@ -151,7 +157,9 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.adres = n.adres()
     doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
     doc.straatnaam = n.openbare_ruimte.naam
+    doc.straatnaam_raw = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
+    doc.straatnaam_nen_raw = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.huisnummer_variation = n.huisnummer

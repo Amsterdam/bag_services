@@ -1,5 +1,5 @@
 import elasticsearch_dsl as es
-from elasticsearch_dsl import analysis
+from elasticsearch_dsl import analysis, tokenizer
 
 
 orderings = dict(
@@ -60,12 +60,12 @@ adres_split = analysis.char_filter(
 )
 
 
-postcode_ngram = analysis.NGramTokenizer(
-    name='postcode_ngram',
-    min_gram=2,
-    max_gram=4,
-    token_chars=['letter', 'digit']
-)
+# postcode_ngram = analysis.NGramTokenizer(
+#     name='postcode_ngram',
+#     min_gram=2,
+#     max_gram=4,
+#     token_chars=['letter', 'digit']
+# )
 
 
 naam_stripper = analysis.char_filter(
@@ -104,7 +104,7 @@ naam = es.analyzer(
 postcode = es.analyzer(
     'postcode',
     #tokenizer='keyword',
-    tokenizer=postcode_ngram,
+    tokenizer=tokenizer('postcode_ngram', 'nGram', min_gram=2, max_gram=4, token_chars=['letter', 'digit']),
     filter=['standard', 'lowercase'],
     #char_filter=[postcode_stripper],
 )
