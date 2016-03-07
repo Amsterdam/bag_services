@@ -684,6 +684,24 @@ class TypeaheadViewSet(TypeaheadViewSetOld):
     def get_autocomplete_response(self, client, query):
         return get_autocomplete_response(client, query)
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Autcomplete op adres
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(TypeaheadViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchViewSet(viewsets.ViewSet):
     """
@@ -852,6 +870,22 @@ class SearchSubjectViewSet(SearchViewSet):
     url_name = 'search/kadastraalsubject-list'
     search_query = search_subject_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal subject
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchSubjectViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchObjectViewSet(SearchViewSet):
     """
@@ -861,6 +895,22 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
     search_query = search_object_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchObjectViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -881,6 +931,22 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     url_name = 'search/openbareruimte-list'
     search_query = search_openbare_ruimte_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op openbare ruimte
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchOpenbareRuimteViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """
@@ -897,6 +963,22 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     url_name = 'search/adres-list'
     search_query = search_nummeraanduiding_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchNummeraanduidingViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchTestViewSet(SearchViewSet):
