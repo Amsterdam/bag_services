@@ -80,7 +80,7 @@ class Nummeraanduiding(es.DocType):
     straatnaam = es.String(analyzer=analyzers.adres)
     straatnaam_raw = es.String(index='not_analyzed')
     straatnaam_nen = es.String(analyzer=analyzers.adres)
-    straatnaam_nen_raw = es.String(fields={'raw': es.String(index='not_analyzed')})
+    straatnaam_nen_raw = es.String(index='not_analyzed')
     straatnaam_ptt = es.String(analyzer=analyzers.adres)
 
     adres = es.String(analyzer=analyzers.adres)
