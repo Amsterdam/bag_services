@@ -78,10 +78,7 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(analyzer=analyzers.adres)
-    straatnaam_raw = es.String(
-        analyzer=analyzers.adres,
-        fields={'raw': es.String(index='not_analyzed')}
-    )
+    straatnaam_raw = es.String(index='not_analyzed')
     straatnaam_nen = es.String(analyzer=analyzers.adres)
     straatnaam_nen_raw = es.String(fields={'raw': es.String(index='not_analyzed')})
     straatnaam_ptt = es.String(analyzer=analyzers.adres)

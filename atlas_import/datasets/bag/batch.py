@@ -1,11 +1,15 @@
+# Python
+import datetime
+import json
 import logging
 import os
-
+# Packages
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
 from django.utils.text import slugify
-
+import requests
+# Project
 from batch import batch
 from datasets.generic import uva2, index, database, geo
 from . import models, documents
@@ -1181,6 +1185,41 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
 
+# 2016-03-06T16:01:10.455996
+class IndexNummeraanduidingBulkTask(object):
+    name = "Bulk index"
+    index_name = 'tstblk_idx'
+
+    def execute(self):
+        print(datetime.datetime.now().isoformat())
+        batch_size = 25000  # settings.BATCH_SETTINGS['batch_size']
+        position = 0
+        qs = list(models.Nummeraanduiding.objects.\
+            prefetch_related('openbare_ruimte').order_by('id')\
+            [position:position+batch_size])
+        last_run = False
+        while not last_run:
+            data = ''
+            # Checking if this is the last run
+            if len(qs) < batch_size:
+                last_run = True
+            for item in qs:
+                item_dict = {"index": { "_index" : self.index_name, "_type" : "type1", "_id" : item.id}}
+                data += json.dumps(item_dict) + '\n'
+                item_dict = item.dict_for_index()
+                data += json.dumps(item_dict) + '\n'
+            r = requests.post('http://192.168.99.100:9200/{}/_bulk'.format(self.index_name), data=data)
+            if r.status_code != 200:
+                print(r.json())
+                break
+            # Getting the next round
+            position = position + batch_size
+            qs = list(models.Nummeraanduiding.objects.\
+                prefetch_related('openbare_ruimte').order_by('id')\
+                [position:position+batch_size])
+            if (position % 1000000) == 0:
+                print(datetime.datetime.now().isoformat())
+        print(datetime.datetime.now().isoformat())
 
 # these files don't have a UVA file
 class ImportBuurtcombinatieTask(batch.BasicTask):
