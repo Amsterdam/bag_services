@@ -77,16 +77,16 @@ class Nummeraanduiding(es.DocType):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
-    straatnaam = es.String(analyzer=analyzers.adres)
-    straatnaam_raw = es.String(index='not_analyzed')
-    straatnaam_nen = es.String(analyzer=analyzers.adres)
-    straatnaam_nen_raw = es.String(index='not_analyzed')
+    straatnaam = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed')})
+    straatnaam_nen = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed')})
     straatnaam_ptt = es.String(analyzer=analyzers.adres)
 
     adres = es.String(analyzer=analyzers.adres)
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
-    postcode = es.String(analyzer=analyzers.postcode)
+    #huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
+    huisnummer = es.Integer(fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    postcode = es.String(analyzer=analyzers.postcode, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
+    #postcode_raw = es.String(index='not_analyzed')
+    #postcode_ng = es.String(analyzer=analyzer.postcode_ng)
 
     order = es.Integer()
 
@@ -108,7 +108,7 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
+        dest.postcode = adres.postcode
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.straatnaam_raw = adres.openbare_ruimte.naam
 
@@ -152,7 +152,7 @@ def from_ligplaats(l: models.Ligplaats):
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
+    doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
     doc.straatnaam_raw = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen

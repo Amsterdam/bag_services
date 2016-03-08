@@ -59,15 +59,6 @@ adres_split = analysis.char_filter(
     ]
 )
 
-
-# postcode_ngram = analysis.NGramTokenizer(
-#     name='postcode_ngram',
-#     min_gram=2,
-#     max_gram=4,
-#     token_chars=['letter', 'digit']
-# )
-
-
 naam_stripper = analysis.char_filter(
     'naam_stripper',
     type='mapping',
@@ -101,19 +92,22 @@ naam = es.analyzer(
 )
 
 
-postcode = es.analyzer(
-    'postcode',
-    #tokenizer='keyword',
+postcode_ng = es.analyzer(
+    'postcode_ng',
     tokenizer=tokenizer('postcode_ngram', 'nGram', min_gram=2, max_gram=4, token_chars=['letter', 'digit']),
     filter=['standard', 'lowercase'],
-    #char_filter=[postcode_stripper],
+)
+
+postcode = es.analyzer(
+    'postcode',
+    tokenizer=tokenizer('postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
+    filter=['standard', 'lowercase'],
 )
 
 huisnummer = es.analyzer(
     'huisnummer',
     tokenizer='whitespace',
     filter=['lowercase', huisnummer_expand],
-    # token_filter=[huisnummer_expand],
     char_filter=[adres_split, huisnummer_generate],
 )
 
