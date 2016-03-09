@@ -802,7 +802,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         count = result.hits.total
         response['count_hits'] = count
-        max_count = self.page_size * self.page_limit
+        max_count = self.page_size * (self.page_limit + 1)
         if count > max_count:
             count = max_count
         response['count'] = count
