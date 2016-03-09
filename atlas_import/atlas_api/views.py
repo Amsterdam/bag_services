@@ -718,6 +718,7 @@ class SearchViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
     page_size = 100
+    page_limit = 9
     search_query = default_search_query
     url_name = 'search-list'
 
@@ -740,8 +741,10 @@ class SearchViewSet(viewsets.ViewSet):
 
         if end >= total:
             next_page = None
-        elif page > 9:
-            next_page = "pageing over search results is stupid!"
+        elif page > self.page_limit:
+            next_page = """
+                pageing over search results is stupid! limit = %s
+                """ % self.page_limit
         else:
             next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
 
@@ -767,8 +770,8 @@ class SearchViewSet(viewsets.ViewSet):
         if 'page' in request.query_params:
             # limit search results pageing in elastic is slow
             page = int(request.query_params['page'])
-            if page > 10:
-                page = 10
+            if page > self.page_limit:
+                page = self.page_limit
 
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
@@ -796,9 +799,12 @@ class SearchViewSet(viewsets.ViewSet):
         response = OrderedDict()
 
         self._set_followup_url(request, result, end, response, query, page)
-        # import pdb; pdb.set_trace()
 
-        response['count'] = result.hits.total
+        count = result.hits.total
+        max_count = self.page_size * self.page_limit
+        if count > max_count:
+            count = max_count
+        response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
 
