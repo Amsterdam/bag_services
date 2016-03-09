@@ -801,6 +801,7 @@ class SearchViewSet(viewsets.ViewSet):
         self._set_followup_url(request, result, end, response, query, page)
 
         count = result.hits.total
+        response['count_hits'] = count
         max_count = self.page_size * self.page_limit
         if count > max_count:
             count = max_count
