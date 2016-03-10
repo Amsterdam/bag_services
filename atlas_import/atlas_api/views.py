@@ -18,7 +18,7 @@ log = logging.getLogger('search')
 #-----------------------------
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
 PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')  
-
+MAX_AGG_RES = 7
 _details = {
     'ligplaats': 'ligplaats-detail',
     'standplaats': 'standplaats-detail',
@@ -53,16 +53,17 @@ def analyze_query(query_string):
         num = int(query_string)
         if len(query_string) < 4:
             # Its a number so it can be either postcode or kadaster
-            return [zipcode_Q, kadaster_Q]
+            return [postcode_Q, kadaster_Q]
     except ValueError:
         # Not a number
         pass
     # Checking postcode
     pcode = PCODE_REGEX.match(query_string)
     if pcode:
-        return [zipcode_Q]
+        return [postcode_Q]
     # Could not draw conclussions
-    return [zipcode_Q, kadaster_Q, straatnaam_Q, huisnummer_Q, naam_Q]
+    return [street_name_Q]
+    return [kadaster_Q, street_name_Q, house_number_Q, name_Q]
         
     
 def _get_url(request, hit):
@@ -100,114 +101,120 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def multimatch_Q(query):
-    """
-    main 'One size fits all' search query used
-    """
-    log.debug('%20s %s', multimatch_Q.__name__, query)
-
-    return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
-            'postcode',
-            'huisnummer'
-            'huisnummer_variation',
-        ]
-    )
-
-
-def multimatch_adres_Q(query):
-    """
-    Adres search query used
-    """
-    log.debug('%20s %s', multimatch_adres_Q.__name__, query)
-    log.debug('using indices %s %s', BAG, BRK)
-
-    return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'straatnaam',
-            'straatnaam_nen',
-            'straatnaam_ptt',
-            'aanduiding',
-            'adres',
-            'postcode',
-            'huisnummer_variation',
-            'kadastraal_object.aanduiding']
-    )
+# def multimatch_Q(query):
+#     """
+#     main 'One size fits all' search query used
+#     """
+#     print('Multi-Match')
+#     return {
+#         'A': None,
+#         'Q': Q(
+#             "multi_match",
+#             query=query,
+#             # type="most_fields",
+#             # type="phrase",
+#             type="phrase_prefix",
+#             slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+#             max_expansions=12,
+#             fields=[
+#                 'naam',
+#                 'straatnaam',
+#                 'straatnaam_nen',
+#                 'straatnaam_ptt',
+#                 'aanduiding',
+#                 'adres',
+#                 'postcode',
+#                 'huisnummer'
+#                 'huisnummer_variation',
+#             ]
+#         )
+#     }
 
 
-def multimatch_subject_Q(query):
-    """
-    Adres search query used
-    """
-    log.debug('%20s %s', multimatch_subject_Q.__name__, query)
-    log.debug('using indices %s %s', BAG, BRK)
+# def multimatch_address_Q(query):
+#     """
+#     Adres search query used
+#     """
+#     log.debug('%20s %s', multimatch_adres_Q.__name__, query)
+#     log.debug('using indices %s %s', BAG, BRK)
+#     print('Multi-Match-Address')
+#     return {
+#         'A': None,
+#         'Q': Q(
+#             "multi_match",
+#             query=query,
+#             # type="most_fields",
+#             # type="phrase",
+#             type="phrase_prefix",
+#             slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+#             max_expansions=12,
+#             fields=[
+#                 'naam',
+#                 'straatnaam',
+#                 'straatnaam_nen',
+#                 'straatnaam_ptt',
+#                 'aanduiding',
+#                 'adres',
+#                 'postcode',
+#                 'huisnummer_variation',
+#                 'kadastraal_object.aanduiding'
+#             ]
+#         )
+#     }
 
-    return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        slop=14,  # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'geslachtsnaam',
-        ]
-    )
 
-
-def match_object_Q(query):
-    """
-    Object search
-    """
-    log.debug('%20s %s', match_object_Q.__name__, query)
-
-    return Q(
-        'match',
-        _all=query,
-    )
-
-
-def multimatch_openbare_ruimte_Q(query):
-    """
-    Openbare ruimte search
-    """
-    log.debug('%20s %s', multimatch_openbare_ruimte_Q.__name__, query)
-
-    return Q(
-        "multi_match",
-        query=query,
-        # type="most_fields",
-        # type="phrase",
-        type="phrase_prefix",
-        slop=12,  # match "stephan preeker" with "stephan jacob preeker"
-        max_expansions=12,
-        fields=[
-            'naam',
-            'postcode',
-            'subtype',
-        ]
-    )
+# def multimatch_subject_Q(query):
+#     """
+#     Adres search query used
+#     """
+#     log.debug('%20s %s', multimatch_subject_Q.__name__, query)
+#     log.debug('using indices %s %s', BAG, BRK)
+#
+#     return Q(
+#         "multi_match",
+#         query=query,
+#         type="phrase_prefix",
+#         slop=14,  # match "stephan preeker" with "stephan jacob preeker"
+#         max_expansions=12,
+#         fields=[
+#             'naam',
+#             'geslachtsnaam',
+#         ]
+#     )
+#
+#
+# def match_object_Q(query):
+#     """
+#     Object search
+#     """
+#     log.debug('%20s %s', match_object_Q.__name__, query)
+#
+#     return Q(
+#         'match',
+#         _all=query,
+#     )
+#
+#
+# def multimatch_openbare_ruimte_Q(query):
+#     """
+#     Openbare ruimte search
+#     """
+#     log.debug('%20s %s', multimatch_openbare_ruimte_Q.__name__, query)
+#
+#     return Q(
+#         "multi_match",
+#         query=query,
+#         # type="most_fields",
+#         # type="phrase",
+#         type="phrase_prefix",
+#         slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+#         max_expansions=12,
+#         fields=[
+#             'naam',
+#             'postcode',
+#             'subtype',
+#         ]
+#     )
 
 
 def add_sorting():
@@ -302,7 +309,6 @@ def kadaster_Q(query):
         boost=3,
         type="phrase_prefix",
         fields=[
-            "openbare_ruimte.naam^3",
             "aanduiding"]
         )
     }
@@ -314,34 +320,28 @@ def address_Q(query):
 
 def street_name_Q(query):
     """Create query/aggregation for street name search"""
-    match_fields = [
-        "straatnaam",
-        "straatnaam_nen",
-        "straatnaam_ptt",
-    ]
+    return {
+        'A': A('terms', field="straatnaam.raw"),
+        'Q': Q(
+                "multi_match",
+                query=query,
+                type="phrase_prefix",
+                fields=[
+                    "straatnaam.ngram",
+                    "straatnaam_nen.ngram",
+                    "straatnaam_ptt.ngram",
+                ]
+            )
 
-    return Q(
-        "multi_match",
-        query=query,
-        type="phrase_prefix",
-        boost=2,
-        fields=match_fields)
+    }
 
 
 def house_number_Q(query):
     """Create query/aggregation for house number search"""
 
     return {
-        'A': A('terms', field='huisnummer_variation'),
-        'Q': Q(
-            "multi_match",
-            query=query,
-            type="phrase_prefix",
-            boost=1,
-            fields=[
-                "huisnummer_variation",
-            ]
-        )
+        'A': None,
+        'Q': Q("prefix", field="huisnummer_variation")
     }
 
 
@@ -362,7 +362,7 @@ def name_Q(query):
     }
 
 
-def zipcode_Q(query):
+def postcode_Q(query):
     """Create query/aggregation for postcode search"""
     return {
         "Q": Q("prefix",postcode=query),
@@ -435,19 +435,16 @@ def autocomplete_query(client, query):
         "geslachtsnaam",
         "aanduiding",
     ]
-
-    # aggregation
-    a = A('terms', field='subtype', size=8)
-
-    tops = A('top_hits', size=4)
     query_componentes = analyze_query(query)
     quries = []
-    aggs = []
+    aggs = {}
     for q in query_componentes:
         qa = q(query)
         quries.append(qa['Q'])
         if qa['A']:
-            aggs.append(qa['A'])
+            # Determining agg name
+            agg_name = 'by_{}'.format(q.__name__[:-2])
+            aggs[agg_name] = qa['A']
     search = (
         Search()
         .using(client)
@@ -456,25 +453,25 @@ def autocomplete_query(client, query):
             'bool',
             should=quries,
         )
-        #.highlight(*completions, pre_tags=[''], post_tags=[''])
-        # .sort(*add_sorting())
+        #.sort(*add_sorting())
     )
+    for agg_name, agg in aggs.items():
+        search.aggs.bucket(agg_name, agg)
 
-    search.aggs.bucket('by_subtype', a).bucket('top', tops)
+    #search.aggs.bucket('by_subtype', A('terms', field='subtype', size=8)).bucket('top', A('top_hits', size=4))
 
     if settings.DEBUG:
         sq = search.to_dict()
         import json
         print(json.dumps(sq, indent=4))
-
-    # search.aggs.bucket('by_subtype', a)  # .bucket('top', tops)
+    
 
     return search
 
 
 def _add_aggregation_counts(result, matches):
     # go add aggregations counts to keys
-    for bucket in result.aggregations['by_subtype']['buckets']:
+    for bucket in result.aggregations['by_term']['buckets']:
         items = matches.get(bucket.key, [])
         subtype_key = '%s ~ %s' % (bucket.key, bucket.doc_count)
         matches.pop(bucket.key, None)
@@ -524,10 +521,31 @@ def _determine_sub_type(hit):
 
 
 def get_autocomplete_response(client, query):
+    """
+    Sends a request for auto complete and returns the result
+    
+    """
+    # Ignoring cache in case debug is on
+    ignore_cache = settings.DEBUG
+    max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
 
-    result = autocomplete_query(client, query).execute()
+    result = autocomplete_query(client, query).execute(ignore_cache=ignore_cache)
 
+    # Checking if there was aggregation in the autocomplete.
+    # If there was that is what should be used for resutls
+    # Trying aggregation as most autocorrect will have them
     matches = OrderedDict()
+    aggs = {}
+    for agg in result.aggregations:
+        aggs[agg] = []
+        for bucket in result.aggregations[agg]['buckets']:
+            aggs[agg].append(bucket.key)
+            max_agg_res -= 1
+            if max_agg_res == 0:
+                break
+        max_agg_res = MAX_AGG_RES
+    return aggs
+
     # group_sugestions by sub_type
     for hit in result:
 
@@ -541,9 +559,9 @@ def get_autocomplete_response(client, query):
 
         #_filter_highlights(highlight, sub_type, query, matches)
 
-    _order_matches(matches)
+    #_order_matches(matches)
 
-    _add_aggregation_counts(result, matches)
+    #_add_aggregation_counts(result, matches)
 
     return matches
 
@@ -875,7 +893,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         )
 
 
-class SearchZipcodeViewSet(SearchViewSet):
+class SearchPostcodeViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
