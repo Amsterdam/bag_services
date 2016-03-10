@@ -626,7 +626,6 @@ def get_autocomplete_response(client, query):
     result = autocomplete_query(client, query).execute()
 
     matches = OrderedDict()
-
     # group_sugestions by sub_type
     for hit in result:
 
@@ -685,6 +684,24 @@ class TypeaheadViewSet(TypeaheadViewSetOld):
     def get_autocomplete_response(self, client, query):
         return get_autocomplete_response(client, query)
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters_strategy: merge
+
+        parameters:
+            - name: q
+              description: Autcomplete op adres
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(TypeaheadViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchViewSet(viewsets.ViewSet):
     """
@@ -701,6 +718,7 @@ class SearchViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
     page_size = 100
+    page_limit = 9
     search_query = default_search_query
     url_name = 'search-list'
 
@@ -723,8 +741,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         if end >= total:
             next_page = None
-        elif page > 9:
-            next_page = "pageing over search results is stupid!"
+        elif page > self.page_limit:
+            next_page = None
         else:
             next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
 
@@ -750,8 +768,8 @@ class SearchViewSet(viewsets.ViewSet):
         if 'page' in request.query_params:
             # limit search results pageing in elastic is slow
             page = int(request.query_params['page'])
-            if page > 10:
-                page = 10
+            if page > self.page_limit:
+                page = self.page_limit
 
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
@@ -779,9 +797,13 @@ class SearchViewSet(viewsets.ViewSet):
         response = OrderedDict()
 
         self._set_followup_url(request, result, end, response, query, page)
-        # import pdb; pdb.set_trace()
 
-        response['count'] = result.hits.total
+        count = result.hits.total
+        response['count_hits'] = count
+        max_count = self.page_size * (self.page_limit + 1)
+        if count > max_count:
+            count = max_count
+        response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
 
@@ -853,6 +875,22 @@ class SearchSubjectViewSet(SearchViewSet):
     url_name = 'search/kadastraalsubject-list'
     search_query = search_subject_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal subject
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchSubjectViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchObjectViewSet(SearchViewSet):
     """
@@ -862,6 +900,22 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
     search_query = search_object_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchObjectViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -882,6 +936,22 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     url_name = 'search/openbareruimte-list'
     search_query = search_openbare_ruimte_query
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op openbare ruimte
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchOpenbareRuimteViewSet, self).list(
+            request, *args, **kwargs)
+
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """
@@ -898,6 +968,22 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     url_name = 'search/adres-list'
     search_query = search_nummeraanduiding_query
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchNummeraanduidingViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchTestViewSet(SearchViewSet):

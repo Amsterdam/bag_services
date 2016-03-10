@@ -4,6 +4,7 @@ database:
     - "5434:5432"
   environment:
     POSTGRES_PASSWORD: insecure
+    POSTGRES_DB: atlas
 
 elasticsearch:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
