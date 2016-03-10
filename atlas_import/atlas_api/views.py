@@ -742,9 +742,7 @@ class SearchViewSet(viewsets.ViewSet):
         if end >= total:
             next_page = None
         elif page > self.page_limit:
-            next_page = """
-                pageing over search results is stupid! limit = %s
-                """ % self.page_limit
+            next_page = None
         else:
             next_page = "{}?q={}&page={}".format(followup_url, query, page + 1)
 
