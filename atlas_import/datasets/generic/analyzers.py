@@ -2,14 +2,17 @@ import elasticsearch_dsl as es
 from elasticsearch_dsl import analysis, tokenizer
 
 
-orderings = dict(
-    openbare_ruimte=10,
-    kadastraal_subject=25,
-    adres=50,
-    kadastraal_object=100,
-)
+orderings = {
+    'openbare_ruimte': 10,
+    'kadastraal_subject': 25,
+    'adres': 50,
+    'kadastraal_object': 100
+}
 
 
+####################################
+#            Filters               #
+####################################
 synonym_filter = analysis.token_filter(
     'synonyms',
     type='synonym',
@@ -68,6 +71,24 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# {
+#     "filter": {
+#         "autocomplete_filter": {
+#             "type":     "edge_ngram",
+#             "min_gram": 1,
+#             "max_gram": 20
+#         }
+#     }
+# }
+autocomplete_filter = analysis.token_filter(
+    'autocomplete_filter',
+    type='edge_ngram',
+    min_gram=3,
+    max_gram=10
+)
+####################################
+#           Analyzers              #
+####################################
 
 kadastrale_aanduiding = es.analyzer(
     'kadastrale_aanduiding',
@@ -116,4 +137,22 @@ subtype = es.analyzer(
     'subtype',
     tokenizer='keyword',
     filter=['standard', 'lowercase'],
+)
+
+# {
+#     "analyzer": {
+#         "autocomplete": {
+#             "type":      "custom",
+#             "tokenizer": "standard",
+#             "filter": [
+#                 "lowercase",
+#                 "autocomplete_filter"
+#             ]
+#         }
+#     }
+# }
+autocomplete = es.analyzer(
+    'autocomplete',
+    tokenizer='standard',
+    filter=['lowercase', autocomplete_filter]
 )
