@@ -10,130 +10,159 @@ import datasets.wkpb.views
 from atlas_api import views
 
 
-class DocumentedRouter(routers.DefaultRouter):
+class BagRouter(routers.DefaultRouter):
     """
-    Onderstaande lijst bevat alle API's die door Datapunt zelf worden geleverd.
+    BAG.
 
-    `bag/`
-    :   [Basisadministratie Adressen en Gebouwen](http://www.amsterdam.nl/stelselpedia/bag-index/)
+    De [Basisregistraties adressen en gebouwen (BAG)](http://www.amsterdam.nl/stelselpedia/bag-index/)
+    bevatten gegevens over panden, verblijfsobjecten, standplaatsen en
+    ligplaatsen en de bijbehorende adressen en de benoeming van
+    woonplaatsen en openbare ruimten.
+    """
+    def get_api_root_view(self):
+        view = super().get_api_root_view()
+        cls = view.cls
 
-    `gebieden/`
-    :   [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
+        class BAG(cls):
+            pass
 
-    `brk/`
-    :   [Basisregistratie kadaster](https://www.amsterdam.nl/stelselpedia/brk-index/)
+        BAG.__doc__ = self.__doc__
+        return BAG.as_view()
 
-    `wkpb/`
-    :   [Gemeentelijke beperkingenregistratie](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
 
-    `brk/`
-    :   [Basisregistratie kadaster (vanaf 1-1-2016)](
-    https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/)
+class GebiedenRouter(routers.DefaultRouter):
+    """
+    Gebieden
 
-    `atlas/`
-    :   Specifieke functionaliteit voor Atlas
+    In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
+    worden de Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken vastgelegd. Verder bevat de
+    registratie gegevens van de grootstedelijke gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de
+    gebieden van gebiedsgericht werken.
+    """
+    def get_api_root_view(self):
+        view = super().get_api_root_view()
+        cls = view.cls
+
+        class Gebieden(cls):
+            pass
+
+        Gebieden.__doc__ = self.__doc__
+        return Gebieden.as_view()
+
+
+class BrkRouter(routers.DefaultRouter):
+    """
+    BRK Basisregistratie kadaster
+
+    De [Basisregistratie kadaster (BRK)](https://www.amsterdam.nl/stelselpedia/brk-index/)
+    bevat informatie over percelen, eigendom, hypotheken, beperkte rechten (zoals recht van erfpacht, opstal en
+    vruchtgebruik) en leidingnetwerken. Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
+    oppervlakte, kadastrale grens en de grenzen van het rijk, de provincies en gemeenten.
+    """
+    def get_api_root_view(self):
+        view = super().get_api_root_view()
+        cls = view.cls
+
+        class BRK(cls):
+            pass
+
+        BRK.__doc__ = self.__doc__
+        return BRK.as_view()
+
+
+class WkpbRouter(routers.DefaultRouter):
+    """
+    Wkpd
+
+    De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
+    bevat alle bij wet genoemde beperkingenbesluiten op onroerende zaken, die het gemeentebestuur heeft opgelegd.
+    """
+    def get_api_root_view(self):
+        view = super().get_api_root_view()
+        cls = view.cls
+
+        class WKPB(cls):
+            pass
+
+        WKPB.__doc__ = self.__doc__
+        return WKPB.as_view()
+
+
+
+class AtlasRouter(routers.DefaultRouter):
+    """
+    Specifieke functionaliteit voor de Atlas API.
     """
 
     def get_api_root_view(self):
         view = super().get_api_root_view()
         cls = view.cls
 
-        class Datapunt(cls):
+        class Atlas(cls):
             pass
 
-        Datapunt.__doc__ = self.__doc__
-        return Datapunt.as_view()
+        Atlas.__doc__ = self.__doc__
+        return Atlas.as_view()
 
 
-router = DocumentedRouter()
+bag = BagRouter()
+bag.register(r'ligplaats', datasets.bag.views.LigplaatsViewSet)
+bag.register(r'standplaats', datasets.bag.views.StandplaatsViewSet)
+bag.register(r'verblijfsobject', datasets.bag.views.VerblijfsobjectViewSet)
+bag.register(r'openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
+bag.register(r'nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
+bag.register(r'pand', datasets.bag.views.PandViewSet)
+bag.register(r'woonplaats', datasets.bag.views.WoonplaatsViewSet)
 
-# kadaster bag
 
-router.register(r'bag/ligplaats', datasets.bag.views.LigplaatsViewSet)
-router.register(r'bag/standplaats', datasets.bag.views.StandplaatsViewSet)
-router.register(r'bag/verblijfsobject',
-                datasets.bag.views.VerblijfsobjectViewSet)
-router.register(r'bag/openbareruimte',
-                datasets.bag.views.OpenbareRuimteViewSet)
-router.register(r'bag/nummeraanduiding',
-                datasets.bag.views.NummeraanduidingViewSet)
-router.register(r'bag/pand', datasets.bag.views.PandViewSet)
-router.register(r'bag/woonplaats', datasets.bag.views.WoonplaatsViewSet)
+gebieden = GebiedenRouter()
+gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
+gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
+gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
+gebieden.register(r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
+gebieden.register(r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+gebieden.register(r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
+gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
 
-# gebieden
 
-router.register(r'gebieden/stadsdeel', datasets.bag.views.StadsdeelViewSet)
-router.register(r'gebieden/buurt', datasets.bag.views.BuurtViewSet)
-router.register(r'gebieden/bouwblok', datasets.bag.views.BouwblokViewSet)
-router.register(r'gebieden/buurtcombinatie',
-                datasets.bag.views.BuurtcombinatieViewSet)
+brk = BrkRouter()
+brk.register(r'gemeente', datasets.brk.views.GemeenteViewSet)
+brk.register(r'kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+brk.register(r'kadastrale-sectie', datasets.brk.views.KadastraleSectieViewSet)
+brk.register(r'subject', datasets.brk.views.KadastraalSubjectViewSet)
+brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
+brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
+brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
 
-router.register(r'gebieden/gebiedsgerichtwerken',
-                datasets.bag.views.GebiedsgerichtwerkenViewSet)
 
-router.register(r'gebieden/grootstedelijkgebied',
-                datasets.bag.views.GrootstedelijkgebiedViewSet)
-router.register(r'gebieden/unesco', datasets.bag.views.UnescoViewSet)
+wkpb = WkpbRouter()
+wkpb.register(r'beperking', datasets.wkpb.views.BeperkingView)
+wkpb.register(r'brondocument', datasets.wkpb.views.BrondocumentView)
+wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 
-# Beperkingen
 
-router.register(r'brk/gemeente', datasets.brk.views.GemeenteViewSet)
-router.register(r'brk/kadastrale-gemeente',
-                datasets.brk.views.KadastraleGemeenteViewSet)
-router.register(r'brk/kadastrale-sectie',
-                datasets.brk.views.KadastraleSectieViewSet)
-router.register(r'brk/subject', datasets.brk.views.KadastraalSubjectViewSet)
-router.register(r'brk/object', datasets.brk.views.KadastraalObjectViewSet)
-router.register(r'brk/zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
-router.register(r'brk/aantekening', datasets.brk.views.AantekeningViewSet)
-
-router.register(r'wkpb/beperking', datasets.wkpb.views.BeperkingView)
-router.register(r'wkpb/brondocument', datasets.wkpb.views.BrondocumentView)
-router.register(r'wkpb/broncode', datasets.wkpb.views.BroncodeView)
+atlas = AtlasRouter()
 
 # Search related
 
-router.register(r'atlas/typeahead',
-                views.TypeaheadViewSet, base_name='typeahead')
-
-router.register(r'atlas/search', views.SearchViewSet, base_name='search')
-
-# Alias voor nummeraanduiding
-router.register(r'atlas/search/adres',
-                views.SearchNummeraanduidingViewSet, base_name='search/adres')
+atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
+#
+# router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 # Alias voor nummeraanduiding
-router.register(r'atlas/search/postcode',
-                views.SearchNummeraanduidingViewSet,
-                base_name='search/postcode')
+atlas.register(r'search/adres', views.SearchNummeraanduidingViewSet, base_name='search/adres')
+atlas.register(r'search/postcode', views.SearchNummeraanduidingViewSet, base_name='search/postcode')
+atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+atlas.register(r'search/postcode', views.SearchNummeraanduidingViewSet, base_name='search/postcode')
+atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+atlas.register(r'search/kadastraalobject', views.SearchObjectViewSet, base_name='search/kadastraalobject')
+atlas.register(r'search/openbareruimte', views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
-router.register(r'atlas/search/kadastraalsubject',
-                views.SearchSubjectViewSet,
-                base_name='search/kadastraalsubject')
-
-# Alias voor nummeraanduiding
-router.register(r'atlas/search/postcode',
-                views.SearchNummeraanduidingViewSet,
-                base_name='search/postcode')
-
-router.register(r'atlas/search/kadastraalsubject',
-                views.SearchSubjectViewSet,
-                base_name='search/kadastraalsubject')
-
-router.register(r'atlas/search/kadastraalobject',
-                views.SearchObjectViewSet, base_name='search/kadastraalobject')
-
-router.register(r'atlas/search/openbareruimte',
-                views.SearchOpenbareRuimteViewSet,
-                base_name='search/openbareruimte')
 
 if settings.DEBUG:
-    router.register(r'atlas/search/test',
-                    views.SearchTestViewSet,
-                    base_name='search/test')
+    atlas.register(r'search/test', views.SearchTestViewSet, base_name='search/test')
 
 
 urlpatterns = [
-    url(r'^auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^', include(router.urls)),
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
 ]

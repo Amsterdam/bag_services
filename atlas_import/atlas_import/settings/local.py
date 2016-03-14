@@ -12,7 +12,7 @@ def _get_docker_host():
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'postgres',
+        'NAME': 'atlas',
         'USER': 'postgres',
         'PASSWORD': 'insecure',
         'HOST': _get_docker_host(),

@@ -31,11 +31,9 @@ class SubjectSearchTest(APITestCase):
 
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
-        time.sleep(1)   # this is stupid
-
     def test_matching_query(self):
         response = self.client.get(
-            '/api/atlas/search/openbareruimte/', dict(q="anjel"))
+            '/atlas/search/openbareruimte/', dict(q="anjel"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -48,7 +46,7 @@ class SubjectSearchTest(APITestCase):
 
     def test_query_openbare_ruimte_gracht(self):
         response = self.client.get(
-            "/api/atlas/search/openbareruimte/", dict(q="prinsengracht"))
+            "/atlas/search/openbareruimte/", dict(q="prinsengracht"))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -62,5 +60,5 @@ class SubjectSearchTest(APITestCase):
             response.data['results'][1]['subtype']
         ]
 
-        self.assertIn("Weg", results)
-        self.assertIn("Water", results)
+        self.assertIn("weg", results)
+        self.assertIn("water", results)

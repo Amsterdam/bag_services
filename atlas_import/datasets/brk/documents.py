@@ -9,6 +9,8 @@ class KadastraalObject(es.DocType):
     order = es.Integer()
     centroid = es.GeoPoint()
 
+    subtype = es.String(analyzer=analyzers.subtype)
+
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
 
@@ -19,6 +21,8 @@ class KadastraalSubject(es.DocType):
     geslachtsnaam = es.String(analyzer=analyzers.naam)
     geboortedatum = es.Date()
     order = es.Integer()
+
+    subtype = es.String(analyzer=analyzers.subtype)
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
@@ -37,6 +41,7 @@ def from_kadastraal_subject(ks):
 
     d.naam = ks.volledige_naam()
     d.order = analyzers.orderings['kadastraal_subject']
+    d.subtype = 'kadastraal_subject'
 
     return d
 
@@ -44,8 +49,12 @@ def from_kadastraal_subject(ks):
 def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.pk)
 
-    d.aanduiding = ko.aanduiding
+    d.aanduiding = ko.get_aanduiding_spaties()
+
     d.order = analyzers.orderings['kadastraal_object']
+
+    d.subtype = 'kadastraal_object'
+
     if ko.geometrie:
         centroid = ko.geometrie.centroid
         centroid.transform('wgs84')

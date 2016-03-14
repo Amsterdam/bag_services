@@ -134,6 +134,8 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     type = '01'  # default verblijfsobject
     postcode = '1000AN'  # default postcode..
 
+    _openbare_ruimte_naam = factory.LazyAttribute(lambda o: o.openbare_ruimte.naam)
+
 
 class StadsdeelFactory(factory.DjangoModelFactory):
     class Meta:

@@ -265,8 +265,12 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
             '_links',
             '_display',
 
+            'id',
             'type',
             'beschikkingsbevoegdheid',
+
+            'volledige_naam',
+            'is_natuurlijk_persoon',
 
             'voornamen',
             'voorvoegsels',
@@ -310,6 +314,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
             '_display',
 
             'id',
+            'type',
             'beschikkingsbevoegdheid',
 
             'volledige_naam',

@@ -1,4 +1,4 @@
-FROM elasticsearch:1.7
+FROM elasticsearch:2.2
 
-RUN plugin -i mobz/elasticsearch-head
-RUN plugin -i elasticsearch/marvel/latest
+#RUN plugin -i mobz/elasticsearch-head
+#RUN plugin -i elasticsearch/marvel/latest
