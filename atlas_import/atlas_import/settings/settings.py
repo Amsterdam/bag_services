@@ -206,7 +206,7 @@ SWAGGER_SETTINGS = {
         'license': 'license Not known yet.',
         'licenseUrl': '://www.amsterdam.nl/stelselpedia/',
         'termsOfServiceUrl': 'https://atlas.amsterdam.nl/terms/',
-        'title': 'BAG, BRK en WKPD API',
+        'title': 'BAG, BRK en WKPB API',
     },
 
     'doc_expansion': 'none',

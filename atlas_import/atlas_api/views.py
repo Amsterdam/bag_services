@@ -67,7 +67,7 @@ def analyze_query(query_string):
     if pcode:
         return [bagQ.postcode_Q]
     # Could not draw conclussions
-    return [brkQ.kadaster_subject_Q, bagQ.street_name_Q, bagQ.comp_address_Q]
+    return [brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_Q, bagQ.comp_address_Q]
     
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
@@ -341,6 +341,7 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
     page_size = 100
     url_name = 'search-list'
+    page_limit = 10
 
     def search_query(self, client, query):
         """
@@ -368,8 +369,6 @@ class SearchViewSet(viewsets.ViewSet):
         """
         # Finding link to self via reverse url search
         followup_url = reverse(self.url_name, request=request)
-        # Setting response links
-        # Starting with link to self and no next or prev pages
         response['_links'] = OrderedDict([
             ('self', {'href': followup_url}),
             ('next', {'href': None}),
@@ -394,8 +393,8 @@ class SearchViewSet(viewsets.ViewSet):
         if 'page' in request.query_params:
             # limit search results pageing in elastic is slow
             page = int(request.query_params['page'])
-            if page > 10:
-                page = 10
+            if page > self.page_limit:
+                page = self.page_limit
 
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
@@ -426,9 +425,13 @@ class SearchViewSet(viewsets.ViewSet):
         response = OrderedDict()
 
         self._set_followup_url(request, result, end, response, query, page)
-        # import pdb; pdb.set_trace()
 
-        response['count'] = result.hits.total
+        count = result.hits.total
+        response['count_hits'] = count
+        max_count = self.page_size * (self.page_limit + 1)
+        if count > max_count:
+            count = max_count
+        response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
 
@@ -530,6 +533,23 @@ class SearchSubjectViewSet(SearchViewSet):
             #.sort(*add_sorting())
         )
 
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal subject
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchSubjectViewSet, self).list(
+            request, *args, **kwargs)
+
+
 class SearchObjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -555,6 +575,22 @@ class SearchObjectViewSet(SearchViewSet):
             )
             .sort('aanduiding')
         )
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchObjectViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -587,6 +623,22 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
             )
             .sort(*add_sorting())
         )
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op openbare ruimte
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchOpenbareRuimteViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
@@ -642,6 +694,22 @@ class SearchPostcodeViewSet(SearchViewSet):
             .index(NUMMERAANDUIDING)
             .query(query)
         ).sort('postcode.raw')
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchNummeraanduidingViewSet, self).list(
+            request, *args, **kwargs)
 
 
 class SearchTestViewSet(SearchViewSet):
