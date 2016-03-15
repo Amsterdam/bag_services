@@ -151,7 +151,7 @@ atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
 
 # Alias voor nummeraanduiding
 atlas.register(r'search/adres', views.SearchNummeraanduidingViewSet, base_name='search/adres')
-atlas.register(r'search/postcode', views.SearchNummeraanduidingViewSet, base_name='search/postcode')
+atlas.register(r'search/postcode', views.SearchPostcodeViewSet, base_name='search/postcode')
 atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
 atlas.register(r'search/postcode', views.SearchNummeraanduidingViewSet, base_name='search/postcode')
 atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')

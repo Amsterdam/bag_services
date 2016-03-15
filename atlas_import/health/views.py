@@ -1,11 +1,12 @@
+# Python
 import logging
-
+# Packages
 from django.conf import settings
 from django.db import connection
 from django.http import HttpResponse
 from elasticsearch import Elasticsearch
-
-from atlas_api.views import get_autocomplete_response
+from elasticsearch_dsl import Search
+# Project
 from datasets.bag.models import Verblijfsobject
 
 
@@ -44,7 +45,7 @@ def check_data(request):
     # check elastic
     try:
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        assert get_autocomplete_response(client, 'weesp')
+        assert Search().using(client).index(NUMMERAANDUIDING, BAG).query("match_all", size=0)
     except:
         log.exception("Autocomplete failed")
         return HttpResponse("Autocomplete failed", content_type="text/plain", status=500)

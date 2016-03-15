@@ -7,10 +7,25 @@
  They all return a dict with the Q and A keyes
 ==================================================
 """
+from elasticsearch_dsl import Search, Q, A
+
 
 def address_Q(query):
     """Create query/aggregation for complete address search"""
     pass
+
+def comp_address_Q(query):
+    """Create query/aggregation for complete address search"""
+    return {
+        'A': A('terms', field='adres.raw'),
+        'Q': Q(
+            'query_string',
+            default_field='comp_address',
+            query=query,
+            default_operator='AND',
+            fuzziness='AUTO')
+    }
+
 
 def street_name_Q(query):
     """Create query/aggregation for street name search"""
@@ -35,68 +50,38 @@ def house_number_Q(query):
 
     return {
         'A': None,
-        'Q': Q("prefix", field="huisnummer_variation")
-    }
-
-
-def name_Q(query):
-    """Create query/aggregation for name search"""
-    return {
-        'A': None,
-        'Q': Q(
-            "multi_match",
-            query=query,
-            boost=1,
-            type="phrase_prefix",
-            fields=[
-                "geslachtsnaam",
-                "kadastraal_subject.naam",
-            ]
-        )
+        'Q': Q("match_phrase_prefix", field="huisnummer_variation")
     }
 
 
 def postcode_Q(query):
-    """Create query/aggregation for postcode search"""
+    """
+    Create query/aggregation for postcode search
+
+    The postcode query uses a prefix query which is a not
+    analyzed query. Therefore, in order to find matches when an uppercase
+    letter is given the string is changed to lowercase
+    """
+    query = query.lower()
     return {
-        "Q": Q("prefix",postcode=query),
+        "Q": Q("prefix", postcode=query),
         "A": A("terms", field="postcode")
     }
 
-def multimatch_nummeraanduiding_Q(query):
-    """Create query/aggregation for nummeraanduiding search"""
-    log.debug('%20s %s', multimatch_nummeraanduiding_Q.__name__, query)
-
-    """
-    "straatnaam": "Eerste Helmersstraat",
-    "buurtcombinatie": "Helmersbuurt",
-    "huisnummer": 104,
-    "huisnummer_variation": 104,
-    "subtype": "Verblijfsobject",
-    "postcode": "1054EG-104G",
-    "adres": "Eerste Helmersstraat 104G",
-    """
-
+def public_area_Q(query):
+    """ Create query/aggregation for public area"""
     return {
         'A': None,
         'Q': Q(
             "multi_match",
             query=query,
-            # type="most_fields",
-            # type="phrase",
             type="phrase_prefix",
-            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            slop=12,
             max_expansions=12,
             fields=[
                 'naam',
-                'straatnaam',
-                'straatnaam_nen',
-                'straatnaam_ptt',
-                'aanduiding',
-                'adres',
                 'postcode',
-                'huisnummer'
-                'huisnummer_variation',
+                'subtype',
             ]
         )
     }

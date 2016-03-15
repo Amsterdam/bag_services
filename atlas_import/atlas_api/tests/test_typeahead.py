@@ -57,19 +57,19 @@ class TypeaheadTest(APITestCase):
 
 
     def test_match_openbare_ruimte(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="an"))
+        response = self.client.get('/atlas/typeahead/', {'q': 'an'})
         self.assertEqual(response.status_code, 200)
 
         self.assertIn("Anjeliersstraat", str(response.data))
 
     def test_match_openbare_ruimte_lowercase(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="AN"))
+        response = self.client.get('/atlas/typeahead/', {'q': 'AN'})
         self.assertEqual(response.status_code, 200)
 
         self.assertIn("Anjeliersstraat", str(response.data))
 
     def test_match_maximum_length(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="a"))
+        response = self.client.get('/atlas/typeahead/', {'q':'a'})
         self.assertEqual(response.status_code, 200)
 
         lst = response.data['verblijfsobject ~ 6']
@@ -77,7 +77,7 @@ class TypeaheadTest(APITestCase):
 
     @unittest.skip("Werkt even niet wegens uitzetten fuzzy-stuff")
     def test_match_adresseerbaar_object(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="anjelier"))
+        response = self.client.get('/atlas/typeahead/', {'q': 'anjelier'})
         self.assertEqual(response.status_code, 200)
 
         obs = [ob['item'] for ob in response.data['weg ~ 1']]
@@ -87,11 +87,11 @@ class TypeaheadTest(APITestCase):
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get(
             '/atlas/typeahead/',
-            dict(q="anjeliersstraat 11"))
+            {'q': "anjeliersstraat 11"})
 
         self.assertIn("Anjeliersstraat 11", str(response.data))
 
     @unittest.skip(reason="not really stable")
     def test_match_postcode(self):
-        response = self.client.get("/atlas/typeahead/", dict(q='105'))
+        response = self.client.get("/atlas/typeahead/", {'q': '105'})
         self.assertIn("105", str(response.data))
