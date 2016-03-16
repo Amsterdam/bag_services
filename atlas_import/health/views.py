@@ -8,6 +8,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 # Project
 from datasets.bag.models import Verblijfsobject
+from datasets.wkpb.models import Beperking
 
 
 log = logging.getLogger(__name__)
@@ -21,7 +22,9 @@ def health(request):
             assert cursor.fetchone()
     except:
         log.exception("Database connectivity failed")
-        return HttpResponse("Database connectivity failed", content_type="text/plain", status=500)
+        return HttpResponse(
+            "Database connectivity failed",
+            content_type="text/plain", status=500)
 
     # check elasticsearch
     try:
@@ -29,9 +32,14 @@ def health(request):
         assert client.info()
     except:
         log.exception("Elasticsearch connectivity failed")
-        return HttpResponse("Elasticsearch connectivity failed", content_type="text/plain", status=500)
+        return HttpResponse(
+            "Elasticsearch connectivity failed",
+            content_type="text/plain", status=500)
 
-    return HttpResponse("Connectivity OK", content_type='text/plain', status=200)
+    # check wkpd
+
+    return HttpResponse(
+        "Connectivity OK", content_type='text/plain', status=200)
 
 
 def check_data(request):
@@ -40,14 +48,27 @@ def check_data(request):
         assert Verblijfsobject.objects.count() > 10
     except:
         log.exception("No BAG data found")
-        return HttpResponse("No BAG data found", content_type="text/plain", status=500)
+        return HttpResponse(
+            "No BAG data found",
+            content_type="text/plain", status=500)
+
+    # check wkpb
+    try:
+        assert Beperking.objects.count() > 10
+    except:
+        log.exception("No WKPD data found")
+        return HttpResponse(
+            "No WKPD data found",
+            content_type="text/plain", status=500)
 
     # check elastic
     try:
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        assert Search().using(client).index(NUMMERAANDUIDING, BAG).query("match_all", size=0)
+        assert Search().using(client).index(
+            settings.NUMMERAANDUIDING, settings.BAG).query("match_all", size=0)
     except:
         log.exception("Autocomplete failed")
-        return HttpResponse("Autocomplete failed", content_type="text/plain", status=500)
+        return HttpResponse(
+            "Autocomplete failed", content_type="text/plain", status=500)
 
     return HttpResponse("Data OK", content_type='text/plain', status=200)
