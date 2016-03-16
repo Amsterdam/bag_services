@@ -270,6 +270,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         aggs = {}
         ordered_aggs = OrderedDict()
         result_order = ['by_postcode', 'by_street_name', 'by_comp_address', 'by_kadaster_object', 'by_kadaster_subject']
+        # This might be better handled on the front end
+        pretty_names = ['Postcodes', 'Straatnamen', 'Adres', 'Kadaster Object', 'Kadaster Subject']
         pcode = PCODE_REGEX.match(query_string)
         for agg in result.aggregations:
             order = []
@@ -294,9 +296,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
             max_agg_res = MAX_AGG_RES
         # Now ordereing the result groups
         # @TODO improve the working
-        for group in result_order:
-            if group in aggs:
-                ordered_aggs[group] = aggs[group]
+        for i in range(len(result_order)):
+            if result_order[i] in aggs:
+                ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
         return ordered_aggs
 
     def get_autocomplete_response(self, query, alphabetical=True):
