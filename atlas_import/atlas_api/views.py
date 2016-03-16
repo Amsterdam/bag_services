@@ -718,7 +718,7 @@ class SearchPostcodeViewSet(SearchViewSet):
               paramType: query
         """
 
-        return super(SearchNummeraanduidingViewSet, self).list(
+        return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
 
 
