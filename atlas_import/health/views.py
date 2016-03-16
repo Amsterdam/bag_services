@@ -65,7 +65,8 @@ def check_data(request):
     try:
         client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
         assert Search().using(client).index(
-            settings.NUMMERAANDUIDING, settings.BAG).query("match_all", size=0)
+            settings.ELASTIC_INDICES['NUMMERAANDUIDING'],
+            settings.ELASTIC_INDICES['BAG']).query("match_all", size=0)
     except:
         log.exception("Autocomplete failed")
         return HttpResponse(
