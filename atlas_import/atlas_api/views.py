@@ -268,13 +268,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
         aggs = {}
+        ordered_aggs = OrderedDict()
+        result_order = ['by_postcode', 'by_street_name', 'by_comp_address', 'by_kadaster_object', 'by_kadaster_subject']
         pcode = PCODE_REGEX.match(query_string)
         for agg in result.aggregations:
             order = []
             aggs[agg] = []
             exact = None
             for bucket in result.aggregations[agg]['buckets']:
-                if bucket.key.lower() == query_string.lower() and pcode:
+                if pcode and bucket.key.lower() == query_string.lower():
                     exact = bucket.key
                 else:
                     order.append(bucket.key)
@@ -290,8 +292,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 if max_agg_res == 0:
                     break
             max_agg_res = MAX_AGG_RES
-                        
-        return aggs
+        # Now ordereing the result groups
+        # @TODO improve the working
+        for group in result_order:
+            if group in aggs:
+                ordered_aggs[group] = aggs[group]
+        return ordered_aggs
 
     def get_autocomplete_response(self, query, alphabetical=True):
         """
@@ -667,6 +673,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .query(
                 #multimatch_nummeraanduiding_Q(query)
                 bagQ.comp_address_Q(query)['Q']
+                #bagQ.comp_address_f_Q(query)['Q']
+                #bagQ.comp_address_fuzzy_Q(query)['Q']
             )
         )
 

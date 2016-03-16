@@ -136,7 +136,7 @@ postcode_ng = es.analyzer(
 postcode = es.analyzer(
     'postcode',
     tokenizer=tokenizer('postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
-    filter=['lowercase'],
+    filter=['lowercase', whitespace_stripper],
 )
 
 huisnummer = es.analyzer(

@@ -76,6 +76,8 @@ class Nummeraanduiding(es.DocType):
 
     adres = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
     comp_address = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    comp_address_nen = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    comp_address_ptt = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
     address_copy = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
     huisnummer = es.Integer(copy_to='address_copy', fields={'variation': es.String(analyzer=analyzers.huisnummer)})
     postcode = es.String(analyzer=analyzers.postcode, copy_to='address_copy', fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
@@ -144,11 +146,11 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
     doc.comp_address = "{0} {1} {2}".format(n.openbare_ruimte.naam, n.postcode, n.toevoeging)
+    doc.comp_address_nen = "{0} {1} {2}".format(n.openbare_ruimte.naam_nen, n.postcode, n.toevoeging)
+    doc.comp_address_ptt = "{0} {1} {2}".format(n.openbare_ruimte.naam_ptt, n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
-    doc.straatnaam_raw = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
-    doc.straatnaam_nen_raw = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
 

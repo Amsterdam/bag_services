@@ -23,6 +23,8 @@ def kadaster_subject_Q(query):
         'A': A('terms', field='naam.raw'),
         'Q': Q(
             'multi_match',
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
             query=query,
             type='phrase_prefix',
             fields=[
