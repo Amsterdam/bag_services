@@ -11,6 +11,8 @@ def check_elasticsearch(app_configs, **kwargs):
         es = elasticsearch_dsl.Search()
         es.using(client).query("match", all="x").execute()
         return []
+    except AttributeError as e:
+        return [checks.Error("ELASTIC_SEARCH_HOSTS not in settings")]
     except BaseException as e:
         return [checks.Error(
             "No elastic search server found on {}".format(settings.ELASTIC_SEARCH_HOSTS),
