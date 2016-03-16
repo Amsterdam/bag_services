@@ -238,6 +238,25 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     def __str__(self):
         return self.naam
 
+    def dict_for_index(self, deep=True):
+        """
+        Converts the object into a dict to be indexed
+        default is to also convert foreign key objects
+
+        If deep is set to false, it will not add foreign key objects
+        but instead add their ids
+        """
+        dct = {}
+        for field in self._meta.fields:
+            if field.get_internal_type() == 'ForeignKey':
+                if deep:
+                    pass
+                else:
+                    dct[field.name] = getattr(self, '{}_id'.format(field.name), None)
+            else:
+                dct[field.name] = getattr(self, field.name, '')
+        return dct
+
 
 class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
@@ -300,6 +319,31 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     def adres(self):
         return '%s %s' % (self._openbare_ruimte_naam, self.toevoeging)
+
+    def dict_for_index(self, deep=True):
+        """
+        Converts the object into a dict to be indexed
+        default is to also convert foreign key objects
+
+        If deep is set to false, it will not add foreign key objects
+        but instead add their ids
+        """
+        dct = {
+            'postcode': "{}-{}".format(self.postcode,self.toevoeging),
+            'huisnummer': self.huisnummer,
+        }
+        if deep:
+            # Creating a deep copy
+            dct.update({
+                'straatnaam': self.openbare_ruimte.naam,
+                'straatnaam_nen': self.openbare_ruimte.naam_nen,
+                'straatnaam_ptt': self.openbare_ruimte.naam_ptt
+            });
+        else:
+            dct.update({
+                'openbaar_ruimte': self.openbaar_ruimte_id
+            });
+        return dct
 
     @property
     def toevoeging(self):

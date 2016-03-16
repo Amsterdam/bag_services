@@ -6,13 +6,10 @@ from django.conf import settings
 
 
 class Ligplaats(es.DocType):
-    straatnaam = es.String(analyzer=analyzers.adres)
-
-    adres = es.String(analyzer=analyzers.adres)
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
-
-    postcode = es.String(analyzer=analyzers.postcode)
+    straatnaam = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    adres = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    huisnummer = es.Integer(fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    postcode = es.String(analyzer=analyzers.postcode, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -22,13 +19,10 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
-    straatnaam = es.String(analyzer=analyzers.adres)
-    adres = es.String(analyzer=analyzers.adres)
-
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
-
-    postcode = es.String(analyzer=analyzers.postcode)
+    straatnaam = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    adres = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    huisnummer = es.Integer(fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    postcode = es.String(analyzer=analyzers.postcode, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -38,11 +32,10 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
-    straatnaam = es.String(analyzer=analyzers.adres)
-    adres = es.String(analyzer=analyzers.adres)
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
-    postcode = es.String(analyzer=analyzers.postcode)
+    straatnaam = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    adres = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    huisnummer = es.Integer(fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    postcode = es.String(analyzer=analyzers.postcode, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -56,8 +49,8 @@ class Verblijfsobject(es.DocType):
 
 
 class OpenbareRuimte(es.DocType):
-    naam = es.String(analyzer=analyzers.adres)
-    postcode = es.String(analyzer=analyzers.postcode)
+    naam = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    postcode = es.String(analyzer=analyzers.postcode, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
@@ -77,19 +70,17 @@ class Nummeraanduiding(es.DocType):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
-    straatnaam = es.String(analyzer=analyzers.adres)
-    straatnaam_raw = es.String(
-        analyzer=analyzers.adres,
-        fields={'raw': es.String(index='not_analyzed')}
-    )
-    straatnaam_nen = es.String(analyzer=analyzers.adres)
-    straatnaam_nen_raw = es.String(fields={'raw': es.String(index='not_analyzed')})
-    straatnaam_ptt = es.String(analyzer=analyzers.adres)
+    straatnaam = es.String(analyzer=analyzers.adres, copy_to='address_copy', fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    straatnaam_nen = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    straatnaam_ptt = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
 
-    adres = es.String(analyzer=analyzers.adres)
-    huisnummer_variation = es.String(analyzer=analyzers.huisnummer)
-    huisnummer = es.Integer()
-    postcode = es.String(analyzer=analyzers.postcode)
+    adres = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    comp_address = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    comp_address_nen = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    comp_address_ptt = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    address_copy = es.String(analyzer=analyzers.adres, fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    huisnummer = es.Integer(copy_to='address_copy', fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    postcode = es.String(analyzer=analyzers.postcode, copy_to='address_copy', fields={'raw': es.String(index='not_analyzed'), 'ngram': es.String(analyzer=analyzers.postcode_ng)})
 
     order = es.Integer()
 
@@ -111,12 +102,11 @@ def get_centroid(geom):
 def update_adres(dest, adres: models.Nummeraanduiding):
     if adres:
         dest.adres = adres.adres()
-        dest.postcode = "{}-{}".format(adres.postcode, adres.toevoeging)
+        dest.postcode = adres.postcode
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.straatnaam_raw = adres.openbare_ruimte.naam
 
         dest.huisnummer = adres.huisnummer
-        dest.huisnummer_variation = adres.huisnummer
 
 
 def add_verblijfsobject(doc, vo: models.Verblijfsobject):
@@ -155,26 +145,14 @@ def from_ligplaats(l: models.Ligplaats):
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.postcode = "{}-{}".format(n.postcode, n.toevoeging)
+    doc.comp_address = "{0} {1} {2}".format(n.openbare_ruimte.naam, n.postcode, n.toevoeging)
+    doc.comp_address_nen = "{0} {1} {2}".format(n.openbare_ruimte.naam_nen, n.postcode, n.toevoeging)
+    doc.comp_address_ptt = "{0} {1} {2}".format(n.openbare_ruimte.naam_ptt, n.postcode, n.toevoeging)
+    doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
-    doc.straatnaam_raw = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
-    doc.straatnaam_nen_raw = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
-    doc.huisnummer_variation = n.huisnummer
-
-    # if n.buurt:
-    #     d.buurt = n.buurt.naam
-
-    # if n.stadsdeel:
-    #     d.stadsdeel = n.stadsdeel.naam
-
-    # if n.woonplaats:
-    #     d.woonplaats = n.woonplaats.naam
-
-    # if n.buurtcombinatie:
-    #     d.buurtcombinatie = n.buurtcombinatie.naam
 
     if n.bron:
         doc.bron = n.bron.omschrijving

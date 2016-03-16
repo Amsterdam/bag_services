@@ -1,13 +1,15 @@
+# Python
 import unittest
-
+# Packages
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from rest_framework.test import APITestCase
-
+# Project
+from batch import batch
 import datasets.bag.batch
 from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
-from batch import batch
+
 
 
 class TypeaheadTest(APITestCase):
@@ -57,41 +59,34 @@ class TypeaheadTest(APITestCase):
 
 
     def test_match_openbare_ruimte(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="an"))
+        response = self.client.get('/atlas/typeahead/', {'q': '100'})
         self.assertEqual(response.status_code, 200)
-
-        self.assertIn("Anjeliersstraat", str(response.data))
+        self.assertIn("1000an", str(response.data))
 
     def test_match_openbare_ruimte_lowercase(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="AN"))
+        response = self.client.get('/atlas/typeahead/', {'q': '1000an'})
         self.assertEqual(response.status_code, 200)
+        self.assertIn("1000an", str(response.data))
 
-        self.assertIn("Anjeliersstraat", str(response.data))
-
-    def test_match_maximum_length(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="a"))
+    def test_match_openbare_ruimte_uppercase(self):
+        response = self.client.get('/atlas/typeahead/', {'q': '1000AN'})
         self.assertEqual(response.status_code, 200)
+        self.assertIn("1000an", str(response.data))
 
-        lst = response.data['verblijfsobject ~ 6']
-        self.assertEqual(len(lst), 5)
 
-    @unittest.skip("Werkt even niet wegens uitzetten fuzzy-stuff")
     def test_match_adresseerbaar_object(self):
-        response = self.client.get('/atlas/typeahead/', dict(q="anjelier"))
+        response = self.client.get('/atlas/typeahead/', {'q': 'anjelier'})
         self.assertEqual(response.status_code, 200)
-
-        obs = [ob['item'] for ob in response.data['weg ~ 1']]
         self.assertIn("Anjeliersstraat", str(response.data))
-        #self.assertIn("Anjeliersstraat 11", str(response.data))
+        self.assertIn("Anjeliersstraat 11", str(response.data))
 
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get(
             '/atlas/typeahead/',
-            dict(q="anjeliersstraat 11"))
+            {'q': "anjeliersstraat 11"})
 
         self.assertIn("Anjeliersstraat 11", str(response.data))
 
-    @unittest.skip(reason="not really stable")
     def test_match_postcode(self):
-        response = self.client.get("/atlas/typeahead/", dict(q='105'))
+        response = self.client.get("/atlas/typeahead/", {'q': '105'})
         self.assertIn("105", str(response.data))

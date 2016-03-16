@@ -1,6 +1,6 @@
-from rest_framework.test import APITestCase
-
+# Packages
 from datasets.bag.tests import factories
+from rest_framework.test import APITestCase
 
 
 class RedirectsTest(APITestCase):

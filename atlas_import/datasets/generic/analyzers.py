@@ -1,15 +1,25 @@
+"""
+A collection of custom elastic search filters and analyzers
+that are used throughout.
+"""
+
 import elasticsearch_dsl as es
 from elasticsearch_dsl import analysis, tokenizer
 
 
-orderings = dict(
-    openbare_ruimte=10,
-    kadastraal_subject=25,
-    adres=50,
-    kadastraal_object=100,
-)
+orderings = {
+    'openbare_ruimte': 10,
+    'kadastraal_subject': 25,
+    'adres': 50,
+    'kadastraal_object': 100
+}
 
 
+####################################
+#            Filters               #
+####################################
+
+# Replaces the number street shortening with the actual word
 synonym_filter = analysis.token_filter(
     'synonyms',
     type='synonym',
@@ -21,7 +31,7 @@ synonym_filter = analysis.token_filter(
     ]
 )
 
-
+# Generates a list of patterns to optiona house numbers
 huisnummer_generate = analysis.char_filter(
     'huisnummer_expand',
     type='pattern_replace',
@@ -50,6 +60,7 @@ huisnummer_expand = analysis.token_filter(
 )
 
 
+# Strip dashes and change . to space
 adres_split = analysis.char_filter(
     'adres_split',
     type='mapping',
@@ -59,15 +70,7 @@ adres_split = analysis.char_filter(
     ]
 )
 
-
-# postcode_ngram = analysis.NGramTokenizer(
-#     name='postcode_ngram',
-#     min_gram=2,
-#     max_gram=4,
-#     token_chars=['letter', 'digit']
-# )
-
-
+# Change dash and dot to space
 naam_stripper = analysis.char_filter(
     'naam_stripper',
     type='mapping',
@@ -77,6 +80,32 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# Remove white spaces from the text
+whitespace_stripper = analysis.token_filter(
+    'whitespace_stripper',
+    type='pattern_replace',
+    pattern=' ',
+    replacement=''
+)
+# Create edge ngram filtering to postcode
+autocomplete_filter = analysis.token_filter(
+    'autocomplete_filter',
+    type='edge_ngram',
+    min_gram=2,
+    max_gram=20
+)
+
+# Creating ngram filtering to kadastral objects
+kadaster_object_aanduiding = analysis.token_filter(
+    'kad_obj_aanduiding_filter',
+    type='ngram',
+    min_gram=4,
+    max_gram=16
+)
+
+####################################
+#           Analyzers              #
+####################################
 
 kadastrale_aanduiding = es.analyzer(
     'kadastrale_aanduiding',
@@ -84,14 +113,12 @@ kadastrale_aanduiding = es.analyzer(
     filter=['standard', 'lowercase']
 )
 
-
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
-    filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
+    filter=['lowercase', 'asciifolding', synonym_filter],
     char_filter=[adres_split, huisnummer_generate],
 )
-
 
 naam = es.analyzer(
     'naam',
@@ -100,26 +127,45 @@ naam = es.analyzer(
     char_filter=[naam_stripper],
 )
 
+postcode_ng = es.analyzer(
+    'postcode_ng',
+    tokenizer=tokenizer('postcode_ngram', 'nGram', min_gram=2, max_gram=4, token_chars=['letter', 'digit']),
+    filter=['lowercase'],
+)
 
 postcode = es.analyzer(
     'postcode',
-    #tokenizer='keyword',
-    tokenizer=tokenizer('postcode_ngram', 'nGram', min_gram=2, max_gram=4, token_chars=['letter', 'digit']),
-    filter=['standard', 'lowercase'],
-    #char_filter=[postcode_stripper],
+    tokenizer=tokenizer('postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
+    filter=['lowercase', whitespace_stripper],
 )
 
 huisnummer = es.analyzer(
     'huisnummer',
     tokenizer='whitespace',
     filter=['lowercase', huisnummer_expand],
-    # token_filter=[huisnummer_expand],
     char_filter=[adres_split, huisnummer_generate],
 )
-
 
 subtype = es.analyzer(
     'subtype',
     tokenizer='keyword',
-    filter=['standard', 'lowercase'],
+    filter=['lowercase'],
+)
+
+autocomplete = es.analyzer(
+    'autocomplete',
+    tokenizer='standard',
+    filter=['lowercase', autocomplete_filter]
+)
+
+kad_obj_aanduiding = es.analyzer(
+    'kad_obj_aanduiding',
+    tokenizer=tokenizer('kadobj_token', 'nGram', min_gram=4, max_gram=16, token_chars=['letter', 'digit']),
+    filter=['lowercase']
+)
+
+kad_obj_aanduiding_search = es.analyzer(
+    'kad_obj_aanduiding_search',
+    tokenizer=tokenizer('kadobj_keyword', 'keyword', token_chars=['letter', 'digit']),
+    filter=['lowercase']
 )
