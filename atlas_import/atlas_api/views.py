@@ -372,40 +372,43 @@ class SearchViewSet(viewsets.ViewSet):
         """
         log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
 
-        return (
-            Search()
-            .using(client)
-            .index(NUMMERAANDUIDING, BAG, BRK)
-            .query(
-                multimatch_Q(query)
-            )
-            .sort(*add_sorting())
-        )
+        raise NotImplementedError
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
         """
         Add pageing links for result set to response object
         """
+        # make query url friendly again
+        url_query = quote(query)
         # Finding link to self via reverse url search
         followup_url = reverse(self.url_name, request=request)
+
+        self_url = "{}?q={}&page={}".format(
+            followup_url, url_query, page)
+
         response['_links'] = OrderedDict([
-            ('self', {'href': followup_url}),
+            ('self', {'href': self_url}),
             ('next', {'href': None}),
             ('prev', {'href': None})
         ])
 
         # Finding and setting prev and next pages
         if end < result.hits.total:
-            # There should be a next
-            response['_links']['next']['href'] = "{}?q={}&page={}".format(followup_url, query, page + 1)
+            if end < (self.page_size * self.page_limit):
+                # There should be a next
+                response['_links']['next']['href'] = "{}?q={}&page={}".format(
+                    followup_url, url_query, page + 1)
         if page == 2:
-            response['_links']['previous']['href'] = "{}?q={}".format(followup_url, query)
+            response['_links']['prev']['href'] = "{}?q={}".format(
+                followup_url, url_query)
         elif page > 2:
-            response['_links']['previous']['href'] = "{}?q={}&page={}".format(followup_url, query, page - 1)
+            response['_links']['prev']['href'] = "{}?q={}&page={}".format(
+                followup_url, url_query, page - 1)
 
     def list(self, request, *args, **kwargs):
         """Create a response list"""
+
         if 'q' not in request.query_params:
             return Response([])
 
@@ -490,33 +493,9 @@ class SearchViewSet(viewsets.ViewSet):
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        # result['uri'] = _get_url(
-        #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
         return result
-
-
-class SearchAdresViewSet(SearchViewSet):
-    """
-    Given a query parameter `q`, this function returns a subset of
-    all adressable objects that match the adres elastic search query.
-    """
-    url_name = 'search/adres-list'
-
-    def search_query(self, client, query):
-        """
-        Execute search on adresses
-        """
-        return (
-            Search()
-            .using(client)
-            .index(BAG, BRK, NUMMERAANDUIDING)
-            .query(
-                multimatch_adres_Q(query)
-            )
-            .sort(*add_sorting())
-        )
 
 
 class SearchSubjectViewSet(SearchViewSet):
@@ -684,10 +663,10 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .using(client)
             .index(NUMMERAANDUIDING)
             .query(
-                #multimatch_nummeraanduiding_Q(query)
+                # multimatch_nummeraanduiding_Q(query)
                 bagQ.comp_address_Q(query)['Q']
-                #bagQ.comp_address_f_Q(query)['Q']
-                #bagQ.comp_address_fuzzy_Q(query)['Q']
+                # bagQ.comp_address_f_Q(query)['Q']
+                # bagQ.comp_address_fuzzy_Q(query)['Q']
             )
         )
 
