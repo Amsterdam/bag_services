@@ -22,6 +22,12 @@ class RedenAfvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models
         verbose_name_plural = "Reden Afvoer"
 
 
+class RedenOpvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+    class Meta:
+        verbose_name = "Reden Opvoer"
+        verbose_name_plural = "Reden Opvoer"
+
+
 class Eigendomsverhouding(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Eigendomsverhouding"
@@ -523,6 +529,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     aantal_kamers = models.PositiveIntegerField(null=True)
     vervallen = models.PositiveIntegerField(default=False)
     reden_afvoer = models.ForeignKey(RedenAfvoer, null=True)
+    reden_opvoer = models.ForeignKey(RedenOpvoer, null=True)
     bron = models.ForeignKey(Bron, null=True)
     eigendomsverhouding = models.ForeignKey(Eigendomsverhouding, null=True)
     financieringswijze = models.ForeignKey(Financieringswijze, null=True)

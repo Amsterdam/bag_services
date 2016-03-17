@@ -53,5 +53,3 @@ Serializing models is using an extended [HyperlinkedModelSerializer](http://www.
 
 Basically there's two kinds of serializers for a model: a detail one, and a list one. In stead of including all related models int the serializer, a link is added to be able to fetch them when needed.
 
-
--- ga niet haten ik ben bezig

@@ -45,6 +45,12 @@ class ImportAvrTask(CodeOmschrijvingUvaTask):
     model = models.RedenAfvoer
 
 
+class ImportOvrTask(CodeOmschrijvingUvaTask):
+    name = "Import OVR"
+    code = "OVR"
+    model = models.RedenOpvoer
+
+
 class ImportBrnTask(CodeOmschrijvingUvaTask):
     name = "Import BRN"
     code = "BRN"
@@ -836,6 +842,7 @@ class ImportVboTask(batch.BasicTask):
     def __init__(self, path):
         self.path = path
         self.redenen_afvoer = set()
+        self.redenen_opvoer = set()
         self.bronnen = set()
         self.eigendomsverhoudingen = set()
         self.financieringswijzes = set()
@@ -850,6 +857,7 @@ class ImportVboTask(batch.BasicTask):
     def before(self):
         database.clear_models(models.Verblijfsobject)
         self.redenen_afvoer = set(models.RedenAfvoer.objects.values_list("pk", flat=True))
+        self.redenen_opvoer = set(models.RedenOpvoer.objects.values_list("pk", flat=True))
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.eigendomsverhoudingen = set(models.Eigendomsverhouding.objects.values_list("pk", flat=True))
         self.financieringswijzes = set(models.Financieringswijze.objects.values_list("pk", flat=True))
@@ -862,6 +870,7 @@ class ImportVboTask(batch.BasicTask):
 
     def after(self):
         self.redenen_afvoer.clear()
+        self.redenen_opvoer.clear()
         self.bronnen.clear()
         self.eigendomsverhoudingen.clear()
         self.financieringswijzes.clear()
@@ -881,7 +890,7 @@ class ImportVboTask(batch.BasicTask):
         if not uva2.geldig_tijdvak(r):
             return
 
-        if not uva2.geldige_relaties(r, 'VBOAVR', 'VBOBRN', 'VBOEGM', 'VBOFNG', 'VBOGBK', 'VBOLOC', 'VBOLGG', 'VBOMNT',
+        if not uva2.geldige_relaties(r, 'VBOAVR', 'VBOOVR', 'VBOBRN', 'VBOEGM', 'VBOFNG', 'VBOGBK', 'VBOLOC', 'VBOLGG', 'VBOMNT',
                                      'VBOTGG', 'VBOOVR', 'VBOSTS', 'VBOBRT'):
             return
 
@@ -894,6 +903,7 @@ class ImportVboTask(batch.BasicTask):
 
         pk = r['sleutelverzendend']
         reden_afvoer_id = r['VBOAVR/AVR/Code'] or None
+        reden_opvoer_id = r['VBOOVR/OVR/Code'] or None
         bron_id = r['VBOBRN/BRN/Code'] or None
         eigendomsverhouding_id = r['VBOEGM/EGM/Code'] or None
         financieringswijze_id = r['VBOFNG/FNG/Code'] or None
@@ -912,6 +922,10 @@ class ImportVboTask(batch.BasicTask):
         if reden_afvoer_id and reden_afvoer_id not in self.redenen_afvoer:
             log.warning('Verblijfsobject {} references non-existing reden afvoer {}; ignoring'.format(pk, bron_id))
             reden_afvoer_id = None
+
+        if reden_opvoer_id and reden_opvoer_id not in self.redenen_opvoer:
+            log.warning('Verblijfsobject {} references non-existing reden opvoer {}; ignoring'.format(pk, bron_id))
+            reden_opvoer_id = None
 
         if bron_id and bron_id not in self.bronnen:
             log.warning('Verblijfsobject {} references non-existing bron {}; ignoring'.format(pk, bron_id))
@@ -972,6 +986,7 @@ class ImportVboTask(batch.BasicTask):
             aantal_kamers=uva2.uva_nummer(r['AantalKamers']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             reden_afvoer_id=reden_afvoer_id,
+            reden_opvoer_id=reden_opvoer_id,
             bron_id=bron_id,
             eigendomsverhouding_id=eigendomsverhouding_id,
             financieringswijze_id=financieringswijze_id,
@@ -1478,6 +1493,7 @@ class ImportBagJob(object):
     def tasks(self):
         return [
             ImportAvrTask(self.bag),
+            ImportOvrTask(self.bag),
             ImportBrnTask(self.bag),
             ImportEgmTask(self.bag),
             ImportFngTask(self.bag),
