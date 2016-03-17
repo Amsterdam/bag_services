@@ -1,12 +1,13 @@
 # Python
 import logging
 from collections import OrderedDict
+from urllib.parse import quote
 import re
 # Packages
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -17,8 +18,8 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
+
 # Regexes for query analysis
-#-----------------------------
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
 PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')
 KADASTRAL_NUMMER_REGEX = re.compile('^$')
@@ -40,7 +41,7 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 def analyze_query(query_string):
     """
-    Looks at the query string being filled and tryes
+    Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
     This is useful to reduce number of queries and reduce result size
 
@@ -53,9 +54,9 @@ def analyze_query(query_string):
     """
     # If its only numbers and it is 3 digits or less its probably postcode
     # but can also be kadestral
-    num = None
+    # num = None
     try:
-        num = int(query_string)
+        # num = int(query_string)
         if len(query_string) < 4:
             # Its a number so it can be either postcode or kadaster
             return [bagQ.postcode_Q]
@@ -219,42 +220,46 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     """
     metadata_class = QueryMetadata
-    #def get_autocomplete_response(self, client, query):
-    #    return get_autocomplete_response(client, query)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-            
+
     def autocomplete_query(self, query):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
-        quries = []
+        queries = []
         aggs = {}
+
+        # collect aggreagations
         for q in query_componentes:
             qa = q(query)
-            quries.append(qa['Q'])
+            queries.append(qa['Q'])
             if qa['A']:
                 # Determining agg name
                 agg_name = 'by_{}'.format(q.__name__[:-2])
                 aggs[agg_name] = qa['A']
+
         search = (
             Search()
             .using(self.client)
             .index(BAG, BRK, NUMMERAANDUIDING)
             .query(
                 'bool',
-                should=quries,
+                should=queries,
             )
-            #.sort(*add_sorting())
         )
+
+        # add aggregations to query
         for agg_name, agg in aggs.items():
             search.aggs.bucket(agg_name, agg)
 
+        # nice prety printing
         if settings.DEBUG:
             sq = search.to_dict()
             import json
             print(json.dumps(sq, indent=4))
+
         return search
 
     def _order_agg_results(self, result, query_string, alphabetical):
@@ -545,7 +550,6 @@ class SearchSubjectViewSet(SearchViewSet):
             .query(
                 brkQ.kadaster_subject_Q(query)['Q']
             ).sort('naam.raw')
-            #.sort(*add_sorting())
         )
 
     def list(self, request, *args, **kwargs):
@@ -702,6 +706,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     """
     url_name = 'search/postcode-list'
+
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
         query = bagQ.postcode_Q(query_string)['Q']
@@ -727,54 +732,3 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
-
-
-class SearchTestViewSet(SearchViewSet):
-    url_name = 'search/test-list'
-
-    def search_query(self, client, query):
-        """
-        Do test experiments here..
-        """
-        s = Search() \
-            .using(client) \
-            .index(NUMMERAANDUIDING, BAG, BRK) \
-            .query(
-                Q("multi_match",
-                  query=query,
-                  # type="most_fields",
-                  # type="phrase",
-                  type="phrase_prefix",
-                  slop=12,
-                  # max_expansions=12,
-                  fields=[
-                      'naam',
-                      'straatnaam',
-                      'straatnaam_nen',
-                      'straatnaam_ptt',
-                      'aanduiding',
-                      'adres',
-
-                      'postcode',
-                      'huisnummer'
-                      'huisnummer.variation',
-                      'type'
-                  ],
-                  ),
-        )
-
-        # .sort(*add_sorting())
-
-        # add aggregations
-        a = A('terms', field='subtype', size=100)
-        # b = A('terms', field='_type', size=100)
-
-        # tops = A('top_hits', size=1)
-
-        s.aggs.bucket('by_subtype', a)
-        # s.aggs.bucket('by_type', b)
-
-        # give back top results
-        # s.aggs.bucket('by_type', b).bucket('top', tops)
-
-        return s

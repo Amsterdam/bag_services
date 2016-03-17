@@ -175,4 +175,6 @@ atlas.register(
 
 
 urlpatterns = [
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+        datasets.bag.views.BouwblokCodeView.as_view()),
 ]
