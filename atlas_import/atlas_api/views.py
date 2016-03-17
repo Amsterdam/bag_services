@@ -67,8 +67,12 @@ def analyze_query(query_string):
     if pcode:
         return [bagQ.postcode_Q]
     # Could not draw conclussions
-    return [brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_Q, bagQ.comp_address_Q]
-    
+    return [
+        brkQ.kadaster_subject_Q,
+        brkQ.kadaster_object_Q,
+        bagQ.street_name_Q, bagQ.comp_address_Q]
+
+
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
@@ -118,9 +122,7 @@ def add_sorting():
         {"adres": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
-        # 'naam',
     )
-
 
 
 def wildcard_Q(query):
@@ -157,6 +159,7 @@ def fuzzy_Q(query):
             prefix_length=2, fields=fuzzy_fields
         )
     }
+
 
 def _order_matches(matches):
     for sub_type in matches.keys():
@@ -200,11 +203,9 @@ def _determine_sub_type(hit):
     return sub_type
 
 
-
-
-#=============================================
+# =============================================
 # Search view sets
-#=============================================
+# =============================================
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a
@@ -263,15 +264,20 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         @Params
         result - the elastic search result object
-        query_string - the query string used to search for. This is for exact match recognition
+        query_string - the query string used to search for. This is for exact
+                       match recognition
         alphabetical - flag for sorting alphabetical
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
         aggs = {}
         ordered_aggs = OrderedDict()
-        result_order = ['by_postcode', 'by_street_name', 'by_comp_address', 'by_kadaster_object', 'by_kadaster_subject']
+        result_order = [
+            'by_postcode', 'by_street_name', 'by_comp_address',
+            'by_kadaster_object', 'by_kadaster_subject']
         # This might be better handled on the front end
-        pretty_names = ['Postcodes', 'Straatnamen', 'Adres', 'Kadaster Object', 'Kadaster Subject']
+        pretty_names = [
+            'Postcodes', 'Straatnamen', 'Adres',
+            'Kadaster Object', 'Kadaster Subject']
         pcode = PCODE_REGEX.match(query_string)
         for agg in result.aggregations:
             order = []
@@ -312,12 +318,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
 
-        result = self.autocomplete_query(query).execute(ignore_cache=ignore_cache)
+        result = self.autocomplete_query(query).execute(
+            ignore_cache=ignore_cache)
 
         # Checking if there was aggregation in the autocomplete.
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
-        matches = OrderedDict()
+        # matches = OrderedDict()
         aggs = self._order_agg_results(result, query, alphabetical)
         return aggs
 
