@@ -283,13 +283,14 @@ class TypeaheadViewSet(viewsets.ViewSet):
         pretty_names = [
             'Postcodes', 'Straatnamen', 'Adres',
             'Kadaster Object', 'Kadaster Subject']
-        pcode = PCODE_REGEX.match(query_string)
+        postcode = PCODE_REGEX.match(query_string)
+
         for agg in result.aggregations:
             order = []
             aggs[agg] = []
             exact = None
             for bucket in result.aggregations[agg]['buckets']:
-                if pcode and bucket.key.lower() == query_string.lower():
+                if postcode and bucket.key.lower() == query_string.lower():
                     exact = bucket.key
                 else:
                     order.append(bucket.key)

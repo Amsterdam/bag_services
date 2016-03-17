@@ -88,6 +88,14 @@ class TypeaheadTest(APITestCase):
                 huisletter='E',
                 hoofdadres=True, postcode='1088TH')
 
+        toevoeg_hof = bag_factories.OpenbareRuimteFactory.create(
+            naam="Toevoeg Hof")
+
+        bag_factories.NummeraanduidingFactory.create(
+            openbare_ruimte=toevoeg_hof, huisnummer=1,
+            huisletter='P',
+            hoofdadres=True, postcode='1188TV')
+
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -142,6 +150,13 @@ class TypeaheadTest(APITestCase):
             {'q': "anjeliersstraat 11"})
 
         self.assertIn("Anjeliersstraat 11", str(response.data))
+
+    def test_match_adresseerbaar_object_toevoeg_hog(self):
+        response = self.client.get(
+            '/atlas/typeahead/',
+            {'q': "toevoeg hof 1"})
+
+        self.assertIn("Toevoeg Hof 1P", str(response.data))
 
     def test_match_postcode(self):
         response = self.client.get("/atlas/typeahead/", {'q': '105'})
