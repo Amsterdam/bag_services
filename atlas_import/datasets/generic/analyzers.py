@@ -129,13 +129,17 @@ naam = es.analyzer(
 
 postcode_ng = es.analyzer(
     'postcode_ng',
-    tokenizer=tokenizer('postcode_ngram', 'nGram', min_gram=2, max_gram=4, token_chars=['letter', 'digit']),
+    tokenizer=tokenizer(
+        'postcode_ngram', 'nGram',
+        min_gram=2, max_gram=4,
+        token_chars=['letter', 'digit']),
     filter=['lowercase'],
 )
 
 postcode = es.analyzer(
     'postcode',
-    tokenizer=tokenizer('postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
+    tokenizer=tokenizer(
+        'postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
     filter=['lowercase', whitespace_stripper],
 )
 
@@ -160,12 +164,17 @@ autocomplete = es.analyzer(
 
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
-    tokenizer=tokenizer('kadobj_token', 'nGram', min_gram=4, max_gram=16, token_chars=['letter', 'digit']),
+    tokenizer=tokenizer(
+        'kadobj_token', 'nGram',
+        min_gram=4, max_gram=16,
+        token_chars=['letter', 'digit']),
     filter=['lowercase']
 )
 
 kad_obj_aanduiding_search = es.analyzer(
     'kad_obj_aanduiding_search',
-    tokenizer=tokenizer('kadobj_keyword', 'keyword', token_chars=['letter', 'digit']),
+    tokenizer=tokenizer(
+        'kadobj_keyword', 'keyword',
+        token_chars=['letter', 'digit']),
     filter=['lowercase']
 )

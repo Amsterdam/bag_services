@@ -50,7 +50,7 @@ def analyze_query(query_string):
     - 4 digit number and 1 or 2 letters
     - String and number
 
-    returns a list of queryes that should be used
+    returns a list of queries that should be used
     """
     # If its only numbers and it is 3 digits or less its probably postcode
     # but can also be kadestral
@@ -516,7 +516,7 @@ class SearchSubjectViewSet(SearchViewSet):
 
     def search_query(self, client, query):
         """
-        Execute search on adresses
+        Execute search on Subject
         """
         return (
             Search()
