@@ -64,8 +64,8 @@ def analyze_query(query_string):
         # Not a number
         pass
     # Checking postcode
-    pcode = PCODE_REGEX.match(query_string)
-    if pcode:
+    postcode = PCODE_REGEX.match(query_string)
+    if postcode:
         return [bagQ.postcode_Q]
     # Could not draw conclussions
     return [
@@ -305,8 +305,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 if max_agg_res == 0:
                     break
             max_agg_res = MAX_AGG_RES
+
         # Now ordereing the result groups
         # @TODO improve the working
+
         for i in range(len(result_order)):
             if result_order[i] in aggs:
                 ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
