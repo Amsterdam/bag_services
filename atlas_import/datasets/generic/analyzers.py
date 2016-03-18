@@ -24,7 +24,7 @@ synonym_filter = analysis.token_filter(
     'synonyms',
     type='synonym',
     synonyms=[
-        '1e,  eerste => 1e, eerste',
+        '1e, eerste => 1e, eerste',
         '2e, tweede => 2e, tweede',
         '3e, derde  => 3e, derde',
         '4e, vierde => 4e, vierde',
