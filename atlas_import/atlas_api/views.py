@@ -48,15 +48,14 @@ def analyze_query(query_string):
     Looking for:
     - Only a number
     - 4 digit number and 1 or 2 letters
-    - String and number
+    - Other
 
     returns a list of queries that should be used
     """
     # If its only numbers and it is 3 digits or less its probably postcode
     # but can also be kadestral
-    # num = None
     try:
-        # num = int(query_string)
+        num = int(query_string)
         if len(query_string) < 4:
             # Its a number so it can be either postcode or kadaster
             return [bagQ.postcode_Q]
