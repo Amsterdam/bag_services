@@ -5,7 +5,12 @@ from django.conf import settings
 
 
 class KadastraalObject(es.DocType):
-    aanduiding = es.String(analyzer=analyzers.kadastrale_aanduiding)
+    aanduiding = es.String(
+        analyzer=analyzers.postcode,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding)})
+    # The search aanduiding is the aanduiding without the "acd00 " prefix
     order = es.Integer()
     centroid = es.GeoPoint()
 
@@ -16,7 +21,13 @@ class KadastraalObject(es.DocType):
 
 
 class KadastraalSubject(es.DocType):
-    naam = es.String(analyzer=analyzers.naam)
+    naam = es.String(
+        analyzer=analyzers.naam,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(
+                analyzer=analyzers.kad_obj_aanduiding,
+                search_analyzer=analyzers.kad_obj_aanduiding_search)})
     natuurlijk_persoon = es.Boolean()
     geslachtsnaam = es.String(analyzer=analyzers.naam)
     geboortedatum = es.Date()
@@ -50,7 +61,7 @@ def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.pk)
 
     d.aanduiding = ko.get_aanduiding_spaties()
-
+    d.search_aanduiding = d.aanduiding[6:]
     d.order = analyzers.orderings['kadastraal_object']
 
     d.subtype = 'kadastraal_object'

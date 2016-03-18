@@ -36,6 +36,12 @@ class RedenAfvoer(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
+class RedenOpvoer(serializers.ModelSerializer):
+    class Meta:
+        model = models.RedenOpvoer
+        fields = ('code', 'omschrijving')
+
+
 class Gebruik(serializers.ModelSerializer):
     class Meta:
         model = models.Gebruik
@@ -457,6 +463,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
+    reden_opvoer = RedenOpvoer()
     kadastrale_objecten = rest.RelatedSummaryField()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
@@ -490,6 +497,7 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'woningvoorraad',
             'aantal_kamers',
             'reden_afvoer',
+            'reden_opvoer',
             'eigendomsverhouding',
             'financieringswijze',
             'gebruik',

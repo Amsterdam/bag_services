@@ -22,6 +22,12 @@ class RedenAfvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models
         verbose_name_plural = "Reden Afvoer"
 
 
+class RedenOpvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+    class Meta:
+        verbose_name = "Reden Opvoer"
+        verbose_name_plural = "Reden Opvoer"
+
+
 class Eigendomsverhouding(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Eigendomsverhouding"
@@ -232,6 +238,25 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     def __str__(self):
         return self.naam
 
+    def dict_for_index(self, deep=True):
+        """
+        Converts the object into a dict to be indexed
+        default is to also convert foreign key objects
+
+        If deep is set to false, it will not add foreign key objects
+        but instead add their ids
+        """
+        dct = {}
+        for field in self._meta.fields:
+            if field.get_internal_type() == 'ForeignKey':
+                if deep:
+                    pass
+                else:
+                    dct[field.name] = getattr(self, '{}_id'.format(field.name), None)
+            else:
+                dct[field.name] = getattr(self, field.name, '')
+        return dct
+
 
 class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
@@ -294,6 +319,31 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     def adres(self):
         return '%s %s' % (self._openbare_ruimte_naam, self.toevoeging)
+
+    def dict_for_index(self, deep=True):
+        """
+        Converts the object into a dict to be indexed
+        default is to also convert foreign key objects
+
+        If deep is set to false, it will not add foreign key objects
+        but instead add their ids
+        """
+        dct = {
+            'postcode': "{}-{}".format(self.postcode,self.toevoeging),
+            'huisnummer': self.huisnummer,
+        }
+        if deep:
+            # Creating a deep copy
+            dct.update({
+                'straatnaam': self.openbare_ruimte.naam,
+                'straatnaam_nen': self.openbare_ruimte.naam_nen,
+                'straatnaam_ptt': self.openbare_ruimte.naam_ptt
+            });
+        else:
+            dct.update({
+                'openbaar_ruimte': self.openbaar_ruimte_id
+            });
+        return dct
 
     @property
     def toevoeging(self):
@@ -479,6 +529,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     aantal_kamers = models.PositiveIntegerField(null=True)
     vervallen = models.PositiveIntegerField(default=False)
     reden_afvoer = models.ForeignKey(RedenAfvoer, null=True)
+    reden_opvoer = models.ForeignKey(RedenOpvoer, null=True)
     bron = models.ForeignKey(Bron, null=True)
     eigendomsverhouding = models.ForeignKey(Eigendomsverhouding, null=True)
     financieringswijze = models.ForeignKey(Financieringswijze, null=True)

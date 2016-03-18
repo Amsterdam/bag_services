@@ -27,6 +27,20 @@ class ImportAvrTest(TaskTestCase):
         self.assertEqual(a.omschrijving, 'Geconstateerd adres')
 
 
+class ImportOvrTest(TaskTestCase):
+    def task(self):
+        return batch.ImportOvrTask(BAG)
+
+    def test_import(self):
+        self.run_task()
+
+        imported = models.RedenOpvoer.objects.all()
+        self.assertEqual(len(imported), 44)
+
+        o = models.RedenOpvoer.objects.get(pk='10')
+        self.assertEqual(o.omschrijving, 'Verbouw door wijziging gebruiksdoel')
+
+
 class ImportBrnTest(TaskTestCase):
     def task(self):
         return batch.ImportBrnTask(BAG)
@@ -485,6 +499,7 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(v.aantal_kamers, 4)
         self.assertEqual(v.vervallen, False)
         self.assertIsNone(v.reden_afvoer)
+        self.assertIsNone(v.reden_opvoer)
         self.assertIsNone(v.bron)
         self.assertEqual(v.eigendomsverhouding.code, '02')
         self.assertEqual(v.financieringswijze.code, '274')
