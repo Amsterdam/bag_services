@@ -68,8 +68,8 @@ class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
-    verzorgingsgebied = models.BooleanField(default=False)
-    vervallen = models.BooleanField(default=False)
+    verzorgingsgebied = models.NullBooleanField(default=None)
+    vervallen = models.NullBooleanField(default=None)
 
     class Meta:
         verbose_name = "Gemeente"
@@ -85,7 +85,7 @@ class Woonplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.Im
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
     naam_ptt = models.CharField(max_length=18, null=True)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     gemeente = models.ForeignKey(Gemeente, related_name='woonplaatsen')
 
     class Meta:
@@ -120,7 +120,7 @@ class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=3, unique=True)
     naam = models.CharField(max_length=40)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     ingang_cyclus = models.DateField(null=True)
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
@@ -145,7 +145,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     code = models.CharField(max_length=3, unique=True)
     vollcode = models.CharField(max_length=4)
     naam = models.CharField(max_length=40)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     ingang_cyclus = models.DateField(null=True)
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
@@ -222,7 +222,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     straat_nummer = models.CharField(max_length=10, null=True)
     naam_nen = models.CharField(max_length=24)
     naam_ptt = models.CharField(max_length=17)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     woonplaats = models.ForeignKey(Woonplaats, related_name="openbare_ruimtes")
@@ -292,7 +292,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     postcode = models.CharField(max_length=6, null=True)
     type = models.CharField(max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     adres_nummer = models.CharField(max_length=10, null=True)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     openbare_ruimte = models.ForeignKey(OpenbareRuimte, related_name='adressen')
@@ -415,7 +415,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True, related_name='ligplaatsen')
@@ -465,7 +465,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True, related_name='standplaatsen')
@@ -525,7 +525,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     bouwlagen = models.PositiveIntegerField(null=True)
     type_woonobject_code = models.CharField(max_length=2, null=True)
     type_woonobject_omschrijving = models.CharField(max_length=150, null=True)
-    woningvoorraad = models.BooleanField(default=False)
+    woningvoorraad = models.NullBooleanField(default=None)
     aantal_kamers = models.PositiveIntegerField(null=True)
     vervallen = models.PositiveIntegerField(default=False)
     reden_afvoer = models.ForeignKey(RedenAfvoer, null=True)
@@ -598,7 +598,7 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     pandnummer = models.CharField(max_length=10, null=True)
-    vervallen = models.BooleanField(default=False)
+    vervallen = models.NullBooleanField(default=None)
     status = models.ForeignKey(Status, null=True)
     bouwblok = models.ForeignKey(Bouwblok, null=True, related_name="panden")
 
