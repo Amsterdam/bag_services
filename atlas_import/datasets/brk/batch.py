@@ -382,7 +382,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 koopsom=int(koopsom) if koopsom else None,
                 koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
                 koopjaar=row['KOT_KOOPJAAR'],
-                meer_objecten=row['KOT_INDICATIE_MEER_OBJECTEN'].lower() == 'j',
+                meer_objecten=uva2.uva_indicatie(row['KOT_INDICATIE_MEER_OBJECTEN']),
                 cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(row['KOT_CULTUURCODEONBEBOUWD_CODE'],
                                                                       row['KOT_CULTUURCODEONBEBOUWD_OMS']),
                 cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(row['KOT_CULTUURCODEBEBOUWD_CODE'],

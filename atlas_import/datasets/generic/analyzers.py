@@ -82,8 +82,9 @@ adres_split = analysis.char_filter(
     'adres_split',
     type='mapping',
     mappings=[
-        "-=>' '",   # strip '-'
-        ".=>' '",   # change '.' to separator
+        "-=>' '",  # Change '-' to separator
+        ".=>' '",  # change '.' to separator
+        "/=>' '",  # Change '/' to separator
     ]
 )
 
@@ -92,8 +93,9 @@ naam_stripper = analysis.char_filter(
     'naam_stripper',
     type='mapping',
     mappings=[
-        "-=>' '",   # change '-' to separator
-        ".=>' '",   # change '.' to separator
+        "-=>' '",  # change '-' to separator
+        ".=>' '",  # change '.' to separator
+        "/=>' '",  # change '/' to separator
     ]
 )
 
