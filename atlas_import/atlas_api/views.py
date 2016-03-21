@@ -73,6 +73,27 @@ def analyze_query(query_string):
         bagQ.street_name_Q, bagQ.comp_address_Q]
 
 
+def prepare_query_string(query_string):
+    """
+    Prepares the query string for search.
+    Cleaning up unsupported signes, normalize the search
+    query to something we can better use etc.
+
+    Workings:
+    - Strip whitespace/EOF from the string
+    - Remove '\' at the end of the string
+    - Replace '/' with '-'
+    """
+    query_string = query_string.strip()
+    # Making sure there is a query string to work with before
+    # and during \ stripping
+    while query_string and (query_string[-1] == '\\'):
+        query_string = query_string[:-1]
+    query_string = query_string.replace('/', '-')
+    print(query_string)
+    return query_string
+
+
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
@@ -123,42 +144,6 @@ def add_sorting():
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
     )
-
-
-def wildcard_Q(query):
-    """Create query/aggregation for wildcard search"""
-    wildcard = '*{}*'.format(query)
-    return {
-        'A': None,
-        'Q': Q(
-            "wildcard",
-            naam=dict(value=wildcard),
-        )
-    }
-
-
-def fuzzy_Q(query):
-    """Create query/aggregation for fuzzy search"""
-    fuzzy_fields = [
-        'openbare_ruimte.naam',
-        'kadastraal_subject.geslachtsnaam',
-        'adres',
-        'straatnaam',
-        'straatnaam_nen',
-        'straatnaam_ptt',
-        'postcode^2',
-    ]
-
-    return {
-        'A': None,
-        'Q': Q(
-            "multi_match",
-            query=query, fuzziness="auto",
-            type="cross_fields",
-            max_expansions=50,
-            prefix_length=2, fields=fuzzy_fields
-        )
-    }
 
 
 def _order_matches(matches):
@@ -339,8 +324,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = request.query_params['q']
-        # query = query.lower()
+        query = prepare_query_string(request.query_params['q'])
 
         response = self.get_autocomplete_response(query)
 
@@ -424,7 +408,7 @@ class SearchViewSet(viewsets.ViewSet):
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
 
-        query = request.query_params['q']
+        query = prepare_query_string(request.query_params['q'])
 
         client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
