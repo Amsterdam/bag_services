@@ -1,12 +1,13 @@
 # Python
 import logging
 from collections import OrderedDict
+from urllib.parse import quote
 import re
 # Packages
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Search, Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -17,8 +18,8 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
+
 # Regexes for query analysis
-#-----------------------------
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
 PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')
 KADASTRAL_NUMMER_REGEX = re.compile('^$')
@@ -40,20 +41,19 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 def analyze_query(query_string):
     """
-    Looks at the query string being filled and tryes
+    Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
     This is useful to reduce number of queries and reduce result size
 
     Looking for:
     - Only a number
     - 4 digit number and 1 or 2 letters
-    - String and number
+    - Other
 
-    returns a list of queryes that should be used
+    returns a list of queries that should be used
     """
     # If its only numbers and it is 3 digits or less its probably postcode
     # but can also be kadestral
-    num = None
     try:
         num = int(query_string)
         if len(query_string) < 4:
@@ -63,12 +63,37 @@ def analyze_query(query_string):
         # Not a number
         pass
     # Checking postcode
-    pcode = PCODE_REGEX.match(query_string)
-    if pcode:
+    postcode = PCODE_REGEX.match(query_string)
+    if postcode:
         return [bagQ.postcode_Q]
     # Could not draw conclussions
-    return [brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_Q, bagQ.comp_address_Q]
-    
+    return [
+        brkQ.kadaster_subject_Q,
+        brkQ.kadaster_object_Q,
+        bagQ.street_name_Q, bagQ.comp_address_Q]
+
+
+def prepare_query_string(query_string):
+    """
+    Prepares the query string for search.
+    Cleaning up unsupported signes, normalize the search
+    query to something we can better use etc.
+
+    Workings:
+    - Strip whitespace/EOF from the string
+    - Remove '\' at the end of the string
+    - Replace '/' with '-'
+    """
+    query_string = query_string.strip()
+    # Making sure there is a query string to work with before
+    # and during \ stripping
+    while query_string and (query_string[-1] == '\\'):
+        query_string = query_string[:-1]
+    query_string = query_string.replace('/', '-')
+    print(query_string)
+    return query_string
+
+
 def _get_url(request, hit):
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
@@ -118,45 +143,8 @@ def add_sorting():
         {"adres": {
             "order": "asc", "missing": "_first", "unmapped_type": "string"}},
         '-_score',
-        # 'naam',
     )
 
-
-
-def wildcard_Q(query):
-    """Create query/aggregation for wildcard search"""
-    wildcard = '*{}*'.format(query)
-    return {
-        'A': None,
-        'Q': Q(
-            "wildcard",
-            naam=dict(value=wildcard),
-        )
-    }
-
-
-def fuzzy_Q(query):
-    """Create query/aggregation for fuzzy search"""
-    fuzzy_fields = [
-        'openbare_ruimte.naam',
-        'kadastraal_subject.geslachtsnaam',
-        'adres',
-        'straatnaam',
-        'straatnaam_nen',
-        'straatnaam_ptt',
-        'postcode^2',
-    ]
-
-    return {
-        'A': None,
-        'Q': Q(
-            "multi_match",
-            query=query, fuzziness="auto",
-            type="cross_fields",
-            max_expansions=50,
-            prefix_length=2, fields=fuzzy_fields
-        )
-    }
 
 def _order_matches(matches):
     for sub_type in matches.keys():
@@ -200,11 +188,9 @@ def _determine_sub_type(hit):
     return sub_type
 
 
-
-
-#=============================================
+# =============================================
 # Search view sets
-#=============================================
+# =============================================
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a
@@ -218,42 +204,46 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     """
     metadata_class = QueryMetadata
-    #def get_autocomplete_response(self, client, query):
-    #    return get_autocomplete_response(client, query)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-            
+
     def autocomplete_query(self, query):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
-        quries = []
+        queries = []
         aggs = {}
+
+        # collect aggreagations
         for q in query_componentes:
             qa = q(query)
-            quries.append(qa['Q'])
+            queries.append(qa['Q'])
             if qa['A']:
                 # Determining agg name
                 agg_name = 'by_{}'.format(q.__name__[:-2])
                 aggs[agg_name] = qa['A']
+
         search = (
             Search()
             .using(self.client)
             .index(BAG, BRK, NUMMERAANDUIDING)
             .query(
                 'bool',
-                should=quries,
+                should=queries,
             )
-            #.sort(*add_sorting())
         )
+
+        # add aggregations to query
         for agg_name, agg in aggs.items():
             search.aggs.bucket(agg_name, agg)
 
+        # nice prety printing
         if settings.DEBUG:
             sq = search.to_dict()
             import json
             print(json.dumps(sq, indent=4))
+
         return search
 
     def _order_agg_results(self, result, query_string, alphabetical):
@@ -263,22 +253,28 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         @Params
         result - the elastic search result object
-        query_string - the query string used to search for. This is for exact match recognition
+        query_string - the query string used to search for. This is for exact
+                       match recognition
         alphabetical - flag for sorting alphabetical
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
         aggs = {}
         ordered_aggs = OrderedDict()
-        result_order = ['by_postcode', 'by_street_name', 'by_comp_address', 'by_kadaster_object', 'by_kadaster_subject']
+        result_order = [
+            'by_postcode', 'by_street_name', 'by_comp_address',
+            'by_kadaster_object', 'by_kadaster_subject']
         # This might be better handled on the front end
-        pretty_names = ['Postcodes', 'Straatnamen', 'Adres', 'Kadaster Object', 'Kadaster Subject']
-        pcode = PCODE_REGEX.match(query_string)
+        pretty_names = [
+            'Postcodes', 'Straatnamen', 'Adres',
+            'Kadaster Object', 'Kadaster Subject']
+        postcode = PCODE_REGEX.match(query_string)
+
         for agg in result.aggregations:
             order = []
             aggs[agg] = []
             exact = None
             for bucket in result.aggregations[agg]['buckets']:
-                if pcode and bucket.key.lower() == query_string.lower():
+                if postcode and bucket.key.lower() == query_string.lower():
                     exact = bucket.key
                 else:
                     order.append(bucket.key)
@@ -294,8 +290,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 if max_agg_res == 0:
                     break
             max_agg_res = MAX_AGG_RES
+
         # Now ordereing the result groups
         # @TODO improve the working
+
         for i in range(len(result_order)):
             if result_order[i] in aggs:
                 ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
@@ -312,12 +310,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
 
-        result = self.autocomplete_query(query).execute(ignore_cache=ignore_cache)
+        result = self.autocomplete_query(query).execute(
+            ignore_cache=ignore_cache)
 
         # Checking if there was aggregation in the autocomplete.
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
-        matches = OrderedDict()
+        # matches = OrderedDict()
         aggs = self._order_agg_results(result, query, alphabetical)
         return aggs
 
@@ -325,8 +324,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = request.query_params['q']
-        # query = query.lower()
+        query = prepare_query_string(request.query_params['q'])
 
         response = self.get_autocomplete_response(query)
 
@@ -360,40 +358,43 @@ class SearchViewSet(viewsets.ViewSet):
         """
         log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
 
-        return (
-            Search()
-            .using(client)
-            .index(NUMMERAANDUIDING, BAG, BRK)
-            .query(
-                multimatch_Q(query)
-            )
-            .sort(*add_sorting())
-        )
+        raise NotImplementedError
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
         """
         Add pageing links for result set to response object
         """
+        # make query url friendly again
+        url_query = quote(query)
         # Finding link to self via reverse url search
         followup_url = reverse(self.url_name, request=request)
+
+        self_url = "{}?q={}&page={}".format(
+            followup_url, url_query, page)
+
         response['_links'] = OrderedDict([
-            ('self', {'href': followup_url}),
+            ('self', {'href': self_url}),
             ('next', {'href': None}),
             ('prev', {'href': None})
         ])
 
         # Finding and setting prev and next pages
         if end < result.hits.total:
-            # There should be a next
-            response['_links']['next']['href'] = "{}?q={}&page={}".format(followup_url, query, page + 1)
+            if end < (self.page_size * self.page_limit):
+                # There should be a next
+                response['_links']['next']['href'] = "{}?q={}&page={}".format(
+                    followup_url, url_query, page + 1)
         if page == 2:
-            response['_links']['previous']['href'] = "{}?q={}".format(followup_url, query)
+            response['_links']['prev']['href'] = "{}?q={}".format(
+                followup_url, url_query)
         elif page > 2:
-            response['_links']['previous']['href'] = "{}?q={}&page={}".format(followup_url, query, page - 1)
+            response['_links']['prev']['href'] = "{}?q={}&page={}".format(
+                followup_url, url_query, page - 1)
 
     def list(self, request, *args, **kwargs):
         """Create a response list"""
+
         if 'q' not in request.query_params:
             return Response([])
 
@@ -407,7 +408,7 @@ class SearchViewSet(viewsets.ViewSet):
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
 
-        query = request.query_params['q']
+        query = prepare_query_string(request.query_params['q'])
 
         client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
@@ -478,33 +479,9 @@ class SearchViewSet(viewsets.ViewSet):
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        # result['uri'] = _get_url(
-        #     request, hit.meta.doc_type, hit.meta.id) + "?full"
         result.update(hit.to_dict())
 
         return result
-
-
-class SearchAdresViewSet(SearchViewSet):
-    """
-    Given a query parameter `q`, this function returns a subset of
-    all adressable objects that match the adres elastic search query.
-    """
-    url_name = 'search/adres-list'
-
-    def search_query(self, client, query):
-        """
-        Execute search on adresses
-        """
-        return (
-            Search()
-            .using(client)
-            .index(BAG, BRK, NUMMERAANDUIDING)
-            .query(
-                multimatch_adres_Q(query)
-            )
-            .sort(*add_sorting())
-        )
 
 
 class SearchSubjectViewSet(SearchViewSet):
@@ -525,7 +502,7 @@ class SearchSubjectViewSet(SearchViewSet):
 
     def search_query(self, client, query):
         """
-        Execute search on adresses
+        Execute search on Subject
         """
         return (
             Search()
@@ -538,7 +515,6 @@ class SearchSubjectViewSet(SearchViewSet):
             .query(
                 brkQ.kadaster_subject_Q(query)['Q']
             ).sort('naam.raw')
-            #.sort(*add_sorting())
         )
 
     def list(self, request, *args, **kwargs):
@@ -673,10 +649,10 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .using(client)
             .index(NUMMERAANDUIDING)
             .query(
-                #multimatch_nummeraanduiding_Q(query)
+                # multimatch_nummeraanduiding_Q(query)
                 bagQ.comp_address_Q(query)['Q']
-                #bagQ.comp_address_f_Q(query)['Q']
-                #bagQ.comp_address_fuzzy_Q(query)['Q']
+                # bagQ.comp_address_f_Q(query)['Q']
+                # bagQ.comp_address_fuzzy_Q(query)['Q']
             )
         )
 
@@ -695,6 +671,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     """
     url_name = 'search/postcode-list'
+
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
         query = bagQ.postcode_Q(query_string)['Q']
@@ -720,54 +697,3 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
-
-
-class SearchTestViewSet(SearchViewSet):
-    url_name = 'search/test-list'
-
-    def search_query(self, client, query):
-        """
-        Do test experiments here..
-        """
-        s = Search() \
-            .using(client) \
-            .index(NUMMERAANDUIDING, BAG, BRK) \
-            .query(
-                Q("multi_match",
-                  query=query,
-                  # type="most_fields",
-                  # type="phrase",
-                  type="phrase_prefix",
-                  slop=12,
-                  # max_expansions=12,
-                  fields=[
-                      'naam',
-                      'straatnaam',
-                      'straatnaam_nen',
-                      'straatnaam_ptt',
-                      'aanduiding',
-                      'adres',
-
-                      'postcode',
-                      'huisnummer'
-                      'huisnummer.variation',
-                      'type'
-                  ],
-                  ),
-        )
-
-        # .sort(*add_sorting())
-
-        # add aggregations
-        a = A('terms', field='subtype', size=100)
-        # b = A('terms', field='_type', size=100)
-
-        # tops = A('top_hits', size=1)
-
-        s.aggs.bucket('by_subtype', a)
-        # s.aggs.bucket('by_type', b)
-
-        # give back top results
-        # s.aggs.bucket('by_type', b).bucket('top', tops)
-
-        return s

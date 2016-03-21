@@ -150,19 +150,31 @@ atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
 # router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 # Alias voor nummeraanduiding
-atlas.register(r'search/adres', views.SearchNummeraanduidingViewSet, base_name='search/adres')
-atlas.register(r'search/postcode', views.SearchPostcodeViewSet, base_name='search/postcode')
-atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
-atlas.register(r'search/postcode', views.SearchNummeraanduidingViewSet, base_name='search/postcode')
-atlas.register(r'search/kadastraalsubject', views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
-atlas.register(r'search/kadastraalobject', views.SearchObjectViewSet, base_name='search/kadastraalobject')
-atlas.register(r'search/openbareruimte', views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
+atlas.register(
+    r'search/adres',
+    views.SearchNummeraanduidingViewSet, base_name='search/adres')
+atlas.register(
+    r'search/postcode',
+    views.SearchPostcodeViewSet, base_name='search/postcode')
+atlas.register(
+    r'search/kadastraalsubject',
+    views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+atlas.register(
+    r'search/postcode',
+    views.SearchNummeraanduidingViewSet, base_name='search/postcode')
+atlas.register(
+    r'search/kadastraalsubject',
+    views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+atlas.register(
+    r'search/kadastraalobject',
+    views.SearchObjectViewSet, base_name='search/kadastraalobject')
 
-
-if settings.DEBUG:
-    atlas.register(r'search/test', views.SearchTestViewSet, base_name='search/test')
+atlas.register(
+    r'search/openbareruimte',
+    views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
 
 urlpatterns = [
-    url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+        datasets.bag.views.BouwblokCodeView.as_view()),
 ]
