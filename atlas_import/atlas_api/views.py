@@ -70,7 +70,8 @@ def analyze_query(query_string):
     return [
         brkQ.kadaster_subject_Q,
         brkQ.kadaster_object_Q,
-        bagQ.street_name_Q, bagQ.comp_address_Q]
+        bagQ.street_name_Q,
+    ]
 
 
 def prepare_query_string(query_string):
