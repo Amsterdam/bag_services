@@ -82,15 +82,16 @@ def prepare_query_string(query_string):
     Workings:
     - Strip whitespace/EOF from the string
     - Remove '\' at the end of the string
-    - Replace '/' with '-'
+    - Replace '"' with whitespace
     """
     query_string = query_string.strip()
     # Making sure there is a query string to work with before
     # and during \ stripping
     while query_string and (query_string[-1] == '\\'):
         query_string = query_string[:-1]
-    query_string = query_string.replace('/', '-')
-    print(query_string)
+    query_string = query_string.replace('"', ' ')
+    # Last strop to make sure no extra spaces are present
+    query_string = query_string.strip()
     return query_string
 
 
@@ -325,7 +326,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = prepare_query_string(request.query_params['q'])
-
+        if not query:
+            return Response([])
         response = self.get_autocomplete_response(query)
 
         return Response(response)
