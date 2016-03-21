@@ -218,14 +218,14 @@ class KadastraalObject(mixins.ImportStatusMixin):
     koopsom = models.IntegerField(null=True)
     koopsom_valuta_code = models.CharField(max_length=50, null=True)
     koopjaar = models.CharField(max_length=15, null=True)
-    meer_objecten = models.BooleanField(default=False)
+    meer_objecten = models.NullBooleanField(default=None)
     cultuurcode_onbebouwd = models.ForeignKey(CultuurCodeOnbebouwd, null=True)
     cultuurcode_bebouwd = models.ForeignKey(CultuurCodeBebouwd, null=True)
 
     register9_tekst = models.TextField()
     status_code = models.CharField(max_length=50)
     toestandsdatum = models.DateField(null=True)
-    voorlopige_kadastrale_grens = models.BooleanField(default=False)
+    voorlopige_kadastrale_grens = models.NullBooleanField(default=None)
     in_onderzoek = models.TextField(null=True)
 
     geometrie = geo.MultiPolygonField(srid=28992, null=True)

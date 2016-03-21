@@ -27,7 +27,7 @@ def uva_indicatie(s):
     """
     Translates an indicatie (J/N) to True/False
     """
-    return {'J': True, 'N': False}.get(s, False)
+    return {'j': True, 'n': False}.get(s.lower(), None)
 
 
 def uva_geldig(start, eind):

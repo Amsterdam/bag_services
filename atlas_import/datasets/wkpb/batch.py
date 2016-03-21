@@ -141,10 +141,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         models.Brondocument.objects.bulk_create(object_dict.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if r[4] == '0':
-            pers_afsch = False
-        else:
-            pers_afsch = True
+        pers_afsch = {'0': False, '1': True}.get(r[4], None)
 
         bron_id = r[2] if r[2] in self.codes else None
 

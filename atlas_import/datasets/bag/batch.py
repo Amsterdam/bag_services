@@ -1200,7 +1200,7 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
 
-# 2016-03-06T16:01:10.455996
+
 class IndexNummeraanduidingBulkTask(object):
     name = "Bulk index"
     index_name = 'tstblk_idx'
@@ -1235,6 +1235,7 @@ class IndexNummeraanduidingBulkTask(object):
             if (position % 1000000) == 0:
                 print(datetime.datetime.now().isoformat())
         print(datetime.datetime.now().isoformat())
+
 
 # these files don't have a UVA file
 class ImportBuurtcombinatieTask(batch.BasicTask):
