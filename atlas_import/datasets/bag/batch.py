@@ -11,7 +11,7 @@ from django.utils.text import slugify
 import requests
 # Project
 from batch import batch
-from datasets.generic import uva2, index, database, geo
+from datasets.generic import uva2, index, database, geo, metadata
 from . import models, documents
 
 log = logging.getLogger(__name__)
@@ -131,8 +131,9 @@ class ImportGmeTask(batch.BasicTask):
         )
 
 
-class ImportSdlTask(batch.BasicTask):
+class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import SDL"
+    dataset_id = 'gebieden-stadsdeel'
 
     def __init__(self, bag_path, shp_path):
         self.shp_path = shp_path
@@ -148,6 +149,7 @@ class ImportSdlTask(batch.BasicTask):
     def after(self):
         self.gemeentes.clear()
         self.stadsdelen.clear()
+        self.update_metadata_uva2(self.bag_path, 'SDL')
 
     def process(self):
         self.stadsdelen = dict(
@@ -197,8 +199,9 @@ class ImportSdlTask(batch.BasicTask):
         self.stadsdelen[code].geometrie = geo.get_multipoly(feat.geom.wkt)
 
 
-class ImportBrtTask(batch.BasicTask):
+class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BRT"
+    dataset_id = 'gebieden-buurt'
 
     def __init__(self, uva_path, shp_path):
         self.shp_path = shp_path
@@ -218,6 +221,7 @@ class ImportBrtTask(batch.BasicTask):
         self.stadsdelen.clear()
         self.buurten.clear()
         self.buurtcombinaties.clear()
+        self.update_metadata_uva2(self.uva_path, 'BRT')
 
     def process(self):
         self.buurten = dict(
@@ -279,8 +283,9 @@ class ImportBrtTask(batch.BasicTask):
         self.buurten[code].vollcode = vollcode
 
 
-class ImportBbkTask(batch.BasicTask):
+class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BBK"
+    dataset_id = 'gebieden-bouwblok'
 
     def __init__(self, uva_path, shp_path):
         self.shp_path = shp_path
@@ -295,6 +300,7 @@ class ImportBbkTask(batch.BasicTask):
     def after(self):
         self.buurten.clear()
         self.bouwblokken.clear()
+        self.update_metadata_uva2(self.uva_path, 'BBK')
 
     def process(self):
         self.bouwblokken = dict(uva2.process_uva2(self.uva_path, "BBK", self.process_row))
@@ -476,8 +482,9 @@ class ImportOprTask(batch.BasicTask):
         self.openbare_ruimtes[key].geometrie = geo.get_multipoly(geometrie)
 
 
-class ImportNumTask(batch.BasicTask):
+class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import NUM"
+    dataset_id = 'BAG'
 
     def __init__(self, path):
         self.path = path
@@ -512,6 +519,8 @@ class ImportNumTask(batch.BasicTask):
         self.verblijfsobjecten.clear()
 
         self.nummeraanduidingen.clear()
+
+        self.update_metadata_uva2(self.path, 'NUM')
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
