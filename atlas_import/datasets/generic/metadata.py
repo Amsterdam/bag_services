@@ -27,4 +27,4 @@ class UpdateDatasetMixin(object):
             'last_import_date': datetime.date.today(),
         }
 
-        requests.put('/metadata/api/{}/'.format(self.dataset_id), data, format='json')
+        requests.put('/metadata/api/{}/'.format(self.dataset_id), data)
