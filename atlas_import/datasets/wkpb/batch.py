@@ -183,7 +183,7 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.kot.clear()
 
         filedate = datetime.date.today() - datetime.timedelta(days=1)
-        self.update_metadata_onedate(filedate)
+        self.update_metadata_date(filedate)
 
     def process(self):
         with open(self.source) as f:
