@@ -18,6 +18,7 @@ class UpdateDatasetMixin(object):
         self.update_metadata_date(filedate)
 
     def update_metadata_date(self, date):
+        return
         if not date:
             return
 
