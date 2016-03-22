@@ -30,6 +30,16 @@ def normalize_postcode(query):
     return query
 
 
+def normalize_address(query):
+    """
+    In cases when using non analyzed queries this makes sure
+    the address, if in the query, does not contain bad characters
+    """
+    query = query.lower()
+    query = query.replace('/', ' ').replace('.', ' ')
+    return query
+
+
 def address_Q(query):
     """Create query/aggregation for complete address search"""
     pass
@@ -37,6 +47,7 @@ def address_Q(query):
 
 def comp_address_Q(query):
     """Create query/aggregation for complete address search"""
+    query = normalize_address(query)
     return {
         'A': A('terms', field='adres.raw'),
         'Q': Q(
