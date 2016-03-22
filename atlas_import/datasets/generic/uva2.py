@@ -122,7 +122,7 @@ def get_uva2_filedate(path, file_code):
 
 
 def get_filedate(path, file_code):
-    source = resolve_file(path, file_code)
+    source = resolve_file(path, file_code, extension='csv')
 
     m = re.match(one_date_re, source)
     if m and len(m.groups()):
