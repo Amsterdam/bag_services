@@ -1521,8 +1521,8 @@ class IndexBagJob(object):
         return [
             DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
-            #IndexOpenbareRuimteTask(),
-            #IndexNummerAanduidingTask(),
+            IndexOpenbareRuimteTask(),
+            IndexNummerAanduidingTask(),
         ]
 
 
