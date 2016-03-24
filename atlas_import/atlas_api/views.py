@@ -25,6 +25,7 @@ PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')
 KADASTRAL_NUMMER_REGEX = re.compile('^$')
 
 MAX_AGG_RES = 7
+# Mapping of subtypes with detail views
 _details = {
     'ligplaats': 'ligplaats-detail',
     'standplaats': 'standplaats-detail',
@@ -32,6 +33,7 @@ _details = {
     'openbare_ruimte': 'openbareruimte-detail',
     'kadastraal_subject': 'kadastraalsubject-detail',
     'kadastraal_object': 'kadastraalobject-detail',
+    'bouwblok': 'bouwblok-detail',
 }
 
 BAG = settings.ELASTIC_INDICES['BAG']
@@ -577,6 +579,48 @@ class SearchObjectViewSet(SearchViewSet):
         """
 
         return super(SearchObjectViewSet, self).list(
+            request, *args, **kwargs)
+
+
+class SearchBouwblokViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = 'search/bouwblok-list'
+
+    def search_query(self, client, query):
+        """
+        Execute search in Objects
+        """
+        return (
+            Search()
+            .using(client)
+            .index(BAG)
+            .filter(
+                'terms',
+                subtype=['bouwblok']
+            )
+            .query(
+                bagQ.bouwblok_Q(query)['Q']
+            )
+        )
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchBouwblokViewSet, self).list(
             request, *args, **kwargs)
 
 
