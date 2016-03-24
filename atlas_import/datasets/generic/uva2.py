@@ -2,11 +2,15 @@ import csv
 import datetime
 import logging
 import os
+import re
 from contextlib import contextmanager
 
 __author__ = 'yigalduppen'
 
 log = logging.getLogger(__name__)
+
+uva2_date_re = re.compile(r'^[a-z]+_(\d{8})_N_\d{8}_\d{8}\.uva2$', re.IGNORECASE)
+one_date_re = re.compile(r'^.*?_(\d{8})\.[a-z]{3}$', re.IGNORECASE)
 
 
 def uva_datum(s):
@@ -105,6 +109,26 @@ def logging_callback(source_path, original_callback):
             raise
 
     return result
+
+
+def get_uva2_filedate(path, file_code):
+    source = resolve_file(path, file_code)
+
+    m = re.match(uva2_date_re, source)
+    if m and len(m.groups()):
+        return uva_datum(m.groups()[0])
+
+    return None
+
+
+def get_filedate(path, file_code):
+    source = resolve_file(path, file_code, extension='csv')
+
+    m = re.match(one_date_re, source)
+    if m and len(m.groups()):
+        return uva_datum(m.groups()[0])
+
+    return None
 
 
 def process_uva2(path, file_code, process_row_callback):

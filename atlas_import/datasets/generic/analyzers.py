@@ -77,6 +77,7 @@ huisnummer_expand = analysis.token_filter(
 )
 
 
+# @FIXME these two char filters are the same
 # Strip dashes and change . to space
 adres_split = analysis.char_filter(
     'adres_split',
@@ -99,6 +100,14 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# Removes ., -, / and space from text
+divider_stripper = analysis.char_filter(
+    'divider_stripper',
+    type='pattern_replace',
+    pattern='(str\.\/|-|\.| )',
+    replacement=''
+)
+
 # Remove white spaces from the text
 whitespace_stripper = analysis.token_filter(
     'whitespace_stripper',
@@ -106,6 +115,7 @@ whitespace_stripper = analysis.token_filter(
     pattern=' ',
     replacement=''
 )
+
 # Create edge ngram filtering to postcode
 autocomplete_filter = analysis.token_filter(
     'autocomplete_filter',
@@ -130,6 +140,17 @@ kadastrale_aanduiding = es.analyzer(
     'kadastrale_aanduiding',
     tokenizer='keyword',
     filter=['standard', 'lowercase']
+)
+
+bouwblok = es.analyzer(
+    'bouwblok',
+    tokenizer=tokenizer(
+        'autocomplete_filter',
+        type='edge_ngram',
+        min_gram=1, max_gram=4,
+        token_chars=["letter", "digit" ]),
+    filter=['lowercase'],
+    char_filter=[divider_stripper]
 )
 
 adres = es.analyzer(

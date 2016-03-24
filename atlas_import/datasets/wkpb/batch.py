@@ -8,7 +8,7 @@ from django.conf import settings
 
 import datasets.brk.models as brk
 from batch import batch
-from datasets.generic import kadaster, database
+from datasets.generic import kadaster, database, metadata
 from . import models
 
 log = logging.getLogger(__name__)
@@ -163,8 +163,9 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         )
 
 
-class ImportWkpbBepKadTask(batch.BasicTask):
+class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "import Beperking-Percelen"
+    dataset_id = 'Wkpb'
 
     def __init__(self, source_path):
         super().__init__()
@@ -180,6 +181,9 @@ class ImportWkpbBepKadTask(batch.BasicTask):
     def after(self):
         self.beperkingen.clear()
         self.kot.clear()
+
+        filedate = datetime.date.today() - datetime.timedelta(days=1)
+        self.update_metadata_date(filedate)
 
     def process(self):
         with open(self.source) as f:

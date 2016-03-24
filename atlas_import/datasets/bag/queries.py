@@ -85,6 +85,14 @@ def house_number_Q(query):
     }
 
 
+def bouwblok_Q(query):
+    """ Create query/aggregation for bouwblok search"""
+    return {
+        'A': None,
+        'Q': Q('match_phrase_prefix', code=query),
+    }
+
+
 def postcode_Q(query):
     """
     Create query/aggregation for postcode search

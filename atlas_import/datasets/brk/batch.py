@@ -9,7 +9,7 @@ from django.conf import settings
 from batch import batch
 from datasets.bag import models as bag
 from datasets.brk import models, documents
-from datasets.generic import geo, database, uva2, kadaster, index
+from datasets.generic import geo, database, uva2, kadaster, index, metadata
 
 log = logging.getLogger(__name__)
 
@@ -408,8 +408,9 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.cultuur_code_bebouwd, models.CultuurCodeBebouwd)
 
 
-class ImportZakelijkRechtTask(batch.BasicTask):
+class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import Zakelijk Recht"
+    dataset_id = 'BRK'
 
     def __init__(self, path):
         self.path = path
@@ -432,6 +433,7 @@ class ImportZakelijkRechtTask(batch.BasicTask):
         self.kst.clear()
         self.kot.clear()
         self.splits_type.clear()
+        self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht')
 
     def process(self):
         zrts = dict(uva2.process_csv(self.path, 'BRK_zakelijk_recht', self.process_subject))

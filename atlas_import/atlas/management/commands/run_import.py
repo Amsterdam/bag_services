@@ -11,30 +11,34 @@ from batch.models import JobExecution
 
 class Command(BaseCommand):
 
-    ordered = ['bag', 'brk', 'wkpb']
+    ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
         brk=[datasets.brk.batch.ImportKadasterJob],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
+        gebieden=[],
     )
 
     indexes = dict(
         bag=[datasets.bag.batch.IndexBagJob],
         brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
+        gebieden=[datasets.bag.batch.IndexGebiedJob],
     )
 
     backup_indexes = dict(
         bag=[datasets.bag.batch.BackupBagJob],
         brk=[datasets.brk.batch.BackupKadasterJob],
         wkpb=[],
+        gebieden=[],
     )
 
     restore_indexes = dict(
         bag=[datasets.bag.batch.RestoreBagJob],
         brk=[datasets.brk.batch.RestoreKadasterJob],
         wkpb=[],
+        gebieden=[],
     )
 
     def add_arguments(self, parser):
