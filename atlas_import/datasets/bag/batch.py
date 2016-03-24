@@ -1521,19 +1521,27 @@ class IndexBagJob(object):
         return [
             DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
-            IndexOpenbareRuimteTask(),
-            IndexNummerAanduidingTask(),
-            IndexBouwblokTask(),
+            #IndexOpenbareRuimteTask(),
+            #IndexNummerAanduidingTask(),
         ]
 
 
 class IndexNummerAanduidingJob(object):
-    name = "Createnew search index for Nummeraanduiding"
+    name = "Create new search index for Nummeraanduiding"
 
     def tasks(self):
         return [
             DeleteNummerAanduidingIndexTask(),
             IndexNummerAanduidingTask()
+        ]
+
+
+class IndexGebiedJob(object):
+    """Important! This only adds to the bag index, but does not create it"""
+    name="Create add gebieden to BAG index"
+    def tasks(self):
+        return [
+            IndexBouwblokTask(),
         ]
 
 
