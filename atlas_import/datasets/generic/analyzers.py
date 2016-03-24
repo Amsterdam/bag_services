@@ -100,15 +100,14 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# Removes ., -, / and space from text
 divider_stripper = analysis.char_filter(
     'divider_stripper',
-    type='mapping',
-    mappings=[
-        "-=>''",  # Remove '-'
-        ".=>''",  # Remove '.'
-        "/=>''",  # Remove '/'
-    ]
+    type='pattern_replace',
+    pattern='(str\.\/|-|\.| )',
+    replacement=''
 )
+
 # Remove white spaces from the text
 whitespace_stripper = analysis.token_filter(
     'whitespace_stripper',
