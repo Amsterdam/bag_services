@@ -9,7 +9,7 @@ __author__ = 'yigalduppen'
 
 log = logging.getLogger(__name__)
 
-uva2_date_re = re.compile(r'^[a-z]+_(\d{8})_N_\d{8}_\d{8}\.uva2$', re.IGNORECASE)
+uva2_date_re = re.compile(r'^.*/[a-zA-Z]+_(\d{8})_N_\d{8}_\d{8}\.uva2$', re.IGNORECASE)
 one_date_re = re.compile(r'^.*?_(\d{8})\.[a-z]{3}$', re.IGNORECASE)
 
 
@@ -112,23 +112,31 @@ def logging_callback(source_path, original_callback):
 
 
 def get_uva2_filedate(path, file_code):
+    """
+    Extract date from uva2 filename
+    :param path: filename
+    :param file_code: uva2 filename code
+    :return: datetime.date or None
+    """
     source = resolve_file(path, file_code)
 
     m = re.match(uva2_date_re, source)
     if m and len(m.groups()):
         return uva_datum(m.groups()[0])
 
-    return None
-
 
 def get_filedate(path, file_code):
+    """
+    Extract date from csv filename
+    :param path:  filename
+    :param file_code: csv filename code
+    :return: datetime.date or None
+    """
     source = resolve_file(path, file_code, extension='csv')
 
     m = re.match(one_date_re, source)
     if m and len(m.groups()):
         return uva_datum(m.groups()[0])
-
-    return None
 
 
 def process_uva2(path, file_code, process_row_callback):

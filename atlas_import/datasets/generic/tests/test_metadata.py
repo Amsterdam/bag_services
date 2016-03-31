@@ -52,3 +52,21 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
 
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
+
+    def testUv2Acc(self):
+        self.path = os.path.join(self.diva, 'gebieden')
+        self.set_hostname('ap01-acc.datapunt.amsterdam.nl')
+
+        response = self.update_metadata_uva2(self.path, 'BBK')
+
+        self.assertNotEqual(response, None)
+        self.assertEqual(response.status_code, 200)
+
+    def testUva2Prod(self):
+        self.path = os.path.join(self.diva, 'gebieden')
+        self.set_hostname('ap01.datapunt.amsterdam.nl')
+
+        response = self.update_metadata_uva2(self.path, 'BBK')
+
+        self.assertNotEqual(response, None)
+        self.assertEqual(response.status_code, 200)

@@ -6,6 +6,20 @@ from datasets.generic import uva2
 
 
 class UpdateDatasetMixin(object):
+    """
+    Mixin to update metadata API from import scripts.
+
+    It will call the api-acc or api domain based on hostname.
+
+    usage:
+
+    - set dataset_id to correct dataset
+    - call self.update_metadata_uva2 for UVA2 files, or
+    - call self.update_metadata_onedate for CSV files, or
+    - call self.update_metadata_date for datasets without date in de filename
+
+    These calls will return a Response object, or None when no date was passed.
+    """
     dataset_id = None
     import_hostname = None
 
