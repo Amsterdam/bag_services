@@ -30,7 +30,6 @@ class KadastraalSubject(es.DocType):
                 search_analyzer=analyzers.kad_obj_aanduiding_search)})
     natuurlijk_persoon = es.Boolean()
     geslachtsnaam = es.String(analyzer=analyzers.naam)
-    geboortedatum = es.Date()
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
@@ -46,7 +45,6 @@ def from_kadastraal_subject(ks):
         d.natuurlijk_persoon = True
 
         d.geslachtsnaam = ks.naam
-        d.geboortedatum = ks.geboortedatum
     else:
         d.natuurlijk_persoon = False
 

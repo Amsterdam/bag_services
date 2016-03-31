@@ -11,21 +11,28 @@ class Ligplaats(es.DocType):
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')
-        })
+                analyzer=analyzers.autocomplete, search_analyzer='standard'),
+        },
+    )
     adres = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+                analyzer=analyzers.autocomplete, search_analyzer='standard',
+            ),
+        },
+    )
     huisnummer = es.Integer(
-            fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+        fields={'variation': es.String(analyzer=analyzers.huisnummer)},
+    )
     postcode = es.String(
-            analyzer=analyzers.postcode,
-            fields={
-                'raw': es.String(index='not_analyzed'),
-                'ngram': es.String(analyzer=analyzers.postcode_ng)})
+        analyzer=analyzers.postcode,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(analyzer=analyzers.postcode_ng),
+        },
+    )
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -196,6 +203,23 @@ class Nummeraanduiding(es.DocType):
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
+class Bouwblok(es.DocType):
+    """
+    Elasticsearch doc for the bouwblok model
+    """
+    code = es.String(
+        analyzer=analyzers.bouwblok,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+        },
+    )
+
+    subtype = es.String(analyzer=analyzers.subtype)
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BAG']
+
+
 def get_centroid(geom):
     if not geom:
         return None
@@ -248,12 +272,22 @@ def from_ligplaats(l: models.Ligplaats):
     return d
 
 
+def from_bouwblok(n: models.Bouwblok):
+    doc = Bouwblok(_id=n.id)
+    doc.code = n.code
+    doc.subtype = 'bouwblok'
+
+    return doc
+
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.comp_address = "{0} {1} {2}".format(n.openbare_ruimte.naam, n.postcode, n.toevoeging)
-    doc.comp_address_nen = "{0} {1} {2}".format(n.openbare_ruimte.naam_nen, n.postcode, n.toevoeging)
-    doc.comp_address_ptt = "{0} {1} {2}".format(n.openbare_ruimte.naam_ptt, n.postcode, n.toevoeging)
+    doc.comp_address = "{0} {1} {2}".format(n.openbare_ruimte.naam,
+                                            n.postcode, n.toevoeging)
+    doc.comp_address_nen = "{0} {1} {2}".format(n.openbare_ruimte.naam_nen,
+                                                n.postcode, n.toevoeging)
+    doc.comp_address_ptt = "{0} {1} {2}".format(n.openbare_ruimte.naam_ptt,
+                                                n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen

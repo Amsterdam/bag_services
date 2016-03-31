@@ -1139,8 +1139,12 @@ class ImportPndVboTask(batch.BasicTask):
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG']
     doc_types = [
-        documents.Ligplaats, documents.Standplaats,
-        documents.Verblijfsobject, documents.OpenbareRuimte]
+        documents.Ligplaats,
+        documents.Standplaats,
+        documents.Verblijfsobject,
+        documents.OpenbareRuimte,
+        documents.Bouwblok,
+    ]
 
 
 class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
@@ -1210,40 +1214,12 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         return documents.from_nummeraanduiding_ruimte(obj)
 
 
-class IndexNummeraanduidingBulkTask(object):
-    name = "Bulk index"
-    index_name = 'tstblk_idx'
+class IndexBouwblokTask(index.ImportIndexTask):
+    name = "index bouwblokken"
+    queryset = models.Bouwblok.objects
 
-    def execute(self):
-        print(datetime.datetime.now().isoformat())
-        batch_size = 25000  # settings.BATCH_SETTINGS['batch_size']
-        position = 0
-        qs = list(models.Nummeraanduiding.objects.\
-            prefetch_related('openbare_ruimte').order_by('id')\
-            [position:position+batch_size])
-        last_run = False
-        while not last_run:
-            data = ''
-            # Checking if this is the last run
-            if len(qs) < batch_size:
-                last_run = True
-            for item in qs:
-                item_dict = {"index": { "_index" : self.index_name, "_type" : "type1", "_id" : item.id}}
-                data += json.dumps(item_dict) + '\n'
-                item_dict = item.dict_for_index()
-                data += json.dumps(item_dict) + '\n'
-            r = requests.post('http://192.168.99.100:9200/{}/_bulk'.format(self.index_name), data=data)
-            if r.status_code != 200:
-                print(r.json())
-                break
-            # Getting the next round
-            position = position + batch_size
-            qs = list(models.Nummeraanduiding.objects.\
-                prefetch_related('openbare_ruimte').order_by('id')\
-                [position:position+batch_size])
-            if (position % 1000000) == 0:
-                print(datetime.datetime.now().isoformat())
-        print(datetime.datetime.now().isoformat())
+    def convert(self, obj):
+        return documents.from_bouwblok(obj)
 
 
 # these files don't have a UVA file
@@ -1546,17 +1522,26 @@ class IndexBagJob(object):
             DeleteIndexTask(),
             DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
-            IndexNummerAanduidingTask()
+            IndexNummerAanduidingTask(),
         ]
 
 
 class IndexNummerAanduidingJob(object):
-    name = "Createnew search index for Nummeraanduiding"
+    name = "Create new search index for Nummeraanduiding"
 
     def tasks(self):
         return [
             DeleteNummerAanduidingIndexTask(),
             IndexNummerAanduidingTask()
+        ]
+
+
+class IndexGebiedJob(object):
+    """Important! This only adds to the bag index, but does not create it"""
+    name="Create add gebieden to BAG index"
+    def tasks(self):
+        return [
+            IndexBouwblokTask(),
         ]
 
 
