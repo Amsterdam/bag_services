@@ -36,17 +36,17 @@ class UpdateDatasetMixin(object):
 
         return 'https://api.datapunt.amsterdam.nl/metadata/'
 
-    def update_metadata_uva2(self, path, code):
+    def update_metadata_uva2(self, path, code, hostname=None):
         filedate = uva2.get_uva2_filedate(path, code)
 
-        return self.update_metadata_date(filedate)
+        return self.update_metadata_date(filedate, hostname)
 
-    def update_metadata_onedate(self, path, code):
+    def update_metadata_onedate(self, path, code, hostname=None):
         filedate = uva2.get_filedate(path, code)
 
-        return self.update_metadata_date(filedate)
+        return self.update_metadata_date(filedate, hostname)
 
-    def update_metadata_date(self, date):
+    def update_metadata_date(self, date, hostname=None):
         if not date:
             return
 
@@ -56,7 +56,7 @@ class UpdateDatasetMixin(object):
             'last_import_date': datetime.date.today(),
         }
 
-        self.set_hostname()
+        self.set_hostname(hostname)
         uri = '%s%s/' % (self.uri, self.dataset_id)
 
         res = requests.put(uri, data)
