@@ -295,6 +295,11 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     _kadastraal_subject_naam = models.CharField(max_length=200)
     _kadastraal_object_aanduiding = models.CharField(max_length=100)
 
+    class Meta:
+        index_together = (
+            ('aard_zakelijk_recht', '_kadastraal_subject_naam'),
+        )
+
     def __str__(self):
         omschrijving = self.aard_zakelijk_recht.omschrijving if self.aard_zakelijk_recht else ''
         aandeel = '({}/{})'.format(self.teller,
