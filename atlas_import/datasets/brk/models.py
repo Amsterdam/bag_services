@@ -229,6 +229,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     in_onderzoek = models.TextField(null=True)
 
     geometrie = geo.MultiPolygonField(srid=28992, null=True)
+    geom_point = geo.PointField(srid=28992, null=True)
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
