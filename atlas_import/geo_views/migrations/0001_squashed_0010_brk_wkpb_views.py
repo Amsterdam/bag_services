@@ -247,7 +247,7 @@ SELECT
   ko.id                                                     AS id,
   ko.aanduiding                                             AS volledige_code,
   ko.perceelnummer                                          AS perceelnummer,
-  ko.geometrie                                              AS geometrie,
+  coalesce(ko.point_geom, ko.poly_geom)                     AS geometrie,
   ko.aanduiding                                             AS display,
   'kadaster/kadastraal_object'                              AS type,
   site.domain || 'brk/object/' || ko.id || '/' AS uri
@@ -280,7 +280,7 @@ FROM brk_kadastralesectie
 SELECT
   bk.id                                            AS id,
   bp.beperkingtype_id                              AS beperkingtype_id,
-  ko.geometrie                                     AS geometrie,
+  coalesce(ko.point_geom, ko.poly_geom)            AS geometrie,
   bc.omschrijving                                  AS display,
   'wkpb/beperking'                                 AS type,
   site.domain || 'wkpb/beperking/' || bp.id || '/' AS uri

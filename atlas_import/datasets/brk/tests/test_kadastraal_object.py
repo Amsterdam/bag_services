@@ -57,6 +57,6 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         self.assertFalse(kot.voorlopige_kadastrale_grens)
         self.assertEqual(kot.in_onderzoek, '')
 
-        self.assertIsNotNone(kot.geometrie)
+        self.assertIsNotNone(kot.poly_geom)
         self.assertEqual(kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
 
