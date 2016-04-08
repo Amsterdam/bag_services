@@ -407,7 +407,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
                 in_onderzoek=row['KOT_INONDERZOEK'],
 
-                geometrie=poly_geom,
+                poly_geom=poly_geom,
                 point_geom=point_geom,
                 voornaamste_gerechtigde_id=subject_id,
         )

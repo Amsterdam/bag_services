@@ -228,8 +228,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
     voorlopige_kadastrale_grens = models.NullBooleanField(default=None)
     in_onderzoek = models.TextField(null=True)
 
-    geometrie = geo.MultiPolygonField(srid=28992, null=True)
-    geom_point = geo.PointField(srid=28992, null=True)
+    poly_geom = geo.MultiPolygonField(srid=28992, null=True)
+    point_geom = geo.PointField(srid=28992, null=True)
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
     verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,

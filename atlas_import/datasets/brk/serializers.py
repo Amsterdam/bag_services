@@ -375,6 +375,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     a_percelen = rest.RelatedSummaryField()
     g_percelen = rest.RelatedSummaryField()
     beperkingen = rest.RelatedSummaryField()
+    geometrie = rest.MultipleGeometryField()
 
     class Meta:
         model = models.KadastraalObject
