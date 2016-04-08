@@ -164,7 +164,7 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
 
         data['object_href'] = reverse(
                 'kadastraalobject-detail',
-                kwargs={'pk': instance.kadastraal_object.id},
+                kwargs={'pk': instance.kadastraal_object_id},
                 request=request
         )
 
