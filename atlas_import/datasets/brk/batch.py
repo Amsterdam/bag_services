@@ -1,15 +1,18 @@
+# Python
 import datetime
 import hashlib
 import logging
 import os
-
+# Packages
 from django import db
 from django.conf import settings
-
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
+# Project
 from batch import batch
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, index, metadata
+
 
 log = logging.getLogger(__name__)
 
@@ -357,6 +360,16 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
         toestands_datum_str = row['KOT_TOESTANDSDATUM']
         toestands_datum = None
+
+        # Determining geometrie
+        poly_geom = None
+        point_geom = None
+        geom = GEOSGeometry(row['GEOMETRIE'])
+        if isinstance(geom, Polygon):
+            poly_geom =  MultiPolygon(geom)
+        elif isinstance(geom, Point):  # Point is the other option. Otherwise None
+            point_geom = geom
+
         try:
             toestands_datum = datetime.datetime.strptime(toestands_datum_str, "%Y%m%d%H%M%S").date()
         except ValueError:
@@ -394,7 +407,8 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
                 in_onderzoek=row['KOT_INONDERZOEK'],
 
-                geometrie=geo.get_multipoly(row['GEOMETRIE']),
+                geometrie=poly_geom,
+                point_geom=point_geom,
                 voornaamste_gerechtigde_id=subject_id,
         )
 
