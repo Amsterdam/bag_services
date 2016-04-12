@@ -9,6 +9,7 @@ from geo_views import migrate
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('brk', '0035_auto_20160408_1705'),
         ('geo_views', '0002_display_subtype'),
     ]
 
