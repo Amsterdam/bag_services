@@ -364,11 +364,12 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         # Determining geometrie
         poly_geom = None
         point_geom = None
-        geom = GEOSGeometry(row['GEOMETRIE'])
-        if isinstance(geom, Polygon):
-            poly_geom =  MultiPolygon(geom)
-        elif isinstance(geom, Point):  # Point is the other option. Otherwise None
-            point_geom = geom
+        if row['GEOMETRIE']:
+            geom = GEOSGeometry(row['GEOMETRIE'])
+            if isinstance(geom, Polygon):
+                poly_geom =  MultiPolygon(geom)
+            elif isinstance(geom, Point):  # Point is the other option. Otherwise None
+                point_geom = geom
 
         try:
             toestands_datum = datetime.datetime.strptime(toestands_datum_str, "%Y%m%d%H%M%S").date()
