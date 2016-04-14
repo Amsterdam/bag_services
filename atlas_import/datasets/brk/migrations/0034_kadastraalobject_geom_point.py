@@ -9,7 +9,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('brk', '0033_auto_20160321_1122'),
-    ]
+        ('geo_views', '0001_squashed_0010_brk_wkpb_views')
+        ]
 
     operations = [
         migrations.AddField(
