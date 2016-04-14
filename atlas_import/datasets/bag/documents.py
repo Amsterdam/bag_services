@@ -219,6 +219,14 @@ class Bouwblok(es.DocType):
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
 
+class ExactLocation(es.DocType):
+    """
+    Elasticsearch doc for exact location data
+    """
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BAG']
+
 
 def get_centroid(geom):
     if not geom:
