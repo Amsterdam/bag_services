@@ -1,5 +1,8 @@
+# Python
+import json
+# Packages
 import elasticsearch_dsl as es
-
+# Project
 from . import models
 from datasets.generic import analyzers
 from django.conf import settings
@@ -377,19 +380,19 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
 def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc = ExactLocation(_id=n.id)
-    doc.address = "{0} {1}".format(n.openbare_ruimte.naam,
-                                            n.addressen.toevoeging)
+    doc.adres = n.adres()
     doc.postcode = n.postcode
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
-    doc.postcode_huisnummer = '{0} {1}'.format(n.postcde, n.huisnummer)
+    doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
     # Retriving the geolocation is dependent on the geometrie
     if n.verblijfsobject:
-        doc.geometrie = n.verblijdobject.geometrie
+        doc.geometrie = n.verblijfsobject.geometrie.geojson
     elif n.standplaats:
-        doc.geometrie = n.standplaats.geometrie
+        doc.geometrie = n.standplaats.geometrie,geojson
     elif n.ligplaats:
-        doc.geometrie = get_centroid(n.ligplaats.geometrie)
-
+        doc.geometrie = (get_centroid(n.ligplaats.geometrie).geojson)
+    doc.geometrie = json.loads(doc.geometrie)
     return doc
+

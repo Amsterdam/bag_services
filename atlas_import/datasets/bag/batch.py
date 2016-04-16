@@ -1231,7 +1231,7 @@ class IndexExactMatchesTask(index.ImportIndexTask):
         prefetch_related('ligplaats')
 
     def convert(self, obj):
-        return documents.extact_from_nummeraanduiding(obj)
+        return documents.exact_from_nummeraanduiding(obj)
 
 
 # these files don't have a UVA file
