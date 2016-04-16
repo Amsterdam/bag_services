@@ -1209,6 +1209,7 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         prefetch_related('standplaats').\
         prefetch_related('ligplaats').\
         prefetch_related('openbare_ruimte')
+        
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)

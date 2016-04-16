@@ -58,7 +58,7 @@ class ImportIndexTask(object):
     batch_size = 10000
 
     def get_queryset(self):
-        return self.queryset.order_by('id')
+        return self.queryset.order_by('id')[:1000]
         # return self.queryset.iterator()
 
     def convert(self, obj):
