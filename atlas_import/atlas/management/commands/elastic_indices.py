@@ -12,8 +12,6 @@ from batch import batch
 class Command(BaseCommand):
 
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
-    # @FIXME Remove this after dubugging is done
-    ordered = ['bag']
     indexes = {
         'bag': [datasets.bag.batch.IndexBagJob],
         'brk': [datasets.brk.batch.IndexKadasterJob],

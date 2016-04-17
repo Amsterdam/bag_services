@@ -744,3 +744,46 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
+
+class SearchExactPostcodeToevoegingViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = '/atlas/ostcode'
+
+    def search_query(self, client, query):
+        """
+        Execute search in Objects
+        """
+        return (
+            Search()
+            .using(client)
+            .index(BAG)
+            #.filter(
+            #    'terms',
+            #    subtype=['kadastraal_object']
+            #)
+            .query(
+                bagQ.exact_postcode_house_number_Q(query)
+            )
+        )
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Geocode postcode toevoeging
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchExactPostcodeToevoegingViewSet, self).list(
+            request, *args, **kwargs)
+
+

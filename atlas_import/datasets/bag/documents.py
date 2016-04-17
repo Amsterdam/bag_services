@@ -390,7 +390,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     if n.verblijfsobject:
         doc.geometrie = n.verblijfsobject.geometrie.geojson
     elif n.standplaats:
-        doc.geometrie = n.standplaats.geometrie,geojson
+        doc.geometrie = n.standplaats.geometrie.geojson
     elif n.ligplaats:
         doc.geometrie = (get_centroid(n.ligplaats.geometrie).geojson)
     doc.geometrie = json.loads(doc.geometrie)
