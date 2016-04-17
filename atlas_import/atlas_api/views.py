@@ -751,7 +751,6 @@ class SearchExactPostcodeToevoegingViewSet(SearchViewSet):
     grond percelen objects that match the elastic search query.
     """
 
-    url_name = '/atlas/ostcode'
 
     def search_query(self, client, query):
         """
