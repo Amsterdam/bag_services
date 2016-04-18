@@ -762,18 +762,15 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         """
         Execute search in Objects
         """
-        return (
-            Search()
-            .using(self.client)
-            .index(BAG)
-            #.filter(
-            #    'terms',
-            #    subtype=['kadastraal_object']
-            #)
-            .query(
+        search = Search().using(self.client).index(BAG).query(
                 bagQ.exact_postcode_house_number_Q(query)
             )
-        )
+
+        if settings.DEBUG:
+            sq = search.to_dict()
+            import json
+            print(json.dumps(sq, indent=4))
+        return search
 
     def get_exact_response(self, query):
         """
@@ -790,18 +787,6 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
             ignore_cache=ignore_cache)
 
         return result
-
-    def list(self, request, *args, **kwargs):
-        if 'q' not in request.query_params:
-            return Response([])
-
-        query = prepare_query_string(request.query_params['q'])
-        if not query:
-            return Response([])
-        response = self.get_autocomplete_response(query)
-
-        return Response(response)
-
 
     def list(self, request, *args, **kwargs):
         if 'q' not in request.query_params:

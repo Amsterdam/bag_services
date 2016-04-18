@@ -227,12 +227,12 @@ class ExactLocation(es.DocType):
     """
     Elasticsearch doc for exact location data
     """
-    postcode = es.String(analyzer=analyzers.subtype)
-    huisnummer = es.Integer(analyzer=analyzers.subtype)
-    toevoeging = es.String(analyzer=analyzers.subtype)
-    address = es.String(analyzer=analyzers.subtype)
-    postcode_huisnummer = es.String(analyzer=analyzers.subtype)
-    postcode_toevoeging = es.String(analyzer=analyzers.subtype)
+    postcode = es.String(index='not_analyzed')
+    huisnummer = es.Integer(index='not_analyzed')
+    toevoeging = es.String(index='not_analyzed')
+    address = es.String(index='not_analyzed')
+    postcode_huisnummer = es.String(index='not_analyzed')
+    postcode_toevoeging = es.String(index='not_analyzed')
 
     geometrie = es.GeoPoint()
 
