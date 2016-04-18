@@ -745,20 +745,26 @@ class SearchPostcodeViewSet(SearchViewSet):
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
 
-class SearchExactPostcodeToevoegingViewSet(SearchViewSet):
+class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
     grond percelen objects that match the elastic search query.
     """
 
+    metadata_class = QueryMetadata
 
-    def search_query(self, client, query):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+
+
+    def search_query(self, query):
         """
         Execute search in Objects
         """
         return (
             Search()
-            .using(client)
+            .using(self.client)
             .index(BAG)
             #.filter(
             #    'terms',
@@ -769,20 +775,42 @@ class SearchExactPostcodeToevoegingViewSet(SearchViewSet):
             )
         )
 
+    def get_exact_response(self, query):
+        """
+        Sends a request for auto complete and returns the result
+        @ TODO there are more efficent ways to return the data
+
+        Optional flag alphabetical is used to determine if the results
+        should be alphabetically ordered. Defaults to True
+        """
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+
+        result = self.search_query(query).execute(
+            ignore_cache=ignore_cache)
+
+        return result
+
     def list(self, request, *args, **kwargs):
-        """
-        Show search results
+        if 'q' not in request.query_params:
+            return Response([])
 
-        ---
-        parameters:
-            - name: q
-              description: Geocode postcode toevoeging
-              required: true
-              type: string
-              paramType: query
-        """
+        query = prepare_query_string(request.query_params['q'])
+        if not query:
+            return Response([])
+        response = self.get_autocomplete_response(query)
 
-        return super(SearchExactPostcodeToevoegingViewSet, self).list(
-            request, *args, **kwargs)
+        return Response(response)
 
+
+    def list(self, request, *args, **kwargs):
+        if 'q' not in request.query_params:
+            return Response([])
+
+        query = prepare_query_string(request.query_params['q'])
+        if not query:
+            return Response([])
+        response = self.get_exact_response(query)
+
+        return Response(response)
 

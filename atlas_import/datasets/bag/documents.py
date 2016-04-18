@@ -393,6 +393,9 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
         doc.geometrie = n.standplaats.geometrie.geojson
     elif n.ligplaats:
         doc.geometrie = (get_centroid(n.ligplaats.geometrie).geojson)
-    doc.geometrie = json.loads(doc.geometrie)
+    if doc.geometrie:
+        doc.geometrie = json.loads(doc.geometrie)
+    else:
+        print('Failed to find geolocation for nummeraanduiduing {}'.format(n.id))
     return doc
 
