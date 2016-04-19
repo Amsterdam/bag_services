@@ -796,6 +796,13 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if not query:
             return Response([])
         response = self.get_exact_response(query)
-
+        # Getting the first response.
+        # Either there is only one, or a housenumber was given
+        # where only extensions are available, in which case any result will do
+        if response and response.hits:
+            print(response.hits[0].to_dict())
+            response = response.hits[0].to_dict()
+        else:
+            response = []
         return Response(response)
 

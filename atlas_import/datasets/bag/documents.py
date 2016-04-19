@@ -232,7 +232,7 @@ class ExactLocation(es.DocType):
     toevoeging = es.String(index='not_analyzed')
     address = es.String(index='not_analyzed')
     postcode_huisnummer = es.String(index='not_analyzed')
-    postcode_toevoeging = es.String(index='not_analyzed')
+    postcode_toevoeging = es.String(index='not_analyzed', boost=5)
 
     geometrie = es.GeoPoint()
 

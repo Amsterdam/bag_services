@@ -1144,6 +1144,7 @@ class DeleteIndexTask(index.DeleteIndexTask):
         documents.Verblijfsobject,
         documents.OpenbareRuimte,
         documents.Bouwblok,
+        documents.ExactLocation,
     ]
 
 
