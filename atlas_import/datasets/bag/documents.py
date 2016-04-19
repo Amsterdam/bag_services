@@ -227,7 +227,7 @@ class ExactLocation(es.DocType):
     """
     Elasticsearch doc for exact location data
     """
-    postcode = es.String(index='not_analyzed')
+    postcode_a = es.String(index='not_analyzed')
     huisnummer = es.Integer(index='not_analyzed')
     toevoeging = es.String(index='not_analyzed')
     address = es.String(index='not_analyzed')
@@ -386,15 +386,14 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc.toevoeging = n.toevoeging
     doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
+    
     # Retriving the geolocation is dependent on the geometrie
     if n.verblijfsobject:
-        doc.geometrie = n.verblijfsobject.geometrie.geojson
+        doc.geometrie = get_centroid(n.verblijfsobject.geometrie)
     elif n.standplaats:
-        doc.geometrie = n.standplaats.geometrie.geojson
+        doc.geometrie = get_centroid(n.standplaats.geometrie)
     elif n.ligplaats:
-        doc.geometrie = (get_centroid(n.ligplaats.geometrie).geojson)
-    if doc.geometrie:
-        doc.geometrie = json.loads(doc.geometrie)
+        doc.geometrie = get_centroid(n.ligplaats.geometrie)
     else:
         print('Failed to find geolocation for nummeraanduiduing {}'.format(n.id))
     return doc
