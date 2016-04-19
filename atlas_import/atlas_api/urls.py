@@ -10,6 +10,22 @@ import datasets.wkpb.views
 from atlas_api import views
 
 
+class SearchRouter(routers.DefaultRouter):
+    """
+    Search
+
+    End point for different search uris, offering data not directly reflected in the models
+    """
+    def get_api_root_view(self):
+        view = super().get_api_root_view()
+        cls = view.cls
+
+        class Search(cls):
+            pass
+
+        Search.__doc__ = self.__doc__
+        return Search.as_view()
+
 class BagRouter(routers.DefaultRouter):
     """
     BAG.
@@ -146,7 +162,7 @@ atlas = AtlasRouter()
 # Search related
 
 atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
-atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
+#atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
 # router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
 # Alias voor nummeraanduiding
@@ -173,6 +189,8 @@ atlas.register(
     r'search/openbareruimte',
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
+search = SearchRouter()
+search.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
 
 urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$',
