@@ -757,6 +757,27 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
+    def normalize_postcode_housenumber(self, pc_num):
+        """
+        Normalizes the poste code and house number so that it
+        will allways look the same to the query
+        Actions:
+        - convert lower case to uppercase letters
+        - makes sure postcode and house number are seperated by a space
+
+        If the normalization fails, the original value is returned.
+        """
+        norm = pc_num.upper()
+        if norm[6] in ['-', '_', '/', '.', ',']:
+            norm = "{0} {1}".format(norm[:6], norm[7:])
+        elif norm[6] != ' ':
+            # It seems that the house nummer is directly attached
+            try:
+                int(norm[6])
+            except ValueError:
+                # The format is unclear
+                norm = pc_num
+        return norm
 
     def search_query(self, query):
         """
@@ -792,7 +813,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = prepare_query_string(request.query_params['q'])
+        query = self.normalize_postcode_housenumber(prepare_query_string(request.query_params['q']))
         if not query:
             return Response([])
         response = self.get_exact_response(query)
