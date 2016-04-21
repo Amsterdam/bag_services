@@ -227,7 +227,7 @@ class ExactLocation(es.DocType):
     """
     Elasticsearch doc for exact location data
     """
-    nummeraanduiduing_id = es.String()
+    nummeraanduiding_id = es.String()
     address = es.String(index='not_analyzed')
     postcode_huisnummer = es.String(index='not_analyzed')
     postcode_toevoeging = es.String(index='not_analyzed', boost=5)
@@ -385,7 +385,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc = ExactLocation(_id=n.id)
     doc.adres = n.adres()
-    doc.nummeraanduiduing_id = n.id
+    doc.nummeraanduiding_id = n.id
     doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
     
