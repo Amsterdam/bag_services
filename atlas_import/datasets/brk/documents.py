@@ -63,9 +63,10 @@ def from_kadastraal_object(ko):
     d.order = analyzers.orderings['kadastraal_object']
 
     d.subtype = 'kadastraal_object'
-
-    if ko.geometrie:
-        centroid = ko.geometrie.centroid
+    # Finding the centeroid
+    geometrie = ko.point_geom or ko.poly_geom
+    if geometrie:
+        centroid = geometrie.centroid
         centroid.transform('wgs84')
 
         d.centroid = centroid.coords

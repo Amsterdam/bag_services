@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^brk/', include(atlas_api.urls.brk.urls)),
     url(r'^wkpb/', include(atlas_api.urls.wkpb.urls)),
     url(r'^atlas/', include(atlas_api.urls.atlas.urls)),
+    url(r'^search/', include(atlas_api.urls.search.urls)),
 
     url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
     url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),

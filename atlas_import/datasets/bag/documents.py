@@ -1,5 +1,8 @@
+# Python
+import json
+# Packages
 import elasticsearch_dsl as es
-
+# Project
 from . import models
 from datasets.generic import analyzers
 from django.conf import settings
@@ -220,12 +223,33 @@ class Bouwblok(es.DocType):
         index = settings.ELASTIC_INDICES['BAG']
 
 
-def get_centroid(geom):
+class ExactLocation(es.DocType):
+    """
+    Elasticsearch doc for exact location data
+    """
+    nummeraanduiding_id = es.String()
+    address = es.String(index='not_analyzed')
+    postcode_huisnummer = es.String(index='not_analyzed')
+    postcode_toevoeging = es.String(index='not_analyzed', boost=5)
+
+    geometrie = es.GeoPoint()
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BAG']
+
+
+def get_centroid(geom, transform=None):
+    """
+    Finds the centroid of a geometrie object
+    An optional transform string can be given noting
+    the name of the system to translate to, i.e. 'wgs84'
+    """
     if not geom:
         return None
 
     result = geom.centroid
-    result.transform('wgs84')
+    if transform:
+        result.transform(transform)
     return result.coords
 
 
@@ -241,21 +265,21 @@ def update_adres(dest, adres: models.Nummeraanduiding):  # flake8: noqa
 
 def add_verblijfsobject(doc, vo: models.Verblijfsobject):
     if vo:
-        doc.centroid = get_centroid(vo.geometrie)
+        doc.centroid = get_centroid(vo.geometrie, 'wgs84')
         doc.subtype_id = vo.id
         doc.order = analyzers.orderings['adres']
 
 
 def add_standplaats(doc, sp: models.Standplaats):
     if sp:
-        doc.centroid = get_centroid(sp.geometrie)
+        doc.centroid = get_centroid(sp.geometrie, 'wgs84')
         doc.subtype_id = sp.id
         doc.order = analyzers.orderings['adres']
 
 
 def add_ligplaats(doc, lp: models.Ligplaats):
     if lp:
-        doc.centroid = get_centroid(lp.geometrie)
+        doc.centroid = get_centroid(lp.geometrie, 'wgs84')
         doc.subtype_id = lp.id
         doc.order = analyzers.orderings['adres']
 
@@ -266,7 +290,7 @@ def from_ligplaats(l: models.Ligplaats):
 
     update_adres(d, l.hoofdadres)
 
-    d.centroid = get_centroid(l.geometrie)
+    d.centroid = get_centroid(l.geometrie, 'wgs84')
     d.order = analyzers.orderings['adres']
 
     return d
@@ -322,7 +346,7 @@ def from_standplaats(s: models.Standplaats):
 
     update_adres(d, s.hoofdadres)
 
-    d.centroid = get_centroid(s.geometrie)
+    d.centroid = get_centroid(s.geometrie, 'wgs84')
     d.order = analyzers.orderings['adres']
 
     return d
@@ -331,7 +355,7 @@ def from_standplaats(s: models.Standplaats):
 def from_verblijfsobject(v: models.Verblijfsobject):
     d = Verblijfsobject(_id=v.id)
     update_adres(d, v.hoofdadres)
-    d.centroid = get_centroid(v.geometrie)
+    d.centroid = get_centroid(v.geometrie, 'wgs84')
 
     d.bestemming = v.gebruiksdoel_omschrijving
     d.kamers = v.aantal_kamers
@@ -356,3 +380,23 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.order = analyzers.orderings['openbare_ruimte']
 
     return d
+
+
+def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
+    doc = ExactLocation(_id=n.id)
+    doc.adres = n.adres()
+    doc.nummeraanduiding_id = n.id
+    doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
+    doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
+    
+    # Retriving the geolocation is dependent on the geometrie
+    if n.verblijfsobject:
+        doc.geometrie = get_centroid(n.verblijfsobject.geometrie, 'wgs84')
+    elif n.standplaats:
+        doc.geometrie = get_centroid(n.standplaats.geometrie, 'wgs84')
+    elif n.ligplaats:
+        doc.geometrie = get_centroid(n.ligplaats.geometrie, 'wgs84')
+    else:
+        print('Failed to find geolocation for nummeraanduiduing {}'.format(n.id))
+    return doc
+

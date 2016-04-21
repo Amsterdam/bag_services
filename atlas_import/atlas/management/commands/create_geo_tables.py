@@ -11,11 +11,11 @@ class Command(BaseCommand):
         for table_info in tables:
             if table_info.type == 'v' and table_info.name[0:4] == 'geo_':
                 try:
-                    cursor.execute('DROP MATERIALIZED VIEW {}_mat'.format(table_info.name))
+                    cursor.execute('DROP TABLE {}_mat'.format(table_info.name))
                 except ProgrammingError:
                     pass
 
-                cursor.execute('CREATE MATERIALIZED VIEW {}_mat AS SELECT * FROM {}'.format(
+                cursor.execute('CREATE TABLE {}_mat AS SELECT * FROM {}'.format(
                     table_info.name,
                     table_info.name,
                 ))
@@ -32,4 +32,4 @@ class Command(BaseCommand):
 
                 cursor.execute('VACUUM ANALYZE {}_mat'.format(table_info.name))
 
-                self.stdout.write('created {}_mat'.format(table_info.name))
+                self.stdout.write('created geotable {}_mat'.format(table_info.name))

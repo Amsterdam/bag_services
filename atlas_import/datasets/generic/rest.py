@@ -1,5 +1,7 @@
+# Python
 from collections import OrderedDict
-
+import json
+# Packages
 from rest_framework import renderers, serializers, pagination, response, viewsets, filters, reverse
 from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
@@ -31,8 +33,8 @@ class LinksField(serializers.HyperlinkedIdentityField):
         request = self.context.get('request')
 
         result = OrderedDict([
-            ('self', dict(
-                href=self.get_url(value, self.view_name, request, None))
+            ('self', {
+                'href': self.get_url(value, self.view_name, request, None)}
              ),
         ])
 
@@ -105,3 +107,22 @@ class DisplayField(serializers.Field):
 
     def to_representation(self, value):
         return str(value)
+
+
+class MultipleGeometryField(serializers.Field):
+
+    read_only = True
+
+    def get_attribute(self, obj):
+        # Checking if point geometry exists. If not returning the 
+        # regular multipoly geometry
+        return obj.point_geom or obj.poly_geom
+
+    def to_representation(self, value):
+        # Serilaize the GeoField. Value could be either None,
+        # Point or MultiPoly
+        res = ''
+        if value:
+            res = json.loads(value.geojson)
+        return res
+

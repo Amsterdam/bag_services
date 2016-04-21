@@ -127,3 +127,12 @@ def public_area_Q(query):
             ],
         ),
     }
+
+def exact_postcode_house_number_Q(query):
+    """Create a query form an exact match on the address"""
+    return Q(
+        'bool',
+        should=[Q('term', postcode_huisnummer=query), Q('term', postcode_toevoeging=query)],
+        minimum_should_match=1,
+    )
+

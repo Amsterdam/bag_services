@@ -12,27 +12,26 @@ from batch import batch
 class Command(BaseCommand):
 
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
+    indexes = {
+        'bag': [datasets.bag.batch.IndexBagJob],
+        'brk': [datasets.brk.batch.IndexKadasterJob],
+        'wkpb': [],
+        'gebieden': [datasets.bag.batch.IndexGebiedJob],
+    }
 
-    indexes = dict(
-        bag=[datasets.bag.batch.IndexBagJob],
-        brk=[datasets.brk.batch.IndexKadasterJob],
-        wkpb=[],
-        gebieden=[datasets.bag.batch.IndexGebiedJob],
-    )
+    backup_indexes = {
+        'bag': [datasets.bag.batch.BackupBagJob],
+        'brk': [datasets.brk.batch.BackupKadasterJob],
+        'wkpb': [],
+        'gebieden': [],
+    }
 
-    backup_indexes = dict(
-        bag=[datasets.bag.batch.BackupBagJob],
-        brk=[datasets.brk.batch.BackupKadasterJob],
-        wkpb=[],
-        gebieden=[],
-    )
-
-    restore_indexes = dict(
-        bag=[datasets.bag.batch.RestoreBagJob],
-        brk=[datasets.brk.batch.RestoreKadasterJob],
-        wkpb=[],
-        gebieden=[],
-    )
+    restore_indexes = {
+        'bag': [datasets.bag.batch.RestoreBagJob],
+        'brk': [datasets.brk.batch.RestoreKadasterJob],
+        'wkpb': [],
+        'gebieden': [],
+    }
 
     def add_arguments(self, parser):
         parser.add_argument(

@@ -1,10 +1,12 @@
 # Python
-import logging
 from collections import OrderedDict
+import json
+import logging
 from urllib.parse import quote
 import re
 # Packages
 from django.conf import settings
+from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search, Q
@@ -744,3 +746,96 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
+
+class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    metadata_class = QueryMetadata
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+
+    def normalize_postcode_housenumber(self, pc_num):
+        """
+        Normalizes the poste code and house number so that it
+        will allways look the same to the query
+        Actions:
+        - convert lower case to uppercase letters
+        - makes sure postcode and house number are seperated by a space
+
+        If the normalization fails, the original value is returned.
+        """
+        norm = pc_num.upper()
+        if norm[6] in ['-', '_', '/', '.', ',']:
+            norm = "{0} {1}".format(norm[:6], norm[7:])
+        elif norm[6] != ' ':
+            # It seems that the house nummer is directly attached
+            try:
+                int(norm[6])
+            except ValueError:
+                # The format is unclear
+                norm = pc_num
+        return norm
+
+    def search_query(self, query):
+        """
+        Execute search in Objects
+        """
+        search = Search().using(self.client).index(BAG).query(
+                bagQ.exact_postcode_house_number_Q(query)
+            )
+
+        if settings.DEBUG:
+            sq = search.to_dict()
+            import json
+            print(json.dumps(sq, indent=4))
+        return search
+
+    def get_exact_response(self, query):
+        """
+        Sends a request for auto complete and returns the result
+        @ TODO there are more efficent ways to return the data
+
+        Optional flag alphabetical is used to determine if the results
+        should be alphabetically ordered. Defaults to True
+        """
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+
+        result = self.search_query(query).execute(
+            ignore_cache=ignore_cache)
+
+        return result
+
+    def list(self, request, *args, **kwargs):
+        if 'q' not in request.query_params:
+            return Response([])
+
+        query = self.normalize_postcode_housenumber(prepare_query_string(request.query_params['q']))
+        if not query:
+            return Response([])
+        response = self.get_exact_response(query)
+        # Getting the first response.
+        # Either there is only one, or a housenumber was given
+        # where only extensions are available, in which case any result will do
+        if response and response.hits:
+            print(response.hits[0].to_dict())
+            response = response.hits[0].to_dict()
+            # Adding RD gepopoint
+            rd_point = Point(*response['geometrie'], srid=4326)
+            # Using the newly generated point to replace the elastic results
+            # with geojson
+            response['geometrie'] = json.loads(rd_point.geojson)
+            rd_point.transform(28992)
+            response['geometrie_rd'] = json.loads(rd_point.geojson)
+            # Removing the poscode based fields from the results
+            del(response['postcode_toevoeging'])
+            del(response['postcode_huisnummer'])
+        else:
+            response = []
+        return Response(response)
+
