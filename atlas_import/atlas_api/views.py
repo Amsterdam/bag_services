@@ -1,10 +1,12 @@
 # Python
-import logging
 from collections import OrderedDict
+import json
+import logging
 from urllib.parse import quote
 import re
 # Packages
 from django.conf import settings
+from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search, Q
@@ -823,6 +825,10 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if response and response.hits:
             print(response.hits[0].to_dict())
             response = response.hits[0].to_dict()
+            # Adding RD gepopoint
+            rd_point = Point(*response['geometrie'], srid=4326)
+            rd_point.transform(28992)
+            response['geometrie_rd'] = json.loads(rd_point.geojson)
         else:
             response = []
         return Response(response)
