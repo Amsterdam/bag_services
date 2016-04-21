@@ -829,6 +829,9 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
             rd_point = Point(*response['geometrie'], srid=4326)
             rd_point.transform(28992)
             response['geometrie_rd'] = json.loads(rd_point.geojson)
+            # Removing the poscode based fields from the results
+            del(response['postcode_toevoeging'])
+            del(response['postcode_huisnummer'])
         else:
             response = []
         return Response(response)
