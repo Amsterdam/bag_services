@@ -416,7 +416,7 @@ class ZakelijkRechtViewSet(AtlasViewSet):
     """
     queryset = (
         models.ZakelijkRecht.objects
-        .select_related('aard_zakelijk_recht', )  # 'kadastraal_subject')
+        .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
         .all()
         .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht

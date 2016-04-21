@@ -164,7 +164,7 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
 
         data['object_href'] = reverse(
                 'kadastraalobject-detail',
-                kwargs={'pk': instance.kadastraal_object.id},
+                kwargs={'pk': instance.kadastraal_object_id},
                 request=request
         )
 
@@ -375,6 +375,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     a_percelen = rest.RelatedSummaryField()
     g_percelen = rest.RelatedSummaryField()
     beperkingen = rest.RelatedSummaryField()
+    geometrie = rest.MultipleGeometryField()
 
     class Meta:
         model = models.KadastraalObject

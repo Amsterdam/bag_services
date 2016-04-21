@@ -1,5 +1,5 @@
 import sys
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, call_command
 
 import datasets.bag.batch
 import datasets.brk.batch
@@ -101,3 +101,5 @@ class Command(BaseCommand):
                 for job_class in self.indexes[ds]:
                     result = batch.execute(job_class())
                     self.act_on_result(result)
+
+        call_command('create_geo_tables')

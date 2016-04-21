@@ -1144,6 +1144,7 @@ class DeleteIndexTask(index.DeleteIndexTask):
         documents.Verblijfsobject,
         documents.OpenbareRuimte,
         documents.Bouwblok,
+        documents.ExactLocation,
     ]
 
 
@@ -1209,6 +1210,7 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         prefetch_related('standplaats').\
         prefetch_related('ligplaats').\
         prefetch_related('openbare_ruimte')
+        
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
@@ -1220,6 +1222,17 @@ class IndexBouwblokTask(index.ImportIndexTask):
 
     def convert(self, obj):
         return documents.from_bouwblok(obj)
+
+
+class IndexExactMatchesTask(index.ImportIndexTask):
+    name = "index extact matches for postcode geocoding"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats')
+
+    def convert(self, obj):
+        return documents.exact_from_nummeraanduiding(obj)
 
 
 # these files don't have a UVA file
@@ -1523,6 +1536,7 @@ class IndexBagJob(object):
             DeleteNummerAanduidingIndexTask(),
             IndexOpenbareRuimteTask(),
             IndexNummerAanduidingTask(),
+            IndexExactMatchesTask(),
         ]
 
 
