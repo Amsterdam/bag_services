@@ -1,10 +1,12 @@
 # Python
-import logging
 from collections import OrderedDict
+import json
+import logging
 from urllib.parse import quote
 import re
 # Packages
 from django.conf import settings
+from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search, Q
@@ -757,6 +759,27 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
+    def normalize_postcode_housenumber(self, pc_num):
+        """
+        Normalizes the poste code and house number so that it
+        will allways look the same to the query
+        Actions:
+        - convert lower case to uppercase letters
+        - makes sure postcode and house number are seperated by a space
+
+        If the normalization fails, the original value is returned.
+        """
+        norm = pc_num.upper()
+        if norm[6] in ['-', '_', '/', '.', ',']:
+            norm = "{0} {1}".format(norm[:6], norm[7:])
+        elif norm[6] != ' ':
+            # It seems that the house nummer is directly attached
+            try:
+                int(norm[6])
+            except ValueError:
+                # The format is unclear
+                norm = pc_num
+        return norm
 
     def search_query(self, query):
         """
@@ -792,7 +815,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = prepare_query_string(request.query_params['q'])
+        query = self.normalize_postcode_housenumber(prepare_query_string(request.query_params['q']))
         if not query:
             return Response([])
         response = self.get_exact_response(query)
@@ -802,6 +825,16 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if response and response.hits:
             print(response.hits[0].to_dict())
             response = response.hits[0].to_dict()
+            # Adding RD gepopoint
+            rd_point = Point(*response['geometrie'], srid=4326)
+            # Using the newly generated point to replace the elastic results
+            # with geojson
+            response['geometrie'] = json.loads(rd_point.geojson)
+            rd_point.transform(28992)
+            response['geometrie_rd'] = json.loads(rd_point.geojson)
+            # Removing the poscode based fields from the results
+            del(response['postcode_toevoeging'])
+            del(response['postcode_huisnummer'])
         else:
             response = []
         return Response(response)

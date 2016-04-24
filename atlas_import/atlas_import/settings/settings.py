@@ -209,7 +209,7 @@ SWAGGER_SETTINGS = {
         'title': 'BAG, BRK en WKPB API',
     },
 
-    'doc_expansion': 'none',
+    'doc_expansion': 'list',
 }
 
 # noinspection PyUnresolvedReferences
