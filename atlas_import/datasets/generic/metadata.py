@@ -51,13 +51,13 @@ class UpdateDatasetMixin(object):
             return
 
         data = {
-            'id': self.dataset_id,
+            'id': self.dataset_id.lower(),
             'data_modified_date': date,
             'last_import_date': datetime.date.today(),
         }
 
         self.set_hostname(hostname)
-        uri = '%s%s/' % (self.uri, self.dataset_id)
+        uri = '%s%s/' % (self.uri, self.dataset_id.lower())
 
         res = requests.put(uri, data)
 
