@@ -33,7 +33,7 @@ class BroncodeView(AtlasViewSet):
 
 class BeperkingView(AtlasViewSet):
     """
-    Wkpd
+    Wkpb
 
     De Wkpb is de afkorting voor de Wet kenbaarheid publiekrechtelijke
     beperkingen onroerende zaken.
