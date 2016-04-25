@@ -56,7 +56,3 @@ on Linux):
      
 The import takes approximately 10 minutes. 
 	
-	
-	
-
-    
