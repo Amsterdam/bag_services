@@ -26,6 +26,7 @@ class SearchRouter(routers.DefaultRouter):
         Search.__doc__ = self.__doc__
         return Search.as_view()
 
+
 class BagRouter(routers.DefaultRouter):
     """
     BAG.
@@ -102,7 +103,6 @@ class WkpbRouter(routers.DefaultRouter):
 
         WKPB.__doc__ = self.__doc__
         return WKPB.as_view()
-
 
 
 class AtlasRouter(routers.DefaultRouter):

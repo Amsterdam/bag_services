@@ -17,12 +17,14 @@ from django.conf.urls import url, include
 from django.contrib import admin
 import atlas_api.urls
 import datasets.bag.views
+import datasets.brk.views
 
 import batch.views as b_views
 
 urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
     url(r'^gebieden/stadsdeel/(?P<code>.)/?$', datasets.bag.views.StadsdeelCodeView.as_view()),
+    url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$', datasets.brk.views.KadastraalObjectWkpbView.as_view()),
 
     url(r'^bag/docs/', include('rest_framework_swagger.urls')),
 
