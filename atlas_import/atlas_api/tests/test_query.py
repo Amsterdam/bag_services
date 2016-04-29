@@ -1,19 +1,14 @@
 import unittest
 
-from rest_framework.test import APITestCase
-
-import datasets.bag.batch
-import datasets.brk.batch
-
-
 from django.conf import settings
+
+from rest_framework.test import APITestCase
 from elasticsearch import Elasticsearch
 
 from batch import batch
-
-# from unittest import skip
-
+import datasets.bag.batch
 from datasets.bag.tests import factories as bag_factories
+import datasets.brk.batch
 from datasets.brk.tests import factories as brk_factories
 
 
