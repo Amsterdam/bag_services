@@ -13,7 +13,15 @@ class ExpandMixin(object):
         if 'request' in self.context:
             self.expand = 'full' in self.context['request'].query_params
 
-            # make it possible to exclude geometrie from output as the response gets very big
+
+class NoGeometrieMixin(object):
+    """
+    make it possible to exclude geometrie from output as the response might very big
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if 'request' in self.context:
             if 'nogeo' in self.context['request'].query_params:
                 if 'geometrie'in self.fields:
                     del self.fields['geometrie']
@@ -105,7 +113,7 @@ class Gemeente(BagMixin, rest.HALSerializer):
         )
 
 
-class GemeenteDetail(ExpandMixin, BagMixin, rest.HALSerializer):
+class GemeenteDetail(NoGeometrieMixin, ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     woonplaatsen = rest.RelatedSummaryField()
 
@@ -221,7 +229,7 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class StadsdeelDetail(ExpandMixin, GebiedenMixin, rest.HALSerializer):
+class StadsdeelDetail(NoGeometrieMixin, ExpandMixin, GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     buurten = rest.RelatedSummaryField()
     gebiedsgerichtwerken = rest.RelatedSummaryField()
@@ -269,7 +277,7 @@ class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class BuurtcombinatieDetail(ExpandMixin, GebiedenMixin, rest.HALSerializer):
+class BuurtcombinatieDetail(NoGeometrieMixin, ExpandMixin, GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     stadsdeel = Stadsdeel()
     buurten = rest.RelatedSummaryField()
@@ -306,7 +314,7 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class BuurtDetail(ExpandMixin, GebiedenMixin, rest.HALSerializer):
+class BuurtDetail(NoGeometrieMixin, ExpandMixin, GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     bouwblokken = rest.RelatedSummaryField()
     ligplaatsen = rest.RelatedSummaryField()
@@ -458,7 +466,7 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
         )
 
 
-class LigplaatsDetail(ExpandMixin, BagMixin, rest.HALSerializer):
+class LigplaatsDetail(NoGeometrieMixin, ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
     status = Status()
@@ -542,7 +550,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
         )
 
 
-class StandplaatsDetail(ExpandMixin, BagMixin, rest.HALSerializer):
+class StandplaatsDetail(NoGeometrieMixin, ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     adressen = rest.RelatedSummaryField()
@@ -582,7 +590,7 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class VerblijfsobjectDetail(ExpandMixin, BagMixin, rest.HALSerializer):
+class VerblijfsobjectDetail(NoGeometrieMixin, ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
@@ -654,7 +662,7 @@ class VerblijfsobjectDetail(ExpandMixin, BagMixin, rest.HALSerializer):
             self.fields['adressen'] = serializers.ManyRelatedField(
                 child_relation=Nummeraanduiding())
             self.fields['panden'] = serializers.ManyRelatedField(
-                child_relation=PandDetail())
+                child_relation=PandDetail(context=self.context))
             self.fields['buurt'] = BuurtDetail(context=self.context)
 
     def get_gebruiksdoel(self, obj):
@@ -676,7 +684,7 @@ class VerblijfsobjectDetail(ExpandMixin, BagMixin, rest.HALSerializer):
         )
 
 
-class PandDetail(ExpandMixin, BagMixin, rest.HALSerializer):
+class PandDetail(NoGeometrieMixin, ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
