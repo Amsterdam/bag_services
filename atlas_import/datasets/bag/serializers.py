@@ -676,7 +676,7 @@ class VerblijfsobjectDetail(ExpandMixin, BagMixin, rest.HALSerializer):
         )
 
 
-class PandDetail(BagMixin, rest.HALSerializer):
+class PandDetail(ExpandMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
