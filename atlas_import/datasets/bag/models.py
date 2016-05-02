@@ -450,6 +450,22 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             result += '-' + self._huisnummer_toevoeging
         return result
 
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats
+
 
 class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                   mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
@@ -497,6 +513,22 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         if self._huisnummer_toevoeging:
             result += '-' + self._huisnummer_toevoeging
         return result
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats
 
 
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -571,16 +603,47 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             result += '-' + self._huisnummer_toevoeging
         return result
 
+    # store pand for bouwblok reference
+    _pand = None
+
     @property
-    def bouwblok(self):
+    def pand(self):
         """
-        Geeft het bouwblok van het bijbehorende pand. Indien er meerdere panden zijn, wordt een willekeurig
-        bouwblok gekozen.
+        Geeft het pand van dit verblijfsobject. Indien er meerdere panden zijn, wordt een willekeurig
+        pand gekozen.
         """
         if not self.panden.count():
             return None
 
-        return self.panden.all()[0].bouwblok
+        if not self._pand:
+            self._pand = self.panden.select_related(
+                'bouwblok',
+            )[0]
+
+        return self._pand
+
+    @property
+    def bouwblok(self):
+        if not self.pand:
+            return None
+
+        return self.pand.bouwblok
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
