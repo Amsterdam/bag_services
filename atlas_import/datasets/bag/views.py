@@ -38,6 +38,12 @@ class LigplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
+    queryset_detail = models.Ligplaats.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
     filter_fields = ('buurt',)
@@ -71,6 +77,12 @@ class StandplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
+    queryset_detail = models.Standplaats.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
     filter_fields = ('buurt',)
@@ -106,6 +118,20 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects
+    queryset_detail = models.Verblijfsobject.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+        'status',
+        'reden_afvoer',
+        'eigendomsverhouding',
+        'gebruik',
+        'ligging',
+        'toegang',
+        'reden_opvoer',
+
+    )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
     filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt',)
