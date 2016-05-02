@@ -1,4 +1,5 @@
 import os
+from unittest import skip
 
 from django.conf import settings
 from django.test import TestCase
@@ -35,6 +36,7 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         response = self.update_metadata_date(None)
         self.assertEqual(response, None)
 
+    @skip('skipping for now')
     def testOneDateAcc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'brk')
@@ -53,6 +55,7 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
 
+    @skip('skipping for now')
     def testUv2Acc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'gebieden')
