@@ -464,7 +464,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _woonplaats(self):
-        return self.hoofdadres.woonplaats
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
 class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -528,7 +528,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _woonplaats(self):
-        return self.hoofdadres.woonplaats
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -643,7 +643,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _woonplaats(self):
-        return self.hoofdadres.woonplaats
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
