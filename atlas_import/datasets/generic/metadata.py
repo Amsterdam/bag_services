@@ -31,6 +31,9 @@ class UpdateDatasetMixin(object):
 
     @property
     def uri(self):
+        if 'localhost' in self.import_hostname:
+            return 'http://%s/metadata/' % self.import_hostname
+
         if '-acc' in self.import_hostname:
             return 'https://api-acc.datapunt.amsterdam.nl/metadata/'
 
@@ -55,6 +58,7 @@ class UpdateDatasetMixin(object):
             'data_modified_date': date,
             'last_import_date': datetime.date.today(),
         }
+        print(data)
 
         self.set_hostname(hostname)
         uri = '%s%s/' % (self.uri, self.dataset_id.lower())
