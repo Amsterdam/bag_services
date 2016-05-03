@@ -209,6 +209,13 @@ class PandViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
+    queryset_detail = models.Pand.objects.select_related(
+        'status',
+        'bouwblok',
+        'bouwblok__buurt',
+        'bouwblok__buurt__stadsdeel',
+        'bouwblok__buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
     filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
@@ -348,6 +355,9 @@ class StadsdeelViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Stadsdeel.objects.all()
+    queryset_detail = models.Stadsdeel.objects.select_related(
+        'gemeente',
+    )
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
 
@@ -378,6 +388,11 @@ class BuurtViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all()
+    queryset_detail = models.Buurt.objects.select_related(
+        'stadsdeel',
+        'stadsdeel__gemeente',
+        'buurtcombinatie',
+    )
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
     filter_fields = ('stadsdeel', 'buurtcombinatie')
@@ -411,6 +426,11 @@ class BouwblokViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Bouwblok.objects.all()
+    queryset_detail = models.Bouwblok.objects.select_related(
+        'buurt',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
     filter_fields = ('buurt',)
@@ -441,6 +461,10 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     """
     metadata_class = ExpansionMetadata
     queryset = models.Buurtcombinatie.objects.all()
+    queryset_detail = models.Buurtcombinatie.objects.select_related(
+        'stadsdeel',
+        'stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
     filter_fields = ('stadsdeel',)

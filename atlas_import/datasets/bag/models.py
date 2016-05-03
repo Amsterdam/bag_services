@@ -160,6 +160,10 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     def __str__(self):
         return "{} ({})".format(self.naam, self.vollcode)
 
+    @property
+    def _gemeente(self):
+        return self.stadsdeel.gemeente
+
 
 class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     """
@@ -181,6 +185,18 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
 
     def __str__(self):
         return "{}".format(self.code)
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
 
 
 class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -676,6 +692,22 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
     def __str__(self):
         return "{}".format(self.landelijk_id)
 
+    @property
+    def _buurt(self):
+        return self.bouwblok.buurt
+
+    @property
+    def _buurtcombinatie(self):
+        return self.bouwblok.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.bouwblok.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.bouwblok.buurt.stadsdeel.gemeente
+
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=29, primary_key=True)
@@ -724,6 +756,9 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
+
+    def _gemeente(self):
+        return self.stadsdeel.gemeente
 
 
 class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):

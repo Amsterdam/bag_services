@@ -106,6 +106,16 @@ class BuurtFactory(factory.DjangoModelFactory):
     buurtcombinatie = factory.SubFactory(BuurtcombinatieFactory)
 
 
+class BouwblokFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Bouwblok
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)
+
+
 class LigplaatsFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Ligplaats
@@ -141,6 +151,7 @@ class PandFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
+    bouwblok = factory.SubFactory(BouwblokFactory)
 
 
 class WoonplaatsFactory(factory.DjangoModelFactory):
@@ -179,16 +190,6 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     postcode = '1000AN'  # default postcode..
 
     _openbare_ruimte_naam = factory.LazyAttribute(lambda o: o.openbare_ruimte.naam)
-
-
-class BouwblokFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Bouwblok
-        django_get_or_create = ('code',)
-
-    id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=4, chars=string.digits)
-    buurt = factory.SubFactory(BuurtFactory)
 
 
 class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):

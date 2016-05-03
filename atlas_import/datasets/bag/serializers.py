@@ -247,6 +247,8 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
     stadsdeel = Stadsdeel()
     buurten = rest.RelatedSummaryField()
 
+    _gemeente = Gemeente()
+
     class Meta:
         model = models.Buurtcombinatie
         fields = (
@@ -263,6 +265,8 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
             'einde_geldigheid',
             'stadsdeel',
             'buurten',
+
+            '_gemeente',
         )
 
 
@@ -288,6 +292,8 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
     buurtcombinatie = Buurtcombinatie()
     stadsdeel = Stadsdeel()
 
+    _gemeente = Gemeente()
+
     class Meta:
         model = models.Buurt
         fields = (
@@ -310,6 +316,8 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
             'ligplaatsen',
             'standplaatsen',
             'verblijfsobjecten',
+
+            '_gemeente',
         )
 
 
@@ -659,6 +667,11 @@ class PandDetail(BagMixin, rest.HALSerializer):
     verblijfsobjecten = rest.RelatedSummaryField()
     bouwblok = Bouwblok()
 
+    _buurt = Buurt()
+    _buurtcombinatie = Buurtcombinatie()
+    _stadsdeel = Stadsdeel()
+    _gemeente = Gemeente()
+
     class Meta:
         model = models.Pand
         fields = (
@@ -685,6 +698,11 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'einde_geldigheid',
             'mutatie_gebruiker',
 
+            '_buurt',
+            '_buurtcombinatie',
+            '_stadsdeel',
+            '_gemeente',
+
         )
 
 
@@ -693,6 +711,10 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     panden = rest.RelatedSummaryField()
     buurt = Buurt()
     meetbouten = serializers.SerializerMethodField()
+
+    _buurtcombinatie = Buurtcombinatie()
+    _stadsdeel = Stadsdeel()
+    _gemeente = Gemeente()
 
     class Meta:
         model = models.Bouwblok
@@ -708,6 +730,10 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
             'geometrie',
             'panden',
             'meetbouten',
+
+            '_buurtcombinatie',
+            '_stadsdeel',
+            '_gemeente',
         )
 
     def get_meetbouten(self, obj):
