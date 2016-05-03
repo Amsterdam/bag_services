@@ -55,10 +55,9 @@ class UpdateDatasetMixin(object):
 
         data = {
             'id': self.dataset_id.lower(),
-            'data_modified_date': date,
+            'data_modified_date': '%d-%d-%d' % (date.year, date.month, date.day),
             'last_import_date': datetime.date.today(),
         }
-        print(data)
 
         self.set_hostname(hostname)
         uri = '%s%s/' % (self.uri, self.dataset_id.lower())

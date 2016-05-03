@@ -1,5 +1,4 @@
 import os
-from unittest import skip
 
 from django.conf import settings
 from django.test import TestCase
@@ -36,18 +35,22 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         response = self.update_metadata_date(None)
         self.assertEqual(response, None)
 
-    @skip('')
     def testNonExisting(self):
-        self.dataset_id = 'TEST-ACC'
+        self.dataset_id = 'test-aac'
         self.path = os.path.join(self.diva, 'brk')
 
-        response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'localhost:8000')
-        print(self.uri)
-        # response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'ap01-acc.datapunt.amsterdam.nl')
+        response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'ap01-acc.datapunt.amsterdam.nl')
 
         self.assertEqual(response.status_code, 404)
 
-    @skip('')
+    def testUpperCase(self):
+        self.dataset_id = 'TEST-ACC'
+        self.path = os.path.join(self.diva, 'brk')
+
+        response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'ap01-acc.datapunt.amsterdam.nl')
+
+        self.assertEqual(response.status_code, 200)
+
     def testOneDateAcc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'brk')
@@ -57,7 +60,6 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
 
-    @skip('')
     def testOneDateProd(self):
         self.dataset_id = 'test-prod'
         self.path = os.path.join(self.diva, 'brk')
@@ -67,7 +69,6 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
 
-    @skip('')
     def testUva2Acc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'gebieden')
@@ -77,7 +78,6 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
 
-    @skip('')
     def testUva2Prod(self):
         self.dataset_id = 'test-prod'
         self.path = os.path.join(self.diva, 'gebieden')
