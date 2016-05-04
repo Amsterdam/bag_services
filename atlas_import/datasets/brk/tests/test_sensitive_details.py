@@ -1,8 +1,5 @@
-from unittest import skipIf
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
-
-from django.conf import settings
 
 from rest_framework.test import APITestCase
 

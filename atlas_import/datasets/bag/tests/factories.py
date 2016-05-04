@@ -65,12 +65,64 @@ class StatusFactory(factory.DjangoModelFactory):
     omschrijving = fuzzy.FuzzyText(length=50)
 
 
+class GemeenteFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Gemeente
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+
+
+class BuurtcombinatieFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Buurtcombinatie
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    naam = fuzzy.FuzzyText(length=50)
+    code = fuzzy.FuzzyText(length=2)
+    vollcode = fuzzy.FuzzyText(length=3)
+
+
+class StadsdeelFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Stadsdeel
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    gemeente = factory.SubFactory(GemeenteFactory)
+
+
+class BuurtFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Buurt
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    stadsdeel = factory.SubFactory(StadsdeelFactory)
+    buurtcombinatie = factory.SubFactory(BuurtcombinatieFactory)
+
+
+class BouwblokFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Bouwblok
+        django_get_or_create = ('code',)
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)
+
+
 class LigplaatsFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Ligplaats
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)
 
 
 class StandplaatsFactory(factory.DjangoModelFactory):
@@ -79,6 +131,7 @@ class StandplaatsFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
+    buurt = factory.SubFactory(BuurtFactory)
 
 
 class VerblijfsobjectFactory(factory.DjangoModelFactory):
@@ -89,6 +142,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
+    buurt = factory.SubFactory(BuurtFactory)
 
 
 class PandFactory(factory.DjangoModelFactory):
@@ -97,15 +151,7 @@ class PandFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
-
-
-class GemeenteFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Gemeente
-        django_get_or_create = ('code',)
-
-    id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+    bouwblok = factory.SubFactory(BouwblokFactory)
 
 
 class WoonplaatsFactory(factory.DjangoModelFactory):
@@ -146,36 +192,6 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     _openbare_ruimte_naam = factory.LazyAttribute(lambda o: o.openbare_ruimte.naam)
 
 
-class StadsdeelFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Stadsdeel
-        django_get_or_create = ('code',)
-
-    id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=3, chars=string.digits)
-    gemeente = factory.SubFactory(GemeenteFactory)
-
-
-class BuurtFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Buurt
-        django_get_or_create = ('code',)
-
-    id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=3, chars=string.digits)
-    stadsdeel = factory.SubFactory(StadsdeelFactory)
-
-
-class BouwblokFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Bouwblok
-        django_get_or_create = ('code',)
-
-    id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=4, chars=string.digits)
-    buurt = factory.SubFactory(BuurtFactory)
-
-
 class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Grootstedelijkgebied
@@ -188,16 +204,6 @@ class UnescoFactory(factory.DjangoModelFactory):
         model = models.Unesco
 
     naam = fuzzy.FuzzyText(length=50)
-
-
-class BuurtcombinatieFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Buurtcombinatie
-        django_get_or_create = ('code',)
-
-    naam = fuzzy.FuzzyText(length=50)
-    code = fuzzy.FuzzyText(length=2)
-    vollcode = fuzzy.FuzzyText(length=3)
 
 
 class GebiedsgerichtwerkenFactory(factory.DjangoModelFactory):

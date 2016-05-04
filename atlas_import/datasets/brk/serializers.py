@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
+from datasets.bag.serializers import Verblijfsobject
+from datasets.wkpb.serializers import BeperkingDetail
 from . import models
 
 
@@ -478,4 +480,59 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
 
             'kadastraal_object',
             'opgelegd_door',
+        )
+
+
+class KadastraalObjectDetailWkpb(BrkMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+    aanduiding = serializers.CharField(source='get_aanduiding_spaties')
+    kadastrale_gemeente = KadastraleGemeente()
+    sectie = KadastraleSectie()
+    soort_grootte = SoortGrootte()
+    cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
+    cultuurcode_bebouwd = CultuurCodeBebouwd()
+
+    rechten = ZakelijkRecht(many=True)
+    verblijfsobjecten = Verblijfsobject(many=True)
+    beperkingen = BeperkingDetail(many=True)
+    aantekeningen = rest.RelatedSummaryField()
+    a_percelen = rest.RelatedSummaryField()
+    g_percelen = rest.RelatedSummaryField()
+    geometrie = rest.MultipleGeometryField()
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aanduiding',
+            'kadastrale_gemeente',
+            'sectie',
+            'perceelnummer',
+            'index_letter',
+            'index_nummer',
+            'soort_grootte',
+            'grootte',
+            'koopsom',
+            'koopsom_valuta_code',
+            'koopjaar',
+            'meer_objecten',
+            'cultuurcode_onbebouwd',
+            'cultuurcode_bebouwd',
+
+            'register9_tekst',
+            'status_code',
+            'toestandsdatum',
+            'voorlopige_kadastrale_grens',
+            'in_onderzoek',
+
+            'geometrie',
+
+            'g_percelen',
+            'a_percelen',
+            'verblijfsobjecten',
+            'rechten',
+            'aantekeningen',
+            'beperkingen',
         )

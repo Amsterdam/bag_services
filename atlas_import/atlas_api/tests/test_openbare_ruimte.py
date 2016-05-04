@@ -8,7 +8,6 @@ from batch import batch
 import datasets.bag.batch
 from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
-from datasets.brk.tests import factories as brk_factories
 
 
 class SubjectSearchTest(APITestCase):

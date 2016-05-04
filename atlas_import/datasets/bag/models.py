@@ -160,6 +160,10 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     def __str__(self):
         return "{} ({})".format(self.naam, self.vollcode)
 
+    @property
+    def _gemeente(self):
+        return self.stadsdeel.gemeente
+
 
 class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     """
@@ -181,6 +185,18 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
 
     def __str__(self):
         return "{}".format(self.code)
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
 
 
 class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -450,6 +466,22 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             result += '-' + self._huisnummer_toevoeging
         return result
 
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
+
 
 class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                   mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
@@ -497,6 +529,22 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         if self._huisnummer_toevoeging:
             result += '-' + self._huisnummer_toevoeging
         return result
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -571,16 +619,47 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             result += '-' + self._huisnummer_toevoeging
         return result
 
+    # store pand for bouwblok reference
+    _pand = None
+
     @property
-    def bouwblok(self):
+    def willekeurig_pand(self):
         """
-        Geeft het bouwblok van het bijbehorende pand. Indien er meerdere panden zijn, wordt een willekeurig
-        bouwblok gekozen.
+        Geeft het pand van dit verblijfsobject. Indien er meerdere panden zijn, wordt een willekeurig
+        pand gekozen.
         """
         if not self.panden.count():
             return None
 
-        return self.panden.all()[0].bouwblok
+        if not self._pand:
+            self._pand = self.panden.select_related(
+                'bouwblok',
+            )[0]
+
+        return self._pand
+
+    @property
+    def bouwblok(self):
+        if not self.willekeurig_pand:
+            return None
+
+        return self.willekeurig_pand.bouwblok
+
+    @property
+    def _buurtcombinatie(self):
+        return self.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.buurt.stadsdeel.gemeente
+
+    @property
+    def _woonplaats(self):
+        return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
 class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
@@ -612,6 +691,22 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
 
     def __str__(self):
         return "{}".format(self.landelijk_id)
+
+    @property
+    def _buurt(self):
+        return self.bouwblok.buurt
+
+    @property
+    def _buurtcombinatie(self):
+        return self.bouwblok.buurt.buurtcombinatie
+
+    @property
+    def _stadsdeel(self):
+        return self.bouwblok.buurt.stadsdeel
+
+    @property
+    def _gemeente(self):
+        return self.bouwblok.buurt.stadsdeel.gemeente
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
@@ -661,6 +756,9 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
 
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
+
+    def _gemeente(self):
+        return self.stadsdeel.gemeente
 
 
 class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):

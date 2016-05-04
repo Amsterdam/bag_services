@@ -12,8 +12,8 @@ import datasets.bag.batch
 import datasets.brk.batch
 from datasets.brk.tests import factories as brk_factories
 
-
 log = logging.getLogger('search')
+
 
 class ObjectSearchTest(APITestCase):
 

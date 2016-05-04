@@ -1,5 +1,3 @@
-import datetime
-
 from batch.test import TaskTestCase
 from datasets.brk import batch, models
 

@@ -35,6 +35,22 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         response = self.update_metadata_date(None)
         self.assertEqual(response, None)
 
+    def testNonExisting(self):
+        self.dataset_id = 'test-aac'
+        self.path = os.path.join(self.diva, 'brk')
+
+        response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'ap01-acc.datapunt.amsterdam.nl')
+
+        self.assertEqual(response.status_code, 404)
+
+    def testUpperCase(self):
+        self.dataset_id = 'TEST-ACC'
+        self.path = os.path.join(self.diva, 'brk')
+
+        response = self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht', 'ap01-acc.datapunt.amsterdam.nl')
+
+        self.assertEqual(response.status_code, 200)
+
     def testOneDateAcc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'brk')
@@ -53,7 +69,7 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.assertNotEqual(response, None)
         self.assertEqual(response.status_code, 200)
 
-    def testUv2Acc(self):
+    def testUva2Acc(self):
         self.dataset_id = 'test-acc'
         self.path = os.path.join(self.diva, 'gebieden')
 

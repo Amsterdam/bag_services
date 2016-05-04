@@ -38,6 +38,12 @@ class LigplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all()
+    queryset_detail = models.Ligplaats.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
     filter_fields = ('buurt',)
@@ -71,6 +77,12 @@ class StandplaatsViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
+    queryset_detail = models.Standplaats.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
     filter_fields = ('buurt',)
@@ -106,6 +118,20 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects
+    queryset_detail = models.Verblijfsobject.objects.select_related(
+        'buurt',
+        'buurt__buurtcombinatie',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+        'status',
+        'reden_afvoer',
+        'eigendomsverhouding',
+        'gebruik',
+        'ligging',
+        'toegang',
+        'reden_opvoer',
+
+    )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
     filter_fields = ('kadastrale_objecten__id', 'panden__id', 'buurt',)
@@ -183,6 +209,13 @@ class PandViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Pand.objects.all()
+    queryset_detail = models.Pand.objects.select_related(
+        'status',
+        'bouwblok',
+        'bouwblok__buurt',
+        'bouwblok__buurt__stadsdeel',
+        'bouwblok__buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
     filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
@@ -322,6 +355,9 @@ class StadsdeelViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Stadsdeel.objects.all()
+    queryset_detail = models.Stadsdeel.objects.select_related(
+        'gemeente',
+    )
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
 
@@ -352,6 +388,11 @@ class BuurtViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all()
+    queryset_detail = models.Buurt.objects.select_related(
+        'stadsdeel',
+        'stadsdeel__gemeente',
+        'buurtcombinatie',
+    )
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
     filter_fields = ('stadsdeel', 'buurtcombinatie')
@@ -385,6 +426,11 @@ class BouwblokViewSet(rest.AtlasViewSet):
 
     metadata_class = ExpansionMetadata
     queryset = models.Bouwblok.objects.all()
+    queryset_detail = models.Bouwblok.objects.select_related(
+        'buurt',
+        'buurt__stadsdeel',
+        'buurt__stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
     filter_fields = ('buurt',)
@@ -415,6 +461,10 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     """
     metadata_class = ExpansionMetadata
     queryset = models.Buurtcombinatie.objects.all()
+    queryset_detail = models.Buurtcombinatie.objects.select_related(
+        'stadsdeel',
+        'stadsdeel__gemeente',
+    )
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
     filter_fields = ('stadsdeel',)

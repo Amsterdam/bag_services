@@ -1,6 +1,6 @@
 from rest_framework.decorators import detail_route
-
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView
 
 from datasets.brk import models, serializers
 
@@ -487,3 +487,15 @@ class AantekeningViewSet(AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
+
+
+class KadastraalObjectWkpbView(RetrieveAPIView):
+    queryset = (
+        models.KadastraalObject.objects.select_related(
+            'sectie',
+            'kadastrale_gemeente',
+            'kadastrale_gemeente__gemeente',
+            'voornaamste_gerechtigde',
+        )
+    )
+    serializer_class = serializers.KadastraalObjectDetailWkpb

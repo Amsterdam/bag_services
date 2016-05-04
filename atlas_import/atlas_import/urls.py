@@ -17,12 +17,18 @@ from django.conf.urls import url, include
 from django.contrib import admin
 import atlas_api.urls
 import datasets.bag.views
+import datasets.brk.views
 
 import batch.views as b_views
 
 urlpatterns = [
-    url(r'^gebieden/bouwblok/(?P<code>....)/?$', datasets.bag.views.BouwblokCodeView.as_view()),
-    url(r'^gebieden/stadsdeel/(?P<code>.)/?$', datasets.bag.views.StadsdeelCodeView.as_view()),
+    url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+        datasets.bag.views.BouwblokCodeView.as_view()),
+    url(r'^gebieden/stadsdeel/(?P<code>.)/?$',
+        datasets.bag.views.StadsdeelCodeView.as_view()),
+    url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
+        datasets.brk.views.KadastraalObjectWkpbView.as_view(),
+        name='brk-object-wkpb'),
 
     url(r'^bag/docs/', include('rest_framework_swagger.urls')),
 
@@ -34,8 +40,10 @@ urlpatterns = [
     url(r'^search/', include(atlas_api.urls.search.urls)),
 
     url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
-    url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(), name='job-detail'),
+    url(r'^jobs/(?P<pk>.*)$',
+        b_views.JobDetailView.as_view(), name='job-detail'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    url(r'^oauth/',
+        include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^status/', include('health.urls', namespace='health')),
 ]

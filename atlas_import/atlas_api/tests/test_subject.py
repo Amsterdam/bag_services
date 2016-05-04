@@ -1,12 +1,9 @@
-import time
-from unittest import skip
-
 from rest_framework.test import APITestCase
 
-import datasets.bag.batch
-from datasets.brk.tests import factories as brk_factories
-import datasets.brk.batch
 from batch import batch
+import datasets.bag.batch
+import datasets.brk.batch
+from datasets.brk.tests import factories as brk_factories
 
 
 class SubjectSearchTest(APITestCase):

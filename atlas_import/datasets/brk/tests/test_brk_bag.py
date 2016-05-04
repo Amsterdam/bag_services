@@ -22,6 +22,5 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         self.run_task()
 
         kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.11730205570000')
-        vbos = kot.verblijfsobjecten.all()
 
         self.assertQuerysetEqual(kot.verblijfsobjecten.all(), transform=lambda vbo: vbo.id, values=['03630000740386'])

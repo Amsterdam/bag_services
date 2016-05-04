@@ -1,5 +1,6 @@
 # Packages
 from rest_framework.test import APITestCase
+from rest_framework.reverse import reverse
 # Project
 from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
@@ -63,11 +64,18 @@ class BrowseDatasetsTestCase(APITestCase):
         for url in self.datasets:
             response = self.client.get('/{}/'.format(url))
 
-            self.assertEqual(response.status_code, 200, 'Wrong response code for {}'.format(url))
-            self.assertEqual(response['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
+            self.assertEqual(
+                response.status_code, 200,
+                'Wrong response code for {}'.format(url))
+            self.assertEqual(
+                response['Content-Type'], 'application/json',
+                'Wrong Content-Type for {}'.format(url))
 
-            self.assertIn('count', response.data, 'No count attribute in {}'.format(url))
-            self.assertNotEqual(response.data['count'], 0, 'Wrong result count for {}'.format(url))
+            self.assertIn(
+                'count', response.data, 'No count attribute in {}'.format(url))
+            self.assertNotEqual(
+                response.data['count'],
+                0, 'Wrong result count for {}'.format(url))
 
     def test_details(self):
         for url in self.datasets:
@@ -76,6 +84,27 @@ class BrowseDatasetsTestCase(APITestCase):
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
-            self.assertEqual(detail.status_code, 200, 'Wrong response code for {}'.format(url))
-            self.assertEqual(detail['Content-Type'], 'application/json', 'Wrong Content-Type for {}'.format(url))
+            self.assertEqual(
+                detail.status_code,
+                200, 'Wrong response code for {}'.format(url))
+            self.assertEqual(
+                detail['Content-Type'],
+                'application/json', 'Wrong Content-Type for {}'.format(url))
             self.assertIn('_display', detail.data)
+
+    def test_brk_object_wkpb(self):
+
+        url = 'brk/object'
+
+        response = self.client.get('/{}/'.format(url))
+
+        test_id = response.data['results'][0]['id']
+
+        test_url = reverse('brk-object-wkpb', args=[test_id])
+        detail = self.client.get(test_url)
+
+        self.assertEqual(
+            detail.status_code, 200, 'Wrong response code for {}'.format(url))
+        self.assertEqual(
+            detail['Content-Type'], 'application/json',
+            'Wrong Content-Type for {}'.format(url))
