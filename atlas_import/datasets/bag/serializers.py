@@ -584,7 +584,6 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     adressen = rest.RelatedSummaryField()
     rechten = rest.RelatedSummaryField()
     beperkingen = rest.RelatedSummaryField()
-    pand = Pand()
     bouwblok = Bouwblok()
 
     _buurtcombinatie = Buurtcombinatie()
@@ -633,7 +632,6 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             'kadastrale_objecten',
             'rechten',
             'beperkingen',
-            'pand',
             'bouwblok',
 
             '_buurtcombinatie',

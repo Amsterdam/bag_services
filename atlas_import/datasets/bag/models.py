@@ -623,7 +623,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     _pand = None
 
     @property
-    def pand(self):
+    def willekeurig_pand(self):
         """
         Geeft het pand van dit verblijfsobject. Indien er meerdere panden zijn, wordt een willekeurig
         pand gekozen.
@@ -640,10 +640,10 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def bouwblok(self):
-        if not self.pand:
+        if not self.willekeurig_pand:
             return None
 
-        return self.pand.bouwblok
+        return self.willekeurig_pand.bouwblok
 
     @property
     def _buurtcombinatie(self):
