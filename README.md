@@ -55,3 +55,5 @@ on Linux):
     docker exec atlasbackend_database_1 update-atlas.sh
 
 The import takes approximately 10 minutes. 
+
+    

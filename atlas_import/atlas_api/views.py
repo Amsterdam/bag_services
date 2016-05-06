@@ -9,7 +9,8 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
-from elasticsearch_dsl import Search, Q
+from elasticsearch_dsl import Search
+# from elasticsearch_dsl import Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -59,7 +60,8 @@ def analyze_query(query_string):
     # If its only numbers and it is 3 digits or less its probably postcode
     # but can also be kadestral
     try:
-        num = int(query_string)
+        # num = int(query_string)
+        int(query_string)
         if len(query_string) < 4:
             # Its a number so it can be either postcode or kadaster
             return [bagQ.postcode_Q]
@@ -327,6 +329,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
         return aggs
 
     def list(self, request, *args, **kwargs):
+        """
+        returns result options
+        ---
+        parameters:
+            - name: q
+              description: givven search q give Result suggestions
+              required: true
+              type: string
+              paramType: query
+        """
         if 'q' not in request.query_params:
             return Response([])
 
@@ -400,7 +412,18 @@ class SearchViewSet(viewsets.ViewSet):
                 followup_url, url_query, page - 1)
 
     def list(self, request, *args, **kwargs):
-        """Create a response list"""
+        """
+        Create a response list
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+
+        """
 
         if 'q' not in request.query_params:
             return Response([])
@@ -747,6 +770,7 @@ class SearchPostcodeViewSet(SearchViewSet):
         return super(SearchPostcodeViewSet, self).list(
             request, *args, **kwargs)
 
+
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -812,10 +836,23 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         return result
 
     def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
         if 'q' not in request.query_params:
             return Response([])
 
-        query = self.normalize_postcode_housenumber(prepare_query_string(request.query_params['q']))
+        query = self.normalize_postcode_housenumber(
+            prepare_query_string(request.query_params['q']))
         if not query:
             return Response([])
         response = self.get_exact_response(query)
@@ -838,4 +875,3 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         else:
             response = []
         return Response(response)
-
