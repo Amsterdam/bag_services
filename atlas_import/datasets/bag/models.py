@@ -698,15 +698,15 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
 
     @property
     def _buurtcombinatie(self):
-        return self.bouwblok.buurt.buurtcombinatie
+        return self.bouwblok.buurt.buurtcombinatie if self.bouwblok.buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.bouwblok.buurt.stadsdeel
+        return self.bouwblok.buurt.stadsdeel if self.bouwblok.buurt else None
 
     @property
     def _gemeente(self):
-        return self.bouwblok.buurt.stadsdeel.gemeente
+        return self.bouwblok.buurt.stadsdeel.gemeente if self.bouwblok.buurt else None
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
