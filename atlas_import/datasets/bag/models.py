@@ -188,15 +188,15 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
 
     @property
     def _buurtcombinatie(self):
-        return self.buurt.buurtcombinatie
+        return self.buurt.buurtcombinatie if self.buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.buurt.stadsdeel
+        return self.buurt.stadsdeel if self.buurt else None
 
     @property
     def _gemeente(self):
-        return self.buurt.stadsdeel.gemeente
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
 
 class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -468,15 +468,15 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _buurtcombinatie(self):
-        return self.buurt.buurtcombinatie
+        return self.buurt.buurtcombinatie if self.buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.buurt.stadsdeel
+        return self.buurt.stadsdeel if self.buurt else None
 
     @property
     def _gemeente(self):
-        return self.buurt.stadsdeel.gemeente
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
     @property
     def _woonplaats(self):
@@ -532,15 +532,15 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _buurtcombinatie(self):
-        return self.buurt.buurtcombinatie
+        return self.buurt.buurtcombinatie if self.buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.buurt.stadsdeel
+        return self.buurt.stadsdeel if self.buurt else None
 
     @property
     def _gemeente(self):
-        return self.buurt.stadsdeel.gemeente
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
     @property
     def _woonplaats(self):
@@ -647,15 +647,15 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def _buurtcombinatie(self):
-        return self.buurt.buurtcombinatie
+        return self.buurt.buurtcombinatie if self.buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.buurt.stadsdeel
+        return self.buurt.stadsdeel if self.buurt else None
 
     @property
     def _gemeente(self):
-        return self.buurt.stadsdeel.gemeente
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
     @property
     def _woonplaats(self):
@@ -694,19 +694,19 @@ class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportSt
 
     @property
     def _buurt(self):
-        return self.bouwblok.buurt
+        return self.bouwblok.buurt if self.bouwblok else None
 
     @property
     def _buurtcombinatie(self):
-        return self.bouwblok.buurt.buurtcombinatie if self.bouwblok.buurt else None
+        return self._buurt.buurtcombinatie if self._buurt else None
 
     @property
     def _stadsdeel(self):
-        return self.bouwblok.buurt.stadsdeel if self.bouwblok.buurt else None
+        return self._buurt.stadsdeel if self._buurt else None
 
     @property
     def _gemeente(self):
-        return self.bouwblok.buurt.stadsdeel.gemeente if self.bouwblok.buurt else None
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
