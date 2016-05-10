@@ -57,8 +57,9 @@ class NatuurlijkPersoonFactory(factory.DjangoModelFactory):
 
     pk = fuzzy.FuzzyText(length=60)
     type = models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    bron = fuzzy.FuzzyChoice(
+        choices=(models.KadastraalSubject.BRON_KADASTER,
+                 models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 
@@ -69,8 +70,9 @@ class NietNatuurlijkPersoonFactory(factory.DjangoModelFactory):
 
     pk = fuzzy.FuzzyText(length=60)
     type = models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    bron = fuzzy.FuzzyChoice(choices=(
+        models.KadastraalSubject.BRON_KADASTER,
+        models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 
@@ -80,10 +82,12 @@ class KadastraalSubjectFactory(factory.DjangoModelFactory):
         model = models.KadastraalSubject
 
     pk = fuzzy.FuzzyText(length=60)
-    type = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
-                                      models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    type = fuzzy.FuzzyChoice(
+            choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
+                     models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
+    bron = fuzzy.FuzzyChoice(
+            choices=(models.KadastraalSubject.BRON_KADASTER,
+                     models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 

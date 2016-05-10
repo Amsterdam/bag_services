@@ -20,9 +20,12 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
             ),
         )
 
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.170361583')
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.172014260')
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.199346638')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.170361583')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.172014260')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.199346638')
 
     def task(self):
         return batch.ImportKadastraalObjectTask("diva/brk")
@@ -60,9 +63,10 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
 
         self.assertIsNone(kot.point_geom)
         self.assertIsNotNone(kot.poly_geom)
-        self.assertEqual(kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
+        self.assertEqual(
+            kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
 
-        kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.12550132010037')
+        kot = models.KadastraalObject.objects.get(
+            pk='NL.KAD.OnroerendeZaak.12550132010037')
         self.assertIsNone(kot.poly_geom)
         self.assertIsNotNone(kot.point_geom)
-

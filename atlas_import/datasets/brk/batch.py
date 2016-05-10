@@ -321,11 +321,14 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 models.CultuurCodeBebouwd,
         )
 
-        secties = models.KadastraleSectie.objects.select_related('kadastrale_gemeente').all()
+        secties = models.KadastraleSectie.objects.select_related(
+            'kadastrale_gemeente').all()
+
         for s in secties:
             self.secties[(s.kadastrale_gemeente_id, s.sectie)] = s.pk
 
-        self.subjects = set(models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.subjects = set(
+            models.KadastraalSubject.objects.values_list("id", flat=True))
 
     def after(self):
         self.secties.clear()
@@ -335,8 +338,10 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.subjects.clear()
 
     def process(self):
-        objects = dict(uva2.process_csv(self.path, 'BRK_kadastraal_object', self.process_object))
-        models.KadastraalObject.objects.bulk_create(objects.values(), batch_size=database.BATCH_SIZE)
+        objects = dict(uva2.process_csv(
+            self.path, 'BRK_kadastraal_object', self.process_object))
+        models.KadastraalObject.objects.bulk_create(
+            objects.values(), batch_size=database.BATCH_SIZE)
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -368,7 +373,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         if row['GEOMETRIE']:
             geom = GEOSGeometry(row['GEOMETRIE'])
             if isinstance(geom, Polygon):
-                poly_geom =  MultiPolygon(geom)
+                poly_geom = MultiPolygon(geom)
             elif isinstance(geom, Point):  # Point is the other option. Otherwise None
                 point_geom = geom
 
@@ -380,9 +385,12 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             pass
 
         subject_id = row['BRK_SJT_ID'] or None
+
         if subject_id and subject_id not in self.subjects:
             log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
             subject_id = None
+
+        vrlpg = row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens'
 
         return kot_id, models.KadastraalObject(
                 id=kot_id,
@@ -390,38 +398,47 @@ class ImportKadastraalObjectTask(batch.BasicTask):
                 aanduiding=aanduiding,
                 sectie_id=s_id,
                 perceelnummer=perceelnummer,
-                index_letter=index_letter,
-                index_nummer=index_nummer,
-                soort_grootte=self.get_soort_grootte(row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
+                indexletter=indexletter,
+                indexnummer=indexnummer,
+                soort_grootte=self.get_soort_grootte(
+                    row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
                 grootte=int(grootte) if grootte else None,
                 koopsom=int(koopsom) if koopsom else None,
                 koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
                 koopjaar=row['KOT_KOOPJAAR'],
-                meer_objecten=uva2.uva_indicatie(row['KOT_INDICATIE_MEER_OBJECTEN']),
-                cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(row['KOT_CULTUURCODEONBEBOUWD_CODE'],
-                                                                      row['KOT_CULTUURCODEONBEBOUWD_OMS']),
-                cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(row['KOT_CULTUURCODEBEBOUWD_CODE'],
-                                                                  row['KOT_CULTUURCODEBEBOUWD_OMS']),
+                meer_objecten=uva2.uva_indicatie(
+                    row['KOT_INDICATIE_MEER_OBJECTEN']),
+                cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(
+                    row['KOT_CULTUURCODEONBEBOUWD_CODE'],
+                    row['KOT_CULTUURCODEONBEBOUWD_OMS']),
+
+                cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(
+                    row['KOT_CULTUURCODEBEBOUWD_CODE'],
+                    row['KOT_CULTUURCODEBEBOUWD_OMS']),
 
                 register9_tekst=row['KOT_AKRREGISTER9TEKST'],
                 status_code=row['KOT_STATUS_CODE'],
                 toestandsdatum=toestands_datum,
-                voorlopige_kadastrale_grens=row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens',
+                voorlopige_kadastrale_grens=vrlpg,
                 in_onderzoek=row['KOT_INONDERZOEK'],
-
                 poly_geom=poly_geom,
                 point_geom=point_geom,
                 voornaamste_gerechtigde_id=subject_id,
         )
 
     def get_soort_grootte(self, code, omschrijving):
-        return _get_related(code, omschrijving, self.soort_grootte, models.SoortGrootte)
+        return _get_related(
+            code, omschrijving, self.soort_grootte, models.SoortGrootte)
 
     def get_cultuur_code_onbebouwd(self, code, omschrijving):
-        return _get_related(code, omschrijving, self.cultuur_code_onbebouwd, models.CultuurCodeOnbebouwd)
+        return _get_related(
+            code, omschrijving,
+            self.cultuur_code_onbebouwd, models.CultuurCodeOnbebouwd)
 
     def get_cultuur_code_bebouwd(self, code, omschrijving):
-        return _get_related(code, omschrijving, self.cultuur_code_bebouwd, models.CultuurCodeBebouwd)
+        return _get_related(
+            code, omschrijving, self.cultuur_code_bebouwd,
+            models.CultuurCodeBebouwd)
 
 
 class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
@@ -454,8 +471,11 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht')
 
     def process(self):
-        zrts = dict(uva2.process_csv(self.path, 'BRK_zakelijk_recht', self.process_subject))
-        models.ZakelijkRecht.objects.bulk_create(zrts.values(), batch_size=database.BATCH_SIZE)
+        zrts = dict(
+            uva2.process_csv(
+                self.path, 'BRK_zakelijk_recht', self.process_subject))
+        models.ZakelijkRecht.objects.bulk_create(
+            zrts.values(), batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
         zrt_id = row['BRK_ZRT_ID']
@@ -463,7 +483,8 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         betrokken_bij = row['ZRT_BETROKKEN_BIJ']
 
         if not tng_id and not betrokken_bij:
-            log.warn("Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
+            log.warn(
+                "Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
             return
 
         kot_id = row['BRK_KOT_ID']

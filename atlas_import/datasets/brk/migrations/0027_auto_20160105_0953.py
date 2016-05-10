@@ -13,6 +13,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='kadastraalobject',
-            options={'ordering': ('kadastrale_gemeente__id', 'sectie', 'perceelnummer', '-index_letter', 'index_nummer')},
+            options={
+                'ordering': (
+                    'kadastrale_gemeente__id', 'sectie',
+                    'perceelnummer', '-indexletter', 'index_nummer')},
         ),
     ]
