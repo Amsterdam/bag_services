@@ -351,9 +351,10 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         s_id = self.secties[(kg_id, sectie)]
 
         perceelnummer = row['KOT_PERCEELNUMMER']
-        index_letter = row['KOT_INDEX_LETTER']
-        index_nummer = row['KOT_INDEX_NUMMER']
-        aanduiding = kadaster.get_aanduiding(kg_id, sectie, perceelnummer, index_letter, index_nummer)
+        indexletter = row['KOT_INDEX_LETTER']
+        indexnummer = row['KOT_INDEX_NUMMER']
+        aanduiding = kadaster.get_aanduiding(
+            kg_id, sectie, perceelnummer, indexletter, indexnummer)
 
         grootte = row['KOT_KADGROOTTE']
         koopsom = row['KOT_KOOPSOM']
@@ -440,8 +441,10 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                 models.AardZakelijkRecht,
                 models.AppartementsrechtsSplitsType,
         )
-        self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
-        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
+        self.kst = set(
+            models.KadastraalSubject.objects.values_list("id", flat=True))
+        self.kot = set(
+            models.KadastraalObject.objects.values_list("id", flat=True))
 
     def after(self):
         self.aard_zakelijk_recht.clear()

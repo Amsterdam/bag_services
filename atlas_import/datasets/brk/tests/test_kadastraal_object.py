@@ -30,15 +30,16 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.11280310370000')
+        kot = models.KadastraalObject.objects.get(
+            pk='NL.KAD.OnroerendeZaak.11280310370000')
 
         self.assertEqual(kot.id, 'NL.KAD.OnroerendeZaak.11280310370000')
         self.assertEqual(kot.aanduiding, 'AMR03A03103G0000')
         self.assertEqual(kot.kadastrale_gemeente.id, 'AMR03')
         self.assertEqual(kot.sectie.sectie, 'A')
         self.assertEqual(kot.perceelnummer, 3103)
-        self.assertEqual(kot.index_letter, 'G')
-        self.assertEqual(kot.index_nummer, 0)
+        self.assertEqual(kot.indexletter, 'G')
+        self.assertEqual(kot.indexnummer, 0)
         self.assertEqual(kot.soort_grootte.code, '1')
         self.assertEqual(kot.soort_grootte.omschrijving, 'Vastgesteld')
         self.assertEqual(kot.grootte, 99)

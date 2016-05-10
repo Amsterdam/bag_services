@@ -365,7 +365,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
-    objectnummer = serializers.MethodField('perceelnummer')
+    objectnummer = serializers.CharField(source='perceelnummer')
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
@@ -486,7 +486,7 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
 
 class KadastraalObjectDetailWkpb(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    identificatiecode = serializers.SerializerMethodField('id')
+    identificatiecode = serializers.CharField(source='id')
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
