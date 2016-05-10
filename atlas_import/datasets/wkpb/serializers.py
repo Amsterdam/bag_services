@@ -6,6 +6,7 @@ from datasets.generic import rest
 
 class Broncode(rest.HALSerializer):
     _display = rest.DisplayField()
+
     class Meta:
         model = models.Broncode
         fields = (
@@ -49,6 +50,7 @@ class Beperkingcode(serializers.ModelSerializer):
 
 class Beperking(rest.HALSerializer):
     _display = rest.DisplayField()
+
     class Meta:
         model = models.Beperking
         fields = (
@@ -61,6 +63,7 @@ class Beperking(rest.HALSerializer):
 class BroncodeDetail(rest.HALSerializer):
     _display = rest.DisplayField()
     documenten = rest.RelatedSummaryField()
+
     class Meta:
         model = models.Broncode
         fields = (

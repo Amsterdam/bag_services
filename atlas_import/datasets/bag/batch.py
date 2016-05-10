@@ -1,6 +1,6 @@
 # Python
-import datetime
-import json
+# import datetime
+# import json
 import logging
 import os
 # Packages
@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
 from django.utils.text import slugify
-import requests
+# import requests
 # Project
 from batch import batch
 from datasets.generic import uva2, index, database, geo, metadata
@@ -408,8 +408,10 @@ class ImportOprTask(batch.BasicTask):
     def before(self):
         database.clear_models(models.OpenbareRuimte)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = set(models.Status.objects.values_list("pk", flat=True))
-        self.woonplaatsen = set(models.Woonplaats.objects.values_list("pk", flat=True))
+        self.statussen = set(
+            models.Status.objects.values_list("pk", flat=True))
+        self.woonplaatsen = set(
+            models.Woonplaats.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
@@ -502,12 +504,18 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def before(self):
         database.clear_models(models.Nummeraanduiding)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = set(models.Status.objects.values_list("pk", flat=True))
-        self.openbare_ruimtes = set(models.OpenbareRuimte.objects.values_list("pk", flat=True))
+        self.statussen = set(
+            models.Status.objects.values_list("pk", flat=True))
+        self.openbare_ruimtes = set(
+            models.OpenbareRuimte.objects.values_list("pk", flat=True))
 
-        self.ligplaatsen = set(models.Ligplaats.objects.values_list("pk", flat=True))
-        self.standplaatsen = set(models.Standplaats.objects.values_list("pk", flat=True))
-        self.verblijfsobjecten = set(models.Verblijfsobject.objects.values_list("pk", flat=True))
+        self.ligplaatsen = set(
+            models.Ligplaats.objects.values_list("pk", flat=True))
+
+        self.standplaatsen = set(
+            models.Standplaats.objects.values_list("pk", flat=True))
+        self.verblijfsobjecten = set(
+            models.Verblijfsobject.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
@@ -524,13 +532,15 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
-        self.nummeraanduidingen = dict(uva2.process_uva2(self.path, "NUM", self.process_num_row))
+        self.nummeraanduidingen = dict(
+            uva2.process_uva2(self.path, "NUM", self.process_num_row))
         uva2.process_uva2(self.path, "NUMLIGHFD", self.process_numlig_row)
         uva2.process_uva2(self.path, "NUMSTAHFD", self.process_numsta_row)
         uva2.process_uva2(self.path, "NUMVBOHFD", self.process_numvbo_row)
         uva2.process_uva2(self.path, "NUMVBONVN", self.process_numvbonvn_row)
 
-        models.Nummeraanduiding.objects.bulk_create(self.nummeraanduidingen.values(), batch_size=database.BATCH_SIZE)
+        models.Nummeraanduiding.objects.bulk_create(
+            self.nummeraanduidingen.values(), batch_size=database.BATCH_SIZE)
 
     def process_num_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -1210,7 +1220,6 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         prefetch_related('standplaats').\
         prefetch_related('ligplaats').\
         prefetch_related('openbare_ruimte')
-        
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)

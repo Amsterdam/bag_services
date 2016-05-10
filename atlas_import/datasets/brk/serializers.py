@@ -307,7 +307,9 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
 
-    allowed_anonymous = {'_links', '_display', 'id', 'volledige_naam', 'is_natuurlijk_persoon'}
+    allowed_anonymous = {
+        '_links', '_display',
+        'id', 'volledige_naam', 'is_natuurlijk_persoon'}
 
     class Meta:
         model = models.KadastraalSubject
