@@ -321,7 +321,6 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
             'type',
             'beschikkingsbevoegdheid',
 
-            'volledige_naam',
             'is_natuurlijk_persoon',
 
             'voornamen',
