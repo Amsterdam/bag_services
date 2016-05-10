@@ -563,7 +563,27 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
+class VerblijfsobjectDetailMixin(object):
+    def get_gebruiksdoel(self, obj):
+        return dict(
+            code=obj.gebruiksdoel_code,
+            omschrijving=obj.gebruiksdoel_omschrijving,
+        )
+
+    def get_status_coordinaat(self, obj):
+        return dict(
+            code=obj.status_coordinaat_code,
+            omschrijving=obj.status_coordinaat_omschrijving,
+        )
+
+    def get_type_woonobject(self, obj):
+        return dict(
+            code=obj.type_woonobject_code,
+            omschrijving=obj.type_woonobject_omschrijving,
+        )
+
+
+class VerblijfsobjectDetail(VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
@@ -638,24 +658,6 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             '_stadsdeel',
             '_gemeente',
             '_woonplaats',
-        )
-
-    def get_gebruiksdoel(self, obj):
-        return dict(
-            code=obj.gebruiksdoel_code,
-            omschrijving=obj.gebruiksdoel_omschrijving,
-        )
-
-    def get_status_coordinaat(self, obj):
-        return dict(
-            code=obj.status_coordinaat_code,
-            omschrijving=obj.status_coordinaat_omschrijving,
-        )
-
-    def get_type_woonobject(self, obj):
-        return dict(
-            code=obj.type_woonobject_code,
-            omschrijving=obj.type_woonobject_omschrijving,
         )
 
 

@@ -22,13 +22,20 @@ import datasets.brk.views
 import batch.views as b_views
 
 urlpatterns = [
+    # custom endpoints
     url(r'^gebieden/bouwblok/(?P<code>....)/?$',
         datasets.bag.views.BouwblokCodeView.as_view()),
+
     url(r'^gebieden/stadsdeel/(?P<code>.)/?$',
         datasets.bag.views.StadsdeelCodeView.as_view()),
+
     url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
         datasets.brk.views.KadastraalObjectWkpbView.as_view(),
         name='brk-object-wkpb'),
+
+    url(r'^bag/nummeraanduiding-expanded/(?P<pk>[^/]+)/?$',
+        datasets.bag.views.NummerAanduidingExpandedView.as_view(),
+        name='bag-nummeraanduiding-expanded'),
 
     url(r'^bag/docs/', include('rest_framework_swagger.urls')),
 
