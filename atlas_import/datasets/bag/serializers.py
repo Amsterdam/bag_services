@@ -207,12 +207,14 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
     buurtcombinaties = rest.RelatedSummaryField()
     gemeente = Gemeente()
 
+    stadsdeelidentificatie = serializers.CharField(source='id')
+
     class Meta:
         model = models.Stadsdeel
         fields = (
             '_links',
             '_display',
-            'id',
+            'stadsdeelidentificatie',
             'code',
             'date_modified',
             'begin_geldigheid',
@@ -220,7 +222,6 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
 
             'naam',
             'gemeente',
-            # 'ingang_cyclus',
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
@@ -249,15 +250,18 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
 
     _gemeente = Gemeente()
 
+    buurtcombinatie_identificatie = serializers.CharField(source='id')
+    volledige_code = serializers.CharField(source='vollcode')
+
     class Meta:
         model = models.Buurtcombinatie
         fields = (
             '_links',
             '_display',
-            'id',
+            'buurtcombinatie_identificatie',
             'naam',
             'code',
-            'vollcode',
+            'volledige_code',
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
@@ -294,18 +298,21 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
 
     _gemeente = Gemeente()
 
+    buurtidentificatie = serializers.CharField(source='id')
+    volledige_code = serializers.CharField(source='vollcode')
+
     class Meta:
         model = models.Buurt
         fields = (
             '_links',
             '_display',
             'id',
+            'buurtidentificatie',
             'code',
-            'vollcode',
+            'volledige_code',
 
             'naam',
             'stadsdeel',
-            # 'ingang_cyclus',
             'brondocument_naam',
             'brondocument_datum',
             'begin_geldigheid',
@@ -750,15 +757,17 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
 
+    bouwblokidentificatie = serializers.CharField(source='id')
+
     class Meta:
         model = models.Bouwblok
         fields = (
             '_links',
             '_display',
             'id',
+            'bouwblokidentificatie',
             'code',
             'buurt',
-            # 'ingang_cyclus',
             'begin_geldigheid',
             'einde_geldigheid',
             'geometrie',
