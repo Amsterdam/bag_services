@@ -32,7 +32,7 @@ class ObjectSearchTest(APITestCase):
         brk_factories.KadastraalObjectFactory(
             kadastrale_gemeente=kada_amsterdam,
             perceelnummer=10000,  # must be 5 long!
-            index_letter='A',
+            indexletter='A',
         )
 
         brk_factories.KadastraalObjectFactory(

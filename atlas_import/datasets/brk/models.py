@@ -201,18 +201,22 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
 
 class APerceelGPerceelRelatie(models.Model):
     id = models.CharField(max_length=121, primary_key=True)
-    a_perceel = models.ForeignKey('KadastraalObject', related_name='g_perceel_relaties')
-    g_perceel = models.ForeignKey('KadastraalObject', related_name='a_perceel_relaties')
+    a_perceel = models.ForeignKey(
+        'KadastraalObject', related_name='g_perceel_relaties')
+    g_perceel = models.ForeignKey(
+        'KadastraalObject', related_name='a_perceel_relaties')
 
 
 class KadastraalObject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=17)
-    kadastrale_gemeente = models.ForeignKey(KadastraleGemeente, related_name="kadastrale_objecten")
-    sectie = models.ForeignKey(KadastraleSectie, related_name="kadastrale_objecten")
+    kadastrale_gemeente = models.ForeignKey(
+        KadastraleGemeente, related_name="kadastrale_objecten")
+    sectie = models.ForeignKey(
+        KadastraleSectie, related_name="kadastrale_objecten")
     perceelnummer = models.IntegerField()
-    index_letter = models.CharField(max_length=1)
-    index_nummer = models.IntegerField()
+    indexletter = models.CharField(max_length=1)
+    indexnummer = models.IntegerField()
     soort_grootte = models.ForeignKey(SoortGrootte, null=True)
     grootte = models.IntegerField(null=True)
     koopsom = models.IntegerField(null=True)
@@ -232,27 +236,31 @@ class KadastraalObject(mixins.ImportStatusMixin):
     point_geom = geo.PointField(srid=28992, null=True)
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
-                                               through='KadastraalObjectVerblijfsobjectRelatie',
-                                               related_name="kadastrale_objecten")
+    verblijfsobjecten = models.ManyToManyField(
+        bag.Verblijfsobject,
+        through='KadastraalObjectVerblijfsobjectRelatie',
+        related_name="kadastrale_objecten")
 
-    g_percelen = models.ManyToManyField('KadastraalObject',
-                                        through=APerceelGPerceelRelatie,
-                                        through_fields=('a_perceel', 'g_perceel'),
-                                        related_name="a_percelen")
+    g_percelen = models.ManyToManyField(
+        'KadastraalObject',
+        through=APerceelGPerceelRelatie,
+        through_fields=('a_perceel', 'g_perceel'),
+        related_name="a_percelen")
 
     objects = geo.GeoManager()
 
     class Meta:
-        ordering = ('kadastrale_gemeente__id', 'sectie', 'perceelnummer', '-index_letter', 'index_nummer')
+        ordering = (
+            'kadastrale_gemeente__id', 'sectie', 'perceelnummer',
+            '-indexletter', 'indexnummer')
 
     def __str__(self):
         return self.get_aanduiding_spaties()
 
     def get_aanduiding_spaties(self):
         return kadaster.get_aanduiding_spaties(
-                self.kadastrale_gemeente.id, self.sectie.sectie, self.perceelnummer,
-                self.index_letter, self.index_nummer
+                self.kadastrale_gemeente.id, self.sectie.sectie,
+                self.perceelnummer, self.indexletter, self.indexnummer
         )
 
 

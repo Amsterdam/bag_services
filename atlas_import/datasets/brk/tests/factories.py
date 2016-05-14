@@ -10,7 +10,9 @@ f = faker.Factory.create(locale='nl_NL')
 
 
 def random_poly():
-    return MultiPolygon(Polygon(((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0))))
+    return MultiPolygon(
+        Polygon(
+            ((0.0, 0.0), (0.0, 50.0), (50.0, 50.0), (50.0, 0.0), (0.0, 0.0))))
 
 
 class GemeenteFactory(factory.DjangoModelFactory):
@@ -55,8 +57,9 @@ class NatuurlijkPersoonFactory(factory.DjangoModelFactory):
 
     pk = fuzzy.FuzzyText(length=60)
     type = models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    bron = fuzzy.FuzzyChoice(
+        choices=(models.KadastraalSubject.BRON_KADASTER,
+                 models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 
@@ -67,8 +70,9 @@ class NietNatuurlijkPersoonFactory(factory.DjangoModelFactory):
 
     pk = fuzzy.FuzzyText(length=60)
     type = models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    bron = fuzzy.FuzzyChoice(choices=(
+        models.KadastraalSubject.BRON_KADASTER,
+        models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 
@@ -78,10 +82,12 @@ class KadastraalSubjectFactory(factory.DjangoModelFactory):
         model = models.KadastraalSubject
 
     pk = fuzzy.FuzzyText(length=60)
-    type = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
-                                      models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
-    bron = fuzzy.FuzzyChoice(choices=(models.KadastraalSubject.BRON_KADASTER,
-                                      models.KadastraalSubject.BRON_REGISTRATIE))
+    type = fuzzy.FuzzyChoice(
+            choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
+                     models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
+    bron = fuzzy.FuzzyChoice(
+            choices=(models.KadastraalSubject.BRON_KADASTER,
+                     models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 
@@ -96,19 +102,17 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
             obj.kadastrale_gemeente.id,
             obj.sectie.sectie,
             obj.perceelnummer,
-            obj.index_letter,
-            obj.index_nummer))
-
+            obj.indexletter,
+            obj.indexnummer))
 
     kadastrale_gemeente = factory.SubFactory(KadastraleGemeenteFactory)
     sectie = factory.SubFactory(KadastraleSectieFactory)
     perceelnummer = fuzzy.FuzzyInteger(low=0, high=9999)
-    index_letter = fuzzy.FuzzyChoice(choices=('A', 'G'))
-    index_nummer = fuzzy.FuzzyInteger(low=0, high=9999)
+    indexletter = fuzzy.FuzzyChoice(choices=('A', 'G'))
+    indexnummer = fuzzy.FuzzyInteger(low=0, high=9999)
     grootte = fuzzy.FuzzyInteger(low=10, high=1000)
     register9_tekst = fuzzy.FuzzyText(length=50)
     poly_geom = random_poly()
-
 
 
 class ZakelijkRechtFactory(factory.DjangoModelFactory):

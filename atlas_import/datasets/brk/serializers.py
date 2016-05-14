@@ -87,9 +87,9 @@ class Adres(serializers.ModelSerializer):
             'toevoeging',
             'postcode',
             'woonplaats',
-            'postbus_nummer',
-            'postbus_postcode',
-            'postbus_woonplaats',
+            # 'postbus_nummer',
+            # 'postbus_postcode',
+            # 'postbus_woonplaats',
             'buitenland_adres',
             'buitenland_woonplaats',
             'buitenland_regio',
@@ -365,6 +365,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
+    objectnummer = serializers.CharField(source='perceelnummer')
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
@@ -388,9 +389,9 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'aanduiding',
             'kadastrale_gemeente',
             'sectie',
-            'perceelnummer',
-            'index_letter',
-            'index_nummer',
+            'objectnummer',
+            'indexletter',
+            'indexnummer',
             'soort_grootte',
             'grootte',
             'koopsom',

@@ -20,9 +20,12 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
             ),
         )
 
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.170361583')
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.172014260')
-        factories.NatuurlijkPersoonFactory.create(pk='NL.KAD.Persoon.199346638')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.170361583')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.172014260')
+        factories.NatuurlijkPersoonFactory.create(
+            pk='NL.KAD.Persoon.199346638')
 
     def task(self):
         return batch.ImportKadastraalObjectTask("diva/brk")
@@ -30,15 +33,16 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.11280310370000')
+        kot = models.KadastraalObject.objects.get(
+            pk='NL.KAD.OnroerendeZaak.11280310370000')
 
         self.assertEqual(kot.id, 'NL.KAD.OnroerendeZaak.11280310370000')
         self.assertEqual(kot.aanduiding, 'AMR03A03103G0000')
         self.assertEqual(kot.kadastrale_gemeente.id, 'AMR03')
         self.assertEqual(kot.sectie.sectie, 'A')
         self.assertEqual(kot.perceelnummer, 3103)
-        self.assertEqual(kot.index_letter, 'G')
-        self.assertEqual(kot.index_nummer, 0)
+        self.assertEqual(kot.indexletter, 'G')
+        self.assertEqual(kot.indexnummer, 0)
         self.assertEqual(kot.soort_grootte.code, '1')
         self.assertEqual(kot.soort_grootte.omschrijving, 'Vastgesteld')
         self.assertEqual(kot.grootte, 99)
@@ -59,9 +63,10 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
 
         self.assertIsNone(kot.point_geom)
         self.assertIsNotNone(kot.poly_geom)
-        self.assertEqual(kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
+        self.assertEqual(
+            kot.voornaamste_gerechtigde.id, 'NL.KAD.Persoon.170361583')
 
-        kot = models.KadastraalObject.objects.get(pk='NL.KAD.OnroerendeZaak.12550132010037')
+        kot = models.KadastraalObject.objects.get(
+            pk='NL.KAD.OnroerendeZaak.12550132010037')
         self.assertIsNone(kot.poly_geom)
         self.assertIsNotNone(kot.point_geom)
-
