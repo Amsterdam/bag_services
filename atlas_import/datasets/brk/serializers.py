@@ -2,8 +2,6 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
-from datasets.bag.serializers import Verblijfsobject
-from datasets.wkpb.serializers import BeperkingDetail
 from . import models
 
 
@@ -481,4 +479,31 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
 
             'kadastraal_object',
             'opgelegd_door',
+        )
+
+
+class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
+    """
+    Serializer used in custom nummeraanduiding endpoint
+    """
+    _display = rest.DisplayField()
+    aanduiding = serializers.CharField(source='get_aanduiding_spaties')
+    rechten = rest.RelatedSummaryField()
+    beperkingen = rest.RelatedSummaryField()
+    aantekeningen = rest.RelatedSummaryField()
+    a_percelen = KadastraalObject(many=True)
+    g_percelen = KadastraalObject(many=True)
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aanduiding',
+            'rechten',
+            'beperkingen',
+            'aantekeningen',
+            'a_percelen',
+            'g_percelen',
         )

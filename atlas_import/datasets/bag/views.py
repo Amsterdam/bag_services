@@ -6,7 +6,7 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
-from . import serializers, models, custom_serializers
+from . import serializers, models
 
 
 class ExpansionMetadata(metadata.SimpleMetadata):
@@ -605,8 +605,10 @@ class NummerAanduidingExpandedView(RetrieveAPIView):
         'openbare_ruimte',
         'openbare_ruimte__woonplaats',
         'verblijfsobject',
-        # 'ligplaats',
-        # 'standplaats',
+        'verblijfsobject__financieringswijze',
+        'verblijfsobject__eigendomsverhouding',
+        'ligplaats',
+        'standplaats',
     )
-    serializer_class = custom_serializers.NummeraanduidingExpanded
-    filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
+    serializer_class = serializers.NummeraanduidingExpanded
+    # filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')

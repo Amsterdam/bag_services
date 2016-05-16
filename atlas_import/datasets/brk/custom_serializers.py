@@ -3,31 +3,8 @@ from rest_framework import serializers
 from datasets.generic import rest
 from datasets.brk import models
 from datasets.brk import serializers as brk_serializers
-
-
-class KadastraalObjectNummeraanduiding(brk_serializers.BrkMixin, rest.HALSerializer):
-    """
-    Serializer used in custom nummeraanduiding endpoint
-    """
-    _display = rest.DisplayField()
-    aanduiding = serializers.CharField(source='get_aanduiding_spaties')
-    rechten = rest.RelatedSummaryField()
-    beperkingen = rest.RelatedSummaryField()
-    a_percelen = rest.RelatedSummaryField()
-    g_percelen = rest.RelatedSummaryField()
-
-    class Meta:
-        model = models.KadastraalObject
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'aanduiding',
-            'rechten',
-            'beperkingen',
-            'a_percelen',
-            'g_percelen',
-        )
+from datasets.bag.serializers import Verblijfsobject
+from datasets.wkpb.serializers import BeperkingDetail
 
 
 class KadastraalObjectDetailWkpb(brk_serializers.BrkMixin, rest.HALSerializer):
@@ -43,8 +20,8 @@ class KadastraalObjectDetailWkpb(brk_serializers.BrkMixin, rest.HALSerializer):
     cultuurcode_bebouwd = brk_serializers.CultuurCodeBebouwd()
 
     rechten = brk_serializers.ZakelijkRecht(many=True)
-    verblijfsobjecten = brk_serializers.Verblijfsobject(many=True)
-    beperkingen = brk_serializers.BeperkingDetail(many=True)
+    verblijfsobjecten = Verblijfsobject(many=True)
+    beperkingen = BeperkingDetail(many=True)
     aantekeningen = rest.RelatedSummaryField()
     a_percelen = rest.RelatedSummaryField()
     g_percelen = rest.RelatedSummaryField()
@@ -59,8 +36,8 @@ class KadastraalObjectDetailWkpb(brk_serializers.BrkMixin, rest.HALSerializer):
             'kadastrale_gemeente',
             'sectie',
             'perceelnummer',
-            'index_letter',
-            'index_nummer',
+            'indexletter',
+            'indexnummer',
             'soort_grootte',
             'grootte',
             'koopsom',
