@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from datasets.brk import serializers as brk_serializers
 from datasets.generic import rest
 from . import models
 
@@ -597,7 +598,27 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
+class VerblijfsobjectDetailMixin(object):
+    def get_gebruiksdoel(self, obj):
+        return dict(
+            code=obj.gebruiksdoel_code,
+            omschrijving=obj.gebruiksdoel_omschrijving,
+        )
+
+    def get_status_coordinaat(self, obj):
+        return dict(
+            code=obj.status_coordinaat_code,
+            omschrijving=obj.status_coordinaat_omschrijving,
+        )
+
+    def get_type_woonobject(self, obj):
+        return dict(
+            code=obj.type_woonobject_code,
+            omschrijving=obj.type_woonobject_omschrijving,
+        )
+
+
+class VerblijfsobjectDetail(VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
@@ -676,24 +697,6 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
             '_stadsdeel',
             '_gemeente',
             '_woonplaats',
-        )
-
-    def get_gebruiksdoel(self, obj):
-        return dict(
-            code=obj.gebruiksdoel_code,
-            omschrijving=obj.gebruiksdoel_omschrijving,
-        )
-
-    def get_status_coordinaat(self, obj):
-        return dict(
-            code=obj.status_coordinaat_code,
-            omschrijving=obj.status_coordinaat_omschrijving,
-        )
-
-    def get_type_woonobject(self, obj):
-        return dict(
-            code=obj.type_woonobject_code,
-            omschrijving=obj.type_woonobject_omschrijving,
         )
 
 
@@ -827,4 +830,123 @@ class UnescoDetail(GebiedenMixin, rest.HALSerializer):
             '_display',
             'naam',
             'geometrie',
+        )
+
+
+class VerblijfsobjectNummeraanduiding(VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
+    """
+    Serializer used in custom nummeraanduiding endpoint
+    """
+    _display = rest.DisplayField()
+    status = Status()
+    eigendomsverhouding = Eigendomsverhouding()
+    financieringswijze = Financieringswijze()
+    gebruik = Gebruik()
+    ligging = Ligging()
+    locatie_ingang = LocatieIngang()
+    toegang = Toegang()
+    status_coordinaat = serializers.SerializerMethodField()
+    type_woonobject = serializers.SerializerMethodField()
+    gebruiksdoel = serializers.SerializerMethodField()
+    reden_afvoer = RedenAfvoer()
+    reden_opvoer = RedenOpvoer()
+    panden = rest.RelatedSummaryField()
+    adressen = rest.RelatedSummaryField()
+    kadastrale_objecten = brk_serializers.KadastraalObjectNummeraanduiding(many=True)
+
+    class Meta:
+        model = models.Verblijfsobject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'landelijk_id',
+            'date_modified',
+            'document_mutatie',
+            'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
+            'status',
+            'bron',
+
+            'geometrie',
+            'gebruiksdoel',
+            'oppervlakte',
+            'bouwlaag_toegang',
+            'status_coordinaat',
+            'verhuurbare_eenheden',
+            'bouwlagen',
+            'type_woonobject',
+            'woningvoorraad',
+            'aantal_kamers',
+            'reden_afvoer',
+            'reden_opvoer',
+            'eigendomsverhouding',
+            'financieringswijze',
+            'gebruik',
+            'ligging',
+            'locatie_ingang',
+            'toegang',
+            'panden',
+            'adressen',
+            'kadastrale_objecten',
+        )
+
+
+class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
+    """
+    Serializer used in custom nummeraanduiding endpoint
+    """
+    _display = rest.DisplayField()
+    status = Status()
+    type = serializers.CharField(source='get_type_display')
+    bouwblok = Bouwblok()
+
+    buurt = Buurt()
+    buurtcombinatie = Buurtcombinatie()
+    stadsdeel = Stadsdeel()
+    openbare_ruimte = OpenbareRuimte()
+    woonplaats = Woonplaats()
+    gemeente = Gemeente()
+
+    ligplaats = Ligplaats()
+    standplaats = Standplaats()
+    verblijfsobject = VerblijfsobjectNummeraanduiding()
+
+    class Meta:
+        model = models.Nummeraanduiding
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'landelijk_id',
+            'date_modified',
+            'document_mutatie',
+            'document_nummer',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'mutatie_gebruiker',
+            'status',
+            'bron',
+            'adres',
+            'postcode',
+            'huisnummer',
+            'huisletter',
+            'huisnummer_toevoeging',
+            'type',
+            'adres_nummer',
+            'openbare_ruimte',
+            'hoofdadres',
+            'bouwblok',
+
+            'buurt',
+            'buurtcombinatie',
+            'stadsdeel',
+            'woonplaats',
+            'gemeente',
+
+            'ligplaats',
+            'standplaats',
+            'verblijfsobject',
         )

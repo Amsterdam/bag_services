@@ -398,6 +398,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     def bouwblok(self):
         return self.verblijfsobject.bouwblok if self.verblijfsobject else None
 
+    @property
+    def gemeente(self):
+        s = self.stadsdeel
+        return s.gemeente if s else None
+
 
 class AdresseerbaarObjectMixin(object):
     @property

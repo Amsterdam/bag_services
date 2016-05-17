@@ -2,7 +2,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
 
-from datasets.brk import models, serializers
+from datasets.brk import models, serializers, custom_serializers
 
 from datasets.generic.rest import AtlasViewSet
 
@@ -541,4 +541,4 @@ class KadastraalObjectWkpbView(RetrieveAPIView):
             'voornaamste_gerechtigde',
         )
     )
-    serializer_class = serializers.KadastraalObjectDetailWkpb
+    serializer_class = custom_serializers.KadastraalObjectDetailWkpb

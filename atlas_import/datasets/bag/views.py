@@ -2,6 +2,7 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
 from rest_framework import metadata
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
@@ -596,3 +597,18 @@ class StadsdeelCodeView(RedirectView):
         stadsdeel = get_object_or_404(
             models.Stadsdeel, code__iexact=kwargs['code'])
         return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))
+
+
+class NummerAanduidingExpandedView(RetrieveAPIView):
+    queryset = models.Nummeraanduiding.objects.select_related(
+        'status',
+        'openbare_ruimte',
+        'openbare_ruimte__woonplaats',
+        'verblijfsobject',
+        'verblijfsobject__financieringswijze',
+        'verblijfsobject__eigendomsverhouding',
+        'ligplaats',
+        'standplaats',
+    )
+    serializer_class = serializers.NummeraanduidingExpanded
+    # filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
