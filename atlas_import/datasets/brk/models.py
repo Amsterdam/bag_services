@@ -201,8 +201,10 @@ class CultuurCodeBebouwd(KadasterCodeOmschrijving):
 
 class APerceelGPerceelRelatie(models.Model):
     id = models.CharField(max_length=121, primary_key=True)
+
     a_perceel = models.ForeignKey(
         'KadastraalObject', related_name='g_perceel_relaties')
+
     g_perceel = models.ForeignKey(
         'KadastraalObject', related_name='a_perceel_relaties')
 

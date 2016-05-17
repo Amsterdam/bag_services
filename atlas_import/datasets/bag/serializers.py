@@ -852,7 +852,8 @@ class VerblijfsobjectNummeraanduiding(VerblijfsobjectDetailMixin, BagMixin, rest
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
-    kadastrale_objecten = brk_serializers.KadastraalObjectNummeraanduiding(many=True)
+    kadastrale_objecten = \
+        brk_serializers.KadastraalObjectNummeraanduiding(many=True)
 
     class Meta:
         model = models.Verblijfsobject
@@ -894,6 +895,12 @@ class VerblijfsobjectNummeraanduiding(VerblijfsobjectDetailMixin, BagMixin, rest
         )
 
 
+class VerblijfsobjectNummeraanduidingExp(VerblijfsobjectNummeraanduiding):
+
+    kadastrale_objecten = \
+        brk_serializers.KadastraalObjectNummeraanduidingExp(many=True)
+
+
 class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
     """
     Serializer used in custom nummeraanduiding endpoint
@@ -912,7 +919,7 @@ class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
 
     ligplaats = Ligplaats()
     standplaats = Standplaats()
-    verblijfsobject = VerblijfsobjectNummeraanduiding()
+    verblijfsobject = VerblijfsobjectNummeraanduidingExp()
 
     class Meta:
         model = models.Nummeraanduiding

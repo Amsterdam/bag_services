@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from datasets.wkpb import serializers as wkpb_serializers
+
 from datasets.generic import rest
 from . import models
 
@@ -507,4 +509,22 @@ class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
             'aantekeningen',
             'a_percelen',
             'g_percelen',
+        )
+
+
+class KadastraalObjectNummeraanduidingExp(KadastraalObjectNummeraanduiding):
+    rechten = ZakelijkRechtDetail(many=True)
+    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
+    aantekeningen = Aantekening(many=True)
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aanduiding',
+            'rechten',
+            'beperkingen',
+            'aantekeningen',
         )
