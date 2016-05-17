@@ -657,7 +657,6 @@ class VerblijfsobjectDetail(
             '_display',
             'sleutelverzendend',
             'verblijfsobjectidentificatie',
-            'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
