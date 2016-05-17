@@ -207,12 +207,14 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
     buurtcombinaties = rest.RelatedSummaryField()
     gemeente = Gemeente()
 
+    stadsdeelidentificatie = serializers.CharField(source='id')
+
     class Meta:
         model = models.Stadsdeel
         fields = (
             '_links',
             '_display',
-            'id',
+            'stadsdeelidentificatie',
             'code',
             'date_modified',
             'begin_geldigheid',
@@ -220,7 +222,6 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
 
             'naam',
             'gemeente',
-            'ingang_cyclus',
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
@@ -249,15 +250,18 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
 
     _gemeente = Gemeente()
 
+    buurtcombinatie_identificatie = serializers.CharField(source='id')
+    volledige_code = serializers.CharField(source='vollcode')
+
     class Meta:
         model = models.Buurtcombinatie
         fields = (
             '_links',
             '_display',
-            'id',
+            'buurtcombinatie_identificatie',
             'naam',
             'code',
-            'vollcode',
+            'volledige_code',
             'brondocument_naam',
             'brondocument_datum',
             'geometrie',
@@ -294,18 +298,21 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
 
     _gemeente = Gemeente()
 
+    buurtidentificatie = serializers.CharField(source='id')
+    volledige_code = serializers.CharField(source='vollcode')
+
     class Meta:
         model = models.Buurt
         fields = (
             '_links',
             '_display',
             'id',
+            'buurtidentificatie',
             'code',
-            'vollcode',
+            'volledige_code',
 
             'naam',
             'stadsdeel',
-            'ingang_cyclus',
             'brondocument_naam',
             'brondocument_datum',
             'begin_geldigheid',
@@ -373,14 +380,19 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     openbare_ruimtes = rest.RelatedSummaryField()
     gemeente = Gemeente()
+    woonplaatsidentificatie = serializers.CharField(source='landelijk_id')
+    sleutelverzendend = serializers.CharField(source='id')
+    naam_17_posities = serializers.CharField(source='naam_ptt')
 
     class Meta:
         model = models.Woonplaats
         fields = (
             '_links',
             '_display',
-            'id',
-            'landelijk_id',
+            'sleutelverzendend',
+            # 'id',
+            'woonplaatsidentificatie',
+            # 'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -389,7 +401,8 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
             'mutatie_gebruiker',
 
             'naam',
-            'naam_ptt',
+            # 'naam_ptt',
+            'naam_17_posities',
             'gemeente',
             'openbare_ruimtes'
         )
@@ -402,14 +415,21 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
     adressen = rest.RelatedSummaryField()
     woonplaats = Woonplaats()
 
+    sleutelverzendend = serializers.CharField(source='id')
+    openbare_ruimte_identificatie = serializers.CharField(
+        source='landelijk_id')
+    openbare_ruimte_code = serializers.CharField(source='code')
+    naam_17_posities = serializers.CharField(source='naam_ptt')
+    naam_24_posities = serializers.CharField(source='naam_nen')
+
     class Meta:
         model = models.OpenbareRuimte
         fields = (
             '_links',
             '_display',
-            'id',
-            'landelijk_id',
-            'code',
+            'sleutelverzendend',
+            'openbare_ruimte_identificatie',
+            'openbare_ruimte_code',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -422,8 +442,8 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
 
             'type',
             'naam',
-            'naam_ptt',
-            'naam_nen',
+            'naam_17_posities',
+            'naam_24_posities',
             'straat_nummer',
             'woonplaats',
             'adressen',
@@ -445,13 +465,16 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
+    ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
+    sleutelverzendend = serializers.CharField(source='id')
+
     class Meta:
         model = models.Ligplaats
         fields = (
             '_links',
             '_display',
-            'id',
-            'landelijk_id',
+            'sleutelverzendend',
+            'ligplaatsidentificatie',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -483,13 +506,18 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     woonplaats = Woonplaats()
     bouwblok = Bouwblok()
 
+    nummeraanduidingidentificatie = serializers.CharField(
+        source='landelijk_id')
+
+    sleutelverzendend = serializers.CharField(source='id')
+
     class Meta:
         model = models.Nummeraanduiding
         fields = (
             '_links',
             '_display',
-            'id',
-            'landelijk_id',
+            'sleutelverzendend',
+            'nummeraanduidingidentificatie',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -531,12 +559,18 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
+    standplaatsidentificatie = serializers.CharField(source='landelijk_id')
+    sleutelverzendend = serializers.CharField(source='id')
+
     class Meta:
         model = models.Standplaats
         fields = (
             '_links',
             '_display',
-            'id',
+
+            'standplaatsidentificatie',
+            'sleutelverzendend',
+
             'landelijk_id',
             'date_modified',
             'document_mutatie',
@@ -591,12 +625,16 @@ class VerblijfsobjectDetail(BagMixin, rest.HALSerializer):
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
+    verblijfsobjectidentificatie = serializers.CharField(source='landelijk_id')
+    sleutelverzendend = serializers.CharField(source='id')
+
     class Meta:
         model = models.Verblijfsobject
         fields = (
             '_links',
             '_display',
-            'id',
+            'sleutelverzendend',
+            'verblijfsobjectidentificatie',
             'landelijk_id',
             'date_modified',
             'document_mutatie',
@@ -670,13 +708,17 @@ class PandDetail(BagMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
 
+    pandidentificatie = serializers.CharField(source='landelijk_id')
+    sleutelverzendend = serializers.CharField(source='id')
+    oorspronkelijk_bouwjaar = serializers.CharField(source='bouwjaar')
+
     class Meta:
         model = models.Pand
         fields = (
             '_links',
             '_display',
-            'id',
-            'landelijk_id',
+            'sleutelverzendend',
+            'pandidentificatie',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -684,7 +726,8 @@ class PandDetail(BagMixin, rest.HALSerializer):
 
             'geometrie',
 
-            'bouwjaar',
+            'oorspronkelijk_bouwjaar',
+
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
             'pandnummer',
@@ -714,15 +757,17 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
 
+    bouwblokidentificatie = serializers.CharField(source='id')
+
     class Meta:
         model = models.Bouwblok
         fields = (
             '_links',
             '_display',
             'id',
+            'bouwblokidentificatie',
             'code',
             'buurt',
-            'ingang_cyclus',
             'begin_geldigheid',
             'einde_geldigheid',
             'geometrie',
