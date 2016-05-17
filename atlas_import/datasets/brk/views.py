@@ -4,8 +4,10 @@ from rest_framework.generics import RetrieveAPIView
 
 from datasets.brk import models, serializers
 
-
 from datasets.generic.rest import AtlasViewSet
+
+from rest_framework import filters
+import django_filters
 
 
 class GemeenteViewSet(AtlasViewSet):
@@ -391,6 +393,23 @@ class KadastraalObjectViewSet(AtlasViewSet):
             request, *args, **kwargs)
 
 
+class ZakelijkRechtFilter(filters.FilterSet):
+    """
+    Filter aantekeningen with better form
+    """
+    # aard_aantekening = django_filters.CharFilter()
+    kadastraal_object = django_filters.CharFilter()
+    kadastraal_subject = django_filters.CharFilter()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = [
+            'verblijfsobjecten__id',
+            'kadastraal_object',
+            'kadastraal_subject',
+        ]
+
+
 class ZakelijkRechtViewSet(AtlasViewSet):
     """
     Zakelijkrecht
@@ -422,8 +441,11 @@ class ZakelijkRechtViewSet(AtlasViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
-    filter_fields = (
-        'kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
+    filter_class = ZakelijkRechtFilter
+
+    # filter_fields = (
+    #    'kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
+
     lookup_value_regex = '[^/]+'
 
     @detail_route(methods=['get'])
@@ -447,11 +469,6 @@ class ZakelijkRechtViewSet(AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
-
-
-from rest_framework import filters
-from django.db import models as f_models
-import django_filters
 
 
 class AantekeningenFilter(filters.FilterSet):
