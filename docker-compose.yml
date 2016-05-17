@@ -21,6 +21,8 @@ atlas:
     - database:database
     - elasticsearch:elasticsearch
   ports:
-    - "8080"
+    - "8080:8080"
+  volumes:
+    - $PWD/reports:/app/reports
   environment:
     DJANGO_SECRET_KEY: 893ufuih328hc82o3jfioh23o8jfi23bf32hvoh32fho23ury82o3hkj2
