@@ -397,7 +397,6 @@ class ZakelijkRechtFilter(filters.FilterSet):
     """
     Filter aantekeningen with better form
     """
-    # aard_aantekening = django_filters.CharFilter()
     kadastraal_object = django_filters.CharFilter()
     kadastraal_subject = django_filters.CharFilter()
 

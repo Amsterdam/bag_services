@@ -8,6 +8,10 @@ from rest_framework.reverse import reverse
 from datasets.generic import rest
 from . import serializers, models
 
+from rest_framework import filters
+import django_filters
+
+
 
 class ExpansionMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
@@ -151,6 +155,25 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
             request, *args, **kwargs)
 
 
+class NummeraanduidingFilter(filters.FilterSet):
+    """
+    Filter nummeraanduidingkjes
+    """
+
+    verblijfsobject = django_filters.CharFilter()
+    ligplaats = django_filters.CharFilter()
+    standplaats = django_filters.CharFilter()
+
+    class Meta:
+        model = models.Nummeraanduiding
+        fields = [
+            'verblijfsobject',
+            'ligplaats',
+            'standplaats',
+            'openbare_ruimte',
+        ]
+
+
 class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
     Nummeraanduiding
@@ -179,8 +202,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
-    filter_fields = (
-        'verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
+    filter_class = NummeraanduidingFilter
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -600,6 +622,9 @@ class StadsdeelCodeView(RedirectView):
 
 
 class NummerAanduidingExpandedView(RetrieveAPIView):
+    """
+    Nummeraanduiding met extra data
+    """
     queryset = models.Nummeraanduiding.objects.select_related(
         'status',
         'openbare_ruimte',
@@ -611,4 +636,4 @@ class NummerAanduidingExpandedView(RetrieveAPIView):
         'standplaats',
     )
     serializer_class = serializers.NummeraanduidingExpanded
-    # filter_fields = ('verblijfsobject', 'ligplaats', 'standplaats', 'openbare_ruimte')
+    filter_class = NummeraanduidingFilter
