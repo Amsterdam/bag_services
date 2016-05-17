@@ -618,7 +618,8 @@ class VerblijfsobjectDetailMixin(object):
         )
 
 
-class VerblijfsobjectDetail(VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
+class VerblijfsobjectDetail(
+        VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
@@ -833,7 +834,8 @@ class UnescoDetail(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class VerblijfsobjectNummeraanduiding(VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
+class VerblijfsobjectNummeraanduiding(
+        VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
     """
     Serializer used in custom nummeraanduiding endpoint
     """
