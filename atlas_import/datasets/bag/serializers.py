@@ -767,7 +767,6 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'id',
             'bouwblokidentificatie',
             'code',
             'buurt',
