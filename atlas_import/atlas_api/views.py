@@ -17,7 +17,7 @@ from rest_framework.reverse import reverse
 # Project
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
-#from datasets.generic import queries as genQ
+from datasets.generic import queries as genQ
 from datasets.generic import rest
 
 
