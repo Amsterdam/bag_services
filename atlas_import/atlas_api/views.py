@@ -17,15 +17,24 @@ from rest_framework.reverse import reverse
 # Project
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
+from datasets.generic import queries as genQ
 from datasets.generic import rest
 
 
 log = logging.getLogger('search')
 
 # Regexes for query analysis
+# The regex are bulit on the assumption autocomplete starts at 3 characters
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
-PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')
-KADASTRAL_NUMMER_REGEX = re.compile('^$')
+PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
+# Bouwblok regex matches 2 digits a letter and an optional second letter
+BOUWBLOK_REGEX = re.compile('^[1-9]\d[a-zA-Z][a-zA-Z]?$')
+# Meetbout regex matches up to 8 digits
+MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
+# Address postcode regex
+ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+
+#KADASTRAL_NUMMER_REGEX = re.compile('^$')
 
 MAX_AGG_RES = 7
 # Mapping of subtypes with detail views
@@ -42,7 +51,7 @@ _details = {
 BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-
+MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 def analyze_query(query_string):
     """
@@ -51,34 +60,42 @@ def analyze_query(query_string):
     This is useful to reduce number of queries and reduce result size
 
     Looking for:
-    - Only a number
-    - 4 digit number and 1 or 2 letters
-    - Other
+    - Only a number, 5 digits or more -> nap bout
+    - 4 digit number and 1 or 2 letters.
+        space between the numer and letters is possible -> postcode
+    - Two letters followed by 1 or 2 digits -> bouwblok
 
     returns a list of queries that should be used
     """
-    # If its only numbers and it is 3 digits or less its probably postcode
-    # but can also be kadestral
-    try:
-        # num = int(query_string)
-        int(query_string)
-        if len(query_string) < 4:
-            # Its a number so it can be either postcode or kadaster
-            return [bagQ.postcode_Q]
-    except ValueError:
-        # Not a number
-        pass
-    # Checking postcode
-    postcode = PCODE_REGEX.match(query_string)
-    if postcode:
-        return [bagQ.postcode_Q]
-    # Could not draw conclussions
-    return [
-        brkQ.kadaster_subject_Q,
-        brkQ.kadaster_object_Q,
-        bagQ.street_name_Q,
+    # A collection of regex and the query they generate
+    query_selector = [
+        {
+            'regex': PCODE_REGEX,
+            'query': [bagQ.postcode_Q],
+        }, {
+            'regex': BOUWBLOK_REGEX,
+            'query': [bagQ.bouwblok_Q],
+        }, {
+            'regex': MEETBOUT_REGEX,
+            'query': [genQ.meetbout_Q],
+        }, {
+            'regex': ADDRESS_PCODE_REGEX,
+            'query': [bagQ.comp_address_pcode_Q],
+        }
     ]
-
+    queries = []
+    for option in query_selector:
+        match = option['regex'].match(query_string)
+        if match:
+            queries.extend(option['query'])
+    # Checking for a case in which no regex matches were
+    # found. In which case, defaulting to address
+    if not queries:
+        queries = [
+           #bagQ.street_name_and_num_Q,
+           # brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_and_num_Q,
+    ]
+    return queries
 
 def prepare_query_string(query_string):
     """
@@ -222,16 +239,17 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query_componentes = analyze_query(query)
         queries = []
         aggs = {}
-
+        sorting = []
         # collect aggreagations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
-            if qa['A']:
+            if 'A' in qa:
                 # Determining agg name
                 agg_name = 'by_{}'.format(q.__name__[:-2])
                 aggs[agg_name] = qa['A']
-
+            if 'S' in qa:
+                sorting.extend(qa['S'])
         search = (
             Search()
             .using(self.client)
@@ -240,6 +258,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 'bool',
                 should=queries,
             )
+            .sort(*sorting)
         )
 
         # add aggregations to query
@@ -269,39 +288,56 @@ class TypeaheadViewSet(viewsets.ViewSet):
         aggs = {}
         ordered_aggs = OrderedDict()
         result_order = [
-            'by_postcode', 'by_street_name', 'by_comp_address',
+            'by_postcode', 'by_street_name', 'by_comp_address', 'by_street_name_and_num',
             'by_kadaster_object', 'by_kadaster_subject']
         # This might be better handled on the front end
         pretty_names = [
-            'Postcodes', 'Straatnamen', 'Adres',
+            'Straatnamen', 'Straatnamen', 'Adres', 'Straatnamen',
             'Kadaster Object', 'Kadaster Subject']
         postcode = PCODE_REGEX.match(query_string)
-
-        for agg in result.aggregations:
-            order = []
-            aggs[agg] = []
-            exact = None
-            for bucket in result.aggregations[agg]['buckets']:
-                if postcode and bucket.key.lower() == query_string.lower():
-                    exact = bucket.key
-                else:
-                    order.append(bucket.key)
-            # Sort the list if required
-            if alphabetical:
-                order.sort()
-            # If there was an exact match, add it at the head of the list
-            if exact:
-                order = [exact] + order
-            for item in order:
-                aggs[agg].append({"item": item})
-                max_agg_res -= 1
-                if max_agg_res == 0:
-                    break
-            max_agg_res = MAX_AGG_RES
-
+        try:
+            for agg in result.aggregations:
+                order = []
+                aggs[agg] = {
+                    'label': 'NAME',
+                    'content': []
+                }
+                exact = None
+                for bucket in result.aggregations[agg]['buckets']:
+                    if postcode and bucket.key.lower() == query_string.lower():
+                        exact = bucket.key
+                    else:
+                        order.append(bucket.key)
+                # Sort the list if required
+                if alphabetical:
+                    order.sort()
+                # If there was an exact match, add it at the head of the list
+                if exact:
+                    order = [exact] + order
+                for item in order:
+                    aggs[agg]['content'].append({
+                        '_display': item,
+                        'query': item,
+                        'uri': 'LINK'
+                    })
+                    max_agg_res -= 1
+                    if max_agg_res == 0:
+                        break
+                max_agg_res = MAX_AGG_RES
+        except AttributeError:
+            # No aggregation
+            aggs['by_comp_address'] = {
+                'label': 'Adressen',
+                'content': []
+            }
+            for hit in result:
+                aggs['by_comp_address']['content'].append({
+                    '_display': hit.comp_address,
+                    'query': hit.comp_address,
+                    'uri': 'LINK'
+                })
         # Now ordereing the result groups
         # @TODO improve the working
-
         for i in range(len(result_order)):
             if result_order[i] in aggs:
                 ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
@@ -325,6 +361,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
+        print(result)
         aggs = self._order_agg_results(result, query, alphabetical)
         return aggs
 

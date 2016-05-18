@@ -136,64 +136,95 @@ class Nummeraanduiding(es.DocType):
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
     straatnaam = es.String(
-        analyzer=analyzers.adres, copy_to='address_copy',
+        analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+        }
+    )
+    straatnaam_keyword = es.String(analyzer=analyzers.subtype)
     straatnaam_nen = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
 
+        }
+    )
+    straatnaam_nen_keyword = es.String(analyzer=analyzers.subtype)
     straatnaam_ptt = es.String(
         analyzer=analyzers.adres, fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
-                analyzer=analyzers.autocomplete,
-                search_analyzer='standard')})
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+
+        }
+    )
+    straatnaam_ptt_keyword = es.String(analyzer=analyzers.subtype)
 
     adres = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
-                analyzer=analyzers.autocomplete,
-                search_analyzer='standard')})
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram)
+        }
+    )
+
     comp_address = es.String(
         analyzer=analyzers.adres, fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+                analyzer=analyzers.autocomplete, search_analyzer='standard')
+            }
+        )
     comp_address_nen = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
                 analyzer=analyzers.autocomplete,
-                search_analyzer='standard')})
-
+                search_analyzer='standard')
+            }
+        )
     comp_address_ptt = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
-    address_copy = es.String(
-            analyzer=analyzers.adres,
-            fields={
-                'raw': es.String(index='not_analyzed'),
-                'ngram': es.String(
-                    analyzer=analyzers.autocomplete,
-                    search_analyzer='standard')})
+                analyzer=analyzers.autocomplete, search_analyzer='standard')
+            }
+        )
+    comp_address_pcode = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard')
+            }
+        )
+
     huisnummer = es.Integer(
-        copy_to='address_copy',
         fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+    toevoeging = es.String(
+        fields={'raw': es.String(index='not_analyzed')})
+    toevoeging_raw=es.String(index='not_analyzed')
+
     postcode = es.String(
         analyzer=analyzers.postcode,
-        copy_to='address_copy',
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(analyzer=analyzers.postcode_ng)})
@@ -306,18 +337,23 @@ def from_bouwblok(n: models.Bouwblok):
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.comp_address = "{0} {1} {2}".format(n.openbare_ruimte.naam,
-                                            n.postcode, n.toevoeging)
-    doc.comp_address_nen = "{0} {1} {2}".format(n.openbare_ruimte.naam_nen,
-                                                n.postcode, n.toevoeging)
-    doc.comp_address_ptt = "{0} {1} {2}".format(n.openbare_ruimte.naam_ptt,
-                                                n.postcode, n.toevoeging)
+    doc.comp_address = "{0} {1}".format(n.openbare_ruimte.naam,
+                                            n.toevoeging)
+    doc.comp_address_nen = "{0} {1}".format(n.openbare_ruimte.naam_nen,
+                                                n.toevoeging)
+    doc.comp_address_ptt = "{0} {1}".format(n.openbare_ruimte.naam_ptt,
+                                                n.toevoeging)
+    doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
     doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
+    doc.straatnaam_keyword = n.openbare_ruimte.naam
+    doc.straatnaam_nen_keyword = n.openbare_ruimte.naam_nen
+    doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
-
+    doc.toevoeging = n.toevoeging
+    doc.toevoeging_raw = n.toevoeging
     if n.bron:
         doc.bron = n.bron.omschrijving
 
@@ -388,7 +424,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc.nummeraanduiding_id = n.id
     doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
-    
+
     # Retriving the geolocation is dependent on the geometrie
     if n.verblijfsobject:
         doc.geometrie = get_centroid(n.verblijfsobject.geometrie, 'wgs84')
