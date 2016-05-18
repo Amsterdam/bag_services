@@ -28,7 +28,7 @@ log = logging.getLogger('search')
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
 PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
 # Bouwblok regex matches 2 digits a letter and an optional second letter
-BOUWBLOK_REGEX = re.compile('^[1-9]\d[a-zA-Z][a-zA-Z]?$')
+BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{0,2}$')
 # Meetbout regex matches up to 8 digits
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
@@ -87,6 +87,7 @@ def analyze_query(query_string):
     for option in query_selector:
         match = option['regex'].match(query_string)
         if match:
+            print(option)
             queries.extend(option['query'])
     # Checking for a case in which no regex matches were
     # found. In which case, defaulting to address
@@ -273,6 +274,21 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return search
 
+    def _choose_display_field(self, item):
+        """Returns the value to set in the display field based on the object subtype"""
+        try:
+            if item.subtype == 'bouwblok':
+                return item.code
+            elif item.subtype == 'verblijfsobject':
+                return item.comp_address
+            else:
+                print(item.subtype)
+        except Exception as exp:
+            # Some default
+            print(exp)
+            return 'def'
+        return '_display'
+
     def _order_agg_results(self, result, query_string, alphabetical):
         """
         Arrange the aggregated results, possibly sorting them
@@ -331,9 +347,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 'content': []
             }
             for hit in result:
+                disp = self._choose_display_field(hit)
                 aggs['by_comp_address']['content'].append({
-                    '_display': hit.comp_address,
-                    'query': hit.comp_address,
+                    '_display': disp,
+                    'query': disp,
                     'uri': 'LINK'
                 })
         # Now ordereing the result groups

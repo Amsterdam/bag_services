@@ -262,7 +262,7 @@ class ExactLocation(es.DocType):
     address = es.String(index='not_analyzed')
     postcode_huisnummer = es.String(index='not_analyzed')
     postcode_toevoeging = es.String(index='not_analyzed', boost=5)
-
+    subtype = es.String(analyzer=analyzers.subtype)
     geometrie = es.GeoPoint()
 
     class Meta:
@@ -424,6 +424,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc.nummeraanduiding_id = n.id
     doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
+    doc.subtype='exact'
 
     # Retriving the geolocation is dependent on the geometrie
     if n.verblijfsobject:

@@ -156,6 +156,18 @@ def postcode_Q(query):
         "A": A("terms", field="straatnaam.raw"),
     }
 
+def weg_Q(query):
+    """ Create query/aggregation for public area"""
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('multi_match', query=query, type="phrase_prefix",fields=['naam',]),
+                Q('terms',subtype='weg'),
+            ],
+        ),
+    }
+
 
 def public_area_Q(query):
     """ Create query/aggregation for public area"""
