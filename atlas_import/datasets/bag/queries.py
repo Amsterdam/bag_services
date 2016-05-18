@@ -87,11 +87,10 @@ def street_name_and_num_Q(query):
     #--------------------------------------------------
     # Finding the housenumber part
     num = HOUSE_NUMBER.search(query)
-    print('number part:', num)
     if not num:
         # There is no house number part
         # Return street name query
-        return street_name_Q(query)
+        return weg_Q(query)
     # Finding the break point
     num_query = num.groups()[0].upper()
     street_query = query[:-len(num_query)].rstrip()
@@ -162,8 +161,8 @@ def weg_Q(query):
         'Q': Q(
             'bool',
             must=[
-                Q('multi_match', query=query, type="phrase_prefix",fields=['naam',]),
-                Q('terms',subtype='weg'),
+                Q('multi_match', query=query, type="phrase_prefix",fields=['naam', 'postcode']),
+                Q('match', subtype='weg'),
             ],
         ),
     }

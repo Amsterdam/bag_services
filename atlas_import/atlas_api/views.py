@@ -71,7 +71,7 @@ def analyze_query(query_string):
     query_selector = [
         {
             'regex': PCODE_REGEX,
-            'query': [bagQ.postcode_Q],
+            'query': [bagQ.weg_Q],
         }, {
             'regex': BOUWBLOK_REGEX,
             'query': [bagQ.bouwblok_Q],
@@ -87,13 +87,12 @@ def analyze_query(query_string):
     for option in query_selector:
         match = option['regex'].match(query_string)
         if match:
-            print(option)
             queries.extend(option['query'])
     # Checking for a case in which no regex matches were
     # found. In which case, defaulting to address
     if not queries:
         queries = [
-           #bagQ.street_name_and_num_Q,
+           bagQ.street_name_and_num_Q,
            # brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_and_num_Q,
     ]
     return queries
@@ -281,15 +280,18 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 return item.code
             elif item.subtype == 'verblijfsobject':
                 return item.comp_address
+            elif item.subtype == 'exact':
+                return item.adres
+            elif item.subtype == 'weg':
+                return item.naam
             else:
                 print(item.subtype)
         except Exception as exp:
             # Some default
-            print(exp)
             return 'def'
         return '_display'
 
-    def _order_agg_results(self, result, query_string, alphabetical):
+    def _order_agg_results(self, result, query_string, request, alphabetical):
         """
         Arrange the aggregated results, possibly sorting them
         alphabetically
@@ -348,10 +350,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
             }
             for hit in result:
                 disp = self._choose_display_field(hit)
+                uri = _get_url(request, hit)['self']['href']
                 aggs['by_comp_address']['content'].append({
                     '_display': disp,
                     'query': disp,
-                    'uri': 'LINK'
+                    'uri': uri
                 })
         # Now ordereing the result groups
         # @TODO improve the working
@@ -360,7 +363,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
         return ordered_aggs
 
-    def get_autocomplete_response(self, query, alphabetical=True):
+    def get_autocomplete_response(self, query, request, alphabetical=True):
         """
         Sends a request for auto complete and returns the result
         @ TODO there are more efficent ways to return the data
@@ -378,8 +381,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
-        print(result)
-        aggs = self._order_agg_results(result, query, alphabetical)
+        aggs = self._order_agg_results(result, query, request, alphabetical)
         return aggs
 
     def list(self, request, *args, **kwargs):
@@ -399,7 +401,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = prepare_query_string(request.query_params['q'])
         if not query:
             return Response([])
-        response = self.get_autocomplete_response(query)
+        response = self.get_autocomplete_response(query, request)
 
         return Response(response)
 
@@ -521,9 +523,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         count = result.hits.total
         response['count_hits'] = count
-        max_count = self.page_size * (self.page_limit + 1)
-        if count > max_count:
-            count = max_count
         response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
@@ -914,7 +913,6 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         # Either there is only one, or a housenumber was given
         # where only extensions are available, in which case any result will do
         if response and response.hits:
-            print(response.hits[0].to_dict())
             response = response.hits[0].to_dict()
             # Adding RD gepopoint
             rd_point = Point(*response['geometrie'], srid=4326)
