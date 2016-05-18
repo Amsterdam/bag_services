@@ -10,13 +10,7 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
     diva = None
 
     def setUp(self):
-        self.diva = settings.DIVA_DIR
-        if not os.path.exists(self.diva):
-            # Trying to solve by relative path
-            self.diva = os.path.join('..', '..', settings.DIVA_DIR)
-            if os.path.exists(self.diva):
-                raise ValueError("DIVA_DIR not found: {}".format(os.path.abspath(self.diva)))
-
+        self.diva = 'diva/'
         self.set_hostname()
 
         if '-acc' in self.import_hostname:
