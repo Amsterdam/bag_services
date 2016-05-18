@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
-set -e
-set -u
+set -u   # crash on missing env variables
+set -e   # stop on any error
 
-PYTHON=$(which python3 || which python)
+cd /app
+
+source docker-wait.sh
 
 echo Performing system check
-${PYTHON} manage.py check
+python manage.py check
 
 echo Performing migrations
-yes yes | ${PYTHON} manage.py migrate
+yes yes | python manage.py migrate
 
-echo Starting server
-uwsgi --ini uwsgi.ini
+# run uwsgi
+exec uwsgi --ini /app/uwsgi.ini

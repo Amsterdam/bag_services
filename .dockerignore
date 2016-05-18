@@ -1,5 +1,6 @@
+.git
+.gitignore
+docker-compose.yml
+Dockerfile
 .idea
 *.iml
-docker-compose/
-docker-compose.yml
-*/__pycache__
