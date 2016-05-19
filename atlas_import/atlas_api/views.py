@@ -33,6 +33,8 @@ BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{0,2}$')
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
 ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+# Recognise house number in the search string
+HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
 
 #KADASTRAL_NUMMER_REGEX = re.compile('^$')
 
@@ -91,10 +93,16 @@ def analyze_query(query_string):
     # Checking for a case in which no regex matches were
     # found. In which case, defaulting to address
     if not queries:
-        queries = [
-           bagQ.street_name_and_num_Q,
-           # brkQ.kadaster_subject_Q, brkQ.kadaster_object_Q, bagQ.street_name_and_num_Q,
-    ]
+        # Deciding between looking at roads and looking at addresses
+        # Finding the housenumber part
+        num = HOUSE_NUMBER.search(query_string)
+        if not num:
+            # There is no house number part
+            # Return street name query
+            queries=[bagQ.weg_Q]
+        else:
+            queries = [bagQ.street_name_and_num_Q]
+        queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
     return queries
 
 def prepare_query_string(query_string):
@@ -238,16 +246,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
         queries = []
-        aggs = {}
         sorting = []
-        # collect aggreagations
+        # collect queries and ignore aggregations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
-            if 'A' in qa:
-                # Determining agg name
-                agg_name = 'by_{}'.format(q.__name__[:-2])
-                aggs[agg_name] = qa['A']
             if 'S' in qa:
                 sorting.extend(qa['S'])
         search = (
@@ -260,11 +263,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
             )
             .sort(*sorting)
         )
-
-        # add aggregations to query
-        for agg_name, agg in aggs.items():
-            search.aggs.bucket(agg_name, agg)
-
         # nice prety printing
         if settings.DEBUG:
             sq = search.to_dict()
@@ -290,14 +288,18 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 return item.adres
             elif item.subtype == 'weg':
                 return item.naam
+            elif item.subtype == 'kadastraal_subject':
+                return item.naam
+            elif item.subtype == 'kadastraal_object':
+                return item.aanduiding
             else:
-                print(item.subtype)
+                print(item)
         except Exception as exp:
             # Some default
             return 'def'
         return '_display'
 
-    def _order_agg_results(self, result, query_string, request, alphabetical):
+    def _order_results(self, result, query_string, request, alphabetical):
         """
         Arrange the aggregated results, possibly sorting them
         alphabetically
@@ -309,66 +311,45 @@ class TypeaheadViewSet(viewsets.ViewSet):
         alphabetical - flag for sorting alphabetical
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
-        aggs = {}
-        ordered_aggs = [] 
+        result_sets = {}
+        ordered_results = [] 
         result_order = [
-            'by_postcode', 'by_street_name', 'by_comp_address', 'by_street_name_and_num',
-            'by_kadaster_object', 'by_kadaster_subject']
+            'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
+            'kadastraal_object',]
         # This might be better handled on the front end
         pretty_names = [
-            'Straatnamen', 'Straatnamen', 'Adres', 'Straatnamen',
-            'Kadaster Object', 'Kadaster Subject']
+            'Straatnamen', 'Adres', 'Bouwblok',
+            'Kadaster Subject', 'Kadaster Obbject']
         postcode = PCODE_REGEX.match(query_string)
-        try:
-            for agg in result.aggregations:
-                order = []
-                aggs[agg] = {
-                    'label': 'NAME',
-                    'content': []
-                }
-                exact = None
-                for bucket in result.aggregations[agg]['buckets']:
-                    if postcode and bucket.key.lower() == query_string.lower():
-                        exact = bucket.key
-                    else:
-                        order.append(bucket.key)
-                # Sort the list if required
-                if alphabetical:
-                    order.sort()
-                # If there was an exact match, add it at the head of the list
-                if exact:
-                    order = [exact] + order
-                for item in order:
-                    uri = self._get_uri(request, hit)
-                    aggs[agg]['content'].append({
-                        '_display': item,
-                        'query': item,
-                        'uri': 'LINK'
-                    })
-                    max_agg_res -= 1
-                    if max_agg_res == 0:
-                        break
-                max_agg_res = MAX_AGG_RES
-        except AttributeError:
-            # No aggregation
-            aggs['by_comp_address'] = {
-                'label': 'Adressen',
-                'content': []
-            }
-            for hit in result:
-                disp = self._choose_display_field(hit)
-                uri = self._get_uri(request, hit)
-                aggs['by_comp_address']['content'].append({
-                    '_display': disp,
-                    'query': disp,
-                    'uri': uri
-                })
+        # Orginizing the results
+        for hit in result:
+            # @TODO fix query for this
+            if hit.subtype == 'kunstwerk':
+                continue
+            disp = self._choose_display_field(hit)
+            uri = self._get_uri(request, hit)
+            if hit.subtype not in result_sets:
+                result_sets[hit.subtype] = []
+            result_sets[hit.subtype].append({
+                '_display': disp,
+                'query': disp,
+                'uri': uri
+            })
         # Now ordereing the result groups
-        # @TODO improve the working
         for i in range(len(result_order)):
-            if result_order[i] in aggs:
-                ordered_aggs.append(aggs[result_order[i]])
-        return ordered_aggs
+            if result_order[i] in result_sets:
+                ordered_results.append({
+                    'label':pretty_names[i],
+                    'content': result_sets[result_order[i]],
+                })
+        # Now adding everything not accounted for
+        for key in result_sets.keys():
+            if key not in result_order:
+                ordered_results.append({
+                    'label': key,
+                    'content': result_sets[key],
+                })
+        return ordered_results
 
     def get_autocomplete_response(self, query, request, alphabetical=True):
         """
@@ -388,8 +369,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
-        aggs = self._order_agg_results(result, query, request, alphabetical)
-        return aggs
+        res = self._order_results(result, query, request, alphabetical)
+        return res
 
     def list(self, request, *args, **kwargs):
         """
