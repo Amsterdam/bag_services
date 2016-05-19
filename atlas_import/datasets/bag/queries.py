@@ -14,7 +14,8 @@ from elasticsearch_dsl import Search, Q, A
 
 
 POSTCODE = re.compile('[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?')
-
+# Recognise the house number part
+HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
 
 def normalize_postcode(query):
     """
@@ -45,6 +46,26 @@ def address_Q(query):
     pass
 
 
+def comp_address_pcode_Q(query):
+    """Create query/aggregation for postcode house number search"""
+    query = normalize_postcode(normalize_address(query))
+    # Getting the postcode part so that exact match
+    # can be made for it
+    pcode_query = query[:6]
+    num_query = query[6:].lstrip()
+    num_query = num_query.upper()
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('term', postcode=pcode_query),
+                Q('prefix', toevoeging_raw=num_query),
+            ]
+        ),
+        'S': ['huisnummer', 'toevoeging_raw']
+    }
+
+
 def comp_address_Q(query):
     """Create query/aggregation for complete address search"""
     query = normalize_address(query)
@@ -56,6 +77,33 @@ def comp_address_Q(query):
             query=query,
             default_operator='AND',
         ),
+        'S': ['comp_address.raw']
+    }
+
+
+def street_name_and_num_Q(query):
+    query = normalize_address(query)
+    # Breaking the query to street name and house number
+    #--------------------------------------------------
+    # Finding the housenumber part
+    num = HOUSE_NUMBER.search(query)
+    if not num:
+        # There is no house number part
+        # Return street name query
+        return weg_Q(query)
+    # Finding the break point
+    num_query = num.groups()[0].upper()
+    street_query = query[:-len(num_query)].rstrip()
+    # Quering exactly on street name and prefix on house number
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('bool', should=[Q('term', straatnaam_keyword=street_query), Q('term', straatnaam_nen_keyword=street_query), Q('term', straatnaam_ptt_keyword=street_query)], minimum_should_match=1),
+                Q('prefix', toevoeging_raw=num_query),
+            ]
+        ),
+        'S': ['huisnummer', 'toevoeging_raw']
     }
 
 
@@ -66,11 +114,11 @@ def street_name_Q(query):
         'Q': Q(
                 "multi_match",
                 query=query,
-                type="phrase_prefix",
+                type='phrase_prefix',
                 fields=[
-                    "straatnaam.ngram",
-                    "straatnaam_nen.ngram",
-                    "straatnaam_ptt.ngram",
+                    "straatnaam.ngram_edge",
+                    "straatnaam_nen.ngram_edge",
+                    "straatnaam_ptt.ngram_edge",
                 ],
             ),
     }
@@ -80,15 +128,13 @@ def house_number_Q(query):
     """Create query/aggregation for house number search"""
 
     return {
-        'A': None,
-        'Q': Q("match_phrase_prefix", field="huisnummer_variation"),
+        'Q': Q("match_phrase_prefix", huisnummer_variation=query),
     }
 
 
 def bouwblok_Q(query):
     """ Create query/aggregation for bouwblok search"""
     return {
-        'A': None,
         'Q': Q('match_phrase_prefix', code=query),
     }
 
@@ -106,14 +152,25 @@ def postcode_Q(query):
 
     return {
         "Q": Q("prefix", postcode=query),
-        "A": A("terms", field="postcode"),
+        "A": A("terms", field="straatnaam.raw"),
+    }
+
+def weg_Q(query):
+    """ Create query/aggregation for public area"""
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('multi_match', query=query, type="phrase_prefix",fields=['naam', 'postcode']),
+                Q('match', subtype='weg'),
+            ],
+        ),
     }
 
 
 def public_area_Q(query):
     """ Create query/aggregation for public area"""
     return {
-        'A': None,
         'Q': Q(
             "multi_match",
             query=query,

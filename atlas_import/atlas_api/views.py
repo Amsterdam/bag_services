@@ -2,7 +2,7 @@
 from collections import OrderedDict
 import json
 import logging
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 import re
 # Packages
 from django.conf import settings
@@ -17,15 +17,26 @@ from rest_framework.reverse import reverse
 # Project
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
+from datasets.generic import queries as genQ
 from datasets.generic import rest
 
 
 log = logging.getLogger('search')
 
 # Regexes for query analysis
+# The regex are bulit on the assumption autocomplete starts at 3 characters
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
-PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?$')
-KADASTRAL_NUMMER_REGEX = re.compile('^$')
+PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
+# Bouwblok regex matches 2 digits a letter and an optional second letter
+BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{0,2}$')
+# Meetbout regex matches up to 8 digits
+MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
+# Address postcode regex
+ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+# Recognise house number in the search string
+HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
+
+#KADASTRAL_NUMMER_REGEX = re.compile('^$')
 
 MAX_AGG_RES = 7
 # Mapping of subtypes with detail views
@@ -42,7 +53,7 @@ _details = {
 BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-
+MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 def analyze_query(query_string):
     """
@@ -51,34 +62,48 @@ def analyze_query(query_string):
     This is useful to reduce number of queries and reduce result size
 
     Looking for:
-    - Only a number
-    - 4 digit number and 1 or 2 letters
-    - Other
+    - Only a number, 5 digits or more -> nap bout
+    - 4 digit number and 1 or 2 letters.
+        space between the numer and letters is possible -> postcode
+    - Two letters followed by 1 or 2 digits -> bouwblok
 
     returns a list of queries that should be used
     """
-    # If its only numbers and it is 3 digits or less its probably postcode
-    # but can also be kadestral
-    try:
-        # num = int(query_string)
-        int(query_string)
-        if len(query_string) < 4:
-            # Its a number so it can be either postcode or kadaster
-            return [bagQ.postcode_Q]
-    except ValueError:
-        # Not a number
-        pass
-    # Checking postcode
-    postcode = PCODE_REGEX.match(query_string)
-    if postcode:
-        return [bagQ.postcode_Q]
-    # Could not draw conclussions
-    return [
-        brkQ.kadaster_subject_Q,
-        brkQ.kadaster_object_Q,
-        bagQ.street_name_Q,
+    # A collection of regex and the query they generate
+    query_selector = [
+        {
+            'regex': PCODE_REGEX,
+            'query': [bagQ.weg_Q],
+        }, {
+            'regex': BOUWBLOK_REGEX,
+            'query': [bagQ.bouwblok_Q],
+        }, {
+            'regex': MEETBOUT_REGEX,
+            'query': [genQ.meetbout_Q],
+        }, {
+            'regex': ADDRESS_PCODE_REGEX,
+            'query': [bagQ.comp_address_pcode_Q],
+        }
     ]
-
+    queries = []
+    for option in query_selector:
+        match = option['regex'].match(query_string)
+        if match:
+            queries.extend(option['query'])
+    # Checking for a case in which no regex matches were
+    # found. In which case, defaulting to address
+    if not queries:
+        # Deciding between looking at roads and looking at addresses
+        # Finding the housenumber part
+        num = HOUSE_NUMBER.search(query_string)
+        if not num:
+            # There is no house number part
+            # Return street name query
+            queries=[bagQ.weg_Q]
+        else:
+            queries = [bagQ.street_name_and_num_Q]
+        queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
+    return queries
 
 def prepare_query_string(query_string):
     """
@@ -221,17 +246,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
         queries = []
-        aggs = {}
-
-        # collect aggreagations
+        sorting = []
+        # collect queries and ignore aggregations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
-            if qa['A']:
-                # Determining agg name
-                agg_name = 'by_{}'.format(q.__name__[:-2])
-                aggs[agg_name] = qa['A']
-
+            if 'S' in qa:
+                sorting.extend(qa['S'])
         search = (
             Search()
             .using(self.client)
@@ -240,12 +261,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 'bool',
                 should=queries,
             )
+            .sort(*sorting)
         )
-
-        # add aggregations to query
-        for agg_name, agg in aggs.items():
-            search.aggs.bucket(agg_name, agg)
-
         # nice prety printing
         if settings.DEBUG:
             sq = search.to_dict()
@@ -254,7 +271,35 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return search
 
-    def _order_agg_results(self, result, query_string, alphabetical):
+    def _get_uri(self, request, hit):
+        # Retrieves the uri part for an item 
+        url = _get_url(request, hit)['self']['href']
+        uri = urlparse(url).path[1:]
+        return uri
+
+    def _choose_display_field(self, item):
+        """Returns the value to set in the display field based on the object subtype"""
+        try:
+            if item.subtype == 'bouwblok':
+                return item.code
+            elif item.subtype == 'verblijfsobject':
+                return item.comp_address
+            elif item.subtype == 'exact':
+                return item.adres
+            elif item.subtype == 'weg':
+                return item.naam
+            elif item.subtype == 'kadastraal_subject':
+                return item.naam
+            elif item.subtype == 'kadastraal_object':
+                return item.aanduiding
+            else:
+                print(item)
+        except Exception as exp:
+            # Some default
+            return 'def'
+        return '_display'
+
+    def _order_results(self, result, query_string, request, alphabetical):
         """
         Arrange the aggregated results, possibly sorting them
         alphabetically
@@ -266,48 +311,47 @@ class TypeaheadViewSet(viewsets.ViewSet):
         alphabetical - flag for sorting alphabetical
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
-        aggs = {}
-        ordered_aggs = OrderedDict()
+        result_sets = {}
+        ordered_results = [] 
         result_order = [
-            'by_postcode', 'by_street_name', 'by_comp_address',
-            'by_kadaster_object', 'by_kadaster_subject']
+            'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
+            'kadastraal_object',]
         # This might be better handled on the front end
         pretty_names = [
-            'Postcodes', 'Straatnamen', 'Adres',
-            'Kadaster Object', 'Kadaster Subject']
+            'Straatnamen', 'Adres', 'Bouwblok',
+            'Kadaster Subject', 'Kadaster Obbject']
         postcode = PCODE_REGEX.match(query_string)
-
-        for agg in result.aggregations:
-            order = []
-            aggs[agg] = []
-            exact = None
-            for bucket in result.aggregations[agg]['buckets']:
-                if postcode and bucket.key.lower() == query_string.lower():
-                    exact = bucket.key
-                else:
-                    order.append(bucket.key)
-            # Sort the list if required
-            if alphabetical:
-                order.sort()
-            # If there was an exact match, add it at the head of the list
-            if exact:
-                order = [exact] + order
-            for item in order:
-                aggs[agg].append({"item": item})
-                max_agg_res -= 1
-                if max_agg_res == 0:
-                    break
-            max_agg_res = MAX_AGG_RES
-
+        # Orginizing the results
+        for hit in result:
+            # @TODO fix query for this
+            if hit.subtype == 'kunstwerk':
+                continue
+            disp = self._choose_display_field(hit)
+            uri = self._get_uri(request, hit)
+            if hit.subtype not in result_sets:
+                result_sets[hit.subtype] = []
+            result_sets[hit.subtype].append({
+                '_display': disp,
+                'query': disp,
+                'uri': uri
+            })
         # Now ordereing the result groups
-        # @TODO improve the working
-
         for i in range(len(result_order)):
-            if result_order[i] in aggs:
-                ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
-        return ordered_aggs
+            if result_order[i] in result_sets:
+                ordered_results.append({
+                    'label':pretty_names[i],
+                    'content': result_sets[result_order[i]],
+                })
+        # Now adding everything not accounted for
+        for key in result_sets.keys():
+            if key not in result_order:
+                ordered_results.append({
+                    'label': key,
+                    'content': result_sets[key],
+                })
+        return ordered_results
 
-    def get_autocomplete_response(self, query, alphabetical=True):
+    def get_autocomplete_response(self, query, request, alphabetical=True):
         """
         Sends a request for auto complete and returns the result
         @ TODO there are more efficent ways to return the data
@@ -325,8 +369,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
-        aggs = self._order_agg_results(result, query, alphabetical)
-        return aggs
+        res = self._order_results(result, query, request, alphabetical)
+        return res
 
     def list(self, request, *args, **kwargs):
         """
@@ -345,7 +389,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         query = prepare_query_string(request.query_params['q'])
         if not query:
             return Response([])
-        response = self.get_autocomplete_response(query)
+        response = self.get_autocomplete_response(query, request)
 
         return Response(response)
 
@@ -467,9 +511,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         count = result.hits.total
         response['count_hits'] = count
-        max_count = self.page_size * (self.page_limit + 1)
-        if count > max_count:
-            count = max_count
         response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
@@ -794,15 +835,17 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         If the normalization fails, the original value is returned.
         """
         norm = pc_num.upper()
-        if norm[6] in ['-', '_', '/', '.', ',']:
-            norm = "{0} {1}".format(norm[:6], norm[7:])
-        elif norm[6] != ' ':
-            # It seems that the house nummer is directly attached
-            try:
-                int(norm[6])
-            except ValueError:
-                # The format is unclear
-                norm = pc_num
+        # Under 6 characters there is not enough information
+        if len(norm) > 6:
+            if norm[6] in ['-', '_', '/', '.', ',', '+']:
+                norm = "{0} {1}".format(norm[:6], norm[7:])
+            elif norm[6] != ' ':
+                # It seems that the house nummer is directly attached
+                try:
+                    int(norm[6])
+                except ValueError:
+                    # The format is unclear
+                    norm = pc_num
         return norm
 
     def search_query(self, query):
@@ -860,7 +903,6 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         # Either there is only one, or a housenumber was given
         # where only extensions are available, in which case any result will do
         if response and response.hits:
-            print(response.hits[0].to_dict())
             response = response.hits[0].to_dict()
             # Adding RD gepopoint
             rd_point = Point(*response['geometrie'], srid=4326)
