@@ -28,7 +28,7 @@ log = logging.getLogger('search')
 # Postcode regex matches 4 digits, possible dash or space then 0-2 letters
 PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
 # Bouwblok regex matches 2 digits a letter and an optional second letter
-BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{0,2}$')
+BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
 # Meetbout regex matches up to 8 digits
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
@@ -279,25 +279,24 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     def _choose_display_field(self, item):
         """Returns the value to set in the display field based on the object subtype"""
+        disp = None
         try:
             if item.subtype == 'bouwblok':
-                return item.code
+                disp = item.code
             elif item.subtype == 'verblijfsobject':
-                return item.comp_address
+                disp = item.comp_address
             elif item.subtype == 'exact':
-                return item.adres
+                disp = item.adres
             elif item.subtype == 'weg':
-                return item.naam
+                disp = item.naam
             elif item.subtype == 'kadastraal_subject':
-                return item.naam
+                disp = item.naam
             elif item.subtype == 'kadastraal_object':
-                return item.aanduiding
-            else:
-                print(item)
+                disp = item.aanduiding
         except Exception as exp:
             # Some default
-            return 'def'
-        return '_display'
+            pass
+        return disp
 
     def _order_results(self, result, query_string, request, alphabetical):
         """
@@ -319,15 +318,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # This might be better handled on the front end
         pretty_names = [
             'Straatnamen', 'Adres', 'Bouwblok',
-            'Kadaster Subject', 'Kadaster Obbject']
+            'Kadastrale subjecten', 'Kadastrale objecten']
         postcode = PCODE_REGEX.match(query_string)
         # Orginizing the results
         for hit in result:
-            # @TODO fix query for this
-            if hit.subtype == 'kunstwerk':
-                continue
             disp = self._choose_display_field(hit)
             uri = self._get_uri(request, hit)
+            # Only add results we generate uri for
+            # @TODO this should not be used like this as result filter
+            if not uri:
+                continue
             if hit.subtype not in result_sets:
                 result_sets[hit.subtype] = []
             result_sets[hit.subtype].append({
@@ -341,13 +341,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 ordered_results.append({
                     'label':pretty_names[i],
                     'content': result_sets[result_order[i]],
-                })
-        # Now adding everything not accounted for
-        for key in result_sets.keys():
-            if key not in result_order:
-                ordered_results.append({
-                    'label': key,
-                    'content': result_sets[key],
                 })
         return ordered_results
 
