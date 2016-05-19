@@ -854,15 +854,17 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         If the normalization fails, the original value is returned.
         """
         norm = pc_num.upper()
-        if norm[6] in ['-', '_', '/', '.', ',']:
-            norm = "{0} {1}".format(norm[:6], norm[7:])
-        elif norm[6] != ' ':
-            # It seems that the house nummer is directly attached
-            try:
-                int(norm[6])
-            except ValueError:
-                # The format is unclear
-                norm = pc_num
+        # Under 6 characters there is not enough information
+        if len(norm) > 6:
+            if norm[6] in ['-', '_', '/', '.', ',']:
+                norm = "{0} {1}".format(norm[:6], norm[7:])
+            elif norm[6] != ' ':
+                # It seems that the house nummer is directly attached
+                try:
+                    int(norm[6])
+                except ValueError:
+                    # The format is unclear
+                    norm = pc_num
         return norm
 
     def search_query(self, query):
