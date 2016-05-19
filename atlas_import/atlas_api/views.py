@@ -276,7 +276,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
     def _get_uri(self, request, hit):
         # Retrieves the uri part for an item 
         url = _get_url(request, hit)['self']['href']
-        uri = urlparse(url).path
+        uri = urlparse(url).path[1:]
         return uri
 
     def _choose_display_field(self, item):
