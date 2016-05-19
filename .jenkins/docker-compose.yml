@@ -1,0 +1,58 @@
+database:
+  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
+  environment:
+    POSTGRES_PASSWORD: insecure
+    POSTGRES_USER: atlas
+
+elasticsearch:
+  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+  volumes:
+    - ./backups/elasticsearch:/tmp/backups
+  user: root
+  command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
+
+importer:
+  build: ../web
+  links:
+    - database:database
+    - elasticsearch:elastic
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DB_NAME: atlas
+    DB_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py migrate \
+            && python manage.py run_import"
+
+db-backup:
+  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
+  links:
+    - database:db
+  volumes:
+    - ./backups:/tmp/backups
+  command: >
+    bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
+            && chmod 600 ~/.pgpass \
+            && pg_dump --clean \
+                        -Fc \
+                        -t bag* \
+                        -t brk* \
+                        -t wkpb*  \
+                        -t geo*  \
+                        -T auth* \
+                        -T django*  \
+                        -U atlas \
+                        -h db -p 5432 \
+                        atlas > /tmp/backups/atlas.dump"
+
+el-backup:
+  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+  links:
+    - elasticsearch:el
+  command: >
+    bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
+            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"atlas\" }' "
+
+

@@ -6,6 +6,7 @@ from datasets.generic import rest
 
 class Broncode(rest.HALSerializer):
     _display = rest.DisplayField()
+
     class Meta:
         model = models.Broncode
         fields = (
@@ -19,7 +20,7 @@ class Broncode(rest.HALSerializer):
 class Brondocument(rest.HALSerializer):
     _display = rest.DisplayField()
 
-    bron = serializers.SerializerMethodField()
+    bevoegd_orgaan = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Brondocument
@@ -31,10 +32,10 @@ class Brondocument(rest.HALSerializer):
             'documentnaam',
             'soort_besluit',
             'persoonsgegevens_afschermen',
-            'bron',
+            'bevoegd_orgaan',
         )
 
-    def get_bron(self, obj):
+    def get_bevoegd_orgaan(self, obj):
         return obj.bron.omschrijving if obj.bron else None
 
 
@@ -49,6 +50,7 @@ class Beperkingcode(serializers.ModelSerializer):
 
 class Beperking(rest.HALSerializer):
     _display = rest.DisplayField()
+
     class Meta:
         model = models.Beperking
         fields = (
@@ -61,6 +63,7 @@ class Beperking(rest.HALSerializer):
 class BroncodeDetail(rest.HALSerializer):
     _display = rest.DisplayField()
     documenten = rest.RelatedSummaryField()
+
     class Meta:
         model = models.Broncode
         fields = (

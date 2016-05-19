@@ -116,11 +116,18 @@ whitespace_stripper = analysis.token_filter(
     replacement=''
 )
 
+ngram_filter = analysis.token_filter(
+    'ngram_filter',
+    type='ngram',
+    min_gram=3,
+    max_gram=15
+)
+
 # Create edge ngram filtering to postcode
 autocomplete_filter = analysis.token_filter(
     'autocomplete_filter',
     type='edge_ngram',
-    min_gram=2,
+    min_gram=3,
     max_gram=20
 )
 
@@ -147,7 +154,7 @@ bouwblok = es.analyzer(
     tokenizer=tokenizer(
         'autocomplete_filter',
         type='edge_ngram',
-        min_gram=1, max_gram=4,
+        min_gram=2, max_gram=4,
         token_chars=["letter", "digit" ]),
     filter=['lowercase'],
     char_filter=[divider_stripper]
@@ -203,6 +210,13 @@ autocomplete = es.analyzer(
     filter=['lowercase', autocomplete_filter]
 )
 
+ngram = es.analyzer(
+    'ngram_analyzer',
+    tokenizer='standard',
+    filter=['lowercase', ngram_filter]
+)
+
+    
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
     tokenizer=tokenizer(

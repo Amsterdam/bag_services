@@ -5,13 +5,13 @@ from datasets.brk.tests import factories
 
 class ImportKadastraalObjectRelatiesTaskTest(TaskTestCase):
     def setUp(self):
-        self.a1 = factories.KadastraalObjectFactory.create(index_letter='A')
-        self.g1 = factories.KadastraalObjectFactory.create(index_letter='G')
+        self.a1 = factories.KadastraalObjectFactory.create(indexletter='A')
+        self.g1 = factories.KadastraalObjectFactory.create(indexletter='G')
         s1 = factories.KadastraalSubjectFactory.create()
 
-        self.a2 = factories.KadastraalObjectFactory.create(index_letter='A')
-        self.a3 = factories.KadastraalObjectFactory.create(index_letter='A')
-        self.g2 = factories.KadastraalObjectFactory.create(index_letter='G')
+        self.a2 = factories.KadastraalObjectFactory.create(indexletter='A')
+        self.a3 = factories.KadastraalObjectFactory.create(indexletter='A')
+        self.g2 = factories.KadastraalObjectFactory.create(indexletter='G')
         s2 = factories.KadastraalSubjectFactory.create()
 
         factories.ZakelijkRechtFactory.create(
@@ -50,8 +50,10 @@ class ImportKadastraalObjectRelatiesTaskTest(TaskTestCase):
         def get_aanduiding(obj):
             return obj.aanduiding
 
-        self.assertQuerysetEqual(self.a1.g_percelen.all(), [self.g1.aanduiding], get_aanduiding)
-        self.assertQuerysetEqual(self.a2.g_percelen.all(), [self.g2.aanduiding], get_aanduiding)
+        self.assertQuerysetEqual(
+            self.a1.g_percelen.all(), [self.g1.aanduiding], get_aanduiding)
+        self.assertQuerysetEqual(
+            self.a2.g_percelen.all(), [self.g2.aanduiding], get_aanduiding)
 
         g2_a = set([obj.aanduiding for obj in self.g2.a_percelen.all()])
 

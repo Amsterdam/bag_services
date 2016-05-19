@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from datasets.wkpb import serializers as wkpb_serializers
+
 from datasets.generic import rest
-from datasets.bag.serializers import Verblijfsobject
-from datasets.wkpb.serializers import BeperkingDetail
 from . import models
 
 
@@ -87,9 +87,9 @@ class Adres(serializers.ModelSerializer):
             'toevoeging',
             'postcode',
             'woonplaats',
-            'postbus_nummer',
-            'postbus_postcode',
-            'postbus_woonplaats',
+            # 'postbus_nummer',
+            # 'postbus_postcode',
+            # 'postbus_woonplaats',
             'buitenland_adres',
             'buitenland_woonplaats',
             'buitenland_regio',
@@ -307,7 +307,9 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
 
-    allowed_anonymous = {'_links', '_display', 'id', 'volledige_naam', 'is_natuurlijk_persoon'}
+    allowed_anonymous = {
+        '_links', '_display',
+        'id', 'volledige_naam', 'is_natuurlijk_persoon'}
 
     class Meta:
         model = models.KadastraalSubject
@@ -319,7 +321,6 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
             'type',
             'beschikkingsbevoegdheid',
 
-            'volledige_naam',
             'is_natuurlijk_persoon',
 
             'voornamen',
@@ -365,6 +366,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
+    objectnummer = serializers.CharField(source='perceelnummer')
     kadastrale_gemeente = KadastraleGemeente()
     sectie = KadastraleSectie()
     soort_grootte = SoortGrootte()
@@ -388,9 +390,9 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'aanduiding',
             'kadastrale_gemeente',
             'sectie',
-            'perceelnummer',
-            'index_letter',
-            'index_nummer',
+            'objectnummer',
+            'indexletter',
+            'indexnummer',
             'soort_grootte',
             'grootte',
             'koopsom',
@@ -483,22 +485,17 @@ class AantekeningDetail(BrkMixin, rest.HALSerializer):
         )
 
 
-class KadastraalObjectDetailWkpb(BrkMixin, rest.HALSerializer):
+class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
+    """
+    Serializer used in custom nummeraanduiding endpoint
+    """
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
-    kadastrale_gemeente = KadastraleGemeente()
-    sectie = KadastraleSectie()
-    soort_grootte = SoortGrootte()
-    cultuurcode_onbebouwd = CultuurCodeOnbebouwd()
-    cultuurcode_bebouwd = CultuurCodeBebouwd()
-
-    rechten = ZakelijkRecht(many=True)
-    verblijfsobjecten = Verblijfsobject(many=True)
-    beperkingen = BeperkingDetail(many=True)
+    rechten = rest.RelatedSummaryField()
+    beperkingen = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
-    a_percelen = rest.RelatedSummaryField()
-    g_percelen = rest.RelatedSummaryField()
-    geometrie = rest.MultipleGeometryField()
+    a_percelen = KadastraalObject(many=True)
+    g_percelen = KadastraalObject(many=True)
 
     class Meta:
         model = models.KadastraalObject
@@ -507,32 +504,27 @@ class KadastraalObjectDetailWkpb(BrkMixin, rest.HALSerializer):
             '_display',
             'id',
             'aanduiding',
-            'kadastrale_gemeente',
-            'sectie',
-            'perceelnummer',
-            'index_letter',
-            'index_nummer',
-            'soort_grootte',
-            'grootte',
-            'koopsom',
-            'koopsom_valuta_code',
-            'koopjaar',
-            'meer_objecten',
-            'cultuurcode_onbebouwd',
-            'cultuurcode_bebouwd',
-
-            'register9_tekst',
-            'status_code',
-            'toestandsdatum',
-            'voorlopige_kadastrale_grens',
-            'in_onderzoek',
-
-            'geometrie',
-
-            'g_percelen',
-            'a_percelen',
-            'verblijfsobjecten',
             'rechten',
-            'aantekeningen',
             'beperkingen',
+            'aantekeningen',
+            'a_percelen',
+            'g_percelen',
+        )
+
+
+class KadastraalObjectNummeraanduidingExp(KadastraalObjectNummeraanduiding):
+    rechten = ZakelijkRechtDetail(many=True)
+    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
+    aantekeningen = Aantekening(many=True)
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aanduiding',
+            'rechten',
+            'beperkingen',
+            'aantekeningen',
         )

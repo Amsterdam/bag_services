@@ -2,10 +2,12 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
 
-from datasets.brk import models, serializers
-
+from datasets.brk import models, serializers, custom_serializers
 
 from datasets.generic.rest import AtlasViewSet
+
+from rest_framework import filters
+import django_filters
 
 
 class GemeenteViewSet(AtlasViewSet):
@@ -391,6 +393,22 @@ class KadastraalObjectViewSet(AtlasViewSet):
             request, *args, **kwargs)
 
 
+class ZakelijkRechtFilter(filters.FilterSet):
+    """
+    Filter aantekeningen with better form
+    """
+    kadastraal_object = django_filters.CharFilter()
+    kadastraal_subject = django_filters.CharFilter()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = [
+            'verblijfsobjecten__id',
+            'kadastraal_object',
+            'kadastraal_subject',
+        ]
+
+
 class ZakelijkRechtViewSet(AtlasViewSet):
     """
     Zakelijkrecht
@@ -422,8 +440,11 @@ class ZakelijkRechtViewSet(AtlasViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
-    filter_fields = (
-        'kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
+    filter_class = ZakelijkRechtFilter
+
+    # filter_fields = (
+    #    'kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
+
     lookup_value_regex = '[^/]+'
 
     @detail_route(methods=['get'])
@@ -449,6 +470,23 @@ class ZakelijkRechtViewSet(AtlasViewSet):
             request, *args, **kwargs)
 
 
+class AantekeningenFilter(filters.FilterSet):
+    """
+    Filter aantekeningen with better form
+    """
+    # aard_aantekening = django_filters.CharFilter()
+    opgelegd_door = django_filters.CharFilter()
+    kadastraal_object = django_filters.CharFilter()
+
+    class Meta:
+        model = models.Aantekening
+        fields = [
+            'aard_aantekening',
+            'opgelegd_door',
+            'kadastraal_object'
+        ]
+
+
 class AantekeningViewSet(AtlasViewSet):
     """
     Aantekening
@@ -463,6 +501,7 @@ class AantekeningViewSet(AtlasViewSet):
     queryset = (models.Aantekening.objects
                 .select_related('aard_aantekening', 'opgelegd_door')
                 .all())
+
     queryset_detail = (
         models.Aantekening.objects
         .select_related(
@@ -470,9 +509,12 @@ class AantekeningViewSet(AtlasViewSet):
             'kadastraal_object', 'kadastraal_object__sectie',
             'kadastraal_object__kadastrale_gemeente')
     )
+
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
-    filter_fields = ('opgelegd_door', 'kadastraal_object')
+
+    filter_class = AantekeningenFilter
+
     lookup_value_regex = '[^/]+'
 
     def retrieve(self, request, *args, **kwargs):
@@ -498,4 +540,4 @@ class KadastraalObjectWkpbView(RetrieveAPIView):
             'voornaamste_gerechtigde',
         )
     )
-    serializer_class = serializers.KadastraalObjectDetailWkpb
+    serializer_class = custom_serializers.KadastraalObjectDetailWkpb
