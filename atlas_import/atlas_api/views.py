@@ -2,7 +2,7 @@
 from collections import OrderedDict
 import json
 import logging
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 import re
 # Packages
 from django.conf import settings
@@ -273,6 +273,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return search
 
+    def _get_uri(self, request, hit):
+        # Retrieves the uri part for an item 
+        url = _get_url(request, hit)['self']['href']
+        uri = urlparse(url).path
+        return uri
+
     def _choose_display_field(self, item):
         """Returns the value to set in the display field based on the object subtype"""
         try:
@@ -304,7 +310,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
         aggs = {}
-        ordered_aggs = OrderedDict()
+        ordered_aggs = [] 
         result_order = [
             'by_postcode', 'by_street_name', 'by_comp_address', 'by_street_name_and_num',
             'by_kadaster_object', 'by_kadaster_subject']
@@ -333,6 +339,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 if exact:
                     order = [exact] + order
                 for item in order:
+                    uri = self._get_uri(request, hit)
                     aggs[agg]['content'].append({
                         '_display': item,
                         'query': item,
@@ -350,7 +357,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             }
             for hit in result:
                 disp = self._choose_display_field(hit)
-                uri = _get_url(request, hit)['self']['href']
+                uri = self._get_uri(request, hit)
                 aggs['by_comp_address']['content'].append({
                     '_display': disp,
                     'query': disp,
@@ -360,7 +367,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # @TODO improve the working
         for i in range(len(result_order)):
             if result_order[i] in aggs:
-                ordered_aggs[pretty_names[i]] = aggs[result_order[i]]
+                ordered_aggs.append(aggs[result_order[i]])
         return ordered_aggs
 
     def get_autocomplete_response(self, query, request, alphabetical=True):
