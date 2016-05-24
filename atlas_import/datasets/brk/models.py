@@ -43,7 +43,8 @@ class KadastraleSectie(mixins.ImportStatusMixin):
     id = models.CharField(max_length=200, primary_key=True)
 
     sectie = models.CharField(max_length=2)
-    kadastrale_gemeente = models.ForeignKey(KadastraleGemeente, related_name="secties")
+    kadastrale_gemeente = models.ForeignKey(
+        KadastraleGemeente, related_name="secties")
 
     geometrie = geo.MultiPolygonField(srid=28992)
 
@@ -133,23 +134,27 @@ class KadastraalSubject(mixins.ImportStatusMixin):
 
     id = models.CharField(max_length=60, primary_key=True)
     type = models.SmallIntegerField(choices=SUBJECT_TYPE_CHOICES)
-    beschikkingsbevoegdheid = models.ForeignKey(Beschikkingsbevoegdheid, null=True)
+    beschikkingsbevoegdheid = models.ForeignKey(
+        Beschikkingsbevoegdheid, null=True)
 
     voornamen = models.CharField(max_length=200, null=True)
     voorvoegsels = models.CharField(max_length=10, null=True)
     naam = models.CharField(max_length=200, null=True)
     geslacht = models.ForeignKey(Geslacht, null=True)
     aanduiding_naam = models.ForeignKey(AanduidingNaam, null=True)
-    geboortedatum = models.CharField(max_length=50, null=True)  # kadaster-data kan onvolledig zijn
+    geboortedatum = models.CharField(
+        max_length=50, null=True)  # kadaster-data kan onvolledig zijn
     geboorteplaats = models.CharField(max_length=80, null=True)
     geboorteland = models.ForeignKey(Land, null=True, related_name='+')
-    overlijdensdatum = models.CharField(max_length=50, null=True)  # kadaster-data kan onvolledig zijn
+    overlijdensdatum = models.CharField(
+        max_length=50, null=True)  # kadaster-data kan onvolledig zijn
 
     partner_voornamen = models.CharField(max_length=200, null=True)
     partner_voorvoegsels = models.CharField(max_length=10, null=True)
     partner_naam = models.CharField(max_length=200, null=True)
 
-    land_waarnaar_vertrokken = models.ForeignKey(Land, null=True, related_name='+')
+    land_waarnaar_vertrokken = models.ForeignKey(
+        Land, null=True, related_name='+')
 
     rsin = models.CharField(max_length=80, null=True)
     kvknummer = models.CharField(max_length=8, null=True)
@@ -212,10 +217,13 @@ class APerceelGPerceelRelatie(models.Model):
 class KadastraalObject(mixins.ImportStatusMixin):
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=17)
+
     kadastrale_gemeente = models.ForeignKey(
         KadastraleGemeente, related_name="kadastrale_objecten")
+
     sectie = models.ForeignKey(
         KadastraleSectie, related_name="kadastrale_objecten")
+
     perceelnummer = models.IntegerField()
     indexletter = models.CharField(max_length=1)
     indexnummer = models.IntegerField()
@@ -238,6 +246,7 @@ class KadastraalObject(mixins.ImportStatusMixin):
     point_geom = geo.PointField(srid=28992, null=True)
 
     voornaamste_gerechtigde = models.ForeignKey(KadastraalSubject, null=True)
+
     verblijfsobjecten = models.ManyToManyField(
         bag.Verblijfsobject,
         through='KadastraalObjectVerblijfsobjectRelatie',
@@ -286,22 +295,28 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
     aard_zakelijk_recht = models.ForeignKey(AardZakelijkRecht, null=True)
     aard_zakelijk_recht_akr = models.CharField(max_length=3, null=True)
 
-    ontstaan_uit = models.ForeignKey(KadastraalSubject, null=True, related_name="ontstaan_uit_set")
-    betrokken_bij = models.ForeignKey(KadastraalSubject, null=True, related_name="betrokken_bij_set")
+    ontstaan_uit = models.ForeignKey(
+        KadastraalSubject, null=True, related_name="ontstaan_uit_set")
+    betrokken_bij = models.ForeignKey(
+        KadastraalSubject, null=True, related_name="betrokken_bij_set")
 
     teller = models.IntegerField(null=True)
     noemer = models.IntegerField(null=True)
 
-    kadastraal_object = models.ForeignKey(KadastraalObject, related_name="rechten")
-    kadastraal_subject = models.ForeignKey(KadastraalSubject, related_name="rechten")
+    kadastraal_object = models.ForeignKey(
+        KadastraalObject, related_name="rechten")
+    kadastraal_subject = models.ForeignKey(
+        KadastraalSubject, related_name="rechten")
 
     kadastraal_object_status = models.CharField(max_length=50)
 
-    app_rechtsplitstype = models.ForeignKey(AppartementsrechtsSplitsType, null=True)
+    app_rechtsplitstype = models.ForeignKey(
+        AppartementsrechtsSplitsType, null=True)
 
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
-                                               through='ZakelijkRechtVerblijfsobjectRelatie',
-                                               related_name="rechten")
+    verblijfsobjecten = models.ManyToManyField(
+        bag.Verblijfsobject,
+        through='ZakelijkRechtVerblijfsobjectRelatie',
+        related_name="rechten")
 
     _kadastraal_subject_naam = models.CharField(max_length=200)
     _kadastraal_object_aanduiding = models.CharField(max_length=100)
@@ -312,12 +327,16 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
         )
 
     def __str__(self):
-        omschrijving = self.aard_zakelijk_recht.omschrijving if self.aard_zakelijk_recht else ''
-        aandeel = '({}/{})'.format(self.teller,
-                                   self.noemer) if self.teller is not None and self.noemer is not None else ''
+        omschrijving = ''
+        if self.aard_zakelijk_recht:
+            omschrijving = self.aard_zakelijk_recht.omschrijving
 
-        return "{} - {}{} - {}".format(self._kadastraal_subject_naam, omschrijving, aandeel,
-                                       self._kadastraal_object_aanduiding)
+        aandeel = ''
+        if self.teller is not None and self.noemer is not None:
+            aandeel = '({}/{})'.format(self.teller, self.noemer)
+
+        return "{} - {}{}".format(
+            self._kadastraal_subject_naam, omschrijving, aandeel)
 
 
 class ZakelijkRechtVerblijfsobjectRelatie(models.Model):
@@ -334,8 +353,12 @@ class Aantekening(mixins.ImportStatusMixin):
     aard_aantekening = models.ForeignKey(AardAantekening)
     omschrijving = models.TextField()
 
-    kadastraal_object = models.ForeignKey(KadastraalObject, null=True, related_name="aantekeningen")
-    opgelegd_door = models.ForeignKey(KadastraalSubject, null=True, related_name="aantekeningen")
+    kadastraal_object = models.ForeignKey(
+        KadastraalObject, null=True, related_name="aantekeningen")
+    opgelegd_door = models.ForeignKey(
+        KadastraalSubject, null=True, related_name="aantekeningen")
 
     def __str__(self):
-        return self.aard_aantekening.omschrijving if self.aard_aantekening.omschrijving else self.id
+        if self.aard_aantekening.omschrijving:
+            return self.aard_aantekening.omschrijving
+        return self.id
