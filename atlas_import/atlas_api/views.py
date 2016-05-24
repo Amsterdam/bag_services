@@ -36,9 +36,6 @@ ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*
 # Recognise house number in the search string
 HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
 
-#KADASTRAL_NUMMER_REGEX = re.compile('^$')
-
-MAX_AGG_RES = 7
 # Mapping of subtypes with detail views
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -309,7 +306,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
                        match recognition
         alphabetical - flag for sorting alphabetical
         """
-        max_agg_res = MAX_AGG_RES  # @TODO this should be a settings
         result_sets = {}
         ordered_results = [] 
         result_order = [

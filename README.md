@@ -52,8 +52,6 @@ Run `docker-compose` to determine the name of your database image:
 In this example, it's `atlasbackend_database_1`. Use that name in the following command (using `sudo` if you're running
 on Linux):
 
-    docker exec atlasbackend_database_1 update-atlas.sh
+    docker exec -it atlasbackend_database_1 update-atlas.sh
 
-The import takes approximately 10 minutes. 
-
-    
+The import takes approximately 10 minutes.

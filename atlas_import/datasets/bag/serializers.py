@@ -635,11 +635,20 @@ class VerblijfsobjectDetail(
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
-    kadastrale_objecten = rest.RelatedSummaryField()
+
+    # kadastrale_objecten = rest.RelatedSummaryField()
+    kadastrale_objecten = \
+        brk_serializers.KadastraalObjectNummeraanduidingExp(many=True)
+
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
+
+    # this should be expanded
     rechten = rest.RelatedSummaryField()
+
+    # this should be expanded
     beperkingen = rest.RelatedSummaryField()
+
     bouwblok = Bouwblok()
 
     _buurtcombinatie = Buurtcombinatie()
@@ -852,6 +861,7 @@ class VerblijfsobjectNummeraanduiding(
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
+
     kadastrale_objecten = \
         brk_serializers.KadastraalObjectNummeraanduiding(many=True)
 

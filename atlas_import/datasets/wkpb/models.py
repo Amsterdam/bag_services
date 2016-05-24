@@ -8,7 +8,8 @@ from datasets.generic import mixins
 # Wkpb
 
 
-class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+                    models.Model):
     """
     Kadastrale code voor de type beperking.
     """
@@ -21,7 +22,8 @@ class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, mode
         return self.omschrijving
 
 
-class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+               models.Model):
     """
     Het orgaan dat de beperking heeft opgelegd.
     """
@@ -36,8 +38,8 @@ class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Mo
 
 class Beperking(mixins.ImportStatusMixin, models.Model):
     """
-    Beperking van de eigendom, zoals door een publiekrechtelijke beperking als beschermd monument of een
-    aanschrijving op
+    Beperking van de eigendom, zoals door een publiekrechtelijke
+    beperking als beschermd monument of een aanschrijving op
     grond van de Woningwet.
 
     http://www.amsterdam.nl/stelselpedia/wkpb-index/catalogus/beperking/
@@ -48,13 +50,15 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     beperkingtype = models.ForeignKey(Beperkingcode, null=False)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
+
     kadastrale_objecten = models.ManyToManyField(
             brk.KadastraalObject, through='BeperkingKadastraalObject',
             related_name="beperkingen")
 
-    verblijfsobjecten = models.ManyToManyField(bag.Verblijfsobject,
-                                               through='BeperkingVerblijfsobject',
-                                               related_name='beperkingen')
+    verblijfsobjecten = models.ManyToManyField(
+        bag.Verblijfsobject,
+        through='BeperkingVerblijfsobject',
+        related_name='beperkingen')
 
     class Meta:
         verbose_name = "Beperking"
@@ -75,7 +79,9 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
     documentnaam = models.CharField(max_length=21, null=False)
     persoonsgegevens_afschermen = models.NullBooleanField(null=None)
     soort_besluit = models.CharField(max_length=60, null=True)
-    beperking = models.ForeignKey(Beperking, related_name='documenten', null=True)
+    # Seems to be only 1 document for each Beperking.
+    beperking = models.ForeignKey(
+        Beperking, related_name='documenten', null=True)
 
     @property
     def url(self):
@@ -100,7 +106,9 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     kadastraal_object = models.ForeignKey(brk.KadastraalObject)
 
     def __str__(self):
-        return "{}-{}-{}".format(self.beperking_id, self.kadastraal_object_id, self.kadastraal_object_akr_id)
+        return "{}-{}-{}".format(
+            self.beperking_id, self.kadastraal_object_id,
+            self.kadastraal_object_akr_id)
 
 
 class BeperkingVerblijfsobject(models.Model):
