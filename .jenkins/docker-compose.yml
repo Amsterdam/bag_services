@@ -12,7 +12,7 @@ elasticsearch:
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
 importer:
-  build: ../web
+  build: ..
   links:
     - database:database
     - elasticsearch:elastic
@@ -55,4 +55,9 @@ el-backup:
     bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
             && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"atlas\" }' "
 
-
+web-static:
+  build: ..
+  user: root
+  volumes:
+    - /mnt/data/static/:/static/
+  command: python manage.py collectstatic --noinput

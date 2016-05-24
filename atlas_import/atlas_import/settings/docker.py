@@ -56,6 +56,8 @@ LOGGING = {
     },
 }
 
+STATIC_ROOT = '/static/'
+
 ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
