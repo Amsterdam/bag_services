@@ -79,6 +79,11 @@ class HALPagination(pagination.PageNumberPagination):
         ]))
 
 
+class LimitedHALPagination(HALPagination):
+    max_page_size = 5
+    page_size = 5
+
+
 class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
@@ -98,7 +103,26 @@ class RelatedSummaryField(serializers.Field):
 
         return dict(
             count=count,
-            href="{}?{}={}".format(url, filter_name, parent_pk),
+            href="{}?{}={}".format(
+                url, filter_name, parent_pk),
+        )
+
+
+class RelatedSummaryFieldExpanded(RelatedSummaryField):
+
+    def to_representation(self, value):
+        count = value.count()
+        model_name = value.model.__name__
+        mapping = model_name.lower() + "-expand" + "-list"
+        url = reverse(mapping, request=self.context['request'])
+
+        parent_pk = value.instance.pk
+        filter_name = list(value.core_filters.keys())[0]
+
+        return dict(
+            count=count,
+            href="{}?{}={}".format(
+                url, filter_name, parent_pk),
         )
 
 

@@ -419,6 +419,16 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
         )
 
 
+class KadastraalObjectDetailExpand(KadastraalObjectDetail):
+    rechten = ZakelijkRecht(many=True)
+    aantekeningen = Aantekening(many=True)
+
+    a_percelen = KadastraalObject(many=True)
+    g_percelen = KadastraalObject(many=True)
+
+    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
+
+
 class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()

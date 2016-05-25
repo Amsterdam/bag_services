@@ -155,6 +155,10 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
             request, *args, **kwargs)
 
 
+class VerblijfsobjectViewSetKadaster(VerblijfsobjectViewSet):
+    serializer_detail_class = serializers.VerblijfsobjectDetailExpanded
+
+
 class NummeraanduidingFilter(filters.FilterSet):
     """
     Filter nummeraanduidingkjes
@@ -621,19 +625,3 @@ class StadsdeelCodeView(RedirectView):
         return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))
 
 
-class NummerAanduidingExpandedView(RetrieveAPIView):
-    """
-    Nummeraanduiding met extra data
-    """
-    queryset = models.Nummeraanduiding.objects.select_related(
-        'status',
-        'openbare_ruimte',
-        'openbare_ruimte__woonplaats',
-        'verblijfsobject',
-        'verblijfsobject__financieringswijze',
-        'verblijfsobject__eigendomsverhouding',
-        'ligplaats',
-        'standplaats',
-    )
-    serializer_class = serializers.NummeraanduidingExpanded
-    filter_class = NummeraanduidingFilter

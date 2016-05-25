@@ -641,17 +641,11 @@ class VerblijfsobjectDetail(
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
 
-    # kadastrale_objecten = rest.RelatedSummaryField()
-    kadastrale_objecten = \
-        brk_serializers.KadastraalObjectNummeraanduidingExp(many=True)
+    kadastrale_objecten = rest.RelatedSummaryField()
 
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
-
-    # this should be expanded
     rechten = rest.RelatedSummaryField()
-
-    # this should be expanded
     beperkingen = rest.RelatedSummaryField()
 
     bouwblok = Bouwblok()
@@ -713,6 +707,15 @@ class VerblijfsobjectDetail(
             '_gemeente',
             '_woonplaats',
         )
+
+
+class VerblijfsobjectDetailExpanded(VerblijfsobjectDetail):
+    """
+    Atlas specifiek uitgebreid object waarbij gerelateerde
+    objecten alsvast bij elkaar gezocht zijn.
+    """
+
+    kadastrale_objecten = rest.RelatedSummaryFieldExpanded()
 
 
 class PandDetail(BagMixin, rest.HALSerializer):

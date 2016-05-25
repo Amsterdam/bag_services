@@ -125,7 +125,14 @@ class AtlasRouter(routers.DefaultRouter):
 bag = BagRouter()
 bag.register(r'ligplaats', datasets.bag.views.LigplaatsViewSet)
 bag.register(r'standplaats', datasets.bag.views.StandplaatsViewSet)
+
 bag.register(r'verblijfsobject', datasets.bag.views.VerblijfsobjectViewSet)
+
+bag.register(r'verblijfsobject-expand',
+             datasets.bag.views.VerblijfsobjectViewSetKadaster,
+             base_name='verblijfsobject-expand',
+             )
+
 bag.register(r'openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
 bag.register(r'nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 bag.register(r'pand', datasets.bag.views.PandViewSet)
@@ -136,18 +143,32 @@ gebieden = GebiedenRouter()
 gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
 gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
 gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
-gebieden.register(r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
-gebieden.register(r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
-gebieden.register(r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
+
+gebieden.register(
+    r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
+gebieden.register(
+    r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+gebieden.register(
+    r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
 
 
 brk = BrkRouter()
 brk.register(r'gemeente', datasets.brk.views.GemeenteViewSet)
-brk.register(r'kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+
+brk.register(
+    r'kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+
 brk.register(r'kadastrale-sectie', datasets.brk.views.KadastraleSectieViewSet)
 brk.register(r'subject', datasets.brk.views.KadastraalSubjectViewSet)
+
 brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
+
+brk.register(r'object-expand',
+             datasets.brk.views.KadastraalObjectViewSetExpand,
+             base_name='kadastraalobject-expand',
+             )
+
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
 

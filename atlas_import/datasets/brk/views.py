@@ -6,6 +6,8 @@ from datasets.brk import models, serializers, custom_serializers
 
 from datasets.generic.rest import AtlasViewSet
 
+from datasets.generic import rest
+
 from rest_framework import filters
 import django_filters
 
@@ -391,6 +393,13 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
+
+
+class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
+
+    pagination_class = rest.LimitedHALPagination
+
+    serializer_class = serializers.KadastraalObjectDetailExpand
 
 
 class ZakelijkRechtFilter(filters.FilterSet):
