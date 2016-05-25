@@ -15,12 +15,13 @@ importer:
   build: ..
   links:
     - database:database
-    - elasticsearch:elastic
+    - elasticsearch:elasticsearch
   volumes:
     - /mnt/data/diva_import:/app/diva
   environment:
-    DB_NAME: atlas
-    DB_PASSWORD: insecure
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py migrate \
@@ -39,7 +40,7 @@ db-backup:
                         -Fc \
                         -t bag* \
                         -t brk* \
-                        -t wkpb*  \
+                        -t wkpb* \
                         -t geo*  \
                         -T auth* \
                         -T django*  \
@@ -51,6 +52,9 @@ el-backup:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
   links:
     - elasticsearch:el
+  volumes:
+    - ./backups/elasticsearch:/tmp/backups
+  user: root
   command: >
     bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
             && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"atlas\" }' "
