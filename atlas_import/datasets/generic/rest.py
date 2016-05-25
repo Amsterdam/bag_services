@@ -1,6 +1,7 @@
 # Python
 from collections import OrderedDict
 import json
+
 # Packages
 from rest_framework import renderers, serializers, pagination, response, viewsets, filters, reverse
 from rest_framework.reverse import reverse
@@ -55,12 +56,15 @@ class HALPagination(pagination.PageNumberPagination):
             self_link = self_link[:-4]
 
         if self.page.has_next():
-            next_link = replace_query_param(self_link, self.page_query_param, self.page.next_page_number())
+            next_link = replace_query_param(
+                self_link, self.page_query_param, self.page.next_page_number())
         else:
             next_link = None
 
         if self.page.has_previous():
-            prev_link = replace_query_param(self_link, self.page_query_param, self.page.previous_page_number())
+            prev_link = replace_query_param(
+                self_link, self.page_query_param,
+                self.page.previous_page_number())
         else:
             prev_link = None
 
@@ -114,7 +118,7 @@ class MultipleGeometryField(serializers.Field):
     read_only = True
 
     def get_attribute(self, obj):
-        # Checking if point geometry exists. If not returning the 
+        # Checking if point geometry exists. If not returning the
         # regular multipoly geometry
         return obj.point_geom or obj.poly_geom
 
@@ -125,4 +129,3 @@ class MultipleGeometryField(serializers.Field):
         if value:
             res = json.loads(value.geojson)
         return res
-

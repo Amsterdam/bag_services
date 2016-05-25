@@ -354,7 +354,7 @@ class GemeenteViewSet(rest.AtlasViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         """
-        retrieve VerblijfsobjectDetail
+        retrieve Gemeente Detail
 
         ---
 

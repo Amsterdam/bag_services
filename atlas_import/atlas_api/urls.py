@@ -92,7 +92,8 @@ class WkpbRouter(routers.DefaultRouter):
     Wkpd
 
     De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
-    bevat alle bij wet genoemde beperkingenbesluiten op onroerende zaken, die het gemeentebestuur heeft opgelegd.
+    bevat alle bij wet genoemde beperkingenbesluiten op onroerende
+    zaken, die het gemeentebestuur heeft opgelegd.
     """
     def get_api_root_view(self):
         view = super().get_api_root_view()
@@ -162,6 +163,7 @@ atlas = AtlasRouter()
 # Search related
 
 atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
+
 #atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
 # router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
@@ -190,7 +192,9 @@ atlas.register(
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
 search = SearchRouter()
-search.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
+search.register(
+    r'postcode', views.SearchExactPostcodeToevoegingViewSet,
+    base_name='postcode')
 
 urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$',

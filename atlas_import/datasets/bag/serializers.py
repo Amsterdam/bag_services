@@ -173,7 +173,12 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             '_links',
             '_display',
             'landelijk_id',
+            'id',
         )
+
+
+# Verblijfsobject Expanded
+# met een detail expanded
 
 
 class Pand(BagMixin, rest.HALSerializer):
@@ -656,7 +661,8 @@ class VerblijfsobjectDetail(
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
-    verblijfsobjectidentificatie = serializers.CharField(source='landelijk_id')
+    verblijfsobjectidentificatie = serializers.CharField(
+        source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
 
     class Meta:
