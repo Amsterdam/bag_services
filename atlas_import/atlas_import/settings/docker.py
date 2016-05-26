@@ -55,7 +55,7 @@ LOGGING = {
     'loggers': {
 		# Debug all batch jobs
 		'batch': {
-			'handlers': ['console', 'slackbot'],
+			'handlers': ['console'],
 			'level': 'DEBUG',
 			'propagate': True,
 		},
