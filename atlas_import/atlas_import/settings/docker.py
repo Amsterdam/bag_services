@@ -25,30 +25,51 @@ DATABASES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
+	'formatters': {
+		'slack': {
+			'format': '%(message)s',
+		},
         'console': {
             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         },
-    },
+	},
     'handlers': {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
+		'slackbot': {
+			'level': 'INFO',
+			'class': 'pyslack.SlackHandler',
+			'formatter': 'slack',
+			'token': 'xoxp-6265386162-12398459668-19042721156-74355df29d',
+			'username': 'atlas backend',
+			'channel': '#devops',
+		},
     },
-    'root': {
-        'level': 'INFO',
-        'handlers': ['console'],
-    },
-
-
+	'root': {
+		'level': 'WARNING',
+		'handlers': ['console'],
+	},
     'loggers': {
+		# Debug all batch jobs
+		'batch': {
+			'handlers': ['console', 'slackbot'],
+			'level': 'DEBUG',
+			'propagate': True,
+		},
+
+		# Log all unhandled exceptions
+		'django.request': {
+			'handlers': ['console', 'slackbot'],
+			'level': 'WARNING',
+			'propagate': True,
+		},
         'elasticsearch': {
             'level': 'WARNING',
             'handlers': ['console'],
         },
-
         'elasticsearch.trace': {
             'level': 'ERROR',
             'handlers': ['console'],
