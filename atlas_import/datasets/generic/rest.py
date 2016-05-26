@@ -3,8 +3,8 @@ from collections import OrderedDict
 import json
 
 # Packages
-from rest_framework import renderers, serializers, pagination, response, viewsets, filters, reverse
-from rest_framework.reverse import reverse
+from rest_framework import renderers, serializers
+from rest_framework import pagination, response, viewsets, filters, reverse
 from rest_framework.utils.urls import replace_query_param
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
@@ -96,24 +96,6 @@ class RelatedSummaryField(serializers.Field):
         count = value.count()
         model_name = value.model.__name__
         mapping = model_name.lower() + "-list"
-        url = reverse(mapping, request=self.context['request'])
-
-        parent_pk = value.instance.pk
-        filter_name = list(value.core_filters.keys())[0]
-
-        return dict(
-            count=count,
-            href="{}?{}={}".format(
-                url, filter_name, parent_pk),
-        )
-
-
-class RelatedSummaryFieldExpanded(RelatedSummaryField):
-
-    def to_representation(self, value):
-        count = value.count()
-        model_name = value.model.__name__
-        mapping = model_name.lower() + "-expand" + "-list"
         url = reverse(mapping, request=self.context['request'])
 
         parent_pk = value.instance.pk

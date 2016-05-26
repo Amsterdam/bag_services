@@ -128,11 +128,6 @@ bag.register(r'standplaats', datasets.bag.views.StandplaatsViewSet)
 
 bag.register(r'verblijfsobject', datasets.bag.views.VerblijfsobjectViewSet)
 
-bag.register(r'verblijfsobject-expand',
-             datasets.bag.views.VerblijfsobjectViewSetKadaster,
-             base_name='verblijfsobject-expand',
-             )
-
 bag.register(r'openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
 bag.register(r'nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 bag.register(r'pand', datasets.bag.views.PandViewSet)

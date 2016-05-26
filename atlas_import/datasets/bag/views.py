@@ -2,7 +2,6 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
 from rest_framework import metadata
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.reverse import reverse
 
 from datasets.generic import rest
@@ -10,7 +9,6 @@ from . import serializers, models
 
 from rest_framework import filters
 import django_filters
-
 
 
 class ExpansionMetadata(metadata.SimpleMetadata):
@@ -153,10 +151,6 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
-
-
-class VerblijfsobjectViewSetKadaster(VerblijfsobjectViewSet):
-    serializer_detail_class = serializers.VerblijfsobjectDetailExpanded
 
 
 class NummeraanduidingFilter(filters.FilterSet):
@@ -623,5 +617,3 @@ class StadsdeelCodeView(RedirectView):
         stadsdeel = get_object_or_404(
             models.Stadsdeel, code__iexact=kwargs['code'])
         return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))
-
-

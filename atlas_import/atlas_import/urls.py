@@ -33,14 +33,6 @@ urlpatterns = [
         datasets.brk.views.KadastraalObjectWkpbView.as_view(),
         name='brk-object-wkpb'),
 
-    #url(r'^bag/nummeraanduiding-expanded/(?P<pk>[^/]+)/?$',
-    #    datasets.bag.views.NummerAanduidingExpandedView.as_view(),
-    #    name='bag-nummeraanduiding-expanded'),
-
-    #url(r'^bag/verblijfsobject-expanded/(?P<pk>[^/]+)/$',
-    #    datasets.bag.views.VerblijfsobjectExpandedView.as_view(),
-    #    name='bagverblijfsobjectexpanded'),
-
     url(r'^bag/docs/', include('rest_framework_swagger.urls')),
 
     url(r'^bag/', include(atlas_api.urls.bag.urls)),

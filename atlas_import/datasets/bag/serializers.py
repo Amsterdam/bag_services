@@ -177,10 +177,6 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
         )
 
 
-# Verblijfsobject Expanded
-# met een detail expanded
-
-
 class Pand(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
@@ -707,15 +703,6 @@ class VerblijfsobjectDetail(
             '_gemeente',
             '_woonplaats',
         )
-
-
-class VerblijfsobjectDetailExpanded(VerblijfsobjectDetail):
-    """
-    Atlas specifiek uitgebreid object waarbij gerelateerde
-    objecten alsvast bij elkaar gezocht zijn.
-    """
-
-    kadastrale_objecten = rest.RelatedSummaryFieldExpanded()
 
 
 class PandDetail(BagMixin, rest.HALSerializer):
