@@ -6,6 +6,8 @@ from datasets.brk import models, serializers, custom_serializers
 
 from datasets.generic.rest import AtlasViewSet
 
+from datasets.generic import rest
+
 from rest_framework import filters
 import django_filters
 
@@ -391,6 +393,30 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
+
+
+class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
+
+    # FIXME can this be faster?
+    # FIXME I think there is an index missing somewhere.. not sure
+    # take 500ms per object
+    queryset = (
+        models.KadastraalObject.objects.select_related(
+            'sectie',
+            'voornaamste_gerechtigde',
+            'kadastrale_gemeente',
+            'kadastrale_gemeente__gemeente').prefetch_related(
+                'a_percelen',
+                'g_percelen',
+                'aantekeningen',
+                'beperkingen',
+            )
+
+        )
+
+    pagination_class = rest.LimitedHALPagination
+
+    serializer_class = serializers.KadastraalObjectDetailExpand
 
 
 class ZakelijkRechtFilter(filters.FilterSet):

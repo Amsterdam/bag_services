@@ -15,6 +15,8 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/ligplaats',
         'bag/standplaats',
         'bag/verblijfsobject',
+
+
         'bag/pand',
         'bag/nummeraanduiding',
         'bag/openbareruimte',
@@ -60,16 +62,24 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.ZakelijkRechtFactory.create()
         brk_factories.AantekeningFactory.create()
 
+    def valid_response(self, url, response):
+        """
+        Helper method to check common status/json
+        """
+
+        self.assertEqual(
+            response.status_code, 200,
+            'Wrong response code for {}'.format(url))
+
+        self.assertEqual(
+            response['Content-Type'], 'application/json',
+            'Wrong Content-Type for {}'.format(url))
+
     def test_lists(self):
         for url in self.datasets:
             response = self.client.get('/{}/'.format(url))
 
-            self.assertEqual(
-                response.status_code, 200,
-                'Wrong response code for {}'.format(url))
-            self.assertEqual(
-                response['Content-Type'], 'application/json',
-                'Wrong Content-Type for {}'.format(url))
+            self.valid_response(url, response)
 
             self.assertIn(
                 'count', response.data, 'No count attribute in {}'.format(url))
@@ -84,12 +94,8 @@ class BrowseDatasetsTestCase(APITestCase):
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
-            self.assertEqual(
-                detail.status_code,
-                200, 'Wrong response code for {}'.format(url))
-            self.assertEqual(
-                detail['Content-Type'],
-                'application/json', 'Wrong Content-Type for {}'.format(url))
+            self.valid_response(url, detail)
+
             self.assertIn('_display', detail.data)
 
     def test_brk_object_wkpb(self):
@@ -101,10 +107,7 @@ class BrowseDatasetsTestCase(APITestCase):
         test_id = response.data['results'][0]['id']
 
         test_url = reverse('brk-object-wkpb', args=[test_id])
+
         detail = self.client.get(test_url)
 
-        self.assertEqual(
-            detail.status_code, 200, 'Wrong response code for {}'.format(url))
-        self.assertEqual(
-            detail['Content-Type'], 'application/json',
-            'Wrong Content-Type for {}'.format(url))
+        self.valid_response(test_url, detail)
