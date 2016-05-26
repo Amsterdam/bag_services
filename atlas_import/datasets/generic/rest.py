@@ -4,7 +4,9 @@ import json
 
 # Packages
 from rest_framework import renderers, serializers
-from rest_framework import pagination, response, viewsets, filters, reverse
+from rest_framework import pagination, response, viewsets, filters
+
+from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
@@ -96,6 +98,7 @@ class RelatedSummaryField(serializers.Field):
         count = value.count()
         model_name = value.model.__name__
         mapping = model_name.lower() + "-list"
+
         url = reverse(mapping, request=self.context['request'])
 
         parent_pk = value.instance.pk
