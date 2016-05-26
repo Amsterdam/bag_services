@@ -33,7 +33,10 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/gemeente',
         'brk/kadastrale-gemeente',
         'brk/kadastrale-sectie',
+
         'brk/object',
+        'brk/object-expand',
+
         'brk/subject',
         'brk/zakelijk-recht',
         'brk/aantekening',

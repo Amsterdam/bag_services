@@ -161,7 +161,7 @@ brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
 
 brk.register(r'object-expand',
              datasets.brk.views.KadastraalObjectViewSetExpand,
-             base_name='kadastraalobject-expand',
+             base_name='object-expand',
              )
 
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)

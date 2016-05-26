@@ -417,6 +417,7 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
     pagination_class = rest.LimitedHALPagination
 
     serializer_class = serializers.KadastraalObjectDetailExpand
+    serializer_detail_class = serializers.KadastraalObjectDetailExpand
 
 
 class ZakelijkRechtFilter(filters.FilterSet):
