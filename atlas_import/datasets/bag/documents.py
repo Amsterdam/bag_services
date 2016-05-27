@@ -65,8 +65,9 @@ class Standplaats(es.DocType):
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(analyzer=analyzers.postcode_ng)})
     order = es.Integer()
-
     centroid = es.GeoPoint()
+
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -100,6 +101,8 @@ class Verblijfsobject(es.DocType):
     kamers = es.Integer()
     oppervlakte = es.Integer()
 
+    _display = es.String(index='not_analyzed')
+
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
 
@@ -119,6 +122,7 @@ class OpenbareRuimte(es.DocType):
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -232,6 +236,7 @@ class Nummeraanduiding(es.DocType):
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
@@ -250,6 +255,8 @@ class Bouwblok(es.DocType):
 
     subtype = es.String(analyzer=analyzers.subtype)
 
+    _display = es.String(index='not_analyzed')
+
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
 
@@ -264,6 +271,8 @@ class ExactLocation(es.DocType):
     postcode_toevoeging = es.String(index='not_analyzed', boost=5)
     subtype = es.String(analyzer=analyzers.subtype)
     geometrie = es.GeoPoint()
+
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -323,6 +332,7 @@ def from_ligplaats(l: models.Ligplaats):
 
     d.centroid = get_centroid(l.geometrie, 'wgs84')
     d.order = analyzers.orderings['adres']
+    d._display = d.adres
 
     return d
 
@@ -331,7 +341,7 @@ def from_bouwblok(n: models.Bouwblok):
     doc = Bouwblok(_id=n.id)
     doc.code = n.code
     doc.subtype = 'bouwblok'
-
+    doc._display = n.code
     return doc
 
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
@@ -373,6 +383,8 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     elif doc.subtype == 'overig terrein':
         pass
 
+    doc._display = doc.comp_address
+
     return doc
 
 
@@ -384,7 +396,7 @@ def from_standplaats(s: models.Standplaats):
 
     d.centroid = get_centroid(s.geometrie, 'wgs84')
     d.order = analyzers.orderings['adres']
-
+    d._display = d.adres
     return d
 
 
@@ -397,6 +409,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
     d.kamers = v.aantal_kamers
     d.oppervlakte = v.oppervlakte
     d.order = analyzers.orderings['adres']
+    d._display = d.adres
 
     return d
 
@@ -414,7 +427,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
     d.postcode = list(postcodes)
     d.order = analyzers.orderings['openbare_ruimte']
-
+    d._display = d.naam
     return d
 
 
@@ -435,5 +448,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
         doc.geometrie = get_centroid(n.ligplaats.geometrie, 'wgs84')
     else:
         print('Failed to find geolocation for nummeraanduiduing {}'.format(n.id))
+    doc._display = doc.adres
+
     return doc
 
