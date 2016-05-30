@@ -304,6 +304,53 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
         )
 
 
+class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+    aard_zakelijk_recht = AardZakelijkRecht()
+    ontstaan_uit = KadastraalSubject()
+    betrokken_bij = KadastraalSubject()
+    kadastraal_object = KadastraalObject()
+    kadastraal_subject = KadastraalSubject()
+    app_rechtsplitstype = AppartementsrechtsSplitsType()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aard_zakelijk_recht',
+            'aard_zakelijk_recht_akr',
+
+            'ontstaan_uit',
+            'betrokken_bij',
+
+            'teller',
+            'noemer',
+
+            'kadastraal_object',
+            'kadastraal_subject',
+
+            'kadastraal_object_status',
+
+            'app_rechtsplitstype',
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        request = self.context['request']
+        user = request.user
+        if instance.kadastraal_subject.type ==  \
+                instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+                                                 args=(instance.id,),
+                                                 request=request)
+
+        return data
+
+
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
 
@@ -357,8 +404,11 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
         data = super().to_representation(instance)
 
         user = self.context['request'].user
-        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK and not user.has_perm('brk.view_sensitive_details'):
-            return {f: data[f] for f in self.fields.keys() if f in self.allowed_anonymous}
+        if instance.type == instance.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            return {
+                f: data[f] for f in
+                self.fields.keys() if f in self.allowed_anonymous}
 
         return data
 
@@ -376,8 +426,13 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
-    a_percelen = rest.RelatedSummaryField()
-    g_percelen = rest.RelatedSummaryField()
+
+    # a_percelen = rest.RelatedSummaryField(source='a_percelen')
+    betrokken_bij = rest.RelatedSummaryField(source='a_percelen')
+
+    # g_percelen = rest.RelatedSummaryField(source='g_percelen')
+    ontstaan_uit = rest.RelatedSummaryField(source='g_percelen')
+
     beperkingen = rest.RelatedSummaryField()
     geometrie = rest.MultipleGeometryField()
 
@@ -410,8 +465,9 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
 
             'geometrie',
 
-            'g_percelen',
-            'a_percelen',
+            'ontstaan_uit',
+            'betrokken_bij',
+
             'verblijfsobjecten',
             'rechten',
             'aantekeningen',
@@ -419,50 +475,14 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
         )
 
 
-class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    aard_zakelijk_recht = AardZakelijkRecht()
-    ontstaan_uit = KadastraalSubject()
-    betrokken_bij = KadastraalSubject()
-    kadastraal_object = KadastraalObject()
-    kadastraal_subject = KadastraalSubject()
-    app_rechtsplitstype = AppartementsrechtsSplitsType()
+class KadastraalObjectDetailExpand(KadastraalObjectDetail):
+    rechten = ZakelijkRechtDetail(many=True)
+    aantekeningen = Aantekening(many=True)
 
-    class Meta:
-        model = models.ZakelijkRecht
-        fields = (
-            '_links',
-            '_display',
-            'id',
-            'aard_zakelijk_recht',
-            'aard_zakelijk_recht_akr',
+    ontstaan_uit = KadastraalObject(source='g_percelen', many=True)
+    betrokken_bij = KadastraalObject(source='a_percelen', many=True)
 
-            'ontstaan_uit',
-            'betrokken_bij',
-
-            'teller',
-            'noemer',
-
-            'kadastraal_object',
-            'kadastraal_subject',
-
-            'kadastraal_object_status',
-
-            'app_rechtsplitstype',
-        )
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        request = self.context['request']
-        user = request.user
-        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
-                and not user.has_perm('brk.view_sensitive_details'):
-            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
-                                                 args=(instance.id,),
-                                                 request=request)
-
-        return data
+    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
 
 
 class AantekeningDetail(BrkMixin, rest.HALSerializer):

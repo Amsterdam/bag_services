@@ -173,6 +173,7 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             '_links',
             '_display',
             'landelijk_id',
+            'id',
         )
 
 
@@ -635,11 +636,14 @@ class VerblijfsobjectDetail(
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
+
     kadastrale_objecten = rest.RelatedSummaryField()
+
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
     rechten = rest.RelatedSummaryField()
     beperkingen = rest.RelatedSummaryField()
+
     bouwblok = Bouwblok()
 
     _buurtcombinatie = Buurtcombinatie()
@@ -647,7 +651,8 @@ class VerblijfsobjectDetail(
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
-    verblijfsobjectidentificatie = serializers.CharField(source='landelijk_id')
+    verblijfsobjectidentificatie = serializers.CharField(
+        source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
 
     class Meta:
@@ -852,6 +857,7 @@ class VerblijfsobjectNummeraanduiding(
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
+
     kadastrale_objecten = \
         brk_serializers.KadastraalObjectNummeraanduiding(many=True)
 
