@@ -42,8 +42,6 @@ db-backup:
                         -t brk* \
                         -t wkpb* \
                         -t geo*  \
-                        -t auth* \
-                        -t django_site  \
                         -U atlas \
                         -h db -p 5432 \
                         atlas > /tmp/backups/atlas.dump"
