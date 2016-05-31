@@ -37,7 +37,7 @@ def normalize_address(query):
     the address, if in the query, does not contain bad characters
     """
     query = query.lower()
-    query = query.replace('/', ' ').replace('.', ' ')
+    query = query.replace('/', ' ').replace('.', ' ').replace('-', ' ')
     return query
 
 
@@ -59,7 +59,7 @@ def comp_address_pcode_Q(query):
             'bool',
             must=[
                 Q('term', postcode=pcode_query),
-                Q({'prefix': {'toevoeging.raw': num_query}}),
+                Q({'prefix': {'toevoeging': num_query}}),
             ]
         ),
         'S': ['huisnummer', 'toevoeging.raw']
@@ -86,17 +86,23 @@ def street_name_and_num_Q(query):
     # Breaking the query to street name and house number
     #--------------------------------------------------
     # Finding the housenumber part
-    num = HOUSE_NUMBER.search(query)
+    address_parts = query.split()
     # Finding the break point
-    num_query = num.groups()[0].upper()
-    street_query = query[:-len(num_query)].rstrip()
+    # Threre should never be a case in which this query is called
+    # while the query string has no space in it
+    for i in range(1, len(address_parts)):
+        if address_parts[i][0].isdigit():
+            break
+    num_query = ' '.join(address_parts[i:])
+    street_query = ' '.join(address_parts[:i])
+
     # Quering exactly on street name and prefix on house number
     return {
         'Q': Q(
             'bool',
             must=[
                 Q('bool', should=[Q('term', straatnaam_keyword=street_query), Q('term', straatnaam_nen_keyword=street_query), Q('term', straatnaam_ptt_keyword=street_query)], minimum_should_match=1),
-                Q({'prefix': {'toevoeging.raw': num_query}}),
+                Q({'prefix': {'toevoeging': num_query}}),
             ]
         ),
         'S': ['huisnummer', 'toevoeging.raw']

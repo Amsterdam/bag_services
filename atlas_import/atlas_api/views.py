@@ -285,6 +285,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         postcode = PCODE_REGEX.match(query_string)
         # Orginizing the results
         print('Results:', len(result))
+        if len(result) == 1:
+            print(result.to_dict())
         for hit in result:
             disp = hit._display
             uri = self._get_uri(request, hit)
