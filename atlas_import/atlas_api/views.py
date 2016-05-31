@@ -165,24 +165,6 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-def add_sorting(sorts):
-    """
-    Sorts the sorting order
-    """
-    sorting_order = ['naam.raw','straatnaam.raw', 'toevoeging.raw', 'huisnummer']
-    return (
-        {"order": {
-            "order": "asc", "missing": "_last", "unmapped_type": "long"}},
-        {"straatnaam": {
-            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        {"huisnummer": {
-            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
-        {"adres": {
-            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        '-_score',
-    )
-
-
 def _order_matches(matches):
     for sub_type in matches.keys():
         count_values = sorted(
@@ -250,14 +232,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
         queries = []
-        sorting = {}
+        sorting = []
         # collect queries and ignore aggregations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
             if 'S' in qa:
-                sorting.update(qa['S'])
-        sorting = (sorting, )
+                sorting.extend(qa['S'])
         search = (
             Search()
             .using(self.client)
