@@ -206,14 +206,14 @@ SWAGGER_SETTINGS = {
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
         'description': 'This is the BAG API server.',
-        'license': 'license Not known yet.',
-        'licenseUrl': '://www.amsterdam.nl/stelselpedia/',
+        'license': 'Mozilla Public License Version 2.0',
+        'licenseUrl': 'https://www.mozilla.org/en-US/MPL/2.0/',
         'termsOfServiceUrl': 'https://atlas.amsterdam.nl/terms/',
         'title': 'BAG, BRK en WKPB API',
     },
-
     'doc_expansion': 'list',
 }
 
 # noinspection PyUnresolvedReferences
+
 from .checks import *  # used for ./manage.py check
