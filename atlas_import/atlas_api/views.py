@@ -285,9 +285,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
         pretty_names = [
             'Straatnamen', 'Adres', 'Bouwblok',
             'Kadastrale subjecten', 'Kadastrale objecten']
+
         postcode = PCODE_REGEX.match(query_string)
         # Orginizing the results
         print('Results:', len(result))
+
         for hit in result:
             disp = hit._display
             uri = self._get_uri(request, hit)
@@ -297,6 +299,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 continue
             if hit.subtype not in result_sets:
                 result_sets[hit.subtype] = []
+
             result_sets[hit.subtype].append({
                 '_display': disp,
                 'query': disp,
@@ -306,7 +309,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         for i in range(len(result_order)):
             if result_order[i] in result_sets:
                 ordered_results.append({
-                    'label':pretty_names[i],
+                    'label': pretty_names[i],
                     'content': result_sets[result_order[i]],
                 })
         return ordered_results

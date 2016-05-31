@@ -38,33 +38,30 @@ huisnummer_generate = analysis.char_filter(
     pattern='(\d+)',
     replacement="""
         $1
-        $1-1
-        $1-2
-        $1-3
-        $1-4
-        $1-5
 
-        $1a-1
-        $1a-2
-        $1b-1
+        $1 1
+        $1 2
+        $1 3
+        $1 4
+        $1 5
 
-        $1a $1-a
-        $1b $1-b
-        $1c $1-c
-        $1d $1-d
-        $1e $1-e
-        $1f $1-f
-        $1g $1-g
-        $1h $1-h
-        $1i $1-i
-        $1j $1-j
-        $1k $1-k
-        $1l $1-l
-        $1m $1-m
-        $1n $1-n
-        $1o $1-o
-        $1p $1-p
-        $1q $1-q
+        $1 a
+        $1 b
+        $1 c
+        $1 d
+        $1 e
+        $1 f
+        $1 g
+        $1 h
+        $1 i
+        $1 j
+        $1 k
+        $1 l
+        $1 m
+        $1 n
+        $1 o
+        $1 p
+        $1 q
     """
 )
 

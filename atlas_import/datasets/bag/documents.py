@@ -240,6 +240,7 @@ class Nummeraanduiding(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+        all = document.MetaField(enabled=False)
 
 
 class Bouwblok(es.DocType):
