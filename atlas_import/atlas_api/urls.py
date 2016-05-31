@@ -92,7 +92,8 @@ class WkpbRouter(routers.DefaultRouter):
     Wkpd
 
     De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
-    bevat alle bij wet genoemde beperkingenbesluiten op onroerende zaken, die het gemeentebestuur heeft opgelegd.
+    bevat alle bij wet genoemde beperkingenbesluiten op onroerende
+    zaken, die het gemeentebestuur heeft opgelegd.
     """
     def get_api_root_view(self):
         view = super().get_api_root_view()
@@ -124,7 +125,9 @@ class AtlasRouter(routers.DefaultRouter):
 bag = BagRouter()
 bag.register(r'ligplaats', datasets.bag.views.LigplaatsViewSet)
 bag.register(r'standplaats', datasets.bag.views.StandplaatsViewSet)
+
 bag.register(r'verblijfsobject', datasets.bag.views.VerblijfsobjectViewSet)
+
 bag.register(r'openbareruimte', datasets.bag.views.OpenbareRuimteViewSet)
 bag.register(r'nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 bag.register(r'pand', datasets.bag.views.PandViewSet)
@@ -135,18 +138,32 @@ gebieden = GebiedenRouter()
 gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
 gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
 gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
-gebieden.register(r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
-gebieden.register(r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
-gebieden.register(r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
+
+gebieden.register(
+    r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
+gebieden.register(
+    r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+gebieden.register(
+    r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
 
 
 brk = BrkRouter()
 brk.register(r'gemeente', datasets.brk.views.GemeenteViewSet)
-brk.register(r'kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+
+brk.register(
+    r'kadastrale-gemeente', datasets.brk.views.KadastraleGemeenteViewSet)
+
 brk.register(r'kadastrale-sectie', datasets.brk.views.KadastraleSectieViewSet)
 brk.register(r'subject', datasets.brk.views.KadastraalSubjectViewSet)
+
 brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
+
+brk.register(r'object-expand',
+             datasets.brk.views.KadastraalObjectViewSetExpand,
+             base_name='object-expand',
+             )
+
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
 
@@ -162,6 +179,7 @@ atlas = AtlasRouter()
 # Search related
 
 atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
+
 #atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
 # router.register(r'atlas/search', views.SearchViewSet, base_name='search')
 
@@ -190,7 +208,9 @@ atlas.register(
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
 search = SearchRouter()
-search.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
+search.register(
+    r'postcode', views.SearchExactPostcodeToevoegingViewSet,
+    base_name='postcode')
 
 urlpatterns = [
     url(r'^gebieden/bouwblok/(?P<code>....)/?$',
