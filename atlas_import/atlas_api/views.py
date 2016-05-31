@@ -32,7 +32,8 @@ BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
 # Meetbout regex matches up to 8 digits
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
-ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+ADDRESS_PCODE_REGEX = re.compile(
+    '^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
 # Recognise house number in the search string
 HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
 
@@ -51,6 +52,7 @@ BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
+
 
 def analyze_query(query_string):
     """
@@ -96,7 +98,7 @@ def analyze_query(query_string):
         if not num:
             # There is no house number part
             # Return street name query
-            queries=[bagQ.weg_Q]
+            queries = [bagQ.weg_Q]
         else:
             # Checking if its postcode or street name
             try:
@@ -104,9 +106,10 @@ def analyze_query(query_string):
                 queries = [bagQ.comp_address_pcode_Q]
             except ValueError:
                 queries = [bagQ.street_name_and_num_Q]
-        #queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
+        # queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
     print(queries)
     return queries
+
 
 def prepare_query_string(query_string):
     """
@@ -169,18 +172,18 @@ def add_sorting(sorts):
     """
     Sorts the sorting order
     """
-    sorting_order = ['naam.raw','straatnaam.raw', 'toevoeging.raw', 'huisnummer']
-    return (
-        {"order": {
-            "order": "asc", "missing": "_last", "unmapped_type": "long"}},
-        {"straatnaam": {
-            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        {"huisnummer": {
-            "order": "asc", "missing": "_first", "unmapped_type": "long"}},
-        {"adres": {
-            "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-        '-_score',
-    )
+    return ['naam.raw', 'straatnaam.raw', 'toevoeging.raw', 'huisnummer']
+    #return (
+    #    {"order": {
+    #        "order": "asc", "missing": "_last", "unmapped_type": "long"}},
+    #    {"straatnaam": {
+    #        "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+    #    {"huisnummer": {
+    #        "order": "asc", "missing": "_first", "unmapped_type": "long"}},
+    #    {"adres": {
+    #        "order": "asc", "missing": "_first", "unmapped_type": "string"}},
+    #    '-_score',
+    #)
 
 
 def _order_matches(matches):
@@ -694,7 +697,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
             .query(
                 bagQ.public_area_Q(query)['Q']
             )
-            .sort(*add_sorting())
+            # .sort(*add_sorting())
         )
 
     def list(self, request, *args, **kwargs):
@@ -760,7 +763,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
-        print('Postcode')
+        # print('Postcode')
         query = [bagQ.comp_address_pcode_Q(query_string)['Q'], bagQ.weg_Q(query_string)['Q']]
         return (
             Search()
