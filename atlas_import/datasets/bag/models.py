@@ -364,10 +364,10 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     @property
     def toevoeging(self):
         toevoeging = self.huisnummer_toevoeging
-        return '%s%s%s' % (
+        return '%s %s %s' % (
             str(self.huisnummer),
             self.huisletter if self.huisletter else '',
-            '-' + toevoeging if toevoeging else ''
+            ' ' + toevoeging if toevoeging else ''
         )
 
     @property
