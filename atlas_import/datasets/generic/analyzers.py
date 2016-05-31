@@ -149,9 +149,9 @@ bouwblok = es.analyzer(
         'edge_ngram_filter',
         type='edge_ngram',
         min_gram=2, max_gram=4,
-        token_chars=["letter", "digit" ]),
+        token_chars=["letter", "digit"]),
     filter=['lowercase', divider_stripper],
-    #char_filter=[divider_stripper]
+    # char_filter=[divider_stripper]
 )
 
 adres = es.analyzer(
@@ -159,7 +159,7 @@ adres = es.analyzer(
     tokenizer='standard',
     # filter=['lowercase', 'asciifolding', synonym_filter],
     filter=['lowercase', 'asciifolding'],
-    char_filter=[naam_stripper, huisnummer_generate],
+    char_filter=[naam_stripper],
 )
 
 straatnaam = es.analyzer(

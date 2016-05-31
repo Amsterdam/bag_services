@@ -280,7 +280,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         ordered_results = []
         result_order = [
             'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
-            'kadastraal_object',]
+            'kadastraal_object']
         # This might be better handled on the front end
         pretty_names = [
             'Straatnamen', 'Adres', 'Bouwblok',

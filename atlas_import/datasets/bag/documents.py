@@ -42,6 +42,7 @@ class Ligplaats(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
 
 
 class Standplaats(es.DocType):
@@ -71,6 +72,7 @@ class Standplaats(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
 
 
 class Verblijfsobject(es.DocType):
@@ -240,7 +242,7 @@ class Nummeraanduiding(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-        all = document.MetaField(enabled=False)
+        all = es.MetaField(enabled=False)
 
 
 class Bouwblok(es.DocType):
@@ -260,6 +262,7 @@ class Bouwblok(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
 
 
 class ExactLocation(es.DocType):
@@ -277,6 +280,7 @@ class ExactLocation(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
 
 
 def get_centroid(geom, transform=None):
