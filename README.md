@@ -56,5 +56,7 @@ on Linux):
     docker-compose build
     docker-compose up -d database
     docker exec -it atlasbackend_database_1 update-atlas.sh
+    docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
 
-The import takes approximately 10 minutes.
+The database import takes approximately 10 minutes.
+The elastic index takes approximately 2 hours.
