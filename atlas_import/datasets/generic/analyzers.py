@@ -77,18 +77,6 @@ huisnummer_expand = analysis.token_filter(
 )
 
 
-# @FIXME these two char filters are the same
-# Strip dashes and change . to space
-adres_split = analysis.char_filter(
-    'adres_split',
-    type='mapping',
-    mappings=[
-        "-=>' '",  # Change '-' to separator
-        ".=>' '",  # change '.' to separator
-        "/=>' '",  # Change '/' to separator
-    ]
-)
-
 # Change dash and dot to space
 naam_stripper = analysis.char_filter(
     'naam_stripper',
@@ -99,6 +87,15 @@ naam_stripper = analysis.char_filter(
         "/=>' '",  # change '/' to separator
     ]
 )
+
+# normalizes ., -, / to space from text
+divider_normalizer = analysis.token_filter(
+    'divider_normalizer',
+    type='pattern_replace',
+    pattern='(str\.|\/|-)',
+    replacement=' '
+)
+
 
 # Removes ., -, / and space from text
 divider_stripper = analysis.token_filter(
@@ -164,8 +161,14 @@ adres = es.analyzer(
     'adres',
     tokenizer='standard',
     # filter=['lowercase', 'asciifolding', synonym_filter],
-    filter=['lowercase', divider_stripper, 'asciifolding'],
-    char_filter=[adres_split, huisnummer_generate],
+    filter=['lowercase', 'asciifolding'],
+    char_filter=[naam_stripper, huisnummer_generate],
+)
+
+straatnaam = es.analyzer(
+    'straatnaam',
+    tokenizer='standard',
+    filter=['lowercase', 'asciifolding', divider_normalizer],
 )
 
 naam = es.analyzer(
@@ -195,7 +198,7 @@ huisnummer = es.analyzer(
     'huisnummer',
     tokenizer='whitespace',
     filter=['lowercase', huisnummer_expand],
-    char_filter=[adres_split, huisnummer_generate],
+    char_filter=[naam_stripper],
 )
 
 subtype = es.analyzer(
@@ -220,7 +223,8 @@ ngram = es.analyzer(
 toevoeging = es.analyzer(
     'toevoeging_analyzer',
     tokenizer='keyword',
-    filter=['lowercase', divider_stripper, edge_ngram_filter]
+    filter=['lowercase', edge_ngram_filter],
+    char_filter=[naam_stripper]
 )
 
 kad_obj_aanduiding = es.analyzer(

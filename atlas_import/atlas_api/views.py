@@ -33,9 +33,10 @@ BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
 ADDRESS_PCODE_REGEX = re.compile(
-    '^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+    '^1\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d|[a-zA-Z])*$')
+
 # Recognise house number in the search string
-HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
+HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -167,25 +168,6 @@ class QueryMetadata(metadata.SimpleMetadata):
         }
         return result
 
-
-def add_sorting(sorts):
-    """
-    Sorts the sorting order
-    """
-    return ['naam.raw', 'straatnaam.raw', 'toevoeging.raw', 'huisnummer']
-    #return (
-    #    {"order": {
-    #        "order": "asc", "missing": "_last", "unmapped_type": "long"}},
-    #    {"straatnaam": {
-    #        "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-    #    {"huisnummer": {
-    #        "order": "asc", "missing": "_first", "unmapped_type": "long"}},
-    #    {"adres": {
-    #        "order": "asc", "missing": "_first", "unmapped_type": "string"}},
-    #    '-_score',
-    #)
-
-
 def _order_matches(matches):
     for sub_type in matches.keys():
         count_values = sorted(
@@ -253,14 +235,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
         queries = []
-        sorting = {}
+        sorting = []
         # collect queries and ignore aggregations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
             if 'S' in qa:
-                sorting.update(qa['S'])
-        sorting = (sorting, )
+                sorting.extend(qa['S'])
         search = (
             Search()
             .using(self.client)
@@ -697,7 +678,6 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
             .query(
                 bagQ.public_area_Q(query)['Q']
             )
-            # .sort(*add_sorting())
         )
 
     def list(self, request, *args, **kwargs):

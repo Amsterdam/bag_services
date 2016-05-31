@@ -15,7 +15,7 @@ from elasticsearch_dsl import Search, Q, A
 
 POSTCODE = re.compile('[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?')
 # Recognise the house number part
-HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
+HOUSE_NUMBER = re.compile('((\d+)((( \-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 def normalize_postcode(query):
     """
@@ -59,10 +59,10 @@ def comp_address_pcode_Q(query):
             'bool',
             must=[
                 Q('term', postcode=pcode_query),
-                Q('prefix', toevoeging_raw=num_query),
+                Q({'prefix': {'toevoeging.raw': num_query}}),
             ]
         ),
-        'S': {'huisnummer': {'order': 'asc', 'unmapped_type': 'long'}, 'toevoeging.raw': {'order': 'asc',  'unmapped_type': 'sting'}}
+        'S': ['huisnummer', 'toevoeging.raw']
     }
 
 
@@ -77,7 +77,7 @@ def comp_address_Q(query):
             query=query,
             default_operator='AND',
         ),
-        'S': {'comp_address.raw': { 'order': 'asc',  'unmapped_type': 'string'}}
+        'S': ['_display']
     }
 
 
@@ -96,10 +96,10 @@ def street_name_and_num_Q(query):
             'bool',
             must=[
                 Q('bool', should=[Q('term', straatnaam_keyword=street_query), Q('term', straatnaam_nen_keyword=street_query), Q('term', straatnaam_ptt_keyword=street_query)], minimum_should_match=1),
-                Q('prefix', toevoeging_raw=num_query),
+                Q({'prefix': {'toevoeging.raw': num_query}}),
             ]
         ),
-        'S': {'huisnummer': {'order': 'asc',  'unmapped_type': 'long'}, 'toevoeging.raw': {'order': 'asc', 'ignore_unmapped': True, 'unmapped_type': 'string'}}
+        'S': ['huisnummer', 'toevoeging.raw']
     }
 
 
@@ -161,7 +161,7 @@ def weg_Q(query):
                 Q('match', subtype='weg'),
             ],
         ),
-        'S': {'_display': {'order': 'asc'}}
+        'S': ['_display']
 
     }
 

@@ -223,11 +223,9 @@ class Nummeraanduiding(es.DocType):
 
     huisnummer = es.Integer(
         fields={'variation': es.String(analyzer=analyzers.huisnummer)})
-    toevoeging = es.String(
-        fields={'raw': es.String(index='not_analyzed'),
-                'analyzed': es.String(analyzer=analyzers.toevoeging)
-        })
-    toevoeging_raw=es.String(index='not_analyzed')
+    toevoeging = es.String(analyzer=analyzers.toevoeging,
+        fields={'raw': es.String(index='not_analyzed')}
+    )
 
     postcode = es.String(
         analyzer=analyzers.postcode,
@@ -365,7 +363,6 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
-    doc.toevoeging_raw = n.toevoeging
     if n.bron:
         doc.bron = n.bron.omschrijving
 
