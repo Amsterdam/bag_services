@@ -100,6 +100,15 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# normalizes ., -, / to space from text
+divider_normalizer = analysis.token_filter(
+    'divider_normalizer',
+    type='pattern_replace',
+    pattern='(str\.|\/|-)',
+    replacement=' '
+)
+
+
 # Removes ., -, / and space from text
 divider_stripper = analysis.token_filter(
     'divider_stripper',
@@ -220,7 +229,7 @@ ngram = es.analyzer(
 toevoeging = es.analyzer(
     'toevoeging_analyzer',
     tokenizer='keyword',
-    filter=['lowercase', divider_stripper, edge_ngram_filter]
+    filter=['lowercase', divider_normalizer, edge_ngram_filter]
 )
 
 kad_obj_aanduiding = es.analyzer(
