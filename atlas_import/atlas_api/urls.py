@@ -177,7 +177,7 @@ atlas.register(
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
 atlas.register(
     r'search/postcode',
-    views.SearchNummeraanduidingViewSet, base_name='search/postcode')
+    views.SearchPostcodeViewSet, base_name='search/postcode')
 atlas.register(
     r'search/kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')

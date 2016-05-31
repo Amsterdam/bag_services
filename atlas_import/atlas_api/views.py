@@ -70,7 +70,7 @@ def analyze_query(query_string):
     query_selector = [
         {
             'regex': PCODE_REGEX,
-            'query': [bagQ.weg_Q],
+            'query': [bagQ.weg_Q, bagQ.comp_address_pcode_Q],
         }, {
             'regex': BOUWBLOK_REGEX,
             'query': [bagQ.bouwblok_Q],
@@ -98,8 +98,14 @@ def analyze_query(query_string):
             # Return street name query
             queries=[bagQ.weg_Q]
         else:
-            queries = [bagQ.street_name_and_num_Q]
+            # Checking if its postcode or street name
+            try:
+                int(query_string[:4])
+                queries = [bagQ.comp_address_pcode_Q]
+            except ValueError:
+                queries = [bagQ.street_name_and_num_Q]
         queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
+    print(queries)
     return queries
 
 def prepare_query_string(query_string):
@@ -133,7 +139,7 @@ def _get_url(request, hit):
     if doc_type in _details:
         return rest.get_links(
             view_name=_details[doc_type],
-            kwargs=dict(pk=id), request=request)
+            kwargs={'pk': id}, request=request)
 
     # hit must have subtype
     assert hit.subtype
@@ -141,7 +147,7 @@ def _get_url(request, hit):
     if hit.subtype in _details:
         return rest.get_links(
             view_name=_details[hit.subtype],
-            kwargs=dict(pk=id), request=request)
+            kwargs={'pk': id}, request=request)
 
     return None
 
@@ -149,20 +155,21 @@ def _get_url(request, hit):
 class QueryMetadata(metadata.SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
-        result['parameters'] = dict(
-            q=dict(
-                type="string",
-                description="The query to search for",
-                required=False
-            )
-        )
+        result['parameters'] = {
+            'q': {
+                'type': 'string',
+                'description': 'The query to search for',
+                'required': False,
+            },
+        }
         return result
 
 
-def add_sorting():
+def add_sorting(sorts):
     """
-    Give human understandable sorting to the output
+    Sorts the sorting order
     """
+    sorting_order = ['naam.raw','straatnaam.raw', 'toevoeging.raw', 'huisnummer']
     return (
         {"order": {
             "order": "asc", "missing": "_last", "unmapped_type": "long"}},
@@ -243,13 +250,29 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
         queries = []
-        sorting = []
+        sorting = {}
         # collect queries and ignore aggregations
         for q in query_componentes:
             qa = q(query)
             queries.append(qa['Q'])
             if 'S' in qa:
-                sorting.extend(qa['S'])
+                sorting.update(qa['S'])
+        sorting = (sorting, )
+        sorting = [
+            OrderedDict({
+                "naam.raw": {
+                    "unmapped_type": "string",
+                    "order": "asc"
+                },   "huisnummer": {
+                    "unmapped_type": "long",
+                    "order": "asc"
+                },
+                "toevoeging.raw": {
+                    "unmapped_type": "sting",
+                    "order": "asc"
+                }
+            })
+        ]
         search = (
             Search()
             .using(self.client)
@@ -269,33 +292,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
         return search
 
     def _get_uri(self, request, hit):
-        # Retrieves the uri part for an item 
+        # Retrieves the uri part for an item
         url = _get_url(request, hit)['self']['href']
         uri = urlparse(url).path[1:]
         return uri
 
-    def _choose_display_field(self, item):
-        """Returns the value to set in the display field based on the object subtype"""
-        disp = None
-        try:
-            if item.subtype == 'bouwblok':
-                disp = item.code
-            elif item.subtype == 'verblijfsobject':
-                disp = item.comp_address
-            elif item.subtype == 'exact':
-                disp = item.adres
-            elif item.subtype == 'weg':
-                disp = item.naam
-            elif item.subtype == 'kadastraal_subject':
-                disp = item.naam
-            elif item.subtype == 'kadastraal_object':
-                disp = item.aanduiding
-        except Exception as exp:
-            # Some default
-            pass
-        return disp
-
-    def _order_results(self, result, query_string, request, alphabetical):
+    def _order_results(self, result, query_string, request):
         """
         Arrange the aggregated results, possibly sorting them
         alphabetically
@@ -304,10 +306,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
         result - the elastic search result object
         query_string - the query string used to search for. This is for exact
                        match recognition
-        alphabetical - flag for sorting alphabetical
         """
         result_sets = {}
-        ordered_results = [] 
+        ordered_results = []
         result_order = [
             'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
             'kadastraal_object',]
@@ -317,8 +318,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
             'Kadastrale subjecten', 'Kadastrale objecten']
         postcode = PCODE_REGEX.match(query_string)
         # Orginizing the results
+        print('Results:', len(result))
         for hit in result:
-            disp = self._choose_display_field(hit)
+            disp = hit._display
             uri = self._get_uri(request, hit)
             # Only add results we generate uri for
             # @TODO this should not be used like this as result filter
@@ -358,7 +360,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
-        res = self._order_results(result, query, request, alphabetical)
+        res = self._order_results(result, query, request)
         return res
 
     def list(self, request, *args, **kwargs):
@@ -751,10 +753,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .using(client)
             .index(NUMMERAANDUIDING)
             .query(
-                # multimatch_nummeraanduiding_Q(query)
                 bagQ.comp_address_Q(query)['Q']
-                # bagQ.comp_address_f_Q(query)['Q']
-                # bagQ.comp_address_fuzzy_Q(query)['Q']
             )
         )
 
@@ -776,12 +775,16 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
-        query = bagQ.postcode_Q(query_string)['Q']
+        print('Postcode')
+        query = [bagQ.comp_address_pcode_Q(query_string)['Q'], bagQ.weg_Q(query_string)['Q']]
         return (
             Search()
             .using(client)
             .index(NUMMERAANDUIDING)
-            .query(query)
+            .query(
+                'bool',
+                should=query
+            )
         ).sort('postcode.raw')
 
     def list(self, request, *args, **kwargs):

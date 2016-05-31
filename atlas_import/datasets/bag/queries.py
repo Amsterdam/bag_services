@@ -62,7 +62,7 @@ def comp_address_pcode_Q(query):
                 Q('prefix', toevoeging_raw=num_query),
             ]
         ),
-        'S': ['huisnummer', 'toevoeging_raw']
+        'S': {'huisnummer': {'order': 'asc', 'unmapped_type': 'long'}, 'toevoeging.raw': {'order': 'asc',  'unmapped_type': 'sting'}}
     }
 
 
@@ -73,11 +73,11 @@ def comp_address_Q(query):
         'A': A('terms', field='adres.raw'),
         'Q': Q(
             'query_string',
-            fields=['comp_address', 'comp_address_nen', 'comp_address_ptt'],
+            fields=['comp_address', 'comp_address_nen', 'comp_address_ptt', 'comp_address_pcode^10'],
             query=query,
             default_operator='AND',
         ),
-        'S': ['comp_address.raw']
+        'S': {'comp_address.raw': { 'order': 'asc',  'unmapped_type': 'string'}}
     }
 
 
@@ -87,10 +87,6 @@ def street_name_and_num_Q(query):
     #--------------------------------------------------
     # Finding the housenumber part
     num = HOUSE_NUMBER.search(query)
-    if not num:
-        # There is no house number part
-        # Return street name query
-        return weg_Q(query)
     # Finding the break point
     num_query = num.groups()[0].upper()
     street_query = query[:-len(num_query)].rstrip()
@@ -103,7 +99,7 @@ def street_name_and_num_Q(query):
                 Q('prefix', toevoeging_raw=num_query),
             ]
         ),
-        'S': ['huisnummer', 'toevoeging_raw']
+        'S': {'huisnummer': {'order': 'asc',  'unmapped_type': 'long'}, 'toevoeging.raw': {'order': 'asc', 'ignore_unmapped': True, 'unmapped_type': 'string'}}
     }
 
 
@@ -164,7 +160,10 @@ def weg_Q(query):
                 Q('multi_match', query=query, type="phrase_prefix",fields=['naam', 'postcode']),
                 Q('match', subtype='weg'),
             ],
+            boost=2,
         ),
+        'S': {'naam.raw': {'order': 'asc',  'unmapped_type': 'string'}}
+
     }
 
 

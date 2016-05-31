@@ -101,7 +101,7 @@ naam_stripper = analysis.char_filter(
 )
 
 # Removes ., -, / and space from text
-divider_stripper = analysis.char_filter(
+divider_stripper = analysis.token_filter(
     'divider_stripper',
     type='pattern_replace',
     pattern='(str\.\/|-|\.| )',
@@ -156,15 +156,15 @@ bouwblok = es.analyzer(
         type='edge_ngram',
         min_gram=2, max_gram=4,
         token_chars=["letter", "digit" ]),
-    filter=['lowercase'],
-    char_filter=[divider_stripper]
+    filter=['lowercase', divider_stripper],
+    #char_filter=[divider_stripper]
 )
 
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
     # filter=['lowercase', 'asciifolding', synonym_filter],
-    filter=['lowercase', 'asciifolding'],
+    filter=['lowercase', divider_stripper, 'asciifolding'],
     char_filter=[adres_split, huisnummer_generate],
 )
 
