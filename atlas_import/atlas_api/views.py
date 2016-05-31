@@ -32,9 +32,9 @@ BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
 # Meetbout regex matches up to 8 digits
 MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
 # Address postcode regex
-ADDRESS_PCODE_REGEX = re.compile('^[1-9]\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d+[a-zA-Z]*)?$')
+ADDRESS_PCODE_REGEX = re.compile('^1\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d|[a-zA-Z])*$')
 # Recognise house number in the search string
-HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
+HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 # Mapping of subtypes with detail views
 _details = {

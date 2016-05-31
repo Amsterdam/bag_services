@@ -15,7 +15,7 @@ from elasticsearch_dsl import Search, Q, A
 
 POSTCODE = re.compile('[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?')
 # Recognise the house number part
-HOUSE_NUMBER = re.compile('((\d+)((\-?[a-zA-Z\-]{0,3})|(\-\d*)))$')
+HOUSE_NUMBER = re.compile('((\d+)((( \-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 def normalize_postcode(query):
     """
