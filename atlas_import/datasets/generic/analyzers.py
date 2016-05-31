@@ -104,7 +104,7 @@ naam_stripper = analysis.char_filter(
 divider_stripper = analysis.token_filter(
     'divider_stripper',
     type='pattern_replace',
-    pattern='(str\.\/|-|\.| )',
+    pattern='(str\.|\/|-|\.| )',
     replacement=''
 )
 
@@ -124,11 +124,11 @@ ngram_filter = analysis.token_filter(
 )
 
 # Create edge ngram filtering to postcode
-autocomplete_filter = analysis.token_filter(
-    'autocomplete_filter',
+edge_ngram_filter = analysis.token_filter(
+    'edge_ngram_filter',
     type='edge_ngram',
-    min_gram=3,
-    max_gram=20
+    min_gram=1,
+    max_gram=15
 )
 
 # Creating ngram filtering to kadastral objects
@@ -152,7 +152,7 @@ kadastrale_aanduiding = es.analyzer(
 bouwblok = es.analyzer(
     'bouwblok',
     tokenizer=tokenizer(
-        'autocomplete_filter',
+        'edge_ngram_filter',
         type='edge_ngram',
         min_gram=2, max_gram=4,
         token_chars=["letter", "digit" ]),
@@ -207,7 +207,7 @@ subtype = es.analyzer(
 autocomplete = es.analyzer(
     'autocomplete',
     tokenizer='standard',
-    filter=['lowercase', autocomplete_filter]
+    filter=['lowercase', edge_ngram_filter]
 )
 
 ngram = es.analyzer(
@@ -216,7 +216,13 @@ ngram = es.analyzer(
     filter=['lowercase', ngram_filter]
 )
 
-    
+
+toevoeging = es.analyzer(
+    'toevoeging_analyzer',
+    tokenizer='keyword',
+    filter=['lowercase', divider_stripper, edge_ngram_filter]
+)
+
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
     tokenizer=tokenizer(

@@ -70,7 +70,7 @@ def analyze_query(query_string):
     query_selector = [
         {
             'regex': PCODE_REGEX,
-            'query': [bagQ.weg_Q, bagQ.comp_address_pcode_Q],
+            'query': [bagQ.weg_Q],
         }, {
             'regex': BOUWBLOK_REGEX,
             'query': [bagQ.bouwblok_Q],
@@ -104,7 +104,7 @@ def analyze_query(query_string):
                 queries = [bagQ.comp_address_pcode_Q]
             except ValueError:
                 queries = [bagQ.street_name_and_num_Q]
-        queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
+        #queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
     print(queries)
     return queries
 
@@ -258,21 +258,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
             if 'S' in qa:
                 sorting.update(qa['S'])
         sorting = (sorting, )
-        sorting = [
-            OrderedDict({
-                "naam.raw": {
-                    "unmapped_type": "string",
-                    "order": "asc"
-                },   "huisnummer": {
-                    "unmapped_type": "long",
-                    "order": "asc"
-                },
-                "toevoeging.raw": {
-                    "unmapped_type": "sting",
-                    "order": "asc"
-                }
-            })
-        ]
         search = (
             Search()
             .using(self.client)

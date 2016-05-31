@@ -224,7 +224,9 @@ class Nummeraanduiding(es.DocType):
     huisnummer = es.Integer(
         fields={'variation': es.String(analyzer=analyzers.huisnummer)})
     toevoeging = es.String(
-        fields={'raw': es.String(index='not_analyzed')})
+        fields={'raw': es.String(index='not_analyzed'),
+                'analyzed': es.String(analyzer=analyzers.toevoeging)
+        })
     toevoeging_raw=es.String(index='not_analyzed')
 
     postcode = es.String(

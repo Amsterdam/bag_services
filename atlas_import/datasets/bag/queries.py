@@ -160,9 +160,8 @@ def weg_Q(query):
                 Q('multi_match', query=query, type="phrase_prefix",fields=['naam', 'postcode']),
                 Q('match', subtype='weg'),
             ],
-            boost=2,
         ),
-        'S': {'naam.raw': {'order': 'asc',  'unmapped_type': 'string'}}
+        'S': {'_display': {'order': 'asc'}}
 
     }
 
