@@ -59,7 +59,7 @@ def comp_address_pcode_Q(query):
             'bool',
             must=[
                 Q('term', postcode=pcode_query),
-                Q({'prefix': {'toevoeging': num_query}}),
+                Q({'match_phrase_prefix': {'toevoeging': num_query}}),
             ]
         ),
         'S': ['huisnummer', 'toevoeging.raw']
@@ -102,10 +102,10 @@ def street_name_and_num_Q(query):
             'bool',
             must=[
                 Q('bool', should=[Q('term', straatnaam_keyword=street_query), Q('term', straatnaam_nen_keyword=street_query), Q('term', straatnaam_ptt_keyword=street_query)], minimum_should_match=1),
-                Q({'prefix': {'toevoeging': num_query}}),
+                Q('match', field='toevoeging', query=num_query, operator='and', type='phrase_prefix'),
             ]
         ),
-        'S': ['huisnummer', 'toevoeging.raw']
+        'S': ['huisnummer'] #, 'toevoeging.raw']
     }
 
 
