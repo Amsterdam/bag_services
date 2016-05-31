@@ -100,12 +100,18 @@ class ImportIndexTask(object):
 
         start_time = time.time()
         duration = time.time()
-        elapsed = duration - start_time
+        loop_time = elapsed = duration - start_time
 
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
 
-            progres_msg = 'batch %s of %s : %8s %8s %8s duration: %.2f' % (
-                batch_i, total_batches, start, end, total, elapsed)
+            loop_start = time.time()
+            total_left = ((total_batches - batch_i) * loop_time) + 1 / 60
+
+            progres_msg = \
+                '%s of %s : %8s %8s %8s duration: %.2f left: %.2f' % (
+                    batch_i, total_batches, start, end, total, elapsed,
+                    total_left
+                )
 
             log.debug(progres_msg)
 
@@ -116,8 +122,9 @@ class ImportIndexTask(object):
                 refresh=True
             )
 
-            duration = time.time()
-            elapsed = duration - start_time
+            now = time.time()
+            elapsed = now - start_time
+            loop_time = now - loop_start
 
         # When testing put all docs in one shard to make sure we have
         # correct scores/doc counts and test will succeed

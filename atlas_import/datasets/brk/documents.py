@@ -19,6 +19,7 @@ class KadastraalObject(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
 
 
 class KadastraalSubject(es.DocType):
@@ -38,6 +39,7 @@ class KadastraalSubject(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
 
 
 def from_kadastraal_subject(ks):
