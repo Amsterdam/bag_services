@@ -66,14 +66,6 @@ LOGGING = {
 			'level': 'WARNING',
 			'propagate': True,
 		},
-        'elasticsearch': {
-            'level': 'WARNING',
-            'handlers': ['console'],
-        },
-        'elasticsearch.trace': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-        },
     },
 }
 
