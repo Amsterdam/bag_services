@@ -7,6 +7,7 @@ import datasets.brk.batch
 import datasets.wkpb.batch
 
 from batch import batch
+import time
 
 
 class Command(BaseCommand):
@@ -64,6 +65,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dataset = options['dataset']
+        start = time.time()
 
         for ds in dataset:
             if ds not in self.indexes.keys():
@@ -94,3 +96,6 @@ class Command(BaseCommand):
             if options['build_index']:
                 for job_class in self.indexes[ds]:
                     batch.execute(job_class())
+
+        self.stdout.write(
+            "Total Duration: %.2f seconds" % (time.time() - start))

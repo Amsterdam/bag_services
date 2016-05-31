@@ -11,7 +11,7 @@ from elasticsearch.exceptions import NotFoundError
 
 from elasticsearch_dsl.connections import connections
 
-from tqdm import tqdm
+import time
 
 log = logging.getLogger(__name__)
 
@@ -98,19 +98,26 @@ class ImportIndexTask(object):
             refresh=True
         )
 
+        start_time = time.time()
+        duration = time.time()
+        elapsed = duration - start_time
+
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
 
-            progres_msg = 'batch %s of %s : %8s %8s %8s' % (
-                batch_i, total_batches, start, end, total)
+            progres_msg = 'batch %s of %s : %8s %8s %8s duration: %.2f' % (
+                batch_i, total_batches, start, end, total, elapsed)
 
             log.debug(progres_msg)
 
             helpers.bulk(
                 client, (self.convert(obj).to_dict(include_meta=True)
-                         for obj in tqdm(qs)),
+                         for obj in qs),
                 raise_on_error=True,
                 refresh=True
             )
+
+            duration = time.time()
+            elapsed = duration - start_time
 
         # When testing put all docs in one shard to make sure we have
         # correct scores/doc counts and test will succeed
