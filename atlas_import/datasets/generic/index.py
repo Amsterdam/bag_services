@@ -39,6 +39,13 @@ class DeleteIndexTask(object):
 
         idx = es.Index(self.index)
 
+        # needs better fix
+        if (settings.PARTIAL_IMPORT['denominator'] > 1 and
+           settings.PARTIAL_IMPORT['numerator'] > 0):
+            log.info("Partial index no delete needed %s", self.index)
+            print('Skip deleting')
+            return
+
         try:
             idx.delete(ignore=404)
             log.info("Deleted index %s", self.index)
@@ -78,12 +85,24 @@ class ImportIndexTask(object):
                     print article.body
         """
         qs = self.get_queryset()
+
         batch_size = settings.BATCH_SETTINGS['batch_size']
-        self.total = total = qs.count()
+        denominator = settings.PARTIAL_IMPORT['denominator']
+        numerator = settings.PARTIAL_IMPORT['numerator']
+
+        total = qs.count()
+        start_index = 0
+
+        # Do partial import
+        if denominator > 1:
+            chunk_size = int(total / denominator)
+            start_index = numerator * chunk_size
+            end_part = (numerator + 1) * chunk_size
+            total = end_part - start_index
 
         total_batches = int(total / batch_size)
 
-        for i, start in enumerate(range(0, total, batch_size)):
+        for i, start in enumerate(range(start_index, total, batch_size)):
             end = min(start + batch_size, total)
             yield (i+1, total_batches+1, start, end, total, qs[start:end])
 
