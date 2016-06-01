@@ -60,3 +60,5 @@ on Linux):
 
 The database import takes approximately 10 minutes.
 The elastic index takes approximately 2 hours.
+
+Tets
