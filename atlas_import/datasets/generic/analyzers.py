@@ -38,33 +38,30 @@ huisnummer_generate = analysis.char_filter(
     pattern='(\d+)',
     replacement="""
         $1
-        $1-1
-        $1-2
-        $1-3
-        $1-4
-        $1-5
 
-        $1a-1
-        $1a-2
-        $1b-1
+        $1 1
+        $1 2
+        $1 3
+        $1 4
+        $1 5
 
-        $1a $1-a
-        $1b $1-b
-        $1c $1-c
-        $1d $1-d
-        $1e $1-e
-        $1f $1-f
-        $1g $1-g
-        $1h $1-h
-        $1i $1-i
-        $1j $1-j
-        $1k $1-k
-        $1l $1-l
-        $1m $1-m
-        $1n $1-n
-        $1o $1-o
-        $1p $1-p
-        $1q $1-q
+        $1 a
+        $1 b
+        $1 c
+        $1 d
+        $1 e
+        $1 f
+        $1 g
+        $1 h
+        $1 i
+        $1 j
+        $1 k
+        $1 l
+        $1 m
+        $1 n
+        $1 o
+        $1 p
+        $1 q
     """
 )
 
@@ -77,18 +74,6 @@ huisnummer_expand = analysis.token_filter(
 )
 
 
-# @FIXME these two char filters are the same
-# Strip dashes and change . to space
-adres_split = analysis.char_filter(
-    'adres_split',
-    type='mapping',
-    mappings=[
-        "-=>' '",  # Change '-' to separator
-        ".=>' '",  # change '.' to separator
-        "/=>' '",  # Change '/' to separator
-    ]
-)
-
 # Change dash and dot to space
 naam_stripper = analysis.char_filter(
     'naam_stripper',
@@ -100,11 +85,20 @@ naam_stripper = analysis.char_filter(
     ]
 )
 
+# normalizes ., -, / to space from text
+divider_normalizer = analysis.token_filter(
+    'divider_normalizer',
+    type='pattern_replace',
+    pattern='(str\.|\/|-)',
+    replacement=' '
+)
+
+
 # Removes ., -, / and space from text
-divider_stripper = analysis.char_filter(
+divider_stripper = analysis.token_filter(
     'divider_stripper',
     type='pattern_replace',
-    pattern='(str\.\/|-|\.| )',
+    pattern='(str\.|\/|-|\.| )',
     replacement=''
 )
 
@@ -124,11 +118,11 @@ ngram_filter = analysis.token_filter(
 )
 
 # Create edge ngram filtering to postcode
-autocomplete_filter = analysis.token_filter(
-    'autocomplete_filter',
+edge_ngram_filter = analysis.token_filter(
+    'edge_ngram_filter',
     type='edge_ngram',
-    min_gram=3,
-    max_gram=20
+    min_gram=1,
+    max_gram=15
 )
 
 # Creating ngram filtering to kadastral objects
@@ -152,12 +146,12 @@ kadastrale_aanduiding = es.analyzer(
 bouwblok = es.analyzer(
     'bouwblok',
     tokenizer=tokenizer(
-        'autocomplete_filter',
+        'edge_ngram_filter',
         type='edge_ngram',
         min_gram=2, max_gram=4,
-        token_chars=["letter", "digit" ]),
-    filter=['lowercase'],
-    char_filter=[divider_stripper]
+        token_chars=["letter", "digit"]),
+    filter=['lowercase', divider_stripper],
+    # char_filter=[divider_stripper]
 )
 
 adres = es.analyzer(
@@ -165,13 +159,20 @@ adres = es.analyzer(
     tokenizer='standard',
     # filter=['lowercase', 'asciifolding', synonym_filter],
     filter=['lowercase', 'asciifolding'],
-    char_filter=[adres_split, huisnummer_generate],
+    char_filter=[naam_stripper],
+)
+
+straatnaam = es.analyzer(
+    'straatnaam',
+    tokenizer='standard',
+    filter=['lowercase', 'asciifolding', divider_normalizer],
 )
 
 naam = es.analyzer(
     'naam',
     tokenizer='standard',
-    filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
+    # filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
+    filter=['standard', 'lowercase', 'asciifolding'],
     char_filter=[naam_stripper],
 )
 
@@ -195,7 +196,7 @@ huisnummer = es.analyzer(
     'huisnummer',
     tokenizer='whitespace',
     filter=['lowercase', huisnummer_expand],
-    char_filter=[adres_split, huisnummer_generate],
+    char_filter=[naam_stripper],
 )
 
 subtype = es.analyzer(
@@ -207,7 +208,7 @@ subtype = es.analyzer(
 autocomplete = es.analyzer(
     'autocomplete',
     tokenizer='standard',
-    filter=['lowercase', autocomplete_filter]
+    filter=['lowercase', edge_ngram_filter]
 )
 
 ngram = es.analyzer(
@@ -216,7 +217,14 @@ ngram = es.analyzer(
     filter=['lowercase', ngram_filter]
 )
 
-    
+
+toevoeging = es.analyzer(
+    'toevoeging_analyzer',
+    tokenizer='keyword',
+    filter=['lowercase', edge_ngram_filter],
+    char_filter=[naam_stripper]
+)
+
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
     tokenizer=tokenizer(

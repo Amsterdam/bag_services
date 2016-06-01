@@ -1,5 +1,7 @@
 # Python
 from unittest import skip
+import string
+import random
 # Packages
 from rest_framework.test import APITestCase
 # Project
@@ -17,6 +19,27 @@ class TypeaheadTest(APITestCase):
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
+
+        linnaeusdwarsstraat = bag_factories.OpenbareRuimteFactory.create(
+            naam="linnaeusdwarsstraat")
+
+        weesperstraat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Weesperstraat")
+
+        metro_weesperstraat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Metrostation Weesperstraat")
+
+        bron_schimmel = bag_factories.OpenbareRuimteFactory.create(
+            naam="Baron Schimmelpenninck van der Oyeweg")
+
+        pieter_corn = bag_factories.OpenbareRuimteFactory.create(
+            naam="Pieter Cornelisz. Hooftstraat"
+        )
+
+        rob_straatjes = [
+            linnaeusdwarsstraat, weesperstraat, metro_weesperstraat,
+            bron_schimmel, pieter_corn
+        ]
 
         bag_factories.NummeraanduidingFactory.create(
             openbare_ruimte=anjeliersstraat,
@@ -66,6 +89,20 @@ class TypeaheadTest(APITestCase):
                 toevoeging=2,
                 hoofdadres=True, postcode='1088RG')
 
+        # create some random nummeraanduidingen
+        for openbare_ruimte in rob_straatjes:
+            hi = random.randint(5, 50)
+            tv = random.choice(['2', 'A', 'AA', 'Z', '3'])
+            r_postcode = random.randint(1001, 1040)
+            l1 = random.choice(string.ascii_letters)
+            l2 = random.choice(string.ascii_letters)
+            postcode = '%s%s%s' % (r_postcode, l1, l2)
+
+            bag_factories.NummeraanduidingFactory.create(
+                openbare_ruimte=openbare_ruimte, huisnummer=hi,
+                toevoeging=tv,
+                hoofdadres=True, postcode=postcode)
+
         eerste_ganshof = bag_factories.OpenbareRuimteFactory.create(
             naam="1e Ganshof")
 
@@ -97,6 +134,8 @@ class TypeaheadTest(APITestCase):
             huisletter='P',
             hoofdadres=True, postcode='1188TV')
 
+        # Rob tests
+
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -115,12 +154,11 @@ class TypeaheadTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Anjeliersstraat", str(response.data))
 
-    @skip('Needs fixing')
     def test_match_adresseerbaar_object(self):
         response = self.client.get('/atlas/typeahead/', {'q': 'anjelier'})
         self.assertEqual(response.status_code, 200)
         self.assertIn("Anjeliersstraat", str(response.data))
-    @skip('Needs fixing')
+
     def test_match_rozenstraat(self):
         response = self.client.get('/atlas/typeahead/', {'q': 'rozengracht'})
         self.assertEqual(response.status_code, 200)
@@ -145,3 +183,42 @@ class TypeaheadTest(APITestCase):
         response = self.client.get("/atlas/typeahead/", {'q': '105'})
         self.assertIn("1e Ganshof", str(response.data))
 
+    # Rob tests
+
+    def test_partial_street_name(self):
+        response = self.client.get("/atlas/typeahead/", {'q': 'linnae'})
+        self.assertIn("linnaeusdwarsstraat", str(response.data))
+
+    def test_partial_with_metro(self):
+        response = self.client.get("/atlas/typeahead/", {'q': 'Weesperstraat'})
+        # todo order?
+        self.assertIn("Metrostation", str(response.data))
+        self.assertIn("Weesperstraat", str(response.data))
+
+    def test_partial_prefix_later_words(self):
+        response = self.client.get("/atlas/typeahead/", {'q': 'oyeweg'})
+        self.assertIn(
+            "Baron Schimmelpenninck van der Oyeweg",
+            str(response.data))
+
+    @skip('This should return results but is not essential')
+    def test_punctuations_in_street_name(self):
+        response = self.client.get("/atlas/typeahead/", {'q': 'p c hooft'})
+        self.assertIn(
+            "pieter cornelisz. hooftstraat",
+            str(response.data))
+
+    def test_random_shit_tests(self):
+        """
+        random stuff that crashes search / inspired by ein smoke tests
+        """
+        source = string.ascii_letters + string.digits + ' ' * 20
+        for i in range(150):
+            KEY_LEN = random.randint(1, 15)
+            keylist = [random.choice(source) for i in range(KEY_LEN)]
+            query = "".join(keylist)
+
+            response = self.client.get("/atlas/typeahead/", {
+                'q': "".join(query)})
+
+            self.assertEqual(response.status_code, 200)

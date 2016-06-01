@@ -4,61 +4,79 @@ from django.db import models
 from datasets.generic import mixins
 
 
-class Bron(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Bron(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+           models.Model):
     class Meta:
         verbose_name = "Bron"
         verbose_name_plural = "Bronnen"
 
 
-class Status(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Status(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+             models.Model):
     class Meta:
         verbose_name = "Status"
         verbose_name_plural = "Status"
 
 
-class RedenAfvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class RedenAfvoer(
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Reden Afvoer"
         verbose_name_plural = "Reden Afvoer"
 
 
-class RedenOpvoer(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class RedenOpvoer(
+            mixins.ImportStatusMixin,
+            mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Reden Opvoer"
         verbose_name_plural = "Reden Opvoer"
 
 
-class Eigendomsverhouding(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Eigendomsverhouding(
+            mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+            models.Model):
     class Meta:
         verbose_name = "Eigendomsverhouding"
         verbose_name_plural = "Eigendomsverhoudingen"
 
 
-class Financieringswijze(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Financieringswijze(
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Financieringswijze"
         verbose_name_plural = "Financieringswijzes"
 
 
-class Ligging(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Ligging(
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Ligging"
         verbose_name_plural = "Ligging"
 
 
-class Gebruik(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Gebruik(
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Gebruik"
         verbose_name_plural = "Gebruik"
 
 
-class LocatieIngang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class LocatieIngang(
+        mixins.ImportStatusMixin,
+        mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Locatie Ingang"
         verbose_name_plural = "Locaties Ingang"
 
 
-class Toegang(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin, models.Model):
+class Toegang(
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Toegang"
         verbose_name_plural = "Toegang"
@@ -79,8 +97,11 @@ class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
         return self.naam
 
 
-class Woonplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin,
-                 mixins.DocumentStatusMixin, models.Model):
+class Woonplaats(
+        mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+        mixins.ImportStatusMixin,
+        mixins.DocumentStatusMixin, models.Model):
+
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
@@ -98,8 +119,10 @@ class Woonplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.Im
 
 class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
     """
-    De hoofdklasse is een abstracte klasse waar sommige andere gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
-    Deze afstammelingen erven alle kenmerken over van deze hoofdklasse. Het kenmerk 'diva_id' komt bijvoorbeeld voor
+    De hoofdklasse is een abstracte klasse waar sommige andere
+    gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
+    Deze afstammelingen erven alle kenmerken over van deze hoofdklasse.
+    Het kenmerk 'diva_id' komt bijvoorbeeld voor
     bij alle gebieden.
     """
 
@@ -113,7 +136,8 @@ class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
 
 class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
     """
-    Door de Amsterdamse gemeenteraad vastgestelde begrenzing van een stadsdeel, ressorterend onder een stadsdeelbestuur.
+    Door de Amsterdamse gemeenteraad vastgestelde begrenzing van
+    een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
     http://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/
     """
@@ -136,8 +160,8 @@ class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
 
 class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     """
-    Een aaneengesloten gedeelte van een buurt, waarvan de grenzen zo veel mogelijk gebaseerd zijn op topografische
-    elementen.
+    Een aaneengesloten gedeelte van een buurt, waarvan de grenzen
+    zo veel mogelijk gebaseerd zijn op topografische elementen.
 
     http://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/
     """
@@ -150,7 +174,8 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(Stadsdeel, related_name='buurten')
-    buurtcombinatie = models.ForeignKey('Buurtcombinatie', related_name='buurten', null=True)
+    buurtcombinatie = models.ForeignKey(
+        'Buurtcombinatie', related_name='buurten', null=True)
 
     class Meta:
         verbose_name = "Buurt"
@@ -167,8 +192,10 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
 
 class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
     """
-    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in zijn geheel tot een buurt behorend, dat geheel of
-    grotendeels door bestaande of aan te leggen wegen en/of waterlopen is of zal zijn ingesloten en waarop tenminste
+    Een bouwblok is het kleinst mogelijk afgrensbare gebied, in
+    zijn geheel tot een buurt behorend, dat geheel of
+    grotendeels door bestaande of aan te leggen wegen en/of
+    waterlopen is of zal zijn ingesloten en waarop tenminste
     één gebouw staat.
 
     https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/
@@ -268,7 +295,8 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                 if deep:
                     pass
                 else:
-                    dct[field.name] = getattr(self, '{}_id'.format(field.name), None)
+                    dct[field.name] = getattr(
+                        self, '{}_id'.format(field.name), None)
             else:
                 dct[field.name] = getattr(self, field.name, '')
         return dct
@@ -306,16 +334,21 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     huisletter = models.CharField(max_length=1, null=True)
     huisnummer_toevoeging = models.CharField(max_length=4, null=True)
     postcode = models.CharField(max_length=6, null=True)
-    type = models.CharField(max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
+    type = models.CharField(
+        max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     adres_nummer = models.CharField(max_length=10, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
-    openbare_ruimte = models.ForeignKey(OpenbareRuimte, related_name='adressen')
+    openbare_ruimte = models.ForeignKey(
+        OpenbareRuimte, related_name='adressen')
 
-    ligplaats = models.ForeignKey('Ligplaats', null=True, related_name='adressen')
-    standplaats = models.ForeignKey('Standplaats', null=True, related_name='adressen')
-    verblijfsobject = models.ForeignKey('Verblijfsobject', null=True, related_name='adressen')
+    ligplaats = models.ForeignKey(
+        'Ligplaats', null=True, related_name='adressen')
+    standplaats = models.ForeignKey(
+        'Standplaats', null=True, related_name='adressen')
+    verblijfsobject = models.ForeignKey(
+        'Verblijfsobject', null=True, related_name='adressen')
 
     hoofdadres = models.NullBooleanField(default=None)
 
@@ -325,9 +358,12 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     class Meta:
         verbose_name = "Nummeraanduiding"
         verbose_name_plural = "Nummeraanduidingen"
-        ordering = ('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+        ordering = (
+            '_openbare_ruimte_naam', 'huisnummer',
+            'huisletter', 'huisnummer_toevoeging')
         index_together = (
-            ('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')
+            ('_openbare_ruimte_naam', 'huisnummer',
+             'huisletter', 'huisnummer_toevoeging')
         )
 
     def __str__(self):
@@ -345,7 +381,8 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         but instead add their ids
         """
         dct = {
-            'postcode': "{}-{}".format(self.postcode,self.toevoeging),
+            'postcode': "{} {}".format(
+                self.postcode, self.toevoeging),
             'huisnummer': self.huisnummer,
         }
         if deep:
@@ -354,21 +391,30 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                 'straatnaam': self.openbare_ruimte.naam,
                 'straatnaam_nen': self.openbare_ruimte.naam_nen,
                 'straatnaam_ptt': self.openbare_ruimte.naam_ptt
-            });
+            })
         else:
             dct.update({
                 'openbaar_ruimte': self.openbaar_ruimte_id
-            });
+            })
         return dct
 
     @property
     def toevoeging(self):
+
+        toevoegingen = []
+
         toevoeging = self.huisnummer_toevoeging
-        return '%s%s%s' % (
-            str(self.huisnummer),
-            self.huisletter if self.huisletter else '',
-            '-' + toevoeging if toevoeging else ''
-        )
+
+        if self.huisnummer:
+            toevoegingen.append(str(self.huisnummer))
+
+        if self.huisletter:
+            toevoegingen.append(str(self.huisletter))
+
+        if toevoeging:
+            toevoegingen.append(str(toevoeging))
+
+        return ' '.join(toevoegingen)
 
     @property
     def adresseerbaar_object(self):
@@ -426,10 +472,11 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                 mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
                 AdresseerbaarObjectMixin, models.Model):
     """
-    Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig aangewezen plaats in het water
-    al dan niet aangevuld met een op de oever aanwezig terrein of een gedeelte daarvan,
-    die bestemd is voor het permanent afmeren van een voor woon-, bedrijfsmatige of recreatieve doeleinden geschikt
-    vaartuig.
+    Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig
+    aangewezen plaats in het water al dan niet aangevuld met een op de
+    oever aanwezig terrein of een gedeelte daarvan, die bestemd is voor
+    het permanent afmeren van een voor woon-, bedrijfsmatige of
+    recreatieve doeleinden geschikt vaartuig.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/
     """
@@ -468,7 +515,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         if self._huisletter:
             result += self._huisletter
         if self._huisnummer_toevoeging:
-            result += '-' + self._huisnummer_toevoeging
+            result += ' ' + self._huisnummer_toevoeging
         return result
 
     @property
@@ -532,7 +579,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         if self._huisletter:
             result += self._huisletter
         if self._huisnummer_toevoeging:
-            result += '-' + self._huisnummer_toevoeging
+            result += ' ' + self._huisnummer_toevoeging
         return result
 
     @property
@@ -573,7 +620,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     oppervlakte = models.PositiveIntegerField(null=True)
     bouwlaag_toegang = models.IntegerField(null=True)
     status_coordinaat_code = models.CharField(max_length=3, null=True)
-    status_coordinaat_omschrijving = models.CharField(max_length=150, null=True)
+    status_coordinaat_omschrijving = models.CharField(
+        max_length=150, null=True)
     verhuurbare_eenheden = models.PositiveIntegerField(null=True)
     bouwlagen = models.PositiveIntegerField(null=True)
     type_woonobject_code = models.CharField(max_length=2, null=True)
@@ -611,9 +659,13 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     class Meta:
         verbose_name = "Verblijfsobject"
         verbose_name_plural = "Verblijfsobjecten"
-        ordering = ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+        ordering = (
+            '_openbare_ruimte_naam', '_huisnummer',
+            '_huisletter', '_huisnummer_toevoeging')
         index_together = [
-            ('_openbare_ruimte_naam', '_huisnummer', '_huisletter', '_huisnummer_toevoeging')
+            (
+                '_openbare_ruimte_naam', '_huisnummer',
+                '_huisletter', '_huisnummer_toevoeging')
         ]
 
     def __str__(self):
@@ -630,8 +682,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     @property
     def willekeurig_pand(self):
         """
-        Geeft het pand van dit verblijfsobject. Indien er meerdere panden zijn, wordt een willekeurig
-        pand gekozen.
+        Geeft het pand van dit verblijfsobject. Indien er meerdere
+        panden zijn, wordt een willekeurig pand gekozen.
         """
         if not self.panden.count():
             return None
@@ -667,11 +719,15 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return self.hoofdadres.woonplaats if self.hoofdadres else None
 
 
-class Pand(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin, mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-           models.Model):
+class Pand(
+        mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+        models.Model):
     """
-    Een PAND is de kleinste bij de totstandkoming functioneel en bouwkundig-constructief zelfstandige eenheid die direct
-    en duurzaam met de aarde is verbonden en betreedbaar en afsluitbaar is.
+    Een PAND is de kleinste bij de totstandkoming functioneel en
+    bouwkundig-constructief zelfstandige eenheid die direct
+    en duurzaam met de aarde is verbonden en betreedbaar en
+    afsluitbaar is.
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/
     """
@@ -729,16 +785,19 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
             self.id = self.pand_id + '_' + self.verblijfsobject_id
 
     def __str__(self):
-        return "Pand-Verblijfsobject({}-{})".format(self.pand_id, self.verblijfsobject_id)
+        return "Pand-Verblijfsobject({}-{})".format(
+            self.pand_id, self.verblijfsobject_id)
 
 
-class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
+class Buurtcombinatie(
+        mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     """
     model for data from shp files
 
     layer.fields:
 
-    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
+    ['ID', 'NAAM', 'CODE', 'VOLLCODE', 'DOCNR', 'DOCDATUM',
+     'INGSDATUM', 'EINDDATUM']
     """
 
     id = models.CharField(max_length=14, primary_key=True)
@@ -748,7 +807,8 @@ class Buurtcombinatie(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.M
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     ingang_cyclus = models.DateField(null=True)
-    stadsdeel = models.ForeignKey(Stadsdeel, null=True, related_name="buurtcombinaties")
+    stadsdeel = models.ForeignKey(
+        Stadsdeel, null=True, related_name="buurtcombinaties")
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 

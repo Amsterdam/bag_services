@@ -15,9 +15,11 @@ class KadastraalObject(es.DocType):
     centroid = es.GeoPoint()
 
     subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
 
 
 class KadastraalSubject(es.DocType):
@@ -33,9 +35,11 @@ class KadastraalSubject(es.DocType):
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
 
 
 def from_kadastraal_subject(ks):
@@ -51,6 +55,7 @@ def from_kadastraal_subject(ks):
     d.naam = ks.volledige_naam()
     d.order = analyzers.orderings['kadastraal_subject']
     d.subtype = 'kadastraal_subject'
+    d._display = d.naam
 
     return d
 
@@ -70,5 +75,6 @@ def from_kadastraal_object(ko):
         centroid.transform('wgs84')
 
         d.centroid = centroid.coords
+    d._display = d.aanduiding
 
     return d

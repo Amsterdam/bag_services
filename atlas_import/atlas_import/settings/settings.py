@@ -25,6 +25,10 @@ SECRET_KEY = 'k56a9)qv*%swsapf2)w4tjgjsjbs+fc83qq8!^13&usmlk3!5^'
 DEBUG = False
 
 # Application definition
+PARTIAL_IMPORT = dict(
+    numerator=0,
+    denominator=1
+)
 
 INSTALLED_APPS = (
     'django.contrib.admin',

@@ -8,6 +8,7 @@ import datasets.wkpb.batch
 
 from batch import batch
 import time
+import sys
 
 
 class Command(BaseCommand):
@@ -60,6 +61,12 @@ class Command(BaseCommand):
                             default=False,
                             help='Build elastic index from postgres')
 
+        parser.add_argument('--partial',
+                            action='store',
+                            dest='partial_index',
+                            default=0,
+                            help='Build X/Y parts 1/3, 2/3, 3/3')
+
         parser.add_argument('--batch-size', default='10000', type=int,
                             help='Change batch size on inport')
 
@@ -93,9 +100,24 @@ class Command(BaseCommand):
                 # we do not run the other tasks
                 continue  # to next dataset please..
 
+            if options['partial_index']:
+                numerator, denominator = options['partial_index'].split('/')
+
+                numerator = int(numerator) - 1
+                denominator = int(denominator)
+
+                assert(numerator < denominator)
+
+                if len(sets) > 1:
+                    print('Partial import can only be used with 1 dataset. ')
+                    sys.exit(1)
+
+                settings.PARTIAL_IMPORT['part'] = numerator
+                settings.PARTIAL_IMPORT['denominator'] = denominator
+
             if options['build_index']:
                 for job_class in self.indexes[ds]:
-                    batch.execute(job_class())
+                    batch.execute(job_class(), )
 
         self.stdout.write(
             "Total Duration: %.2f seconds" % (time.time() - start))
