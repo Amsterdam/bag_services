@@ -152,7 +152,9 @@ class Nummeraanduiding(es.DocType):
             'keyword': es.String(analyzer=analyzers.subtype),
         }
     )
+
     straatnaam_keyword = es.String(analyzer=analyzers.subtype)
+
     straatnaam_nen = es.String(
         analyzer=analyzers.adres,
         fields={
@@ -165,7 +167,9 @@ class Nummeraanduiding(es.DocType):
 
         }
     )
+
     straatnaam_nen_keyword = es.String(analyzer=analyzers.subtype)
+
     straatnaam_ptt = es.String(
         analyzer=analyzers.adres, fields={
             'raw': es.String(index='not_analyzed'),
@@ -177,6 +181,7 @@ class Nummeraanduiding(es.DocType):
 
         }
     )
+
     straatnaam_ptt_keyword = es.String(analyzer=analyzers.subtype)
 
     adres = es.String(
@@ -368,6 +373,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
+
     if n.bron:
         doc.bron = n.bron.omschrijving
 

@@ -171,7 +171,8 @@ straatnaam = es.analyzer(
 naam = es.analyzer(
     'naam',
     tokenizer='standard',
-    filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
+    # filter=['standard', 'lowercase', 'asciifolding', synonym_filter],
+    filter=['standard', 'lowercase', 'asciifolding'],
     char_filter=[naam_stripper],
 )
 

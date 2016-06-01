@@ -55,6 +55,23 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 
+def is_int(token):
+    try:
+        int(token)
+        return True
+    except ValueError:
+        return False
+
+
+def first_number(input_tokens):
+
+    for i, token in enumerate(input_tokens):
+        if is_int(token):
+            return i, token
+
+    return -1, ""
+
+
 def analyze_query(query_string):
     """
     Looks at the query string being filled and tries
@@ -69,6 +86,8 @@ def analyze_query(query_string):
 
     returns a list of queries that should be used
     """
+    tokens = query_string.split(' ')
+
     # A collection of regex and the query they generate
     query_selector = [
         {
@@ -85,30 +104,37 @@ def analyze_query(query_string):
             'query': [bagQ.comp_address_pcode_Q],
         }
     ]
+
     queries = []
+
     for option in query_selector:
+
         match = option['regex'].match(query_string)
+
         if match:
             queries.extend(option['query'])
+            break
+
     # Checking for a case in which no regex matches were
     # found. In which case, defaulting to address
     if not queries:
         # Deciding between looking at roads and looking at addresses
         # Finding the housenumber part
-        num = HOUSE_NUMBER.search(query_string)
-        if not num:
+        i, num = first_number(tokens)
+
+        if i > 0 and num:
+            # there is a number not as fist token
+            queries = [bagQ.street_name_and_num_Q]
+        elif i == 0 and num:
+            # there is a number as first number
+            queries.extend([bagQ.comp_address_pcode_Q])
+        else:
             # There is no house number part
             # Return street name query
-            queries = [bagQ.weg_Q]
-        else:
-            # Checking if its postcode or street name
-            try:
-                int(query_string[:4])
-                queries = [bagQ.comp_address_pcode_Q]
-            except ValueError:
-                queries = [bagQ.street_name_and_num_Q]
+            queries.extend([bagQ.weg_Q])
+
         # queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
-    print(queries)
+
     return queries
 
 
@@ -167,6 +193,7 @@ class QueryMetadata(metadata.SimpleMetadata):
             },
         }
         return result
+
 
 def _order_matches(matches):
     for sub_type in matches.keys():
@@ -234,29 +261,52 @@ class TypeaheadViewSet(viewsets.ViewSet):
     def autocomplete_query(self, query):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
+
         queries = []
         sorting = []
+
         # collect queries and ignore aggregations
         for q in query_componentes:
+
             qa = q(query)
+
             queries.append(qa['Q'])
+
             if 'S' in qa:
                 sorting.extend(qa['S'])
-        search = (
-            Search()
-            .using(self.client)
-            .index(BAG, BRK, NUMMERAANDUIDING)
-            .query(
-                'bool',
-                should=queries,
+
+        if len(queries) > 1:
+            search = (
+                Search()
+                .using(self.client)
+                .index(BAG, BRK, NUMMERAANDUIDING)
+                .query(
+                    'bool',
+                    should=queries,
+                )
+                # .sort(*sorting)
             )
-            .sort(*sorting)
-        )
+
+        elif queries:
+
+            search = (
+                Search()
+                .using(self.client)
+                .index(BAG, BRK, NUMMERAANDUIDING)
+                .query(queries[0])
+                # .sort(*sorting)
+            )
+
+        else:
+            log.debug('something went wrong..')
+
         # nice prety printing
         if settings.DEBUG:
             sq = search.to_dict()
             import json
-            print(json.dumps(sq, indent=4))
+            msg = json.dumps(sq, indent=4)
+            print(msg)
+            logging.debug(msg)
 
         return search
 
@@ -287,10 +337,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
             'Kadastrale subjecten', 'Kadastrale objecten']
 
         postcode = PCODE_REGEX.match(query_string)
+
         # Orginizing the results
-        print('Results:', len(result))
+        # print('Results:', len(result))
         if len(result) == 1:
-            print(result.to_dict())
+            pass
+            # print(result.to_dict())
 
         for hit in result:
             disp = hit._display
@@ -327,8 +379,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
 
-        result = self.autocomplete_query(query).execute(
-            ignore_cache=ignore_cache)
+        qr = self.autocomplete_query(query)
+
+        result = qr.execute(ignore_cache=ignore_cache)
 
         # Checking if there was aggregation in the autocomplete.
         # If there was that is what should be used for resutls

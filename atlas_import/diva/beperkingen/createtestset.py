@@ -37,6 +37,7 @@ infile.close()
 print len(ids), len(nrs)
 print ids
 print nrs
+
 createBelPerc(ids)
-createBrondoc(nrs)    
-    
+createBrondoc(nrs)
+
