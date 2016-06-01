@@ -52,9 +52,13 @@ Run `docker-compose` to determine the name of your database image:
 In this example, it's `atlasbackend_database_1`. Use that name in the following command (using `sudo` if you're running
 on Linux):
 
+    docker-compose pull
+    docker-compose build
+    docker-compose up -d database
     docker exec -it atlasbackend_database_1 update-atlas.sh
+    docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
 
-The import takes approximately 10 minutes.
-
+The database import takes approximately 10 minutes.
+The elastic index takes approximately 2 hours.
 
 test

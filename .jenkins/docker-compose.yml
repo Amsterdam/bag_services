@@ -42,11 +42,12 @@ db-backup:
                         -t brk* \
                         -t wkpb* \
                         -t geo*  \
-                        -t auth* \
-                        -t django_site  \
+                        -T django*  \
+                        -T auth*  \
+                        -T oauth2*  \
                         -U atlas \
                         -h db -p 5432 \
-                        atlas > /tmp/backups/atlas.dump"
+                        atlas > /tmp/backups/database.dump"
 
 el-backup:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
