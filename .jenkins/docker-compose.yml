@@ -11,7 +11,7 @@ elasticsearch:
   user: root
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
-importer:
+importer_pg:
   build: ..
   links:
     - database:database
@@ -25,7 +25,52 @@ importer:
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py migrate \
-            && python manage.py run_import"
+            && python manage.py run_import --no-index"
+
+importer_el1:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py elastic_indices --partial=1/3 --build"
+
+importer_el2:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py elastic_indices --partial=2/3 --build"
+
+importer_el3:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py elastic_indices --partial=3/3 --build"
 
 db-backup:
   image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
