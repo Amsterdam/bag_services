@@ -21,44 +21,49 @@ DATABASES = {
     }
 }
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-	'formatters': {
+    'formatters': {
 		'slack': {
 			'format': '%(message)s',
 		},
         'console': {
             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         },
-	},
+    },
     'handlers': {
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
-		'slackbot': {
+        'slackbot': {
 			'level': 'INFO',
 			'class': 'pyslack.SlackHandler',
 			'formatter': 'slack',
 			'token': 'xoxp-6265386162-12398459668-19042721156-74355df29d',
 			'username': 'atlas backend',
 			'channel': '#devops',
-		},
+        },
     },
-	'root': {
-		'level': 'WARNING',
-		'handlers': ['console'],
-	},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console'],
+    },
     'loggers': {
 		# Debug all batch jobs
-		'batch': {
-			'handlers': ['console'],
-			'level': 'DEBUG',
-			'propagate': True,
-		},
+        'batch': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
+        'search': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
 
 		# Log all unhandled exceptions
 		'django.request': {
