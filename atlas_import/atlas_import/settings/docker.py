@@ -34,7 +34,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
@@ -48,7 +48,7 @@ LOGGING = {
         },
     },
     'root': {
-        'level': 'INFO',
+        'level': 'ERROR',
         'handlers': ['console'],
     },
     'loggers': {
@@ -61,15 +61,21 @@ LOGGING = {
 
         'search': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'elasticsearch': {
+            'handlers': ['console'],
+            'level': 'ERROR',
             'propagate': False,
         },
 
 		# Log all unhandled exceptions
 		'django.request': {
 			'handlers': ['console', 'slackbot'],
-			'level': 'WARNING',
-			'propagate': True,
+			'level': 'ERROR',
+			'propagate': False,
 		},
     },
 }
@@ -87,11 +93,11 @@ DIVA_DIR = '/app/diva/'
 secret_key = os.getenv('DJANGO_SECRET_KEY')
 SECRET_KEY = secret_key if secret_key else SECRET_KEY
 
-DEBUG = os.getenv('DJANGO_DEBUG', False)
-
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # Generate https links
 
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
+
+print("Debug: %s" % DEBUG)
