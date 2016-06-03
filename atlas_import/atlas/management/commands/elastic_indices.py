@@ -108,11 +108,11 @@ class Command(BaseCommand):
 
                 assert(numerator < denominator)
 
-                #if len(sets) > 1:
+                # if len(sets) > 1:
                 #    print('Partial import can only be used with 1 dataset. ')
                 #    sys.exit(1)
 
-                settings.PARTIAL_IMPORT['part'] = numerator
+                settings.PARTIAL_IMPORT['numerator'] = numerator
                 settings.PARTIAL_IMPORT['denominator'] = denominator
 
             if options['build_index']:
