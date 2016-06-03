@@ -39,11 +39,12 @@ class DeleteIndexTask(object):
 
         idx = es.Index(self.index)
 
+        logging.info(settings.PARTIAL_IMPORT)
+
         # needs better fix
         if (settings.PARTIAL_IMPORT['denominator'] > 1 and
-           settings.PARTIAL_IMPORT['numerator'] > 0):
-            log.info("Partial index no delete needed %s", self.index)
-            print('Skip deleting')
+           settings.PARTIAL_IMPORT['numerator'] != 0):
+            log.info("SKIP DELETE %s", self.index)
             return
 
         try:
