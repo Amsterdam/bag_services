@@ -134,8 +134,6 @@ class TypeaheadTest(APITestCase):
             huisletter='P',
             hoofdadres=True, postcode='1188TV')
 
-        # Rob tests
-
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
