@@ -3,11 +3,13 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
+from django.conf import settings
+
 
 def create_site(apps, *args, **kwargs):
     Site = apps.get_model('sites', 'Site')
     Site.objects.create(
-        domain='http://update.me/api/',
+        domain=settings.DATAPUNT_API_URL,
         name='API Domain'
     )
 
