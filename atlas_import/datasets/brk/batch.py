@@ -712,12 +712,18 @@ class ImportKadasterJob(object):
 
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BRK']
-    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+    doc_types = [
+        documents.KadastraalObject,
+        documents.KadastraalSubject
+    ]
 
 
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BRK'] + 'backup'
-    doc_types = [documents.KadastraalObject, documents.KadastraalSubject]
+    doc_types = [
+        documents.KadastraalObject,
+        documents.KadastraalSubject
+    ]
 
 
 class IndexSubjectTask(index.ImportIndexTask):
@@ -759,6 +765,29 @@ class IndexKadasterJob(object):
             DeleteIndexTask(),
             IndexSubjectTask(),
             IndexObjectTask(),
+        ]
+
+
+class BuildIndexKadasterJob(object):
+    """
+    Destroy and recreate elastic BKR index
+    """
+    name = "Update search-index BRK"
+
+    def tasks(self):
+        return [
+            IndexSubjectTask(),
+            IndexObjectTask(),
+        ]
+
+
+class DeleteIndexKadasterJob(object):
+
+    name = "Delete search-index BRK"
+
+    def tasks(self):
+        return [
+            DeleteIndexTask(),
         ]
 
 

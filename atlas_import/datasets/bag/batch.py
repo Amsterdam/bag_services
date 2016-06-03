@@ -989,10 +989,13 @@ class ImportVboTask(batch.BasicTask):
             pk=pk,
             landelijk_id=landelijk_id,
             geometrie=geo,
-            gebruiksdoel_code=(r['GebruiksdoelVerblijfsobjectDomein']),
-            gebruiksdoel_omschrijving=(r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
+            gebruiksdoel_code=(
+                r['GebruiksdoelVerblijfsobjectDomein']),
+            gebruiksdoel_omschrijving=(
+                r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
             oppervlakte=uva2.uva_nummer(r['OppervlakteVerblijfsobject']),
-            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieVerblijfsobject']),
+            document_mutatie=uva2.uva_datum(
+                r['DocumentdatumMutatieVerblijfsobject']),
             document_nummer=(r['DocumentnummerMutatieVerblijfsobject']),
             bouwlaag_toegang=uva2.uva_nummer(r['Bouwlaagtoegang']),
             status_coordinaat_code=(r['StatusCoordinaatDomein']),
@@ -1000,7 +1003,8 @@ class ImportVboTask(batch.BasicTask):
             verhuurbare_eenheden=r['AantalVerhuurbareEenheden'] or None,
             bouwlagen=uva2.uva_nummer(r['AantalBouwlagen']),
             type_woonobject_code=(r['TypeWoonobjectDomein']),
-            type_woonobject_omschrijving=(r['OmschrijvingTypeWoonobjectDomein']),
+            type_woonobject_omschrijving=(
+                r['OmschrijvingTypeWoonobjectDomein']),
             woningvoorraad=uva2.uva_indicatie(r['IndicatieWoningvoorraad']),
             aantal_kamers=uva2.uva_nummer(r['AantalKamers']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
@@ -1017,8 +1021,10 @@ class ImportVboTask(batch.BasicTask):
             # ?=(r['VBOOVR/OVR/Code']),
             status_id=status_id,
             buurt_id=buurt_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
@@ -1111,16 +1117,20 @@ class ImportPndVboTask(batch.BasicTask):
     def before(self):
         database.clear_models(models.VerblijfsobjectPandRelatie)
 
-        self.panden = frozenset(models.Pand.objects.values_list("pk", flat=True))
-        self.vbos = frozenset(models.Verblijfsobject.objects.values_list("pk", flat=True))
+        self.panden = frozenset(
+            models.Pand.objects.values_list("pk", flat=True))
+        self.vbos = frozenset(
+            models.Verblijfsobject.objects.values_list("pk", flat=True))
 
     def after(self):
         self.panden = None
         self.vbos = None
 
     def process(self):
-        relaties = frozenset(uva2.process_uva2(self.path, "PNDVBO", self.process_row))
-        models.VerblijfsobjectPandRelatie.objects.bulk_create(relaties, batch_size=database.BATCH_SIZE)
+        relaties = frozenset(
+            uva2.process_uva2(self.path, "PNDVBO", self.process_row))
+        models.VerblijfsobjectPandRelatie.objects.bulk_create(
+            relaties, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -1146,16 +1156,19 @@ class ImportPndVboTask(batch.BasicTask):
         )
 
 
+BAG_DOC_TYPES = [
+    documents.Ligplaats,
+    documents.Standplaats,
+    documents.Verblijfsobject,
+    documents.OpenbareRuimte,
+    documents.Bouwblok,
+    documents.ExactLocation,
+]
+
+
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG']
-    doc_types = [
-        documents.Ligplaats,
-        documents.Standplaats,
-        documents.Verblijfsobject,
-        documents.OpenbareRuimte,
-        documents.Bouwblok,
-        documents.ExactLocation,
-    ]
+    doc_types = BAG_DOC_TYPES
 
 
 class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
@@ -1170,9 +1183,7 @@ class DeleteNummerAanduidingBackupIndexTask(index.DeleteIndexTask):
 
 class DeleteBackupIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    doc_types = [
-        documents.Ligplaats, documents.Standplaats,
-        documents.Verblijfsobject, documents.OpenbareRuimte]
+    doc_types = BAG_DOC_TYPES
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
@@ -1546,6 +1557,28 @@ class IndexBagJob(object):
             IndexOpenbareRuimteTask(),
             IndexNummerAanduidingTask(),
             IndexExactMatchesTask(),
+        ]
+
+
+class BuildIndexBagJob(object):
+    name = "Create new search-index for all BAG data from database"
+
+    def tasks(self):
+        return [
+            IndexOpenbareRuimteTask(),
+            IndexNummerAanduidingTask(),
+            IndexExactMatchesTask(),
+        ]
+
+
+class DeleteIndexBagJob(object):
+
+    name = "Delete BAG related indexes"
+
+    def tasks(self):
+        return [
+            DeleteIndexTask(),
+            DeleteNummerAanduidingIndexTask(),
         ]
 
 

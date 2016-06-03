@@ -6,7 +6,7 @@ set -u
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -f ${DIR}/docker-compose.yml $*
+	docker-compose -f ${DIR}/docker-compose.yml $*;
 }
 
 #trap 'dc kill ; dc rm -f' EXIT
@@ -24,11 +24,10 @@ mkdir -p ${DIR}/backups
 #dc run --rm el-backup
 
 dc build
-dc run importer_pg
-dc run importer_el1
-sleep 10
-dc run importer_el2
-dc run importer_el3
+#dc run importer_pg
+dc up -d importer_el1 importer_el2 importer_el3
+docker wait jenkins_importer_el1_1 jenkins_importer_el2_1 jenkins_importer_el3_1
+
 dc run db-backup
 dc run el-backup
 

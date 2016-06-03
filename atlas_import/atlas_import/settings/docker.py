@@ -25,34 +25,35 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-		'slack': {
-			'format': '%(message)s',
-		},
+        'slack': {
+            'format': '%(message)s',
+        },
         'console': {
             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         },
     },
     'handlers': {
         'console': {
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
         'slackbot': {
-			'level': 'INFO',
-			'class': 'pyslack.SlackHandler',
-			'formatter': 'slack',
-			'token': 'xoxp-6265386162-12398459668-19042721156-74355df29d',
-			'username': 'atlas backend',
-			'channel': '#devops',
+            'level': 'INFO',
+            'class': 'pyslack.SlackHandler',
+            'formatter': 'slack',
+            'token': 'xoxp-6265386162-12398459668-19042721156-74355df29d',
+            'username': 'atlas backend',
+            'channel': '#devops',
         },
     },
+
     'root': {
-        'level': 'ERROR',
+        'level': 'DEBUG',
         'handlers': ['console'],
     },
     'loggers': {
-		# Debug all batch jobs
+        # Debug all batch jobs
         'batch': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -71,12 +72,12 @@ LOGGING = {
             'propagate': False,
         },
 
-		# Log all unhandled exceptions
-		'django.request': {
-			'handlers': ['console', 'slackbot'],
-			'level': 'ERROR',
-			'propagate': False,
-		},
+        # Log all unhandled exceptions
+        'django.request': {
+                'handlers': ['console', 'slackbot'],
+                'level': 'ERROR',
+                'propagate': False,
+        },
     },
 }
 

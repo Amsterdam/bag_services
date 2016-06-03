@@ -39,14 +39,6 @@ class DeleteIndexTask(object):
 
         idx = es.Index(self.index)
 
-        logging.info(settings.PARTIAL_IMPORT)
-
-        # needs better fix
-        if (settings.PARTIAL_IMPORT['denominator'] > 1 and
-           settings.PARTIAL_IMPORT['numerator'] != 0):
-            log.info("SKIP DELETE %s", self.index)
-            return
-
         try:
             idx.delete(ignore=404)
             log.info("Deleted index %s", self.index)
@@ -78,7 +70,7 @@ class ImportIndexTask(object):
         for each batch in the given queryset.
 
         Usage:
-            # Make sure to order your querset
+            # Make sure to order your querset!
             article_qs = Article.objects.order_by('id')
             for start, end, total, qs in batch_qs(article_qs):
                 print "Now processing %s - %s of %s" % (start + 1, end, total)
@@ -91,7 +83,9 @@ class ImportIndexTask(object):
         denominator = settings.PARTIAL_IMPORT['denominator']
         numerator = settings.PARTIAL_IMPORT['numerator']
 
-        total = qs.count()
+        end_part = count = total = qs.count()
+        chunk_size = batch_size
+
         start_index = 0
 
         # Do partial import
@@ -101,10 +95,14 @@ class ImportIndexTask(object):
             end_part = (numerator + 1) * chunk_size
             total = end_part - start_index
 
-        total_batches = int(total / batch_size)
+        log.info("START: %s END %s COUNT: %s CHUNK %s TOTAL_COUNT: %s" % (
+            start_index, end_part, chunk_size, batch_size, count))
 
-        for i, start in enumerate(range(start_index, total, batch_size)):
-            end = min(start + batch_size, total)
+        # total batches in this (partial) bacth job
+        total_batches = int(chunk_size / batch_size)
+
+        for i, start in enumerate(range(start_index, end_part, batch_size)):
+            end = min(start + batch_size, end_part)
             yield (i+1, total_batches+1, start, end, total, qs[start:end])
 
     def execute(self):

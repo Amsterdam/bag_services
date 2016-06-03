@@ -8,17 +8,25 @@ import datasets.wkpb.batch
 
 from batch import batch
 import time
-import sys
 
 
 class Command(BaseCommand):
 
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
+
     indexes = {
-        'bag': [datasets.bag.batch.IndexBagJob],
-        'brk': [datasets.brk.batch.IndexKadasterJob],
+        'bag': [datasets.bag.batch.BuildIndexBagJob],
+        'brk': [datasets.brk.batch.BuildIndexKadasterJob],
         'wkpb': [],
         'gebieden': [datasets.bag.batch.IndexGebiedJob],
+    }
+
+    delete_indexes = {
+        'bag': [datasets.bag.batch.DeleteIndexBagJob],
+        'brk': [datasets.brk.batch.DeleteIndexKadasterJob],
+        # 'brk': [],
+        'wkpb': [],
+        'gebieden': [],  # too small..
     }
 
     backup_indexes = {
@@ -43,35 +51,60 @@ class Command(BaseCommand):
             help="Dataset to use, choose from {}".format(
                 ', '.join(self.indexes.keys())))
 
-        parser.add_argument('--backup',
-                            action='store_true',
-                            dest='backup_indexes_es',
-                            default=False,
-                            help='Backup elsatic search')
+        parser.add_argument(
+            '--backup',
+            action='store_true',
+            dest='backup_indexes_es',
+            default=False,
+            help='Backup elsatic search')
 
-        parser.add_argument('--restore',
-                            action='store_true',
-                            dest='restore_indexes_es',
-                            default=False,
-                            help='Restore elsatic search index')
+        parser.add_argument(
+            '--restore',
+            action='store_true',
+            dest='restore_indexes_es',
+            default=False,
+            help='Restore elsatic search index')
 
-        parser.add_argument('--build',
-                            action='store_true',
-                            dest='build_index',
-                            default=False,
-                            help='Build elastic index from postgres')
+        parser.add_argument(
+            '--build',
+            action='store_true',
+            dest='build_index',
+            default=False,
+            help='Build elastic index from postgres')
 
-        parser.add_argument('--partial',
-                            action='store',
-                            dest='partial_index',
-                            default=0,
-                            help='Build X/Y parts 1/3, 2/3, 3/3')
+        parser.add_argument(
+            '--delete',
+            action='store_true',
+            dest='delete_indexes',
+            default=False,
+            help='Delete elastic indexes from elastic')
 
-        parser.add_argument('--batch-size', default='10000', type=int,
-                            help='Change batch size on inport')
+        parser.add_argument(
+            '--partial',
+            action='store',
+            dest='partial_index',
+            default=0,
+            help='Build X/Y parts 1/3, 2/3, 3/3')
+
+    def set_partial_config(self, sets, options):
+        """
+        Do partial configuration
+        """
+        if options['partial_index']:
+            numerator, denominator = options['partial_index'].split('/')
+
+            numerator = int(numerator) - 1
+            denominator = int(denominator)
+
+            assert(numerator < denominator)
+
+            settings.PARTIAL_IMPORT['numerator'] = numerator
+            settings.PARTIAL_IMPORT['denominator'] = denominator
 
     def handle(self, *args, **options):
+
         dataset = options['dataset']
+
         start = time.time()
 
         for ds in dataset:
@@ -83,8 +116,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Working on {}".format(", ".join(sets)))
 
-        if options['batch_size'] > 0:
-            settings.BATCH_SETTINGS['batch_size'] = options['batch_size']
+        self.set_partial_config(sets, options)
 
         for ds in sets:
 
@@ -100,20 +132,11 @@ class Command(BaseCommand):
                 # we do not run the other tasks
                 continue  # to next dataset please..
 
-            if options['partial_index']:
-                numerator, denominator = options['partial_index'].split('/')
-
-                numerator = int(numerator) - 1
-                denominator = int(denominator)
-
-                assert(numerator < denominator)
-
-                # if len(sets) > 1:
-                #    print('Partial import can only be used with 1 dataset. ')
-                #    sys.exit(1)
-
-                settings.PARTIAL_IMPORT['numerator'] = numerator
-                settings.PARTIAL_IMPORT['denominator'] = denominator
+            if options['delete_indexes']:
+                for job_class in self.delete_indexes[ds]:
+                    batch.execute(job_class())
+                # we do not run the other tasks
+                continue  # to next dataset please..
 
             if options['build_index']:
                 for job_class in self.indexes[ds]:
