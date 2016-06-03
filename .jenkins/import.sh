@@ -16,19 +16,14 @@ mkdir -p ${DIR}/backups
 
 #dc build
 #dc run --rm importer_pg
-#dc run --rm importer_el1
-#sleep 10
-#dc run --rm importer_el2
-#dc run --rm importer_el3
+#dc up importer_bag1 importer_bag2 importer_bag3
+#dc up importer_brk1 importer_brk2 importer_brk3
 #dc run --rm db-backup
 #dc run --rm el-backup
 
+
 dc build
-dc run importer_pg
-dc run importer_el1
-sleep 10
-dc run importer_el2
-dc run importer_el3
-dc run db-backup
-dc run el-backup
+dc run --rm importer
+dc run --rm db-backup
+dc run --rm el-backup
 
