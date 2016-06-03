@@ -24,6 +24,7 @@ DATABASES = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+
     'formatters': {
         'slack': {
             'format': '%(message)s',
@@ -34,7 +35,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
@@ -49,14 +50,15 @@ LOGGING = {
     },
 
     'root': {
-        'level': 'DEBUG',
+        'level': 'INFO',
         'handlers': ['console'],
     },
+
     'loggers': {
         # Debug all batch jobs
         'batch': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
 
@@ -67,6 +69,12 @@ LOGGING = {
         },
 
         'elasticsearch': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'urllib3.connectionpool': {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,

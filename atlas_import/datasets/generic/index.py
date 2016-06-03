@@ -80,8 +80,10 @@ class ImportIndexTask(object):
         qs = self.get_queryset()
 
         batch_size = settings.BATCH_SETTINGS['batch_size']
-        denominator = settings.PARTIAL_IMPORT['denominator']
         numerator = settings.PARTIAL_IMPORT['numerator']
+        denominator = settings.PARTIAL_IMPORT['denominator']
+
+        log.info("PART: %s OF %s" % (numerator, denominator))
 
         end_part = count = total = qs.count()
         chunk_size = batch_size
