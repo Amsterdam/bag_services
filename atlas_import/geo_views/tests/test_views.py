@@ -7,7 +7,13 @@ from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
 
+from django.conf import settings
+
+URL = settings.DATAPUNT_API_URL
+
+
 class ViewsTest(TestCase):
+
     def get_row(self, view_name):
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
@@ -25,10 +31,12 @@ class ViewsTest(TestCase):
         row = self.get_row('geo_bag_ligplaats')
         self.assertEqual(row['id'], l.id)
         self.assertIn("geometrie", row)
-        self.assertEqual(row['display'], l.hoofdadres.adres())
+        self.assertEqual(
+            row['display'], l.hoofdadres.adres())
         self.assertEqual(row['type'], 'bag/ligplaats')
-        self.assertEqual(row['uri'],
-                         'http://update.me/api/bag/ligplaats/{}/'.format(l.id))
+        self.assertEqual(
+            row['uri'],
+            '{}bag/ligplaats/{}/'.format(URL, l.id))
 
     def test_bag_openbareruimte(self):
 
@@ -43,8 +51,7 @@ class ViewsTest(TestCase):
         self.assertEqual(row['type'], 'bag/openbareruimte')
         self.assertEqual(row['opr_type'], 'Water')
         self.assertEqual(
-            row['uri'],
-            'http://update.me/api/bag/openbareruimte/{}/'.format(ob.id))
+            row['uri'], '{}bag/openbareruimte/{}/'.format(URL, ob.id))
 
     def test_bag_standplaats(self):
         s = bag_factories.StandplaatsFactory.create()
@@ -57,7 +64,8 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(row["display"], s.hoofdadres.adres())
         self.assertEqual(row["type"], 'bag/standplaats')
-        self.assertIn(row["uri"], 'http://update.me/api/bag/standplaats/{}/'.format(s.id))
+        self.assertIn(
+            row["uri"], '{}bag/standplaats/{}/'.format(URL, s.id))
 
     def test_bag_verblijfsobject(self):
         v = bag_factories.VerblijfsobjectFactory.create()
@@ -70,7 +78,8 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], v.hoofdadres.adres())
         self.assertEqual(row['type'], 'bag/verblijfsobject')
-        self.assertEqual(row['uri'], 'http://update.me/api/bag/verblijfsobject/{}/'.format(v.id))
+        self.assertEqual(
+            row['uri'], '{}bag/verblijfsobject/{}/'.format(URL, v.id))
 
     def test_bag_pand(self):
         p = bag_factories.PandFactory.create()
@@ -79,7 +88,7 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], p.id)
         self.assertEqual(row['type'], 'bag/pand')
-        self.assertEqual(row['uri'], 'http://update.me/api/bag/pand/{}/'.format(p.id))
+        self.assertIn(row['uri'], '{}bag/pand/{}/'.format(URL, p.id))
 
     def test_bag_bouwblok(self):
         bb = bag_factories.BouwblokFactory.create()
@@ -89,7 +98,8 @@ class ViewsTest(TestCase):
         self.assertEqual(row['code'], bb.code)
         self.assertEqual(row['display'], bb.code)
         self.assertEqual(row['type'], 'gebieden/bouwblok')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/bouwblok/{}/'.format(bb.id))
+        self.assertEqual(
+            row['uri'], '{}gebieden/bouwblok/{}/'.format(URL, bb.id))
 
     def test_bag_buurt(self):
         b = bag_factories.BuurtFactory.create()
@@ -100,7 +110,8 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], b.naam)
         self.assertEqual(row['display'], b.naam)
         self.assertEqual(row['type'], 'gebieden/buurt')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/buurt/{}/'.format(b.id))
+        self.assertEqual(
+            row['uri'], '{}gebieden/buurt/{}/'.format(URL, b.id))
 
     def test_bag_buurtcombinatie(self):
         bc = bag_factories.BuurtcombinatieFactory.create()
@@ -111,7 +122,9 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], bc.naam)
         self.assertEqual(row['display'], bc.naam)
         self.assertEqual(row['type'], 'gebieden/buurtcombinatie')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/buurtcombinatie/{}/'.format(bc.id))
+        self.assertEqual(
+            row['uri'],
+            '{}gebieden/buurtcombinatie/{}/'.format(URL, bc.id))
 
     def test_bag_gebiedsgerichtwerken(self):
         g = bag_factories.GebiedsgerichtwerkenFactory.create()
@@ -122,7 +135,9 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], g.naam)
         self.assertEqual(row['display'], g.naam)
         self.assertEqual(row['type'], 'gebieden/gebiedsgerichtwerken')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/gebiedsgerichtwerken/{}/'.format(g.id))
+        self.assertEqual(
+            row['uri'],
+            '{}gebieden/gebiedsgerichtwerken/{}/'.format(URL, g.id))
 
     def test_bag_grootstedelijkgebied(self):
         gg = bag_factories.GrootstedelijkGebiedFactory.create()
@@ -132,7 +147,9 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], gg.naam)
         self.assertEqual(row['display'], gg.naam)
         self.assertEqual(row['type'], 'gebieden/grootstedelijkgebied')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/grootstedelijkgebied/{}/'.format(gg.id))
+        self.assertEqual(
+            row['uri'],
+            '{}gebieden/grootstedelijkgebied/{}/'.format(URL, gg.id))
 
     def test_bag_stadsdeel(self):
         s = bag_factories.StadsdeelFactory.create()
@@ -143,7 +160,8 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], s.naam)
         self.assertEqual(row['display'], s.naam)
         self.assertEqual(row['type'], 'gebieden/stadsdeel')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/stadsdeel/{}/'.format(s.id))
+        self.assertEqual(
+            row['uri'], '{}gebieden/stadsdeel/{}/'.format(URL, s.id))
 
     def test_bag_unesco(self):
         u = bag_factories.UnescoFactory.create()
@@ -153,7 +171,8 @@ class ViewsTest(TestCase):
         self.assertEqual(row['naam'], u.naam)
         self.assertEqual(row['display'], u.naam)
         self.assertEqual(row['type'], 'gebieden/unesco')
-        self.assertEqual(row['uri'], 'http://update.me/api/gebieden/unesco/{}/'.format(u.id))
+        self.assertEqual(
+            row['uri'], '{}gebieden/unesco/{}/'.format(URL, u.id))
 
     def test_lki_gemeente(self):
         g = brk_factories.GemeenteFactory.create()
@@ -186,7 +205,8 @@ class ViewsTest(TestCase):
         self.assertEqual(row["volledige_code"], ko.aanduiding)
         self.assertEqual(row['display'], ko.aanduiding)
         self.assertEqual(row['type'], 'kadaster/kadastraal_object')
-        self.assertEqual(row['uri'], 'http://update.me/api/brk/object/{}/'.format(ko.id))
+        self.assertEqual(
+            row['uri'], '{}brk/object/{}/'.format(URL, ko.id))
 
     def test_wkpb(self):
         b = wkpb_factories.BeperkingKadastraalObjectFactory.create()

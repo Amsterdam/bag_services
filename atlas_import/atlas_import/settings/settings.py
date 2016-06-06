@@ -26,6 +26,12 @@ DEBUG = False
 
 # Application definition
 
+
+DATAPUNT_API_URL = os.getenv(
+    # note the ending /
+    'DATAPUNT_API_URL', 'https://api.datapunt.amsterdam.nl/')
+
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
