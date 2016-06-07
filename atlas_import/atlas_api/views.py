@@ -3,7 +3,17 @@ from collections import OrderedDict
 import json
 import logging
 from urllib.parse import quote, urlparse
-import re
+
+# input validation
+from atlas_api.input_handling import clean_tokenize
+from atlas_api.input_handling import is_postcode
+from atlas_api.input_handling import is_postcode_huisnummer
+from atlas_api.input_handling import is_straat_huisnummer
+from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import is_meetbout
+from atlas_api.input_handling import first_number
+
+
 # Packages
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -23,21 +33,6 @@ from datasets.generic import rest
 
 log = logging.getLogger('search')
 
-# Regexes for query analysis
-# The regex are bulit on the assumption autocomplete starts at 3 characters
-# Postcode regex matches 4 digits, possible dash or space then 0-2 letters
-PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
-# Bouwblok regex matches 2 digits a letter and an optional second letter
-BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
-# Meetbout regex matches up to 8 digits
-MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
-# Address postcode regex
-ADDRESS_PCODE_REGEX = re.compile(
-    '^1\d{3}[ \-]?[a-zA-Z]{2}[ \-](\d|[a-zA-Z])*$')
-
-# Recognise house number in the search string
-HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
-
 # Mapping of subtypes with detail views
 _details = {
     'ligplaats': 'ligplaats-detail',
@@ -55,23 +50,6 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 
-def is_int(token):
-    try:
-        int(token)
-        return True
-    except ValueError:
-        return False
-
-
-def first_number(input_tokens):
-
-    for i, token in enumerate(input_tokens):
-        if is_int(token):
-            return i, token
-
-    return -1, ""
-
-
 def analyze_query(query_string):
     """
     Looks at the query string being filled and tries
@@ -86,21 +64,25 @@ def analyze_query(query_string):
 
     returns a list of queries that should be used
     """
-    tokens = query_string.split(' ')
+
+    tokens = clean_tokenize(query_string)
 
     # A collection of regex and the query they generate
     query_selector = [
         {
-            'regex': PCODE_REGEX,
+            'test':  is_postcode,
             'query': [bagQ.weg_Q],
-        }, {
-            'regex': BOUWBLOK_REGEX,
+        },
+        {
+            'test': is_bouwblok,
             'query': [bagQ.bouwblok_Q],
-        }, {
-            'regex': MEETBOUT_REGEX,
+        },
+        {
+            'test': is_meetbout,
             'query': [genQ.meetbout_Q],
-        }, {
-            'regex': ADDRESS_PCODE_REGEX,
+        },
+        {
+            'test': is_postcode_huisnummer,
             'query': [bagQ.comp_address_pcode_Q],
         }
     ]
@@ -108,34 +90,41 @@ def analyze_query(query_string):
     queries = []
 
     for option in query_selector:
-
-        match = option['regex'].match(query_string)
-
-        if match:
-            queries.extend(option['query'])
+        if option['test'](tokens):
+            queries.extend(
+                option['query']
+            )
             break
 
-    # Checking for a case in which no regex matches were
-    # found. In which case, defaulting to address
+    # Checking for a case in which no matches are found.
+    # In which case, defaulting to address/openbare ruimte
     if not queries:
         # Deciding between looking at roads and looking at addresses
         # Finding the housenumber part
         i, num = first_number(tokens)
 
-        if i > 0 and num:
+        if is_straat_huisnummer(tokens):
             # there is a number not as fist token
-            queries = [bagQ.street_name_and_num_Q]
-        elif i == 0 and num:
-            # there is a number as first number
-            queries.extend([bagQ.comp_address_pcode_Q])
+            queries = [bagQ.street_name_and_num_Q(
+                query_string, tokens=tokens, num=i)]
         else:
             # There is no house number part
             # Return street name query
+            # look for postcode / straatnaam
             queries.extend([bagQ.weg_Q])
 
         # queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
 
-    return queries
+    result_queries = []
+
+    # FIXME superqueries
+    for q in queries:
+        if isinstance(q, dict):
+            result_queries.append(q)
+        else:
+            result_queries.append(q(query_string, tokens=tokens))
+
+    return result_queries
 
 
 def prepare_query_string(query_string):
@@ -268,14 +257,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # collect queries and ignore aggregations
         for q in query_componentes:
 
-            qa = q(query)
+            queries.append(q['Q'])
 
-            queries.append(qa['Q'])
+            if 'S' in q:
+                sorting.extend(q['S'])
 
-            if 'S' in qa:
-                sorting.extend(qa['S'])
-
-        if len(queries) > 1:
+        if queries:
             search = (
                 Search()
                 .using(self.client)
@@ -283,22 +270,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 .query(
                     'bool',
                     should=queries,
+                    minimum_should_match=1
                 )
-                # .sort(*sorting)
             )
-
-        elif queries:
-
-            search = (
-                Search()
-                .using(self.client)
-                .index(BAG, BRK, NUMMERAANDUIDING)
-                .query(queries[0])
-                # .sort(*sorting)
-            )
-
         else:
-            log.debug('something went wrong..')
+            log.debug('Something went wrong.i NO QUERIES')
 
         # nice prety printing
         if settings.DEBUG:
@@ -335,8 +311,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
         pretty_names = [
             'Straatnamen', 'Adres', 'Bouwblok',
             'Kadastrale subjecten', 'Kadastrale objecten']
-
-        postcode = PCODE_REGEX.match(query_string)
 
         # Orginizing the results
         # print('Results:', len(result))
@@ -801,8 +775,12 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
-        # print('Postcode')
-        query = [bagQ.comp_address_pcode_Q(query_string)['Q'], bagQ.weg_Q(query_string)['Q']]
+
+        query = [
+            bagQ.comp_address_pcode_Q(query_string)['Q'],
+            bagQ.weg_Q(query_string)['Q']
+        ]
+
         return (
             Search()
             .using(client)

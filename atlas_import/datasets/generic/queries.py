@@ -8,23 +8,10 @@
 ==================================================
 """
 # Python
-import re
 # Packages
-from elasticsearch_dsl import Search, Q, A
+# from elasticsearch_dsl import Search, Q, A
 
-
-def normalize_postcode(query):
-    """
-    In cases when using non analyzed queries this makes sure
-    the postcode, if in the query, is normalized to ddddcc form
-    """
-    query = query.lower()
-    # Checking for postcode
-    pc = POSTCODE.search(query)
-    if pc:
-        query = query.replace(pc.group(0), \
-                ((pc.group(0)).replace(' ', '')).replace('-', ''))
-    return query
+from elasticsearch_dsl import Q
 
 
 def normalize_address(query):
@@ -36,10 +23,9 @@ def normalize_address(query):
     query = query.replace('/', ' ').replace('.', ' ')
     return query
 
-def meetbout_Q(query):
+
+def meetbout_Q(query, tokens=None):
     """Searching for meetbout in autocomplete"""
     return {
         'Q': Q("phrase_prefix", meetboutnummer=query)
-,
     }
-
