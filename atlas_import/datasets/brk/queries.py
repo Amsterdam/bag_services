@@ -10,7 +10,7 @@
 from elasticsearch_dsl import Q, A
 
 
-def kadaster_object_Q(query, tokens=None):
+def kadaster_object_Q(query, tokens=None, num=None):
     """Create query/aggregation for kadaster object search"""
     return {
         'A': A('terms', field='aanduiding.raw'),
@@ -18,7 +18,7 @@ def kadaster_object_Q(query, tokens=None):
     }
 
 
-def kadaster_subject_Q(query, tokens=None):
+def kadaster_subject_Q(query, tokens=None, num=None):
     """Create query/aggregation for kadaster subject search"""
     return {
         'A': A('terms', field='naam.raw'),

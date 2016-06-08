@@ -393,7 +393,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     elif doc.subtype == 'overig terrein':
         pass
 
-    doc._display = doc.comp_address
+    doc._display = n.adres()
 
     return doc
 

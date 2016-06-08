@@ -370,7 +370,8 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return self.adres()
 
     def adres(self):
-        return '%s %s' % (self._openbare_ruimte_naam, self.toevoeging)
+        return '%s %s' % (
+            self._openbare_ruimte_naam, self._display_toevoeging())
 
     def dict_for_index(self, deep=True):
         """
@@ -398,6 +399,22 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             })
         return dct
 
+    def _display_toevoeging(self):
+
+        toevoegingen = []
+
+        toevoeging = self.huisnummer_toevoeging
+
+        if self.huisnummer:
+            toevoegingen.append(str(self.huisnummer))
+
+        if self.huisletter:
+            toevoegingen.append(str(self.huisletter))
+
+        if toevoeging:
+            toevoegingen.append('-%s' % toevoeging)
+        return "".join(toevoegingen)
+
     @property
     def toevoeging(self):
 
@@ -412,7 +429,9 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             toevoegingen.append(str(self.huisletter))
 
         if toevoeging:
-            toevoegingen.append(str(toevoeging))
+            tv = str(toevoeging)
+            split_tv = " ".join([c for c in tv])
+            toevoegingen.append(split_tv)
 
         return ' '.join(toevoegingen)
 

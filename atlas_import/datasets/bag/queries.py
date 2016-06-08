@@ -8,15 +8,12 @@
 ==================================================
 """
 # Python
-import re
+import logging
 # Packages
 # from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
 
-
-POSTCODE = re.compile('[1-9]\d{3}[ \-]?[a-zA-Z]?[a-zA-Z]?')
-# Recognise the house number part
-HOUSE_NUMBER = re.compile('((\d+)((( \-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
+log = logging.getLogger('bag_Q')
 
 
 def normalize_address(query):
@@ -49,11 +46,33 @@ def comp_address_pcode_Q(query, tokens=None):
     }
 
 
-def tokens_comp_address_pcode_Q(query, tokens=None):
+def split_toevoeging(tokens, num):
+    """
+    """
+    extra_tv = []
+
+    # split toevoeging in a way
+    for token in tokens[num:]:
+        if token[0].isdigit():
+            extra_tv.append(token)
+        else:
+            for c in token:
+                extra_tv.append(c)
+
+    return " ".join(extra_tv)
+
+
+def postcode_huisnummer_Q(query, tokens=None, num=None):
 
     """Create query/aggregation for postcode house number search"""
 
     assert tokens
+
+    log.info('postcode_huisnummer_Q')
+
+    split_tv = split_toevoeging(tokens, 2)
+
+    log.info(split_tv)
 
     return {
         'Q': Q(
@@ -62,7 +81,7 @@ def tokens_comp_address_pcode_Q(query, tokens=None):
                 Q('term', postcode="".join(tokens[:2])),
                 Q({
                     'match_phrase_prefix': {
-                        'toevoeging': " ".join(tokens[2:])}
+                        'toevoeging': split_tv}
                 })
             ]
         ),
@@ -70,8 +89,7 @@ def tokens_comp_address_pcode_Q(query, tokens=None):
     }
 
 
-
-def comp_address_Q(query, tokens=None):
+def comp_address_Q(query, tokens=None, num=None):
     """Create query/aggregation for complete address search"""
     query = normalize_address(query)
 
@@ -119,7 +137,14 @@ def tokens_comp_address_Q(query, tokens=None, num=None):
     }
 
 
-def street_name_and_num_Q(query, tokens=None, num=None):
+def postcode_and_num_Q(query, tokens=None, num=None):
+    """
+    """
+
+    assert tokens
+
+
+def straat_huisnummer_Q(query, tokens=None, num=None):
     """
     # Breaking the query to street name and house number
     # --------------------------------------------------
@@ -128,9 +153,12 @@ def street_name_and_num_Q(query, tokens=None, num=None):
     # Quering exactly on street name and prefix on house number
     """
     assert tokens
+    assert num
 
     street_part = " ".join(tokens[:num])
-    the_rest = " ".join(tokens[num:])
+
+    split_tv = split_toevoeging(tokens, num)
+
     # huisnummer is/should be first number
     num = tokens[num]
 
@@ -144,7 +172,7 @@ def street_name_and_num_Q(query, tokens=None, num=None):
                     Q('match', straatnaam_ptt_keyword=street_part),
                 ],
                     minimum_should_match=1),
-                Q('match_phrase', toevoeging=the_rest),
+                Q('match_phrase', toevoeging=split_tv),
                 Q('match', huisnummer=num),
             ]
         ),
@@ -177,14 +205,14 @@ def house_number_Q(query):
     }
 
 
-def bouwblok_Q(query, tokens=None):
+def bouwblok_Q(query, tokens=None, num=None):
     """ Create query/aggregation for bouwblok search"""
     return {
         'Q': Q('match_phrase_prefix', code=query),
     }
 
 
-def postcode_Q(query, tokens=None):
+def postcode_Q(query, tokens=None, num=None):
     """
     Create query/aggregation for postcode search
 
@@ -199,8 +227,35 @@ def postcode_Q(query, tokens=None):
     }
 
 
-def weg_Q(query, tokens=None):
-    """ Create query/aggregation for public area"""
+def is_postcode_Q(query, tokens=None, num=None):
+    """ create query/aggregation for public area"""
+
+    assert tokens
+
+    postcode = "".join(tokens[:2])
+
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q(
+                    'multi_match',
+                    query=postcode,
+                    type="phrase_prefix",
+                    # other streets
+                    fields=['postcode']
+                ),
+                Q('term', subtype='weg'),
+            ],
+        ),
+        # 's': ['_display']
+
+    }
+
+
+def weg_Q(query, tokens=None, num=None):
+    """ create query/aggregation for public area"""
+
     return {
         'Q': Q(
             'bool',
@@ -215,7 +270,7 @@ def weg_Q(query, tokens=None):
                 Q('term', subtype='weg'),
             ],
         ),
-        # 'S': ['_display']
+        # 's': ['_display']
 
     }
 

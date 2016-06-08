@@ -83,7 +83,7 @@ def analyze_query(query_string):
     query_selector = [
         {
             'test':  is_postcode,
-            'query': [bagQ.weg_Q],
+            'query': [bagQ.is_postcode_Q],
         },
         {
             'test': is_bouwblok,
@@ -95,8 +95,13 @@ def analyze_query(query_string):
         },
         {
             'test': is_postcode_huisnummer,
-            'query': [bagQ.tokens_comp_address_pcode_Q],
+            'query': [bagQ.postcode_huisnummer_Q],
+        },
+        {
+            'test': is_straat_huisnummer,
+            'query': [bagQ.straat_huisnummer_Q],
         }
+
     ]
 
     queries = []
@@ -111,33 +116,19 @@ def analyze_query(query_string):
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
-        # Deciding between looking at roads and looking at addresses
-        # Finding the housenumber part
+        queries.extend([bagQ.weg_Q])
 
-        if is_straat_huisnummer(tokens):
-            # there is a number not as fist token
-            queries = [bagQ.street_name_and_num_Q(
-                query_string, tokens=tokens, num=i)]
-        else:
-            # There is no house number part
-            # Return street name query
-            # look for postcode / straatnaam
-            queries.extend([bagQ.weg_Q])
+        # could also be kadataset object
+        # queries.extend([brkQ.kadaster_object_Q])
 
-            # could also be kadataset object
-            # queries.extend([brkQ.kadaster_object_Q])
-
-            # could also be subject
-            # queries.extend([brkQ.kadaster_subject_Q])
+        # could also be subject
+        # queries.extend([brkQ.kadaster_subject_Q])
 
     result_queries = []
 
     # FIXME superqueries
     for q in queries:
-        if isinstance(q, dict):
-            result_queries.append(q)
-        else:
-            result_queries.append(q(query_string, tokens=tokens))
+        result_queries.append(q(query_string, tokens=tokens, num=i))
 
     return result_queries
 
@@ -657,6 +648,7 @@ class SearchObjectViewSet(SearchViewSet):
         return super(SearchObjectViewSet, self).list(
             request, *args, **kwargs)
 
+
 class SearchBouwblokViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -813,7 +805,7 @@ class SearchPostcodeViewSet(SearchViewSet):
         if is_postcode_huisnummer(tokens):
             indexes = [NUMMERAANDUIDING]
             query = [
-                bagQ.tokens_comp_address_pcode_Q(
+                bagQ.postcode_huisnummer_Q(
                     query_string,
                     tokens=tokens, num=i)['Q'],
             ]
@@ -956,4 +948,3 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         else:
             response = []
         return Response(response)
-

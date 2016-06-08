@@ -14,18 +14,8 @@
 from elasticsearch_dsl import Q
 
 
-def normalize_address(query):
-    """
-    In cases when using non analyzed queries this makes sure
-    the address, if in the query, does not contain bad characters
-    """
-    query = query.lower()
-    query = query.replace('/', ' ').replace('.', ' ')
-    return query
-
-
-def meetbout_Q(query, tokens=None):
+def meetbout_Q(query, tokens=None, num=None):
     """Searching for meetbout in autocomplete"""
     return {
-        'Q': Q("phrase_prefix", meetboutnummer=query)
+        'Q': Q("match_phrase_prefix", meetboutnummer=query)
     }
