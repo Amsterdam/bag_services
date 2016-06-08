@@ -113,7 +113,11 @@ def analyze_query(query_string):
             # look for postcode / straatnaam
             queries.extend([bagQ.weg_Q])
 
-        # queries.extend([brkQ.kadaster_object_Q, brkQ.kadaster_subject_Q])
+            # could also be kadataset object
+            # queries.extend([brkQ.kadaster_object_Q])
+
+            # could also be subject
+            # queries.extend([brkQ.kadaster_subject_Q])
 
     result_queries = []
 

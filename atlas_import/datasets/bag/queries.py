@@ -51,7 +51,7 @@ def comp_address_pcode_Q(query, tokens=None):
                 })
             ]
         ),
-        'S': ['huisnummer', 'toevoeging.raw']
+        # 'S': ['huisnummer', 'toevoeging.raw']
     }
 
 
@@ -66,11 +66,11 @@ def comp_address_Q(query, tokens=None):
                 'comp_address',
                 'comp_address_nen',
                 'comp_address_ptt',
-                'comp_address_pcode^10'],
+                'comp_address_pcode^4'],
             query=query,
             default_operator='AND',
         ),
-        'S': ['_display']
+        # 'S': ['_display']
     }
 
 
@@ -99,7 +99,7 @@ def street_name_and_num_Q(query, tokens=None, num=None):
                 Q('match_phrase', toevoeging=the_rest),
             ]
         ),
-        'S': ['huisnummer']  # , 'toevoeging.raw']
+        # 'S': ['huisnummer']  # , 'toevoeging.raw']
     }
 
 
@@ -166,7 +166,7 @@ def weg_Q(query, tokens=None):
                 Q('term', subtype='weg'),
             ],
         ),
-        'S': ['_display']
+        # 'S': ['_display']
 
     }
 

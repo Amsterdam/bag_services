@@ -162,14 +162,12 @@ class TypeaheadTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Rozengracht", str(response.data))
 
-    @skip('This could return results but is not essential')
     def test_match_adresseerbaar_object_met_huisnummer(self):
         response = self.client.get(
             '/atlas/typeahead/',
             {'q': "anjeliersstraat 11"})
         self.assertIn("Anjeliersstraat", str(response.data))
 
-    @skip('This could return results but is not essential')
     def test_match_adresseerbaar_object_toevoeg_hog(self):
         response = self.client.get(
             '/atlas/typeahead/',

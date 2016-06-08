@@ -7,17 +7,18 @@
  They all return a dict with the Q and A keyes
 ==================================================
 """
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Q, A
 
 
-def kadaster_object_Q(query):
+def kadaster_object_Q(query, tokens=None):
     """Create query/aggregation for kadaster object search"""
     return {
         'A': A('terms', field='aanduiding.raw'),
         'Q': Q('match_phrase_prefix', aanduiding=query)
     }
 
-def kadaster_subject_Q(query):
+
+def kadaster_subject_Q(query, tokens=None):
     """Create query/aggregation for kadaster subject search"""
     return {
         'A': A('terms', field='naam.raw'),
