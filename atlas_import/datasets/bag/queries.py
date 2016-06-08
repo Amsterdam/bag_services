@@ -139,9 +139,9 @@ def street_name_and_num_Q(query, tokens=None, num=None):
             'bool',
             must=[
                 Q('bool', should=[
-                    Q('term', straatnaam_keyword=street_part),
-                    Q('term', straatnaam_nen_keyword=street_part),
-                    Q('term', straatnaam_ptt_keyword=street_part),
+                    Q('match', straatnaam_keyword=street_part),
+                    Q('match', straatnaam_nen_keyword=street_part),
+                    Q('match', straatnaam_ptt_keyword=street_part),
                 ],
                     minimum_should_match=1),
                 Q('match_phrase', toevoeging=the_rest),
