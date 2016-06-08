@@ -38,6 +38,21 @@ def comp_address_pcode_Q(query, tokens=None):
 
     """Create query/aggregation for postcode house number search"""
 
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('term', postcode="".join(tokens[:2])),
+            ]
+        ),
+        # 'S': ['huisnummer', 'toevoeging.raw']
+    }
+
+
+def tokens_comp_address_pcode_Q(query, tokens=None):
+
+    """Create query/aggregation for postcode house number search"""
+
     assert tokens
 
     return {
@@ -55,9 +70,11 @@ def comp_address_pcode_Q(query, tokens=None):
     }
 
 
+
 def comp_address_Q(query, tokens=None):
     """Create query/aggregation for complete address search"""
     query = normalize_address(query)
+
     return {
         'A': A('terms', field='adres.raw'),
         'Q': Q(
@@ -69,6 +86,34 @@ def comp_address_Q(query, tokens=None):
                 'comp_address_pcode^4'],
             query=query,
             default_operator='AND',
+        ),
+        # 'S': ['_display']
+    }
+
+
+def tokens_comp_address_Q(query, tokens=None, num=None):
+    """Create query/aggregation for complete address search"""
+
+    assert tokens
+    assert num
+
+    street_part = " ".join(tokens[:num])
+    num = tokens[num]
+
+    return {
+        'A': A('terms', field='adres.raw'),
+        'Q': Q(
+            'bool',
+            must=[
+                Q('query_string', fields=[
+                    'comp_address',
+                    'comp_address_nen',
+                    'comp_address_ptt',
+                    'comp_address_pcode^2'],
+                  query=street_part,
+                  default_operator='AND'),
+                Q('term', huisnummer=num),
+            ]
         ),
         # 'S': ['_display']
     }
@@ -86,6 +131,8 @@ def street_name_and_num_Q(query, tokens=None, num=None):
 
     street_part = " ".join(tokens[:num])
     the_rest = " ".join(tokens[num:])
+    # huisnummer is/should be first number
+    num = tokens[num]
 
     return {
         'Q': Q(
@@ -94,9 +141,11 @@ def street_name_and_num_Q(query, tokens=None, num=None):
                 Q('bool', should=[
                     Q('term', straatnaam_keyword=street_part),
                     Q('term', straatnaam_nen_keyword=street_part),
-                    Q('term', straatnaam_ptt_keyword=street_part)],
+                    Q('term', straatnaam_ptt_keyword=street_part),
+                ],
                     minimum_should_match=1),
                 Q('match_phrase', toevoeging=the_rest),
+                Q('match', huisnummer=num),
             ]
         ),
         # 'S': ['huisnummer']  # , 'toevoeging.raw']

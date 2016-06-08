@@ -50,6 +50,17 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 
+def prepare_input(query_string):
+    """
+    -Cleanup string
+    -Tokenize create tokens
+    -Find first occurence of number
+    """
+    qs, tokens = clean_tokenize(query_string)
+    i, num = first_number(tokens)
+    return qs, tokens, i
+
+
 def analyze_query(query_string):
     """
     Looks at the query string being filled and tries
@@ -65,7 +76,8 @@ def analyze_query(query_string):
     returns a list of queries that should be used
     """
 
-    tokens = clean_tokenize(query_string)
+    # i = index first number in tokens
+    query_string, tokens, i = prepare_input(query_string)
 
     # A collection of regex and the query they generate
     query_selector = [
@@ -83,7 +95,7 @@ def analyze_query(query_string):
         },
         {
             'test': is_postcode_huisnummer,
-            'query': [bagQ.comp_address_pcode_Q],
+            'query': [bagQ.tokens_comp_address_pcode_Q],
         }
     ]
 
@@ -101,7 +113,6 @@ def analyze_query(query_string):
     if not queries:
         # Deciding between looking at roads and looking at addresses
         # Finding the housenumber part
-        i, num = first_number(tokens)
 
         if is_straat_huisnummer(tokens):
             # there is a number not as fist token
@@ -243,6 +254,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     We assume spelling errors and therefore it is possible
     to have unexpected results
+
+    We use many datasets by trying to guess about the input
+    - adresses, public spaces, bouwblok, meetbouten
 
     """
     metadata_class = QueryMetadata
@@ -643,7 +657,6 @@ class SearchObjectViewSet(SearchViewSet):
         return super(SearchObjectViewSet, self).list(
             request, *args, **kwargs)
 
-
 class SearchBouwblokViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -752,6 +765,20 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        query, tokens, i = prepare_input(query)
+
+        if is_straat_huisnummer(tokens):
+            return (
+                Search()
+                .using(client)
+                .index(NUMMERAANDUIDING)
+                .query(
+                    bagQ.tokens_comp_address_Q(
+                        query, tokens=tokens, num=i)['Q']
+                )
+            )
+
+        # default response
         return (
             Search()
             .using(client)
@@ -779,21 +806,33 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     def search_query(self, client, query_string):
         """Creating the actual query to ES"""
+        qs, tokens, i = prepare_input(query_string)
 
-        query = [
-            bagQ.comp_address_pcode_Q(query_string)['Q'],
-            bagQ.weg_Q(query_string)['Q']
-        ]
+        log.info(self.__class__.__name__, qs)
+
+        if is_postcode_huisnummer(tokens):
+            indexes = [NUMMERAANDUIDING]
+            query = [
+                bagQ.tokens_comp_address_pcode_Q(
+                    query_string,
+                    tokens=tokens, num=i)['Q'],
+            ]
+        else:
+            indexes = [BAG]
+            postcode = "".join(tokens[:2])
+            query = [
+                bagQ.weg_Q(postcode)['Q']
+            ]
 
         return (
             Search()
             .using(client)
-            .index(NUMMERAANDUIDING)
+            .index(*indexes)
             .query(
                 'bool',
                 should=query
             )
-        ).sort('postcode.raw')
+        )
 
     def list(self, request, *args, **kwargs):
         """

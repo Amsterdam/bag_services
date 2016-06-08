@@ -21,7 +21,7 @@ class TokenizeTest(TestCase):
         """
         s = "aaa bbb ccc ddd"
 
-        tokens = ih.clean_tokenize(s)
+        _, tokens = ih.clean_tokenize(s)
         self.assertEqual(
             ["aaa", "bbb", "ccc", "ddd"],
             tokens)
@@ -30,19 +30,19 @@ class TokenizeTest(TestCase):
         """
         """
         s = "Nieuwe achtergracht 105-3HA2"
-        tokens = ih.clean_tokenize(s)
+        _, tokens = ih.clean_tokenize(s)
 
         self.assertEqual(
-            ["Nieuwe", "achtergracht", "105", "3", "HA", "2"],
+            ["nieuwe", "achtergracht", "105", "3", "ha", "2"],
             tokens)
 
         s = "Nieuwe achtergracht 105-3 HA 2"
-        tokens = ih.clean_tokenize(s)
+        _, tokens = ih.clean_tokenize(s)
 
         self.assertEqual(
             [
-                'Nieuwe', 'achtergracht',
-                '105', '3', 'HA', '2'],
+                'nieuwe', 'achtergracht',
+                '105', '3', 'ha', '2'],
             tokens
         )
 
@@ -78,7 +78,7 @@ class TokenizeTest(TestCase):
         ]
 
         for test in true_test_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertTrue(ih.is_postcode(tokens))
 
     def test_false_token_and_postcode(self):
@@ -93,45 +93,45 @@ class TokenizeTest(TestCase):
         ]
 
         for test in false_test_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_postcode(tokens))
 
     def test_postcode_huisnummer(self):
         """
         """
         test = "1013 AW 1"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertTrue(ih.is_postcode_huisnummer(tokens))
 
         test = "1013 AW 105"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertTrue(ih.is_postcode_huisnummer(tokens))
 
         test = "1013 A 1"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertFalse(ih.is_postcode_huisnummer(tokens))
 
         test = "101 AW 1"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertFalse(ih.is_postcode_huisnummer(tokens))
 
         test = "1013 AWX 1"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertFalse(ih.is_postcode_huisnummer(tokens))
 
     def test_first_number(self):
         test = "ABD-10!CD"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertEqual(
             ih.first_number(tokens), (1, '10'))
 
         test = "ABD10CD"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertEqual(
             ih.first_number(tokens), (1, '10'))
 
         test = "ABD CD"
-        tokens = ih.clean_tokenize(test)
+        _, tokens = ih.clean_tokenize(test)
         self.assertEqual(
             ih.first_number(tokens), (-1, ''))
 
@@ -145,7 +145,7 @@ class TokenizeTest(TestCase):
         ]
 
         for test in true_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertTrue(ih.is_meetbout(tokens))
 
     def test_false_meetbout(self):
@@ -162,7 +162,7 @@ class TokenizeTest(TestCase):
         ]
 
         for test in false_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_meetbout(tokens))
 
     def test_true_bouwblok(self):
@@ -174,7 +174,7 @@ class TokenizeTest(TestCase):
         ]
 
         for test in true_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertTrue(ih.is_bouwblok(tokens))
 
     def test_false_bouwblok(self):
@@ -187,7 +187,7 @@ class TokenizeTest(TestCase):
         ]
 
         for test in false_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_bouwblok(tokens))
 
     def test_true_street_name_and_huisnummer(self):
@@ -195,10 +195,11 @@ class TokenizeTest(TestCase):
             'ABC 1'
             'Nieuwe achtergracht 105 2'
             'Nieuwe achtergracht 105'
+            'P C HOOFT 10'
         ]
 
         for test in true_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertTrue(ih.is_straat_huisnummer(tokens))
 
     def test_false_street_name_and_huisnummer(self):
@@ -209,5 +210,5 @@ class TokenizeTest(TestCase):
         ]
 
         for test in false_cases:
-            tokens = ih.clean_tokenize(test)
+            _, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_straat_huisnummer(tokens))

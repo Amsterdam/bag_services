@@ -39,9 +39,9 @@ def clean_tokenize(query_string):
     """
     Cleans up query string and makes tokens.
 
-
     - Replace puntuation with " " space.
     - Add space between numers and letters.
+    - lowercase input
 
     Examples:
 
@@ -61,9 +61,10 @@ def clean_tokenize(query_string):
 
     tokens = []
     qs = query_string.translate(REPLACE_TABLE)
+    qs = qs.lower()
     # split on digits and spaces
     tokens = re.findall('[^0-9 ]+|\\d+', qs)
-    return tokens
+    return qs, tokens
 
 
 def is_postcode(tokens):
@@ -114,7 +115,7 @@ def is_straat_huisnummer(tokens):
         return False
 
     # wat is de kortste straat?
-    if len(tokens[0]) > 2:
+    if len("".join(tokens[:i])) > 2:
         return i
 
 
