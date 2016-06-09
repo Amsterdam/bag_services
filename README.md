@@ -49,16 +49,24 @@ Run `docker-compose` to determine the name of your database image:
     atlasbackend_elasticsearch_1   /docker-entrypoint.sh elas ...   Up      0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp
 
 
-In this example, it's `atlasbackend_database_1`. Use that name in the following command (using `sudo` if you're running
-on Linux):
+In this example, it's `atlasbackend_database_1`. Use that name in the following command:
 
     docker-compose pull
     docker-compose build
-    docker-compose up -d database
+    docker-compose up -d
+
+To import the latest database from acceptance:
+
     docker exec -it atlasbackend_database_1 update-atlas.sh
-    docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
+
+To import the latest elastic index from acceptance:
+
+	docker exec -it $(docker-compose ps -q elasticsearch) update-meetbouten.sh 
 
 The database import takes approximately 10 minutes.
-The elastic index takes approximately 2 hours.
+The elastic index import takes approximately 5 minutes.
 
-Tets
+Your own elastic index import takes approximately 2 hours.	 
+To run your own elastic index:
+
+    docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
