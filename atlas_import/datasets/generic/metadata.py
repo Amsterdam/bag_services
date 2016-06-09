@@ -4,8 +4,6 @@ import socket
 
 from datasets.generic import uva2
 
-from django.conf import settings
-
 
 class UpdateDatasetMixin(object):
     """
@@ -33,13 +31,17 @@ class UpdateDatasetMixin(object):
 
     @property
     def uri(self):
-        if 'localhost' in self.import_hostname:
+        if not self.on_domains:
             return 'http://%s/metadata/' % self.import_hostname
 
         if '-acc' in self.import_hostname:
             return 'https://api-acc.datapunt.amsterdam.nl/metadata/'
 
         return 'https://api.datapunt.amsterdam.nl/metadata/'
+
+    @property
+    def on_domains(self):
+        return self.import_hostname and self.import_hostname != socket.gethostname()
 
     def update_metadata_uva2(self, path, code, hostname=None):
         filedate = uva2.get_uva2_filedate(path, code)
@@ -52,8 +54,8 @@ class UpdateDatasetMixin(object):
         return self.update_metadata_date(filedate, hostname)
 
     def update_metadata_date(self, date, hostname=None):
-
-        if not date:
+        self.set_hostname(hostname)
+        if not date or not self.on_domains:
             return
 
         data = {
@@ -62,8 +64,6 @@ class UpdateDatasetMixin(object):
                 date.year, date.month, date.day),
             'last_import_date': datetime.date.today(),
         }
-
-        self.set_hostname(hostname)
 
         uri = '%s%s/' % (self.uri, self.dataset_id.lower())
 

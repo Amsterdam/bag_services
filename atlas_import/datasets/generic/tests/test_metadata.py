@@ -1,6 +1,5 @@
 import os
 
-from django.conf import settings
 from django.test import TestCase
 
 from datasets.generic import metadata
@@ -22,6 +21,19 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
         self.set_hostname('ap01-acc.datapunt.amsterdam.nl')
 
         self.assertEqual(self.uri, 'https://api-acc.datapunt.amsterdam.nl/metadata/')
+
+    def testOtherMachineNamesThanLocalhost(self):
+        def other_socketname():
+            return 'my_machine'
+
+        import socket
+        socket.gethostname = other_socketname
+        self.set_hostname('my_machine')
+        self.assertEqual(self.uri, 'http://my_machine/metadata/')
+
+    def testAmsterdamDomainDefaulting(self):
+        self.set_hostname('xxx.amsterdam.nl')
+        self.assertEqual(self.uri, 'https://api.datapunt.amsterdam.nl/metadata/')
 
     def testUriProd(self):
         self.set_hostname('ap01.datapunt.amsterdam.nl')
