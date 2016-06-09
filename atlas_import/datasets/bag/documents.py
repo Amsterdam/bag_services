@@ -110,12 +110,45 @@ class Verblijfsobject(es.DocType):
 
 
 class OpenbareRuimte(es.DocType):
+
     naam = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+
+        }
+    )
+
+    naam_nen = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+
+        }
+    )
+
+    naam_ptt = es.String(
         analyzer=analyzers.adres, fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
-                analyzer=analyzers.autocomplete,
-                search_analyzer='standard')})
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+
+        }
+    )
+
     postcode = es.String(
         analyzer=analyzers.postcode,
         fields={
@@ -355,6 +388,7 @@ def from_bouwblok(n: models.Bouwblok):
     return doc
 
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
+
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
     doc.comp_address = "{0} {1}".format(n.openbare_ruimte.naam,
@@ -428,7 +462,11 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.type = 'Openbare ruimte'
     d.subtype = o.get_type_display().lower()
+
     d.naam = o.naam
+    d.naam_nen = o.naam_nen
+    d.naam_ptt = o.naam_ptt
+
     postcodes = set()
 
     for a in o.adressen.all():

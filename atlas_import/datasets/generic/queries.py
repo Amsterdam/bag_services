@@ -13,9 +13,29 @@
 
 from elasticsearch_dsl import Q
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 def meetbout_Q(query, tokens=None, num=None):
-    """Searching for meetbout in autocomplete"""
+    """
+    Main 'One size fits all' search query used
+    """
+    log.debug('%20s %s', meetbout_Q.__name__, query)
+
     return {
-        'Q': Q("match_phrase_prefix", meetboutnummer=query)
+        'Q': Q(
+            "multi_match",
+            query=query,
+            # type="most_fields",
+            # type="phrase",
+            type="phrase_prefix",
+            slop=12,
+            max_expansions=12,
+            fields=[
+                "meetboutnummer",
+            ]
+        ),
+        'Index': ['meetbouten']
     }

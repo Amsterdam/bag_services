@@ -9,6 +9,7 @@ from atlas_api.input_handling import clean_tokenize
 from atlas_api.input_handling import is_postcode
 from atlas_api.input_handling import is_postcode_huisnummer
 from atlas_api.input_handling import is_straat_huisnummer
+from atlas_api.input_handling import is_kadaster_object
 from atlas_api.input_handling import is_bouwblok
 from atlas_api.input_handling import is_meetbout
 from atlas_api.input_handling import first_number
@@ -97,30 +98,33 @@ def analyze_query(query_string):
             'test': is_postcode_huisnummer,
             'query': [bagQ.postcode_huisnummer_Q],
         },
+        {   # should be before straat huisnummer
+            # it is more specific
+            'test': is_kadaster_object,
+            'query': [brkQ.kadaster_object_Q],
+        },
         {
             'test': is_straat_huisnummer,
             'query': [bagQ.straat_huisnummer_Q],
-        }
-
+        },
     ]
 
     queries = []
 
     for option in query_selector:
-        if option['test'](tokens):
+        if option['test'](query_string, tokens):
             queries.extend(
                 option['query']
             )
+            # only match one query
             break
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
-        queries.extend([bagQ.weg_Q])
-
-        # could also be kadataset object
-        # queries.extend([brkQ.kadaster_object_Q])
-
+        queries.extend([
+            bagQ.weg_Q,
+        ])
         # could also be subject
         # queries.extend([brkQ.kadaster_subject_Q])
 
@@ -156,6 +160,7 @@ def prepare_query_string(query_string):
 
 
 def _get_url(request, hit):
+
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
     if hasattr(hit, 'subtype_id'):
@@ -165,6 +170,13 @@ def _get_url(request, hit):
         return rest.get_links(
             view_name=_details[doc_type],
             kwargs={'pk': id}, request=request)
+
+    if doc_type == 'meetbout':
+        return {
+            'self': {
+                'href': '/meetbouten/meetbout/{}'.format(id)
+            }
+        }
 
     # hit must have subtype
     assert hit.subtype
@@ -260,6 +272,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """provice autocomplete suggestions"""
         query_componentes = analyze_query(query)
 
+        indexes = [BAG, BRK, NUMMERAANDUIDING]
+
         queries = []
         sorting = []
 
@@ -271,11 +285,14 @@ class TypeaheadViewSet(viewsets.ViewSet):
             if 'S' in q:
                 sorting.extend(q['S'])
 
+            if 'Index' in q:
+                indexes = q['Index']
+
         if queries:
             search = (
                 Search()
                 .using(self.client)
-                .index(BAG, BRK, NUMMERAANDUIDING)
+                .index(*indexes)
                 .query(
                     'bool',
                     should=queries,
@@ -315,11 +332,14 @@ class TypeaheadViewSet(viewsets.ViewSet):
         ordered_results = []
         result_order = [
             'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
-            'kadastraal_object']
+            'kadastraal_object', 'meetbout']
+
         # This might be better handled on the front end
         pretty_names = [
             'Straatnamen', 'Adres', 'Bouwblok',
-            'Kadastrale subjecten', 'Kadastrale objecten']
+            'Kadastrale subjecten', 'Kadastrale objecten',
+            'Meetbouten'
+        ]
 
         # Orginizing the results
         # print('Results:', len(result))
@@ -332,8 +352,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
             uri = self._get_uri(request, hit)
             # Only add results we generate uri for
             # @TODO this should not be used like this as result filter
+
             if not uri:
                 continue
+
             if hit.subtype not in result_sets:
                 result_sets[hit.subtype] = []
 
@@ -342,6 +364,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 'query': disp,
                 'uri': uri
             })
+
         # Now ordereing the result groups
         for i in range(len(result_order)):
             if result_order[i] in result_sets:
@@ -661,6 +684,8 @@ class SearchBouwblokViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        query, tokens, i = prepare_input(query)
+
         return (
             Search()
             .using(client)
@@ -670,7 +695,7 @@ class SearchBouwblokViewSet(SearchViewSet):
                 subtype=['bouwblok']
             )
             .query(
-                bagQ.bouwblok_Q(query)['Q']
+                bagQ.bouwblok_Q(query, tokens)['Q']
             )
         )
 
@@ -759,7 +784,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         query, tokens, i = prepare_input(query)
 
-        if is_straat_huisnummer(tokens):
+        if is_straat_huisnummer(query, tokens):
             return (
                 Search()
                 .using(client)
@@ -776,7 +801,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .using(client)
             .index(NUMMERAANDUIDING)
             .query(
-                bagQ.comp_address_Q(query)['Q']
+                bagQ.search_streetname_Q(query)['Q']
             )
         )
 
@@ -802,15 +827,13 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         log.info(self.__class__.__name__, qs)
 
-        if is_postcode_huisnummer(tokens):
-            indexes = [NUMMERAANDUIDING]
+        if is_postcode_huisnummer(qs, tokens):
             query = [
                 bagQ.postcode_huisnummer_Q(
                     query_string,
                     tokens=tokens, num=i)['Q'],
             ]
         else:
-            indexes = [BAG]
             postcode = "".join(tokens[:2])
             query = [
                 bagQ.weg_Q(postcode)['Q']
@@ -819,7 +842,7 @@ class SearchPostcodeViewSet(SearchViewSet):
         return (
             Search()
             .using(client)
-            .index(*indexes)
+            .index(BAG, NUMMERAANDUIDING)
             .query(
                 'bool',
                 should=query

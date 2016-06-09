@@ -4,6 +4,8 @@ import socket
 
 from datasets.generic import uva2
 
+from django.conf import settings
+
 
 class UpdateDatasetMixin(object):
     """
@@ -50,16 +52,19 @@ class UpdateDatasetMixin(object):
         return self.update_metadata_date(filedate, hostname)
 
     def update_metadata_date(self, date, hostname=None):
+
         if not date:
             return
 
         data = {
             'id': self.dataset_id.lower(),
-            'data_modified_date': '%d-%d-%d' % (date.year, date.month, date.day),
+            'data_modified_date': '%d-%d-%d' % (
+                date.year, date.month, date.day),
             'last_import_date': datetime.date.today(),
         }
 
         self.set_hostname(hostname)
+
         uri = '%s%s/' % (self.uri, self.dataset_id.lower())
 
         res = requests.put(uri, data)

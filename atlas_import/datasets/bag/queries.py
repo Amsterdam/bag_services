@@ -16,16 +16,6 @@ from elasticsearch_dsl import Q, A
 log = logging.getLogger('bag_Q')
 
 
-def normalize_address(query):
-    """
-    In cases when using non analyzed queries this makes sure
-    the address, if in the query, does not contain bad characters
-    """
-    query = query.lower()
-    query = query.replace('/', ' ').replace('.', ' ').replace('-', ' ')
-    return query
-
-
 def address_Q(query):
     """Create query/aggregation for complete address search"""
     pass
@@ -91,7 +81,6 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
 
 def comp_address_Q(query, tokens=None, num=None):
     """Create query/aggregation for complete address search"""
-    query = normalize_address(query)
 
     return {
         'A': A('terms', field='adres.raw'),
@@ -106,6 +95,37 @@ def comp_address_Q(query, tokens=None, num=None):
             default_operator='AND',
         ),
         # 'S': ['_display']
+    }
+
+
+def search_streetname_Q(query, tokens=None, num=None):
+    """Create query/aggregation for address search"""
+
+    return {
+        'Q': Q(
+            'bool',
+            should=[
+                Q('query_string',
+                    fields=[
+                        'comp_address',
+                        'comp_address_nen',
+                        'comp_address_ptt'
+                    ],
+                    query=query,
+                    default_operator='AND'),
+                Q(
+                    'multi_match',
+                    query=query,
+                    type="phrase_prefix",
+                    # other streets
+                    fields=[
+                        'comp_address',
+                        'comp_address_nen',
+                        'comp_address_ptt',
+                    ]
+                ),
+                # Q('prefix', naam=query)
+            ])
     }
 
 
@@ -167,13 +187,22 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
             'bool',
             must=[
                 Q('bool', should=[
+
+                    Q('match', straatnaam=street_part),
+                    Q('match', straatnaam_nen=street_part),
+                    Q('match', straatnaam_ptt=street_part),
+
                     Q('match', straatnaam_keyword=street_part),
                     Q('match', straatnaam_nen_keyword=street_part),
                     Q('match', straatnaam_ptt_keyword=street_part),
+
+                    Q('match', huisnummer=num),
+
                 ],
                     minimum_should_match=1),
+            ],
+            should=[
                 Q('match_phrase', toevoeging=split_tv),
-                Q('match', huisnummer=num),
             ]
         ),
         # 'S': ['huisnummer']  # , 'toevoeging.raw']
@@ -207,6 +236,9 @@ def house_number_Q(query):
 
 def bouwblok_Q(query, tokens=None, num=None):
     """ Create query/aggregation for bouwblok search"""
+
+    assert tokens
+
     return {
         'Q': Q('match_phrase_prefix', code=query),
     }
@@ -249,7 +281,6 @@ def is_postcode_Q(query, tokens=None, num=None):
             ],
         ),
         # 's': ['_display']
-
     }
 
 
@@ -260,18 +291,33 @@ def weg_Q(query, tokens=None, num=None):
         'Q': Q(
             'bool',
             must=[
+                Q('term', subtype='weg'),
+            ],
+            should=[
                 Q(
                     'multi_match',
                     query=query,
                     type="phrase_prefix",
                     # other streets
-                    fields=['naam', 'postcode']
+                    fields=[
+                        'naam',
+                        'naam_nen',
+                        'naam_ptt',
+                        'postcode']
                 ),
-                Q('term', subtype='weg'),
+                Q(
+                    'query_string',
+                    fields=[
+                        'naam',
+                        'naam_nen',
+                        'naam_ptt'
+                    ],
+                    query=query,
+                    default_operator='AND'),
             ],
+            minimum_should_match=1,
         ),
         # 's': ['_display']
-
     }
 
 
