@@ -344,10 +344,15 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
         if instance.kadastraal_subject.type ==  \
                 instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
                 and not user.has_perm('brk.view_sensitive_details'):
-            data['kadastraal_subject'] = reverse('zakelijkrecht-subject',
+            data['subject_href'] = reverse('zakelijkrecht-subject',
                                                  args=(instance.id,),
                                                  request=request)
+        else:
+            data['subject_href'] = reverse('kadastraalsubject-detail',
+                                                kwargs={'pk': instance.kadastraal_subject.id},
+                                                request=request)
 
+        #data['subject_href'] = data['kadastraal_subject']
         return data
 
 

@@ -37,11 +37,6 @@ DATAPUNT_API_URL = os.getenv(
 
 
 
-DATAPUNT_API_URL = os.getenv(
-    # note the ending /
-    'DATAPUNT_API_URL', 'https://api.datapunt.amsterdam.nl/')
-
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -155,7 +150,6 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '.localdomain',
-    '.datalabamsterdam.nl',
     '.datapunt.amsterdam.nl',
     '.amsterdam.nl',
 ]
@@ -179,7 +173,6 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_REGEX_WHITELIST = (
     '^(https?://)?localhost(:\d+)?$',
-    '^(https?://)?.*\.datalabamsterdam\.nl$',
     '^(https?://)?.*\.amsterdam\.nl$',
 )
 

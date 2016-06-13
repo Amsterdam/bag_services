@@ -86,8 +86,8 @@ class SensitiveDetailsTestCase(APITestCase):
 
         subj = response['kadastraal_subject']
         self.assertEqual(
-            subj,
-            'http://testserver/brk/zakelijk-recht/{}/subject/'.format(self.recht_natuurlijk.pk)
+            subj['_links']['self']['href'],
+            'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
         )
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
