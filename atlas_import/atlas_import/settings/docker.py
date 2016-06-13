@@ -95,9 +95,16 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
-#PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
-#DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'atlas_import', 'diva'))
 DIVA_DIR = '/app/diva/'
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '.localdomain',
+    '.datapunt.amsterdam.nl',
+    'bag-api.service.consul',
+    '.amsterdam.nl',
+]
 
 secret_key = os.getenv('DJANGO_SECRET_KEY')
 SECRET_KEY = secret_key if secret_key else SECRET_KEY
