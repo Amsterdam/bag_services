@@ -111,9 +111,5 @@ SECRET_KEY = secret_key if secret_key else SECRET_KEY
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # Generate https links
 
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
 
 print("Debug: %s" % DEBUG)
