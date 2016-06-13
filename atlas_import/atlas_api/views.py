@@ -831,8 +831,6 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
         qs, tokens, i = prepare_input(query_string)
 
-        log.info(self.__class__.__name__, qs)
-
         if is_postcode_huisnummer(qs, tokens):
             query = [
                 bagQ.postcode_huisnummer_Q(
