@@ -7,8 +7,12 @@
  They all return a dict with the Q and A keyes
 ==================================================
 """
+
 # Python
 import logging
+import re
+
+from collections import OrderedDict
 # Packages
 # from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
@@ -164,6 +168,53 @@ def postcode_and_num_Q(query, tokens=None, num=None):
     assert tokens
 
 
+# ambetenaren sort
+def vbo_natural_sort(l):
+
+    def alphanum_key(key):
+        return [c for c in re.split('([0-9]+)', key[0])]
+
+    return sorted(l, key=alphanum_key)
+
+
+def straat_huisnummer_sorting(results, query, tokens, i):
+    """
+    Sort by relevant steet - huisnummer toevoeging
+    """
+    end_result = []
+    sorted_results = OrderedDict()
+
+    display_ends = []
+    extra = tokens[i+1:]
+
+    def built_sort_key(toevoeging):
+        # remove what user already typed
+        end_part = toevoeging.replace(" ", "")
+        for et in extra:
+            et = et.upper()
+            end_part = end_part.replace(et, '')
+        return end_part
+
+    # order streetnames in order of results/relevance
+    for r in results:
+        # remove the part the user typed in
+        straatnaam = r.straatnaam_keyword
+        # create sortkey for street sorting
+        sort_key = built_sort_key(r.toevoeging)
+        # group resutls by streetnames
+        street_result = sorted_results.setdefault(straatnaam, [])
+        # add sortkey and result to street selection
+        street_result.append((sort_key, r))
+
+    # Sort street extra/toevoeingen on in natural way
+    for street, street_result in sorted_results.items():
+        display_ends = vbo_natural_sort(street_result)
+        # flatten the endresult
+        end_result.extend([r for _, r in display_ends])
+
+    return end_result
+
+
 def straat_huisnummer_Q(query, tokens=None, num=None):
     """
     # Breaking the query to street name and house number
@@ -186,26 +237,24 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
         'Q': Q(
             'bool',
             must=[
-                Q('bool', should=[
-
-                    Q('match', straatnaam=street_part),
-                    Q('match', straatnaam_nen=street_part),
-                    Q('match', straatnaam_ptt=street_part),
-
-                    Q('match', straatnaam_keyword=street_part),
-                    Q('match', straatnaam_nen_keyword=street_part),
-                    Q('match', straatnaam_ptt_keyword=street_part),
-
-                    Q('match', huisnummer=num),
-
-                ],
-                    minimum_should_match=1),
-            ],
-            should=[
+                Q('match', huisnummer=num),
                 Q('match_phrase', toevoeging=split_tv),
-            ]
+            ],
+
+            should=[
+                Q('match', straatnaam=street_part),
+                Q('match', straatnaam_nen=street_part),
+                Q('match', straatnaam_ptt=street_part),
+
+                Q('match', straatnaam_keyword=street_part),
+                Q('match', straatnaam_nen_keyword=street_part),
+                Q('match', straatnaam_ptt_keyword=street_part),
+
+            ],
+            minimum_should_match=2
         ),
-        # 'S': ['huisnummer']  # , 'toevoeging.raw']
+        'sorting': straat_huisnummer_sorting,
+        'size': 10
     }
 
 
@@ -280,7 +329,7 @@ def is_postcode_Q(query, tokens=None, num=None):
                 Q('term', subtype='weg'),
             ],
         ),
-        # 's': ['_display']
+        's': ['_display']
     }
 
 

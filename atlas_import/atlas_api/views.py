@@ -62,7 +62,7 @@ def prepare_input(query_string):
     return qs, tokens, i
 
 
-def analyze_query(query_string):
+def analyze_query(query_string, tokens, i):
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -76,10 +76,6 @@ def analyze_query(query_string):
 
     returns a list of queries that should be used
     """
-
-    # i = index first number in tokens
-    query_string, tokens, i = prepare_input(query_string)
-
     # A collection of regex and the query they generate
     query_selector = [
         {
@@ -268,49 +264,62 @@ class TypeaheadViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-    def autocomplete_query(self, query):
+    def autocomplete_queries(self, query):
         """provice autocomplete suggestions"""
-        query_componentes = analyze_query(query)
+
+        # i = index first number in tokens
+        query_clean, tokens, i = prepare_input(query)
+
+        query_componentes = analyze_query(query_clean, tokens, i)
 
         indexes = [BAG, BRK, NUMMERAANDUIDING]
 
-        queries = []
-        sorting = []
+        result_data = []
+        size = 15     # default size
 
-        # collect queries and ignore aggregations
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+
+        # create elk queries
         for q in query_componentes:
-
-            queries.append(q['Q'])
-
-            if 'S' in q:
-                sorting.extend(q['S'])
 
             if 'Index' in q:
                 indexes = q['Index']
 
-        if queries:
             search = (
                 Search()
                 .using(self.client)
                 .index(*indexes)
-                .query(
-                    'bool',
-                    should=queries,
-                    minimum_should_match=1
+                .query(q['Q'])
                 )
-            )
-        else:
-            log.debug('Something went wrong.i NO QUERIES')
 
-        # nice prety printing
-        if settings.DEBUG:
-            sq = search.to_dict()
-            import json
-            msg = json.dumps(sq, indent=4)
-            print(msg)
-            logging.debug(msg)
+            if 's' in q:
+                search = search.sort(*q['s'])
 
-        return search
+            if 'size' in q:
+                size = q['size']
+
+            search = search[0:size]
+
+            # get the result from elastic
+            result = search.execute(ignore_cache=ignore_cache)
+
+            # if there is custom sorting.
+            if 'sorting' in q:
+                result = q['sorting'](result, query_clean, tokens, i)
+
+            # Get the datas!
+            result_data.append(result)
+
+            # nice prety printing
+            if settings.DEBUG:
+                sq = search.to_dict()
+                import json
+                msg = json.dumps(sq, indent=4)
+                print(msg)
+                logging.debug(msg)
+
+        return result_data
 
     def _get_uri(self, request, hit):
         # Retrieves the uri part for an item
@@ -318,7 +327,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         uri = urlparse(url).path[1:]
         return uri
 
-    def _order_results(self, result, query_string, request):
+    def _order_results(self, results, query_string, request):
         """
         Arrange the aggregated results, possibly sorting them
         alphabetically
@@ -329,7 +338,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
                        match recognition
         """
         result_sets = {}
+
         ordered_results = []
+
         result_order = [
             'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
             'kadastraal_object', 'meetbout']
@@ -341,29 +352,25 @@ class TypeaheadViewSet(viewsets.ViewSet):
             'Meetbouten'
         ]
 
-        # Orginizing the results
-        # print('Results:', len(result))
-        if len(result) == 1:
-            pass
-            # print(result.to_dict())
+        # Organizing the results
+        for result in results:
+            for hit in result:
+                disp = hit._display
+                uri = self._get_uri(request, hit)
+                # Only add results we generate uri for
+                # @TODO this should not be used like this as result filter
 
-        for hit in result:
-            disp = hit._display
-            uri = self._get_uri(request, hit)
-            # Only add results we generate uri for
-            # @TODO this should not be used like this as result filter
+                if not uri:
+                    continue
 
-            if not uri:
-                continue
+                if hit.subtype not in result_sets:
+                    result_sets[hit.subtype] = []
 
-            if hit.subtype not in result_sets:
-                result_sets[hit.subtype] = []
-
-            result_sets[hit.subtype].append({
-                '_display': disp,
-                'query': disp,
-                'uri': uri
-            })
+                result_sets[hit.subtype].append({
+                    '_display': disp,
+                    'query': disp,
+                    'uri': uri
+                })
 
         # Now ordereing the result groups
         for i in range(len(result_order)):
@@ -372,6 +379,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                     'label': pretty_names[i],
                     'content': result_sets[result_order[i]],
                 })
+
         return ordered_results
 
     def get_autocomplete_response(self, query, request, alphabetical=True):
@@ -382,18 +390,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
         Optional flag alphabetical is used to determine if the results
         should be alphabetically ordered. Defaults to True
         """
-        # Ignoring cache in case debug is on
-        ignore_cache = settings.DEBUG
 
-        qr = self.autocomplete_query(query)
+        results = self.autocomplete_queries(query)
 
-        result = qr.execute(ignore_cache=ignore_cache)
 
         # Checking if there was aggregation in the autocomplete.
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them
         # matches = OrderedDict()
-        res = self._order_results(result, query, request)
+        res = self._order_results(results, query, request)
+
         return res
 
     def list(self, request, *args, **kwargs):
@@ -950,9 +956,12 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
         query = self.normalize_postcode_housenumber(
             prepare_query_string(request.query_params['q']))
+
         if not query:
             return Response([])
+
         response = self.get_exact_response(query)
+
         # Getting the first response.
         # Either there is only one, or a housenumber was given
         # where only extensions are available, in which case any result will do
