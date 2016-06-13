@@ -14,18 +14,10 @@ PCODE_NUM_REGEX = re.compile(
 HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 
-def is_int(token):
-    try:
-        int(token)
-        return True
-    except ValueError:
-        return False
-
-
 def first_number(input_tokens):
 
     for i, token in enumerate(input_tokens):
-        if is_int(token):
+        if token.isdigit():
             return i, token
 
     return -1, ""
@@ -67,7 +59,7 @@ def clean_tokenize(query_string):
     return qs, tokens
 
 
-def is_postcode(tokens):
+def is_postcode(query_string, tokens):
     """
     Test of tokens could represent postcode
 
@@ -104,7 +96,7 @@ def is_postcode(tokens):
     return False
 
 
-def is_straat_huisnummer(tokens):
+def is_straat_huisnummer(query_string, tokens):
 
     if len(tokens) < 2:
         return False
@@ -119,7 +111,7 @@ def is_straat_huisnummer(tokens):
         return i
 
 
-def is_postcode_huisnummer(tokens):
+def is_postcode_huisnummer(query_string, tokens):
     """
     only True  for:
 
@@ -129,7 +121,7 @@ def is_postcode_huisnummer(tokens):
         return False
 
     # first two tokens are valid postalcodes?
-    if is_postcode(tokens[:2]):
+    if is_postcode("", tokens[:2]):
         # 3rd token is number?
         try:
             int(tokens[3])
@@ -142,7 +134,7 @@ def is_postcode_huisnummer(tokens):
     return False
 
 
-def is_bouwblok(tokens):
+def is_bouwblok(query_string, tokens):
     """
     Bouwblok regex matches 2 digits a letter and
     an optional second letter
@@ -174,7 +166,37 @@ def is_bouwblok(tokens):
         pass
 
 
-def is_meetbout(tokens):
+def is_kadaster_object(query_string, tokens):
+    """
+    """
+    if len(tokens) < 2:
+        return False
+
+    letters = tokens[0]
+    cijfers = tokens[1]
+
+    if len(letters) != 3:
+        return False
+
+    if len(cijfers) != 2:
+        return False
+
+    if letters.isdigit():
+        return False
+
+    if not cijfers.isdigit():
+        return False
+
+    # fail when there is a space in the query string
+    # ASD15 OK
+    # ASD 15 NOT OK
+    if not query_string.startswith("".join(tokens[:2])):
+        return False
+
+    return True
+
+
+def is_meetbout(query_string, tokens):
     """
     Meetbout regex matches up to 8 digits
     MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')

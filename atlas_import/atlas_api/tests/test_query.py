@@ -126,10 +126,9 @@ class QueryTest(APITestCase):
         es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
         es.indices.refresh(index="_all")
 
-
     def test_search_openbare_ruimte_api(self):
         response = self.client.get(
-            "/atlas/search/openbareruimte/", {'q':"Prinsengracht"})
+            "/atlas/search/openbareruimte/", {'q': "Prinsengracht"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -143,7 +142,7 @@ class QueryTest(APITestCase):
 
     def test_search_subject_api(self):
         response = self.client.get(
-            "/atlas/search/kadastraalsubject/", {'q':"kikker"})
+            "/atlas/search/kadastraalsubject/", {'q': "kikker"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -153,7 +152,7 @@ class QueryTest(APITestCase):
 
     def test_search_bouwblok_api(self):
         response = self.client.get(
-            "/atlas/search/bouwblok/", {'q':"rn-3"})
+            "/atlas/search/bouwblok/", {'q': "rn-3"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -161,10 +160,9 @@ class QueryTest(APITestCase):
         self.assertEqual(
             response.data['results'][0]['code'], "RN35")
 
-    @unittest.skip("fix later")
     def test_search_adres_api(self):
         response = self.client.get(
-            "/atlas/search/adres/", {'q':"1016 SZ 228 a 1"})
+            "/atlas/search/postcode/", {'q': "1016 SZ 228 a 1"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
