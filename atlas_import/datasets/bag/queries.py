@@ -62,11 +62,11 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
 
     assert tokens
 
-    log.info('postcode_huisnummer_Q')
+    # log.info('postcode_huisnummer_Q')
 
     split_tv = split_toevoeging(tokens, 2)
-
-    log.info(split_tv)
+    # Third token must be house number
+    num = int(tokens[2])
 
     return {
         'Q': Q(
@@ -264,6 +264,8 @@ def straat_huisnummer_sorting(elk_results, query, tokens, i):
         # add the highest scored hit to fist result
         add_to_end_result(end_result, best_bucket, ordered_vbo_street_num)
         sorted_results.pop(best_bucket)
+    else:
+        return []
 
     # Add The next (10) most logical results (number wise)
     # derived from the best bucket
