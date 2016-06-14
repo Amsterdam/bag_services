@@ -393,7 +393,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         results = self.autocomplete_queries(query)
 
-
         # Checking if there was aggregation in the autocomplete.
         # If there was that is what should be used for resutls
         # Trying aggregation as most autocorrect will have them

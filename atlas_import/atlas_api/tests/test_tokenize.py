@@ -111,6 +111,10 @@ class TokenizeTest(TestCase):
         _, tokens = ih.clean_tokenize(test)
         self.assertFalse(ih.is_postcode_huisnummer(test, tokens))
 
+        test = "1013 AZ X"
+        _, tokens = ih.clean_tokenize(test)
+        self.assertFalse(ih.is_postcode_huisnummer(test, tokens))
+
         test = "101 AW 1"
         _, tokens = ih.clean_tokenize(test)
         self.assertFalse(ih.is_postcode_huisnummer(test, tokens))

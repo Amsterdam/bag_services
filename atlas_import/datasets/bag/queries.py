@@ -77,9 +77,13 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
                     'match_phrase_prefix': {
                         'toevoeging': split_tv}
                 })
+            ],
+            should=[
+                Q('term', huisnummer=num, boost=3),
             ]
         ),
-        # 'S': ['huisnummer', 'toevoeging.raw']
+        'sorting': postcode_huisnummer_sorting,
+        'size': 50  # sample size for custom sort
     }
 
 
@@ -172,47 +176,106 @@ def postcode_and_num_Q(query, tokens=None, num=None):
 def vbo_natural_sort(l):
 
     def alphanum_key(key):
-        return [c for c in re.split('([0-9]+)', key[0])]
+        return [t for t in re.split('([0-9]+)', key[0])]
 
     return sorted(l, key=alphanum_key)
 
 
-def straat_huisnummer_sorting(results, query, tokens, i):
+def built_sort_key(toevoeging, extra):
+    # remove what user already typed
+    end_part = toevoeging.replace(" ", "")
+
+    for et in extra:
+        et = et.upper()
+        # print('R', et)
+        end_part = end_part.replace(et, '')
+
+    return end_part
+
+
+def add_to_end_result(end_result, bucket, ordered_vbo_street_num):
     """
-    Sort by relevant steet - huisnummer toevoeging
+    Add hits of ordered vbo street results to end_result
     """
-    end_result = []
+    for end_p, hit in ordered_vbo_street_num:
+        print('S', bucket, 'E', end_p)
+        # flatten the endresult
+        end_result.append(hit)
+
+
+def built_buckets(elk_results, extra):
+    """
+    Build buckets per street-num for the elk results
+    keeping the results in order or the elk_score
+    """
     sorted_results = OrderedDict()
 
-    display_ends = []
-    extra = tokens[i+1:]
-
-    def built_sort_key(toevoeging):
-        # remove what user already typed
-        end_part = toevoeging.replace(" ", "")
-        for et in extra:
-            et = et.upper()
-            end_part = end_part.replace(et, '')
-        return end_part
-
-    # order streetnames in order of results/relevance
-    for r in results:
+    for r in elk_results:
         # remove the part the user typed in
         straatnaam = r.straatnaam_keyword
-        # create sortkey for street sorting
-        sort_key = built_sort_key(r.toevoeging)
-        # group resutls by streetnames
-        street_result = sorted_results.setdefault(straatnaam, [])
+        bucket = straatnaam + str(r.huisnummer)
+
+        # create sortkey for vbo street sorting
+        sort_key = built_sort_key(r.toevoeging, extra)
+        # print('B', bucket, r.huisnummer, 'K: ', sort_key)
+        # group results by streetnames
+        street_result = sorted_results.setdefault(bucket, [])
         # add sortkey and result to street selection
         street_result.append((sort_key, r))
 
-    # Sort street extra/toevoeingen on in natural way
-    for street, street_result in sorted_results.items():
-        display_ends = vbo_natural_sort(street_result)
-        # flatten the endresult
-        end_result.extend([r for _, r in display_ends])
+    return sorted_results
 
-    return end_result
+
+def find_next_10_best_results(end_result, best_bucket, sorted_results):
+
+    for i in range(10):
+        # bucket N0, N1, N2, N3..
+        logic_bucket = '%s%s' % (best_bucket, i)
+        street_result = sorted_results.get(logic_bucket, [])
+
+        if street_result:
+            # append bucket to endresults
+            ordered_vbo_street_num = vbo_natural_sort(street_result)
+            add_to_end_result(end_result, logic_bucket, ordered_vbo_street_num)
+            # remove bucket it
+            sorted_results.pop(logic_bucket)
+
+
+def postcode_huisnummer_sorting(elk_results, query, tokens, i):
+    # The house number is for sure the 3rd token.
+    return straat_huisnummer_sorting(elk_results, query, tokens, 2)
+
+
+def straat_huisnummer_sorting(elk_results, query, tokens, i):
+    """
+    Sort by relevant and 'logical' steet - huisnummer - toevoeging
+    """
+    end_result = []
+
+    extra = tokens[i+1:]  # toevoeginen
+
+    # bucket vbo's by streetnames in order of elk results/relevance
+    sorted_results = built_buckets(elk_results, extra)
+
+    # The first highest scoreing result
+    if sorted_results:
+        best_bucket, street_result = list(sorted_results.items())[0]
+        ordered_vbo_street_num = vbo_natural_sort(street_result)
+        # add the highest scored hit to fist result
+        add_to_end_result(end_result, best_bucket, ordered_vbo_street_num)
+        sorted_results.pop(best_bucket)
+
+    # Add The next (10) most logical results (number wise)
+    # derived from the best bucket
+    find_next_10_best_results(end_result, best_bucket, sorted_results)
+
+    # Add what is leftover of high scoring bucket to the end of endresults
+    for bucket, street_result in sorted_results.items():
+        ordered_vbo_street_num = vbo_natural_sort(street_result)
+        add_to_end_result(end_result, bucket, ordered_vbo_street_num)
+        # first result
+
+    return end_result[:10]
 
 
 def straat_huisnummer_Q(query, tokens=None, num=None):
@@ -237,8 +300,6 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
         'Q': Q(
             'bool',
             must=[
-                Q('match', huisnummer=num),
-                Q('match_phrase', toevoeging=split_tv),
             ],
 
             should=[
@@ -250,11 +311,14 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
                 Q('match', straatnaam_nen_keyword=street_part),
                 Q('match', straatnaam_ptt_keyword=street_part),
 
+                # Q('match', huisnummer=num),
+                Q('term', huisnummer=num, boost=3),
+                Q('match_phrase', toevoeging=split_tv),
             ],
-            minimum_should_match=2
+            minimum_should_match=3
         ),
         'sorting': straat_huisnummer_sorting,
-        'size': 10
+        'size': 50
     }
 
 
