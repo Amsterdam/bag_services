@@ -432,7 +432,7 @@ def weg_Q(query, tokens=None, num=None):
             ],
             minimum_should_match=1,
         ),
-        # 's': ['_display']
+        's': ['_display'],
         'size': 10
     }
 
