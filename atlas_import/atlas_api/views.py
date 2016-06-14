@@ -520,6 +520,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         search = self.search_query(client, query)[start:end]
 
+        ignore_cache = settings.DEBUG
+
         if settings.DEBUG:
             log.debug(search.to_dict())
             sq = search.to_dict()
@@ -527,7 +529,7 @@ class SearchViewSet(viewsets.ViewSet):
             print(json.dumps(sq, indent=4))
 
         try:
-            result = search.execute()
+            result = search.execute(ignore_cache=ignore_cache)
         except TransportError:
             log.exception("Could not execute search query " + query)
             # Todo fix this
@@ -834,7 +836,7 @@ class SearchPostcodeViewSet(SearchViewSet):
             query = [
                 bagQ.postcode_huisnummer_Q(
                     query_string,
-                    tokens=tokens, num=i)['Q'],
+                    tokens=tokens, num=2)['Q'],
             ]
         else:
             postcode = "".join(tokens[:2])

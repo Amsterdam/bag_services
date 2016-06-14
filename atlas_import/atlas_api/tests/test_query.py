@@ -166,7 +166,6 @@ class QueryTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
-        # self.assertEqual(response.data['count'], 8)
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Rozenstraat 228a-1")
