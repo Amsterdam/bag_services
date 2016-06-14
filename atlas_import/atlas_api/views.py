@@ -101,7 +101,10 @@ def analyze_query(query_string, tokens, i):
         },
         {
             'test': is_straat_huisnummer,
-            'query': [bagQ.straat_huisnummer_Q],
+            'query': [
+                bagQ.straat_huisnummer_Q,
+                brkQ.kadaster_subject_Q,
+            ],
         },
     ]
 
@@ -120,9 +123,8 @@ def analyze_query(query_string, tokens, i):
     if not queries:
         queries.extend([
             bagQ.weg_Q,
+            brkQ.kadaster_subject_Q,
         ])
-        # could also be subject
-        # queries.extend([brkQ.kadaster_subject_Q])
 
     result_queries = []
 
@@ -156,6 +158,9 @@ def prepare_query_string(query_string):
 
 
 def _get_url(request, hit):
+    """
+    Given an elk hit determine the uri for each hit
+    """
 
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
@@ -196,48 +201,6 @@ class QueryMetadata(metadata.SimpleMetadata):
             },
         }
         return result
-
-
-def _order_matches(matches):
-    for sub_type in matches.keys():
-        count_values = sorted(
-            [(count, m)
-             for m, count in matches[sub_type].items()], reverse=True)
-
-        matches[sub_type] = [
-            dict(item=m, score=count) for count, m in count_values[:5]]
-
-
-def _filter_highlights(highlight, sub_type, query, matches):
-    """
-    Given auto complete highligts make sure query matches suggestion
-    """
-    for key in highlight:
-        found_highlights = highlight[key]
-
-        for match_field_value in found_highlights:
-            # #make sure query is in the match
-            q = query.lower()
-            mf = match_field_value.lower()
-            if not mf.startswith(q):
-                if q not in mf:
-                    continue
-
-            old = matches[sub_type].setdefault(match_field_value, 0)
-            # import ipdb; ipdb.set_trace()
-            matches[sub_type][match_field_value] = old + 1
-
-
-def _determine_sub_type(hit):
-
-    if not hasattr(hit, 'subtype'):
-        sub_type = hit.meta.doc_type
-        log.debug('subtype missing %s' % hit)
-    else:
-        # this should always be the case
-        sub_type = hit.subtype
-
-    return sub_type
 
 
 # =============================================
@@ -304,7 +267,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             # get the result from elastic
             result = search.execute(ignore_cache=ignore_cache)
 
-            # if there is custom sorting.
+            # apply custom sorting.
             if 'sorting' in q:
                 result = q['sorting'](result, query_clean, tokens, i)
 
@@ -329,8 +292,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     def _order_results(self, results, query_string, request):
         """
-        Arrange the aggregated results, possibly sorting them
-        alphabetically
 
         @Params
         result - the elastic search result object
@@ -353,14 +314,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         ]
 
         # Organizing the results
-        for result in results:
-            for hit in result:
+        for elk_result in results:
+            for hit in elk_result:
                 disp = hit._display
                 uri = self._get_uri(request, hit)
                 # Only add results we generate uri for
                 # @TODO this should not be used like this as result filter
 
                 if not uri:
+                    logging.debug('No uri', hit)
                     continue
 
                 if hit.subtype not in result_sets:
@@ -416,8 +378,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = prepare_query_string(request.query_params['q'])
+
         if not query:
             return Response([])
+
         response = self.get_autocomplete_response(query, request)
 
         return Response(response)

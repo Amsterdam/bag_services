@@ -8,6 +8,9 @@
 ==================================================
 """
 from elasticsearch_dsl import Q, A
+from django.conf import settings
+
+BRK = settings.ELASTIC_INDICES['BRK']
 
 
 def kadaster_object_Q(query, tokens=None, num=None):
@@ -30,5 +33,7 @@ def kadaster_subject_Q(query, tokens=None, num=None):
             type='phrase_prefix',
             fields=[
                 "naam"]
-            )
+            ),
+        'size': 5,
+        'Index': [BRK]
     }

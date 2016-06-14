@@ -320,7 +320,7 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
             minimum_should_match=3
         ),
         'sorting': straat_huisnummer_sorting,
-        'size': 50
+        'size': 60
     }
 
 
@@ -433,6 +433,7 @@ def weg_Q(query, tokens=None, num=None):
             minimum_should_match=1,
         ),
         # 's': ['_display']
+        'size': 10
     }
 
 
