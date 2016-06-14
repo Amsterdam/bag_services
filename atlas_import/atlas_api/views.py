@@ -755,7 +755,18 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         query, tokens, i = prepare_input(query)
 
-        if is_straat_huisnummer(query, tokens):
+        if is_postcode_huisnummer(query, tokens):
+            return (
+                Search()
+                .using(client)
+                .index(NUMMERAANDUIDING)
+                .query(
+                    bagQ.postcode_huisnummer_Q(
+                        query, tokens=tokens, num=i)['Q']
+                )
+            )
+
+        elif is_straat_huisnummer(query, tokens):
             return (
                 Search()
                 .using(client)
@@ -766,7 +777,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
                 )
             )
 
-        # default response
+        # default response search roads
         return (
             Search()
             .using(client)

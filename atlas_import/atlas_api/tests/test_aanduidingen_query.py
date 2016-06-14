@@ -56,6 +56,7 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=100,
             huisletter='',
+            postcode='1234AB',
             type='01',  # Verblijfsobject
             openbare_ruimte=nen_straat
         )
@@ -74,6 +75,19 @@ class SubjectSearchTest(APITestCase):
 
         first = response.data['results'][0]
         self.assertEqual(first['straatnaam'], "Anjeliersstraat")
+
+    def test_postcode_huisnummer_query(self):
+        response = self.client.get(
+            '/atlas/search/adres/', {'q': '1234AB 100'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+
+        self.assertEqual(response.data['count'], 1)
+
+        first = response.data['results'][0]
+        self.assertEqual(first['straatnaam'], "Stoom Maker Weg")
 
     def test_gracht_query(self):
         response = self.client.get(
