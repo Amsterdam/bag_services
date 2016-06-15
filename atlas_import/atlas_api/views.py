@@ -76,6 +76,10 @@ def analyze_query(query_string, tokens, i):
 
     returns a list of queries that should be used
     """
+    # too little informatation to search on
+    if len(query_string) < 2:
+        return []
+
     # A collection of regex and the query they generate
     query_selector = [
         {
@@ -233,18 +237,19 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # i = index first number in tokens
         query_clean, tokens, i = prepare_input(query)
 
-        query_componentes = analyze_query(query_clean, tokens, i)
+        query_components = analyze_query(query_clean, tokens, i)
 
         indexes = [BAG, BRK, NUMMERAANDUIDING]
 
         result_data = []
+
         size = 15     # default size
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
 
         # create elk queries
-        for q in query_componentes:
+        for q in query_components:
 
             if 'Index' in q:
                 indexes = q['Index']

@@ -432,7 +432,8 @@ def weg_Q(query, tokens=None, num=None):
             ],
             minimum_should_match=1,
         ),
-        's': ['_display'],
+        # 's': ['_display'],
+        # 'sorting': weg_sorting,
         'size': 10
     }
 
