@@ -62,8 +62,6 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
 
     assert tokens
 
-    # log.info('postcode_huisnummer_Q')
-
     split_tv = split_toevoeging(tokens, 2)
     # Third token must be house number
     num = int(tokens[2])
@@ -188,7 +186,6 @@ def built_sort_key(toevoeging, extra):
 
     for et in extra:
         et = et.upper()
-        # print('R', et)
         end_part = end_part.replace(et, '')
 
     return end_part
@@ -199,7 +196,6 @@ def add_to_end_result(end_result, bucket, ordered_vbo_street_num):
     Add hits of ordered vbo street results to end_result
     """
     for end_p, hit in ordered_vbo_street_num:
-        print('S', bucket, 'E', end_p)
         # flatten the endresult
         end_result.append(hit)
 
@@ -218,7 +214,6 @@ def built_vbo_buckets(elk_results, extra):
 
         # create sortkey for vbo street sorting
         sort_key = built_sort_key(r.toevoeging, extra)
-        # print('B', bucket, r.huisnummer, 'K: ', sort_key)
         # group results by streetnames
         street_result = rbs.setdefault(bucket, [])
         # add sortkey and result to street selection
@@ -313,13 +308,12 @@ def vbo_straat_sorting(elk_results, query, tokens, i):
     Sort results by prefix street and housenumber
     """
     assert i <= 1
-    print('vbo straat sort')
     end_result = []
 
     buckets, prefix, the_rest = bucket_vbo_weg_results(elk_results, query)
 
     def add_to_endresult(straatnamen):
-        for straatnaam in prefix:
+        for straatnaam in straatnamen:
             street_bucket = buckets[straatnaam]
             street_bucket.sort()
             for t, hit in street_bucket:

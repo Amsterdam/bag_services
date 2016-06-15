@@ -793,10 +793,6 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         Sort by relevant street and then numbers
         """
-
-        log.info('Woot')
-        log.info(elk_results[:1])
-
         if is_postcode_huisnummer(query, tokens):
             i = 2
 
