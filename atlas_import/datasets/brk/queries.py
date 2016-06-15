@@ -21,6 +21,32 @@ def kadaster_object_Q(query, tokens=None, num=None):
     }
 
 
+def gemeente_object_Q(query, tokens=None, num=None):
+
+    return {
+        'Q': Q(
+            'bool',
+
+            must=[
+                Q('term', gemeente=tokens[0])
+            ],
+
+            should=[
+                Q(
+                    'match_phrase',
+                    search_aanduiding="".join(tokens[1:]),
+                    slop=5
+                ),
+                Q(
+                    'match',
+                    search_aanduiding="".join(tokens[1:]),
+                    slop=5
+                )
+            ]
+        )
+    }
+
+
 def kadaster_subject_Q(query, tokens=None, num=None):
     """Create query/aggregation for kadaster subject search"""
     return {

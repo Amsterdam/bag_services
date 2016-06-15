@@ -14,6 +14,9 @@ class KadastraalObject(es.DocType):
     order = es.Integer()
     centroid = es.GeoPoint()
 
+    gemeente = es.String()
+    gemeente_code = es.String()
+
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
 
@@ -64,7 +67,12 @@ def from_kadastraal_object(ko):
     d = KadastraalObject(_id=ko.pk)
 
     d.aanduiding = ko.get_aanduiding_spaties()
+
+    d.gemeente = ko.kadastrale_gemeente.naam
+    d.gemeente_code = ko.kadastrale_gemeente.id
+
     d.search_aanduiding = d.aanduiding[6:]
+
     d.order = analyzers.orderings['kadastraal_object']
 
     d.subtype = 'kadastraal_object'
@@ -75,6 +83,7 @@ def from_kadastraal_object(ko):
         centroid.transform('wgs84')
 
         d.centroid = centroid.coords
+
     d._display = d.aanduiding
 
     return d

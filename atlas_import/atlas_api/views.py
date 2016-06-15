@@ -51,7 +51,7 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 
-def prepare_input(query_string):
+def prepare_input(query_string: str):
     """
     -Cleanup string
     -Tokenize create tokens
@@ -62,7 +62,7 @@ def prepare_input(query_string):
     return qs, tokens, i
 
 
-def analyze_query(query_string, tokens, i):
+def analyze_query(query_string: str, tokens: list, i: int):
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -139,7 +139,7 @@ def analyze_query(query_string, tokens, i):
     return result_queries
 
 
-def prepare_query_string(query_string):
+def prepare_query_string(query_string: str):
     """
     Prepares the query string for search.
     Cleaning up unsupported signes, normalize the search
@@ -410,7 +410,7 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search.
 
@@ -481,13 +481,14 @@ class SearchViewSet(viewsets.ViewSet):
         end = (page * self.page_size)
 
         query = prepare_query_string(request.query_params['q'])
+        query, tokens, i = prepare_input(query)
 
         client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
             raise_on_error=True
         )
 
-        search = self.search_query(client, query)[start:end]
+        search = self.search_query(client, query, tokens, i)[start:end]
 
         ignore_cache = settings.DEBUG
 
@@ -516,15 +517,17 @@ class SearchViewSet(viewsets.ViewSet):
         self.create_summary_aggregations(request, result, response)
         # if hits are > 3 and < 1000
         # custom sorting?
-        self.custom_sorting(result.hits)
+        ordered_results = self.custom_sorting(result.hits, query, tokens, i)
 
         response['results'] = [
-            self.normalize_hit(h, request) for h in result.hits]
+            self.normalize_hit(h, request) for h in ordered_results]
 
         return Response(response)
 
-    def custom_sorting(self, result_hits):
-        pass
+    def custom_sorting(self, result_hits: list,
+                       query: str, tokens: list, i: int):
+
+        return result_hits
 
     def create_summary_aggregations(self, request, result, response):
         """
@@ -577,7 +580,7 @@ class SearchSubjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalsubject-list'
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search on Subject
         """
@@ -619,7 +622,7 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
@@ -662,7 +665,7 @@ class SearchBouwblokViewSet(SearchViewSet):
 
     url_name = 'search/bouwblok-list'
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
@@ -715,7 +718,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     url_name = 'search/openbareruimte-list'
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
@@ -759,49 +762,48 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     """
     url_name = 'search/adres-list'
+    custom_sort = True
 
-    def search_query(self, client, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
-        query, tokens, i = prepare_input(query)
+        queries = []
 
         if is_postcode_huisnummer(query, tokens):
-            return (
-                Search()
-                .using(client)
-                .index(NUMMERAANDUIDING)
-                .query(
-                    bagQ.postcode_huisnummer_Q(
-                        query, tokens=tokens, num=i)['Q']
-                )
-            )
+            queries = [
+                bagQ.postcode_huisnummer_Q(query, tokens=tokens, num=i)['Q']]
 
         elif is_straat_huisnummer(query, tokens):
-            return (
-                Search()
-                .using(client)
-                .index(NUMMERAANDUIDING)
-                .query(
-                    bagQ.tokens_comp_address_Q(
-                        query, tokens=tokens, num=i)['Q']
-                )
-            )
+            queries = [
+                bagQ.tokens_comp_address_Q(query, tokens=tokens, num=i)['Q']]
+
+        if not queries:
+            queries = [bagQ.search_streetname_Q(query)['Q']]
 
         # default response search roads
         return (
             Search()
             .using(client)
             .index(NUMMERAANDUIDING)
-            .query(
-                bagQ.search_streetname_Q(query)['Q']
-            ).sort('adres.raw')
+            .query(*queries)
         )
 
-    def custom_sorting(self, elk_results):
+    def custom_sorting(self, elk_results, query, tokens, i):
         """
+        Sort by relevant street and then numbers
         """
-        pass
+
+        log.info('Woot')
+        log.info(elk_results[:1])
+
+        if is_postcode_huisnummer(query, tokens):
+            i = 2
+
+        if i < 1:
+            return bagQ.vbo_straat_sorting(elk_results, query, tokens, i)
+
+        return bagQ.straat_huisnummer_sorting(elk_results, query, tokens, i)
 
 
 class SearchPostcodeViewSet(SearchViewSet):
@@ -819,14 +821,13 @@ class SearchPostcodeViewSet(SearchViewSet):
     """
     url_name = 'search/postcode-list'
 
-    def search_query(self, client, query_string):
+    def search_query(self, client, query, tokens, i):
         """Creating the actual query to ES"""
-        qs, tokens, i = prepare_input(query_string)
 
-        if is_postcode_huisnummer(qs, tokens):
+        if is_postcode_huisnummer(query, tokens):
             query = [
                 bagQ.postcode_huisnummer_Q(
-                    query_string,
+                    query,
                     tokens=tokens, num=2)['Q'],
             ]
         else:
@@ -898,7 +899,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
                     norm = pc_num
         return norm
 
-    def search_query(self, query):
+    def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
