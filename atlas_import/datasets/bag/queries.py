@@ -117,7 +117,8 @@ def search_streetname_Q(query, tokens=None, num=None):
                     fields=[
                         'comp_address',
                         'comp_address_nen',
-                        'comp_address_ptt'
+                        'comp_address_ptt',
+                        'postcode^3',
                     ],
                     query=query,
                     default_operator='AND'),
@@ -130,6 +131,7 @@ def search_streetname_Q(query, tokens=None, num=None):
                         'comp_address',
                         'comp_address_nen',
                         'comp_address_ptt',
+                        'postcode^3',
                     ]
                 ),
                 # Q('prefix', naam=query)
@@ -203,15 +205,15 @@ def add_to_end_result(end_result, bucket, ordered_vbo_street_num):
         end_result.append(hit)
 
 
-def built_buckets(elk_results, extra):
+def built_vbo_buckets(elk_results, extra):
     """
     Build buckets per street-num for the elk results
-    keeping the results in order or the elk_score
+    keeping the results in order or the elk_score/relevance
     """
     sorted_results = OrderedDict()
 
     for r in elk_results:
-        # remove the part the user typed in
+
         straatnaam = r.straatnaam_keyword
         bucket = straatnaam + str(r.huisnummer)
 
@@ -255,7 +257,7 @@ def straat_huisnummer_sorting(elk_results, query, tokens, i):
     extra = tokens[i+1:]  # toevoeginen
 
     # bucket vbo's by streetnames in order of elk results/relevance
-    sorted_results = built_buckets(elk_results, extra)
+    sorted_results = built_vbo_buckets(elk_results, extra)
 
     # The first highest scoreing result
     if sorted_results:
@@ -399,6 +401,46 @@ def is_postcode_Q(query, tokens=None, num=None):
     }
 
 
+def bucket_weg_results(elk_results, prefix):
+    """
+    split results in prefix matches and not prefixmatches
+    """
+
+    prefix_results = []
+    label_results = []
+
+    for r in elk_results:
+        straatnaam = r.naam
+        if straatnaam.lower().startswith(prefix):
+            label = straatnaam.replace(prefix, "")
+            prefix_results.append((label, r))
+        else:
+            label_results.append((straatnaam, r))
+
+    return prefix_results, label_results
+
+
+def weg_sorting(elk_results, query, tokens, num):
+    """
+    Sort the most relevant prefix items, the rest leave elk relevance
+    """
+    end_result = []
+
+    prefix_results, labeled_results = bucket_weg_results(elk_results, query)
+
+    prefix_results.sort()
+
+    # labeled_results.sort()
+
+    for l, r in prefix_results:
+        end_result.append(r)
+
+    for l, r in labeled_results:
+        end_result.append(r)
+
+    return end_result
+
+
 def weg_Q(query, tokens=None, num=None):
     """ create query/aggregation for public area"""
 
@@ -432,8 +474,7 @@ def weg_Q(query, tokens=None, num=None):
             ],
             minimum_should_match=1,
         ),
-        # 's': ['_display'],
-        # 'sorting': weg_sorting,
+        'sorting': weg_sorting,
         'size': 10
     }
 

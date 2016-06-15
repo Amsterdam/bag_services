@@ -76,7 +76,7 @@ def analyze_query(query_string, tokens, i):
 
     returns a list of queries that should be used
     """
-    # too little informatation to search on
+    # Too little informatation to search on
     if len(query_string) < 2:
         return []
 
@@ -514,11 +514,17 @@ class SearchViewSet(viewsets.ViewSet):
         response['count'] = count
 
         self.create_summary_aggregations(request, result, response)
+        # if hits are > 3 and < 1000
+        # custom sorting?
+        self.custom_sorting(result.hits)
 
         response['results'] = [
             self.normalize_hit(h, request) for h in result.hits]
 
         return Response(response)
+
+    def custom_sorting(self, result_hits):
+        pass
 
     def create_summary_aggregations(self, request, result, response):
         """
@@ -789,8 +795,13 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             .index(NUMMERAANDUIDING)
             .query(
                 bagQ.search_streetname_Q(query)['Q']
-            )
+            ).sort('adres.raw')
         )
+
+    def custom_sorting(self, elk_results):
+        """
+        """
+        pass
 
 
 class SearchPostcodeViewSet(SearchViewSet):
