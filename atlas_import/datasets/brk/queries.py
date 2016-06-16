@@ -8,6 +8,9 @@
 ==================================================
 """
 from elasticsearch_dsl import Q, A
+from django.conf import settings
+
+BRK = settings.ELASTIC_INDICES['BRK']
 
 
 def kadaster_object_Q(query, tokens=None, num=None):
@@ -15,6 +18,32 @@ def kadaster_object_Q(query, tokens=None, num=None):
     return {
         'A': A('terms', field='aanduiding.raw'),
         'Q': Q('match_phrase_prefix', aanduiding=query)
+    }
+
+
+def gemeente_object_Q(query, tokens=None, num=None):
+
+    return {
+        'Q': Q(
+            'bool',
+
+            must=[
+                Q('term', gemeente=tokens[0])
+            ],
+
+            should=[
+                Q(
+                    'match_phrase',
+                    search_aanduiding="".join(tokens[1:]),
+                    slop=5
+                ),
+                Q(
+                    'match',
+                    search_aanduiding="".join(tokens[1:]),
+                    slop=5
+                )
+            ]
+        )
     }
 
 
@@ -30,5 +59,7 @@ def kadaster_subject_Q(query, tokens=None, num=None):
             type='phrase_prefix',
             fields=[
                 "naam"]
-            )
+            ),
+        'size': 5,
+        'Index': [BRK]
     }

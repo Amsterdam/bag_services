@@ -31,40 +31,6 @@ synonym_filter = analysis.token_filter(
     ]
 )
 
-# Generates a list of patterns to optiona house numbers
-huisnummer_generate = analysis.char_filter(
-    'huisnummer_expand',
-    type='pattern_replace',
-    pattern='(\d+)',
-    replacement="""
-        $1
-
-        $1 1
-        $1 2
-        $1 3
-        $1 4
-        $1 5
-
-        $1 a
-        $1 b
-        $1 c
-        $1 d
-        $1 e
-        $1 f
-        $1 g
-        $1 h
-        $1 i
-        $1 j
-        $1 k
-        $1 l
-        $1 m
-        $1 n
-        $1 o
-        $1 p
-        $1 q
-    """
-)
-
 
 huisnummer_expand = analysis.token_filter(
     'huisnummer_expand',
@@ -137,12 +103,6 @@ kadaster_object_aanduiding = analysis.token_filter(
 #           Analyzers              #
 ####################################
 
-kadastrale_aanduiding = es.analyzer(
-    'kadastrale_aanduiding',
-    tokenizer='keyword',
-    filter=['standard', 'lowercase']
-)
-
 bouwblok = es.analyzer(
     'bouwblok',
     tokenizer=tokenizer(
@@ -157,8 +117,8 @@ bouwblok = es.analyzer(
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
-    # filter=['lowercase', 'asciifolding', synonym_filter],
-    filter=['lowercase', 'asciifolding'],
+    filter=['lowercase', 'asciifolding', synonym_filter],
+    # filter=['lowercase', 'asciifolding'],
     char_filter=[naam_stripper],
 )
 
@@ -229,7 +189,7 @@ kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
     tokenizer=tokenizer(
         'kadobj_token', 'nGram',
-        min_gram=4, max_gram=16,
+        min_gram=1, max_gram=16,
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )

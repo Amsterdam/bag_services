@@ -166,7 +166,10 @@ class QueryTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
-        # self.assertEqual(response.data['count'], 8)
 
-        self.assertEqual(
-            response.data['results'][0]['adres'], "Rozenstraat 228a-1")
+        # not due to elk scoring it could happen 228 B, scores better
+        # then 228 A
+        adres = response.data['results'][0]['adres']
+        self.assertTrue(
+            adres.startswith("Rozenstraat 228")
+        )

@@ -124,9 +124,9 @@ def is_postcode_huisnummer(query_string, tokens):
     if is_postcode("", tokens[:2]):
         # 3rd token is number?
         try:
-            int(tokens[3])
+            int(tokens[2])
         except:
-            pass
+            return False
         # only 'AA'
         if len(tokens[1]) == 2:
             return True
@@ -164,6 +164,21 @@ def is_bouwblok(query_string, tokens):
         return True
     except:
         pass
+
+
+def is_gemeente_kadaster_object(query_string, tokens):
+    """
+    Given Amsterdam S ..
+
+    We should search all ASDx kadaster object codes
+    """
+    if len(tokens) < 2:
+        return False
+
+    if len(tokens[1] != 1):
+        return False
+
+    return True
 
 
 def is_kadaster_object(query_string, tokens):

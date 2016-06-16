@@ -42,6 +42,15 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=42,
             huisletter='F',
+            toevoeging='1',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=straat
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=43,
+            huisletter='F',
+            toevoeging='1',
             type='01',  # Verblijfsobject
             openbare_ruimte=straat
         )
@@ -56,12 +65,22 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=100,
             huisletter='',
+            postcode='1234AB',
             type='01',  # Verblijfsobject
             openbare_ruimte=nen_straat
         )
 
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
+
+    def test_no_match_query(self):
+        response = self.client.get(
+            '/atlas/search/adres/', {'q': 'x'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+
+        self.assertEqual(response.data['count'], 0)
 
     def test_straat_query(self):
         response = self.client.get(
@@ -70,7 +89,7 @@ class SubjectSearchTest(APITestCase):
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
 
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 2)
 
         first = response.data['results'][0]
         self.assertEqual(first['straatnaam'], "Anjeliersstraat")
@@ -85,6 +104,19 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Prinsengracht 192A")
+
+    def test_postcode_huisnummer_query(self):
+        response = self.client.get(
+            '/atlas/search/adres/', {'q': '1234AB 100'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+
+        self.assertEqual(response.data['count'], 1)
+
+        first = response.data['results'][0]
+        self.assertEqual(first['straatnaam'], "Stoom Maker Weg")
 
     def test_nen_query(self):
         response = self.client.get(
