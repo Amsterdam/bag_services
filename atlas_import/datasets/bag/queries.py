@@ -303,7 +303,8 @@ def bucket_vbo_weg_results(elk_results: list, prefix: str):
     return street_buckets, prefix_streetnames, other_streetnames
 
 
-def vbo_straat_sorting(elk_results, query, tokens, i):
+def vbo_straat_sorting(
+        elk_results: list, query: str, tokens: list, i: int):
     """
     Sort results by prefix street and housenumber
     """
@@ -315,7 +316,7 @@ def vbo_straat_sorting(elk_results, query, tokens, i):
     def add_to_endresult(straatnamen):
         for straatnaam in straatnamen:
             street_bucket = buckets[straatnaam]
-            street_bucket.sort()
+            street_bucket.sort(key=lambda x: x[0])
             for t, hit in street_bucket:
                 end_result.append(hit)
 
