@@ -10,6 +10,7 @@ from atlas_api.input_handling import is_postcode
 from atlas_api.input_handling import is_postcode_huisnummer
 from atlas_api.input_handling import is_straat_huisnummer
 from atlas_api.input_handling import is_kadaster_object
+from atlas_api.input_handling import is_gemeente_kadaster_object
 from atlas_api.input_handling import is_bouwblok
 from atlas_api.input_handling import is_meetbout
 from atlas_api.input_handling import first_number
@@ -98,11 +99,15 @@ def analyze_query(query_string: str, tokens: list, i: int):
             'test': is_postcode_huisnummer,
             'query': [bagQ.postcode_huisnummer_Q],
         },
-        {   # should be before straat huisnummer
-            # it is more specific
+        {
             'test': is_kadaster_object,
             'query': [brkQ.kadaster_object_Q],
         },
+        {   # support Amsterdam S .. kadaster notations
+            'test': is_gemeente_kadaster_object,
+            'query': [brkQ.gemeente_object_Q],
+        },
+
         {
             'test': is_straat_huisnummer,
             'query': [
@@ -270,7 +275,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
             search = search[0:size]
 
             # get the result from elastic
-            result = search.execute(ignore_cache=ignore_cache)
+            try:
+                result = search.execute(ignore_cache=ignore_cache)
+            except:
+                log.error(
+                    'FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
+                continue
 
             # apply custom sorting.
             if 'sorting' in q:
@@ -282,7 +292,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
             # nice prety printing
             if settings.DEBUG:
                 sq = search.to_dict()
-                import json
                 msg = json.dumps(sq, indent=4)
                 print(msg)
                 logging.debug(msg)
@@ -495,7 +504,6 @@ class SearchViewSet(viewsets.ViewSet):
         if settings.DEBUG:
             log.debug(search.to_dict())
             sq = search.to_dict()
-            import json
             print(json.dumps(sq, indent=4))
 
         try:

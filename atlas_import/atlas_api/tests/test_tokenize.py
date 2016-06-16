@@ -237,10 +237,41 @@ class TokenizeTest(TestCase):
             'ASDE15 S',
             'AS',
             'ASD150 S 00045',
-            'ASD 15 S'  # Amibiguity with street name and number
-            'ASD 15'  # Amibiguity with street name and number
+            'ASD 15 S'
+            'ASD 15'
         ]
 
         for test in false_cases:
             _, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_kadaster_object(test, tokens))
+
+    def test_true_gemeente_kadaster(self):
+            """
+            """
+            true_cases = [
+                'Amsterdam s',
+                'Amsterdam ak',
+                'Amsterdam s 001',
+                'Sloten G 00045',
+            ]
+
+            for test in true_cases:
+                qs, tokens = ih.clean_tokenize(test)
+                self.assertTrue(
+                    ih.is_gemeente_kadaster_object(qs, tokens))
+
+    def test_false_gemeente_kadaster(self):
+        """
+        """
+        false_cases = [
+            'Amsterdam 15S',
+            'Amsterdam 3',
+            'ASD15 S 00045',
+            'ASD 15 S'
+            'ASD 15'
+            'A SDX 15'
+        ]
+
+        for test in false_cases:
+            _, tokens = ih.clean_tokenize(test)
+            self.assertFalse(ih.is_gemeente_kadaster_object(test, tokens))
