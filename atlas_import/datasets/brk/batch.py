@@ -98,14 +98,18 @@ class ImportKadastraleSectieTask(batch.BasicTask):
 
     def before(self):
         database.clear_models(models.KadastraleSectie)
-        self.gemeentes = set(models.KadastraleGemeente.objects.values_list('pk', flat=True))
+        self.gemeentes = set(
+            models.KadastraleGemeente.objects.values_list('pk', flat=True))
 
     def after(self):
         self.gemeentes.clear()
 
     def process(self):
-        s = dict(geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature))
-        models.KadastraleSectie.objects.bulk_create(s.values(), batch_size=database.BATCH_SIZE)
+        s = dict(
+            geo.process_shp(
+                self.path, 'BRK_KAD_SECTIE.shp', self.process_feature))
+        models.KadastraleSectie.objects.bulk_create(
+            s.values(), batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
         kad_gem_id = feat.get('KADGEMCODE')

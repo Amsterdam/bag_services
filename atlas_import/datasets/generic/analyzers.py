@@ -194,8 +194,17 @@ kad_obj_aanduiding = es.analyzer(
     filter=['lowercase']
 )
 
-kad_obj_aanduiding_search = es.analyzer(
-    'kad_obj_aanduiding_search',
+kad_sbj_naam = es.analyzer(
+    'kad_sbj_naam',
+    tokenizer=tokenizer(
+        'kadobj_token', 'nGram',
+        min_gram=3, max_gram=16,
+        token_chars=['letter', 'digit']),
+    filter=['lowercase']
+)
+
+kad_obj_aanduiding_keyword = es.analyzer(
+    'kad_obj_aanduiding_keyword',
     tokenizer=tokenizer(
         'kadobj_keyword', 'keyword',
         token_chars=['letter', 'digit']),

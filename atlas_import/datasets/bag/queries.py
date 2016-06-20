@@ -62,19 +62,19 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
 
     assert tokens
 
-    split_tv = split_toevoeging(tokens, 2)
-    # Third token must be house number
     num = int(tokens[2])
+    split_tv = split_toevoeging(tokens, 2)
+
+    print(split_tv)
+
+    # Third token must be house number
 
     return {
         'Q': Q(
             'bool',
             must=[
                 Q('term', postcode="".join(tokens[:2])),
-                Q({
-                    'match_phrase_prefix': {
-                        'toevoeging': split_tv}
-                })
+                Q('match_phrase', toevoeging=split_tv),
             ],
             should=[
                 Q('term', huisnummer=num, boost=3),

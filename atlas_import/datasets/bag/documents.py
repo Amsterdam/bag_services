@@ -263,6 +263,7 @@ class Nummeraanduiding(es.DocType):
 
     huisnummer = es.Integer(
         fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+
     toevoeging = es.String(analyzer=analyzers.toevoeging,
         fields={'raw': es.String(index='not_analyzed')}
     )

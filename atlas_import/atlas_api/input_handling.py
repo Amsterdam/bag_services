@@ -168,15 +168,23 @@ def is_bouwblok(query_string, tokens):
 
 def is_gemeente_kadaster_object(query_string, tokens):
     """
-    Given Amsterdam S ..
+    Given Amsterdam XX 12345 X 1234
 
     We should search all ASDx kadaster object codes
     """
     if len(tokens) < 2:
         return False
 
-    if len(tokens[1] != 1):
+    # S, AK, D
+    if len(tokens[1]) > 2:
         return False
+
+    if tokens[1].isdigit():
+        return False
+
+    if len(tokens) >= 3:
+        if not tokens[2].isdigit():
+            return False
 
     return True
 
