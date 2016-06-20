@@ -643,7 +643,7 @@ class SearchObjectViewSet(SearchViewSet):
                 subtype=['kadastraal_object']
             )
             .query(
-                brkQ.kadaster_object_Q(query)['Q']
+                brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']
             )
             .sort('aanduiding')
         )
