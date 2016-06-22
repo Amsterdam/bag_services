@@ -15,13 +15,37 @@ class KadastraalObject(es.DocType):
         })
 
     # The search aanduiding is the aanduiding without the "acd00 " prefix
+    # remove this in future
     short_aanduiding = es.String(
-        analyzer=analyzers.postcode,
+        analyzer=analyzers.kad_obj_aanduiding,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
             'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding_keyword)
         })
+
+    sectie = es.String()
+
+    objectnummer = es.String(
+        analyzer=analyzers.kad_obj_aanduiding,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'int': es.Integer(),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
+        }
+    )
+
+    indexletter = es.String()
+    indexnummer = es.String(
+        analyzer=analyzers.kad_obj_aanduiding,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'int': es.Integer(),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
+        }
+    )
 
     order = es.Integer()
     centroid = es.GeoPoint()
@@ -83,6 +107,11 @@ def from_kadastraal_object(ko):
 
     d.gemeente = ko.kadastrale_gemeente.naam
     d.gemeente_code = ko.kadastrale_gemeente.id
+
+    d.sectie = ko.sectie.sectie
+    d.objectnummer = ko.perceelnummer
+    d.indexletter = ko.indexletter
+    d.indexnummer = ko.indexnummer
 
     d.short_aanduiding = d.aanduiding[6:]
 
