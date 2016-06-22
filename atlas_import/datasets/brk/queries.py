@@ -46,9 +46,6 @@ def specialize_kad_code_search(must, should, kad_code_tokens):
     Given kad_code_tokens detemine how precise the elastic query
     should be
     """
-
-    print(kad_code_tokens)
-
     if len(kad_code_tokens) >= 2:
         sectieletter = kad_code_tokens[1]
         must.append(Q('term', sectie=sectieletter))
