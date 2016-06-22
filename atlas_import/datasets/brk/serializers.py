@@ -149,7 +149,23 @@ class AppartementsrechtsSplitsType(serializers.ModelSerializer):
         model = models.AppartementsrechtsSplitsType
 
 
-class ZakelijkRecht(BrkMixin, rest.HALSerializer):
+class ZakelijkRechtContextMixin:
+
+    def get_contextual_subject_href(self, instance, request):
+        user = request.user
+        if instance.kadastraal_subject.type == \
+                instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
+                and not user.has_perm('brk.view_sensitive_details'):
+            return reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
+
+        return reverse(
+            'kadastraalsubject-detail',
+            kwargs={'pk': instance.kadastraal_subject.id},
+            request=request
+        )
+
+
+class ZakelijkRecht(BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
     _display = rest.DisplayField()
 
     class Meta:
@@ -163,20 +179,17 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context['request']
+        data['subject_href'] = self.get_contextual_subject_href(instance, request)
+        if 'kadastraal_subject' in request.query_params:
+            data['_display'] = instance.directional_name(direction='object')
+        else:
+            data['_display'] = instance.directional_name(direction='subject')
 
         data['object_href'] = reverse(
-                'kadastraalobject-detail',
-                kwargs={'pk': instance.kadastraal_object_id},
-                request=request
+            'kadastraalobject-detail',
+            kwargs={'pk': instance.kadastraal_object_id},
+            request=self.context['request']
         )
-
-        user = request.user
-        if instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
-                and not user.has_perm('brk.view_sensitive_details'):
-            data['subject_href'] = reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
-        else:
-            data['subject_href'] = reverse('kadastraalsubject-detail', kwargs={'pk': instance.kadastraal_subject.id},
-                                           request=request)
 
         return data
 
@@ -304,7 +317,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
         )
 
 
-class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
+class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()
     ontstaan_uit = KadastraalSubject()
@@ -338,21 +351,8 @@ class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data['subject_href'] = self.get_contextual_subject_href(instance, self.context['request'])
 
-        request = self.context['request']
-        user = request.user
-        if instance.kadastraal_subject.type ==  \
-                instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK \
-                and not user.has_perm('brk.view_sensitive_details'):
-            data['subject_href'] = reverse('zakelijkrecht-subject',
-                                                 args=(instance.id,),
-                                                 request=request)
-        else:
-            data['subject_href'] = reverse('kadastraalsubject-detail',
-                                                kwargs={'pk': instance.kadastraal_subject.id},
-                                                request=request)
-
-        #data['subject_href'] = data['kadastraal_subject']
         return data
 
 

@@ -327,6 +327,9 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
         )
 
     def __str__(self):
+        return self.directional_name()
+
+    def directional_name(self, direction='subject'):
         omschrijving = ''
         if self.aard_zakelijk_recht:
             omschrijving = self.aard_zakelijk_recht.omschrijving
@@ -335,7 +338,11 @@ class ZakelijkRecht(mixins.ImportStatusMixin):
         if self.teller is not None and self.noemer is not None:
             aandeel = '({}/{})'.format(self.teller, self.noemer)
 
-        return "{} - {}{}".format(
+        if direction == 'object':
+            return "{} - {} {}".format(
+                self.kadastraal_object.aanduiding, omschrijving, aandeel)
+
+        return "{} - {} {}".format(
             self._kadastraal_subject_naam, omschrijving, aandeel)
 
 
