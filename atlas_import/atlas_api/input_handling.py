@@ -14,6 +14,10 @@ PCODE_NUM_REGEX = re.compile(
 HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
 
 
+REPLACE_TABLE = "".maketrans(
+    string.punctuation, len(string.punctuation)*" ")
+
+
 def first_number(input_tokens):
 
     for i, token in enumerate(input_tokens):
@@ -23,8 +27,16 @@ def first_number(input_tokens):
     return -1, ""
 
 
-REPLACE_TABLE = "".maketrans(
-    string.punctuation, len(string.punctuation)*" ")
+def number_list(input_tokens):
+    """Find list [(index number)..] in tokens"""
+
+    numbers = []
+
+    for i, token in enumerate(input_tokens):
+        if token.isdigit():
+            numbers.append((i, token))
+
+    return numbers
 
 
 def clean_tokenize(query_string):
