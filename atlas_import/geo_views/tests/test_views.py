@@ -32,7 +32,7 @@ class ViewsTest(TestCase):
         self.assertEqual(row['id'], l.id)
         self.assertIn("geometrie", row)
         self.assertEqual(
-            row['display'], l.hoofdadres.adres())
+            row['display'].split()[0], l.hoofdadres.adres().split()[0])
         self.assertEqual(row['type'], 'bag/ligplaats')
         self.assertEqual(
             row['uri'],
