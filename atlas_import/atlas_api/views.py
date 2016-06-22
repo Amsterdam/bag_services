@@ -782,7 +782,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
         if is_postcode_huisnummer(query, tokens):
             queries = [
-                bagQ.postcode_huisnummer_Q(query, tokens=tokens, num=i)['Q']]
+                bagQ.postcode_huisnummer_exact_Q(
+                    query, tokens=tokens, num=i)['Q']]
 
         elif is_straat_huisnummer(query, tokens):
             queries = [

@@ -83,6 +83,31 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
     }
 
 
+def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
+
+    """Create query/aggregation for postcode house number search"""
+
+    assert tokens
+
+    num = int(tokens[2])
+    split_tv = split_toevoeging(tokens, 2)
+
+    # Third token must be house number
+
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('term', postcode="".join(tokens[:2])),
+                Q('match_phrase', toevoeging=split_tv),
+                Q('term', huisnummer=num)
+            ],
+        ),
+        'sorting': postcode_huisnummer_sorting,
+        'size': 50  # sample size for custom sort
+    }
+
+
 def comp_address_Q(query, tokens=None, num=None):
     """Create query/aggregation for complete address search"""
 
