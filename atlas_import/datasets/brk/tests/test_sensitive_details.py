@@ -96,3 +96,21 @@ class SensitiveDetailsTestCase(APITestCase):
         self.assertIsNotNone(response['woonadres'])
         self.assertIsNotNone(response['postadres'])
         self.assertNotIn('rechten', response)
+
+    def test_directional_name_subject(self):
+        self.client.login(username='authorized', password='pass')
+        response = self.client.get('/brk/zakelijk-recht/?kadastraal_object={}'.format(self.kot.pk)).data
+
+        subj = response['results'][0]
+        self.assertTrue(
+            self.recht_natuurlijk._kadastraal_subject_naam in subj['_display'] or
+            self.recht_niet_natuurlijk._kadastraal_subject_naam in subj['_display']
+        )
+
+    def test_directional_name_object(self):
+        self.client.login(username='authorized', password='pass')
+        response = self.client.get('/brk/zakelijk-recht/?kadastraal_subject={}'.format(self.niet_natuurlijk.pk)).data
+
+        obj = response['results'][0]
+        self.assertTrue(self.kot.aanduiding in obj['_display'])
+

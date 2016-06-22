@@ -7,7 +7,7 @@ from corsheaders.middleware import CorsMiddleware
 from rest_framework.test import APITestCase
 
 
-class PanoramaApiTest(APITestCase):
+class CorsHeadersTest(APITestCase):
 
     def test_cors(self):
         """

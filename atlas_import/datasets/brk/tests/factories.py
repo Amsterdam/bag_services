@@ -123,6 +123,7 @@ class ZakelijkRechtFactory(factory.DjangoModelFactory):
     kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
     kadastraal_subject = factory.SubFactory(KadastraalSubjectFactory)
 
+    _kadastraal_subject_naam = fuzzy.FuzzyText(length=50)
     kadastraal_object_status = fuzzy.FuzzyText(length=50)
 
 
