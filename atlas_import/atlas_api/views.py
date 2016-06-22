@@ -124,7 +124,9 @@ def analyze_query(query_string: str, tokens: list, i: int):
             queries.extend(
                 option['query']
             )
-            # only match one query
+            # only match one query!
+            # this maybe needs to change in the future
+            # but should be avoided if possible
             break
 
     # Checking for a case in which no matches are found.

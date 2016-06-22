@@ -222,6 +222,28 @@ def built_vbo_buckets(elk_results, extra):
     return relevant_bucket_sorted
 
 
+def built_vbo_postcode_buckets(elk_results, extra):
+    """
+    Build buckets per street-num for the elk results
+    keeping the results in order or the elk_score/relevance
+    """
+    rbs = relevant_bucket_sorted = OrderedDict()
+
+    for r in elk_results:
+
+        # determin bucket key
+        postcode = r.postcode
+        bucket = postcode + str(r.huisnummer)
+        # create sortkey for vbo street sorting
+        sort_key = built_sort_key(r.toevoeging, extra)
+        # group results by postcodes
+        street_result = rbs.setdefault(bucket, [])
+        # add sortkey and result to postcode selection
+        street_result.append((sort_key, r))
+
+    return relevant_bucket_sorted
+
+
 def find_next_10_best_results(end_result, best_bucket, sorted_results):
 
     for i in range(10):
@@ -238,8 +260,40 @@ def find_next_10_best_results(end_result, best_bucket, sorted_results):
 
 
 def postcode_huisnummer_sorting(elk_results, query, tokens, i):
+    """
+    Sort vbo / nummeraanduiding restult in a 'logical' way
+    """
     # The house number is for sure the 3rd token.
-    return straat_huisnummer_sorting(elk_results, query, tokens, 2)
+    i = 3
+
+    end_result = []
+
+    extra = tokens[i+1:]  # toevoeginen
+
+    # bucket vbo's by streetnames in order of elk results/relevance
+    sorted_results = built_vbo_postcode_buckets(elk_results, extra)
+
+    # The first highest scoreing result
+    if sorted_results:
+        best_bucket, street_result = list(sorted_results.items())[0]
+        ordered_vbo_street_num = vbo_natural_sort(street_result)
+        # add the highest scored hit to fist result
+        add_to_end_result(end_result, best_bucket, ordered_vbo_street_num)
+        sorted_results.pop(best_bucket)
+    else:
+        return []
+
+    # Add The next (10) most logical results (number wise)
+    # derived from the best bucket
+    find_next_10_best_results(end_result, best_bucket, sorted_results)
+
+    # Add what is leftover of high scoring bucket to the end of endresults
+    for bucket, street_result in sorted_results.items():
+        ordered_vbo_street_num = vbo_natural_sort(street_result)
+        add_to_end_result(end_result, bucket, ordered_vbo_street_num)
+        # first result
+
+    return end_result[:10]
 
 
 def straat_huisnummer_sorting(elk_results, query, tokens, i):
