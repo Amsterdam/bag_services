@@ -24,12 +24,12 @@ def add_object_nummer_query(must, should, kad_code_tokens):
 
     should.extend([
         Q('match', objectnummer=objectnummer),
+        Q('match', objectnummer=int(objectnummer)),
         Q(
             'multi_match',
             type='phrase_prefix',
             fields=[
                 "objectnummer",
-                #"objectnummer.keyword",
                 "objectnummer.ngram",
                 "objectnummer.raw"
             ],
@@ -37,9 +37,11 @@ def add_object_nummer_query(must, should, kad_code_tokens):
         )
     ])
 
-    if len(kad_code_tokens) > 4 or len(objectnummer) == 5:
-        must.append(
-            Q('term', objectnummer=int(objectnummer))
+    if len(kad_code_tokens) > 3 or len(objectnummer) == 5:
+        must.append({
+            'term': {
+                'objectnummer.int': int(objectnummer)}
+            }
         )
 
 

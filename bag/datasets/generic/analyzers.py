@@ -78,8 +78,8 @@ whitespace_stripper = analysis.token_filter(
 
 ngram_filter = analysis.token_filter(
     'ngram_filter',
-    type='ngram',
-    min_gram=3,
+    type='edge_ngram',
+    min_gram=1,
     max_gram=15
 )
 
@@ -188,11 +188,22 @@ toevoeging = es.analyzer(
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
     tokenizer=tokenizer(
-        'kadobj_token', 'nGram',
+        'kadobj_token',
+        type='edge_ngram',
         min_gram=1, max_gram=16,
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )
+
+kad_obj_nummer = es.analyzer(
+    'kad_obj_nummer',
+    tokenizer=tokenizer(
+        'kadobj_nummer',
+        type='edge_ngram',
+        min_gram=1, max_gram=5
+    ),
+)
+
 
 kad_sbj_naam = es.analyzer(
     'kad_sbj_naam',
