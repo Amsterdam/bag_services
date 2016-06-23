@@ -20,20 +20,20 @@ Use `docker-compose` to start a local database. Use `sudo` if you're running on 
 Create a new virtual env, and execute the following:
 
 	pip install -r requirements.txt
-	export DJANGO_SETTINGS_MODULE=atlas_import.settings.local
-	./atlas_import/manage.py migrate
-	./atlas_import/manage.py runserver
+	export DJANGO_SETTINGS_MODULE=bag.settings.local
+	./bag/manage.py migrate
+	./bag/manage.py runserver
 
 
 The Atlas import module should now be available on http://localhost:8000/
 
 To run an import, execute:
 
-	./atlas_import/manage.py run_import
+	./bag/manage.py run_import
 
 To see the various options for partial imports, execute:
 
-	./atlas_import/manage.py run_import --help
+	./bag/manage.py run_import --help
 
 
 Importing the latest backup
@@ -61,12 +61,12 @@ To import the latest database from acceptance:
 
 To import the latest elastic index from acceptance:
 
-	docker exec -it $(docker-compose ps -q elasticsearch) update-meetbouten.sh 
+	docker exec -it $(docker-compose ps -q elasticsearch) update-meetbouten.sh
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.
 
-Your own elastic index import takes approximately 2 hours.	 
+Your own elastic index import takes approximately 2 hours.
 To run your own elastic index:
 
     docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import

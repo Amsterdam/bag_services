@@ -1,5 +1,5 @@
 # lokale clone in:
-../git/atlas_import/
+../git/bag/
 
 
 
@@ -51,20 +51,19 @@ workon atlimp
 sudo pip install -r requirements.txt
 
 # create database
-./atlas_import/manage.py migrate
+./bag/manage.py migrate
 
 # run server
-./atlas_import/manage.py runserver
+./bag/manage.py runserver
 
-# check in browser op: 
+# check in browser op:
 http://localhost:8000/api/
 
 # stop server
 ctrl-c
 
-# import 
-./atlas_import/manage.py run_import
-
+# import
+./bag/manage.py run_import
 
 
 # dataset toevoegen:
