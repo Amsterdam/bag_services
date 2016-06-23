@@ -27,18 +27,18 @@ class KadastraalObject(es.DocType):
     sectie = es.String()
 
     objectnummer = es.String(
-        analyzer=analyzers.kad_obj_aanduiding,
+        analyzer=analyzers.ngram,
         fields={
             'raw': es.String(index='not_analyzed'),
             'int': es.Integer(),
-            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'ngram': es.String(analyzer=analyzers.ngram),
             'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
         }
     )
 
     indexletter = es.String()
     indexnummer = es.String(
-        analyzer=analyzers.kad_obj_aanduiding,
+        analyzer=analyzers.ngram,
         fields={
             'raw': es.String(index='not_analyzed'),
             'int': es.Integer(),

@@ -6,14 +6,14 @@ def _get_docker_host():
     d_host = os.getenv('DOCKER_HOST', None)
     if d_host:
         return re.match(r'tcp://(.*?):\d+', d_host).group(1)
-    return 'localhost'
+    return '0.0.0.0'
 
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DATABASE_NAME', 'atlas'),
-        'USER': os.getenv('DATABASE_USER', 'postgres'),
+        'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
         'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),

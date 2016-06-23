@@ -29,7 +29,7 @@ This app contains top-level code for the project (REST) API. Search viewsets are
 
 Management commands regarding the API are also located here.
 
-## atlas_import
+## bag
 
 This app contains project settings, main urls.py and the wsgi application.
 
