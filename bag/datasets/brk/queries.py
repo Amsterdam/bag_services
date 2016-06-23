@@ -29,7 +29,7 @@ def add_object_nummer_query(must, should, kad_code_tokens):
             type='phrase_prefix',
             fields=[
                 "objectnummer",
-                "objectnummer.keyword",
+                #"objectnummer.keyword",
                 "objectnummer.ngram",
                 "objectnummer.raw"
             ],
