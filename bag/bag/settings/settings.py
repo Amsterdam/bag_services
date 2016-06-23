@@ -174,6 +174,7 @@ CORS_ORIGIN_ALLOW_ALL = True # if True, the whitelist will not be used and all o
 CORS_ORIGIN_REGEX_WHITELIST = (
     '^(https?://)?localhost(:\d+)?$',
     '^(https?://)?.*\.amsterdam\.nl$',
+    '^(https?://)*.datapunt..amsterdam\.nl$',
 )
 
 # Security
