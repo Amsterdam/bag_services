@@ -643,9 +643,11 @@ class SearchObjectViewSet(SearchViewSet):
         queries = []
 
         if is_gemeente_kadaster_object(query, tokens):
-            queries = [brkQ.gemeente_object_Q(query, token=tokens, num=i)['Q']]
+            queries = [
+                brkQ.gemeente_object_Q(query, tokens=tokens, num=i)['Q']]
         elif is_kadaster_object(query, tokens):
-            queries = [brkQ.kadaster_object_Q(query, token=tokens, num=i)['Q']]
+            queries = [
+                brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']]
 
         if not queries:
             return []
