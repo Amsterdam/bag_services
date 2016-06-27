@@ -504,9 +504,13 @@ class SearchViewSet(viewsets.ViewSet):
         ignore_cache = settings.DEBUG
 
         if settings.DEBUG:
-            log.debug(search.to_dict())
-            sq = search.to_dict()
-            print(json.dumps(sq, indent=4))
+            if search:
+                log.debug(search.to_dict())
+                sq = search.to_dict()
+                print(json.dumps(sq, indent=4))
+            else:
+                print('no elk query')
+                return Response([])
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
@@ -636,6 +640,16 @@ class SearchObjectViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        queries = []
+
+        if is_gemeente_kadaster_object(query, tokens):
+            queries = [brkQ.gemeente_object_Q(query, token=tokens, num=i)['Q']]
+        elif is_kadaster_object(query, tokens):
+            queries = [brkQ.kadaster_object_Q(query, token=tokens, num=i)['Q']]
+
+        if not queries:
+            return []
+
         return (
             Search()
             .using(client)
@@ -645,7 +659,7 @@ class SearchObjectViewSet(SearchViewSet):
                 subtype=['kadastraal_object']
             )
             .query(
-                brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']
+                *queries
             )
             .sort('aanduiding')
         )

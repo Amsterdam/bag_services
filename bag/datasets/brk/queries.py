@@ -24,6 +24,11 @@ def add_object_nummer_query(must, should, kad_code_tokens):
 
     should.extend([
         Q('match', objectnummer=objectnummer),
+        {
+                'term': {
+                    'objectnummer.int': int(objectnummer)
+                }
+        },
         Q(
             'multi_match',
             type='phrase_prefix',
@@ -126,6 +131,34 @@ def kadaster_object_Q(query, tokens=None, num=None):
             should=should
             )
 
+    }
+
+
+def match_code_object_Q(query, tokens=None, num=None):
+    """
+    For normal search try to match some part of aanduiding
+    """
+
+    must = []
+    should = [
+        Q(
+            'multi_match',
+            type='phrase_prefix',
+            fields=[
+                "aanduiding.raw",
+                "aanduiding.ngram",
+                "aanduiding"],
+            query=query,
+        ),
+        Q('match', aanduiding=query)
+    ]
+
+    return {
+        'Q': Q(
+            'bool',
+            must=must,
+            should=should
+            )
     }
 
 
