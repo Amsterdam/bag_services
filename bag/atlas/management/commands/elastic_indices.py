@@ -18,7 +18,7 @@ class Command(BaseCommand):
         'bag': [datasets.bag.batch.BuildIndexBagJob],
         'brk': [datasets.brk.batch.BuildIndexKadasterJob],
         'wkpb': [],
-        'gebieden': [datasets.bag.batch.IndexGebiedJob],
+        'gebieden': [datasets.bag.batch.IndexGebiedenJob],
     }
 
     delete_indexes = {

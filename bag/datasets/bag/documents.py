@@ -304,6 +304,54 @@ class Bouwblok(es.DocType):
         all = es.MetaField(enabled=False)
 
 
+class Gebied(es.DocType):
+    """
+    Een vindbaar gebied
+
+    Unesco
+    Buurt
+    Buurtcombinatie
+    Stadsdeel
+    Grootstedelijk
+    Gemeente
+    Woonplaats
+    """
+
+    id = es.String()
+
+    naam = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+        }
+    )
+
+    code = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
+        }
+    )
+
+    subtype = es.String(analyzer=analyzers.subtype)
+
+    centroid = es.GeoPoint()
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
+
+
 class ExactLocation(es.DocType):
     """
     Elasticsearch doc for exact location data
@@ -478,6 +526,89 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.order = analyzers.orderings['openbare_ruimte']
     d._display = d.naam
     return d
+
+
+def from_unesco(u: models.Unesco):
+    d = Gebied()
+    d.type = 'gebied'
+    d.subtype = 'unesco'
+
+    d.naam = 'unesco %s' % u.naam
+    d.centroid = get_centroid(u.geometrie, 'wgs84')
+    return d
+
+
+def from_buurt(b: models.Buurt):
+    d = Gebied()
+    d.type = 'gebied'
+    d.subtype = 'buurt'
+
+    d.id = b.id
+    d.naam = b.naam
+    d.code = b.code
+    d.centroid = get_centroid(b.geometrie, 'wgs84')
+    return d
+
+
+def from_buurtcombinatie(bc: models.Buurtcombinatie):
+    d = Gebied()
+    d.type = 'gebied'
+    d.subtype = 'buurtcombinatie'
+
+    d.id = bc.id
+    d.naam = bc.naam
+    d.code = bc.code
+    d.centroid = get_centroid(bc.geometrie, 'wgs84')
+    return d
+
+
+def from_stadsdeel(sd: models.Stadsdeel):
+    d = Gebied()
+    d.type = 'gebied',
+    d.subtype = 'stadsdeel'
+
+    d.id = sd.id
+    d.naam = sd.naam
+    d.code = sd.code
+    d.centroid = get_centroid(sd.geometrie, 'wgs84')
+    return d
+
+
+def from_grootstedelijk(gs: models.Grootstedelijkgebied):
+    d = Gebied()
+    d.type = 'gebied',
+    d.subtype = 'grootstedelijk'
+
+    d.id = gs.id
+    d.naam = gs.naam
+    d.centroid = get_centroid(gs.geometrie, 'wgs84')
+    return d
+
+
+def from_gemeente(g: models.Gemeente):
+    d = Gebied()
+    d.type = 'gebied',
+    d.subtype = 'gemeente'
+
+    d.id = g.id
+    d.naam = g.naam
+    d.code = g.code
+    # d.centroid = get_centroid(g.geometrie, 'wgs84')
+    return d
+
+
+def from_woonplaats(g: models.Gemeente):
+    d = Gebied()
+    d.type = 'gebied',
+    d.subtype = 'woonplaats'
+
+    d.id = g.id
+    d.naam = g.naam
+    d.code = g.landelijk_id
+    # d.centroid = get_centroid(g.geometrie, 'wgs84')
+    return d
+
+
 
 
 def exact_from_nummeraanduiding(n: models.Nummeraanduiding):

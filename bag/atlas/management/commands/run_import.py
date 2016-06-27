@@ -24,7 +24,7 @@ class Command(BaseCommand):
         bag=[datasets.bag.batch.IndexBagJob],
         brk=[datasets.brk.batch.IndexKadasterJob],
         wkpb=[],
-        gebieden=[datasets.bag.batch.IndexGebiedJob],
+        gebieden=[datasets.bag.batch.IndexGebiedenJob],
     )
 
     backup_indexes = dict(

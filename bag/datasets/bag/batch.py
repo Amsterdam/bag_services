@@ -1162,8 +1162,14 @@ BAG_DOC_TYPES = [
     documents.Verblijfsobject,
     documents.OpenbareRuimte,
     documents.Bouwblok,
+    documents.Gebied,
     documents.ExactLocation,
 ]
+
+
+class DeleteGebiedenTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG']
+    doc_types = [documents.Gebied]
 
 
 class DeleteIndexTask(index.DeleteIndexTask):
@@ -1222,6 +1228,71 @@ class IndexOpenbareRuimteTask(index.ImportIndexTask):
 
     def convert(self, obj):
         return documents.from_openbare_ruimte(obj)
+
+
+#########################################################
+# gebieden tasks
+#########################################################
+
+
+class IndexUnescoTask(index.ImportIndexTask):
+    name = "index unesco"
+    queryset = models.Unesco.objects.all()
+
+    def convert(self, obj):
+        return documents.from_unesco(obj)
+
+
+class IndexBuurtTask(index.ImportIndexTask):
+    name = "index buurten"
+    queryset = models.Buurt.objects.all()
+
+    def convert(self, obj):
+        return documents.from_buurt(obj)
+
+
+class IndexBuurtcombinatieTask(index.ImportIndexTask):
+    name = "index buurtcombinaties"
+    queryset = models.Buurtcombinatie.objects.all()
+
+    def convert(self, obj):
+        return documents.from_buurtcombinatie(obj)
+
+
+class IndexStadsdeelTask(index.ImportIndexTask):
+    name = "index stadsdeel"
+    queryset = models.Buurt.objects.all()
+
+    def convert(self, obj):
+        return documents.from_stadsdeel(obj)
+
+
+class IndexGrootstedelijkgebiedTask(index.ImportIndexTask):
+    name = "Index grootstedelijk"
+    queryset = models.Grootstedelijkgebied.objects.all()
+
+    def convert(self, obj):
+        return documents.from_grootstedelijk(obj)
+
+
+class IndexGemeenteTask(index.ImportIndexTask):
+    name = "index gemeebten"
+    queryset = models.Gemeente.objects.all()
+
+    def convert(self, obj):
+        return documents.from_gemeente(obj)
+
+
+class IndexWoonplaatsTask(index.ImportIndexTask):
+    name = "index gemeebten"
+    queryset = models.Woonplaats.objects.all()
+
+    def convert(self, obj):
+        return documents.from_woonplaats(obj)
+
+
+##########################################################
+##########################################################
 
 
 class IndexNummerAanduidingTask(index.ImportIndexTask):
@@ -1592,12 +1663,24 @@ class IndexNummerAanduidingJob(object):
         ]
 
 
-class IndexGebiedJob(object):
+class IndexGebiedenJob(object):
     """Important! This only adds to the bag index, but does not create it"""
-    name="Create add gebieden to BAG index"
+
+    name = "Create add gebieden to BAG index"
+
     def tasks(self):
         return [
-            IndexBouwblokTask(),
+            # should maybe be added to
+            IndexBouwblokTask(),  # This only adds to the bag index,
+
+            DeleteGebiedenTask(),
+
+            IndexUnescoTask(),
+            IndexBuurtTask(),
+            IndexBuurtcombinatieTask(),
+            IndexStadsdeelTask(),
+            IndexGrootstedelijkgebiedTask(),
+            IndexGemeenteTask()
         ]
 
 
