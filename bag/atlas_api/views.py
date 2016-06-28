@@ -508,9 +508,10 @@ class SearchViewSet(viewsets.ViewSet):
                 log.debug(search.to_dict())
                 sq = search.to_dict()
                 print(json.dumps(sq, indent=4))
-            else:
-                print('no elk query')
-                return Response([])
+
+        if not search:
+            log.debug('no elk query')
+            return Response([])
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
