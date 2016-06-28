@@ -5,6 +5,9 @@ import random
 from rest_framework.test import APITestCase
 # Project
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class RandomShitTest(APITestCase):
 
@@ -28,12 +31,16 @@ class RandomShitTest(APITestCase):
         ]
 
         for url in search_endpoints:
-            print(url)
+            log.debug('random_testing: %s', url)
             self.bomb_endpoint(url)
 
     def bomb_endpoint(self, url):
+        """
+        Bomb enpoints with junk make sure nothing causes a
+        crash
+        """
         source = string.ascii_letters + string.digits + ' ' * 20
-        for i in range(350):
+        for i in range(450):
             KEY_LEN = random.randint(1, 35)
             keylist = [random.choice(source) for i in range(KEY_LEN)]
             query = "".join(keylist)
