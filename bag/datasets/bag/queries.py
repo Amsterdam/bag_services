@@ -12,12 +12,16 @@
 import logging
 import re
 
+from django.conf import settings
+
 from collections import OrderedDict
 # Packages
 # from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
 
 log = logging.getLogger('bag_Q')
+
+BAG = settings.ELASTIC_INDICES['BAG']
 
 
 def address_Q(query):
@@ -549,7 +553,7 @@ def weg_sorting(elk_results: list, query: str, tokens: list, num: int):
 
     prefix_results, labeled_results = bucket_weg_results(elk_results, query)
 
-    prefix_results.sort()
+    prefix_results.sort(key=lambda x: x[0])
 
     # labeled_results.sort()
 
@@ -596,7 +600,47 @@ def weg_Q(query: str, tokens=None, num=None):
             minimum_should_match=1,
         ),
         'sorting': weg_sorting,
-        'size': 10
+        'size': 10,
+        'Index': [BAG]
+    }
+
+
+def gebied_Q(query: str, tokens=None, num=None):
+    """
+    Create public
+    """
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('term', type='gebied'),
+            ],
+            should=[
+                Q('match', naam=query),
+                Q('prefix_match', naam=query),
+                Q(
+                    'multi_match',
+                    query=query,
+                    type="phrase_prefix",
+                    # other streets
+                    fields=[
+                        'naam',
+                        'code']
+                ),
+                Q(
+                    'query_string',
+                    fields=[
+                        'naam',
+                        'code',
+                    ],
+                    query=query,
+                    default_operator='AND'),
+            ],
+            minimum_should_match=1,
+        ),
+        'sorting': weg_sorting,
+        'size': 80,
+        'Index': [BAG]
     }
 
 
