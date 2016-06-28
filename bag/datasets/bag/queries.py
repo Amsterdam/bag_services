@@ -12,12 +12,12 @@
 import logging
 import re
 
+from django.conf import settings
+
 from collections import OrderedDict
 # Packages
 # from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
-
-from django.conf import settings
 
 log = logging.getLogger('bag_Q')
 
@@ -557,7 +557,7 @@ def weg_sorting(elk_results: list, query: str, tokens: list, num: int):
 
     prefix_results, labeled_results = bucket_weg_results(elk_results, query)
 
-    prefix_results.sort()
+    prefix_results.sort(key=lambda x: x[0])
 
     # labeled_results.sort()
 
@@ -617,7 +617,7 @@ def gebied_Q(query: str, tokens=None, num=None):
         'Q': Q(
             'bool',
             must=[
-                Q('term', type='gebied'),
+                Q('term', _type='gebied'),
             ],
             should=[
                 Q('match', naam=query),
@@ -642,7 +642,7 @@ def gebied_Q(query: str, tokens=None, num=None):
             minimum_should_match=1,
         ),
         'sorting': weg_sorting,
-        'size': 80,
+        'size': 5,
         'Index': [BAG]
     }
 

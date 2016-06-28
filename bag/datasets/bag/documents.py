@@ -512,6 +512,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.type = 'Openbare ruimte'
+    # weg, water, spoorbaan, terrein, kunstwerk (brug), landschap,..
     d.subtype = o.get_type_display().lower()
 
     d.naam = o.naam
@@ -532,7 +533,6 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
 def from_unesco(u: models.Unesco):
     d = Gebied()
-    d.type = 'gebied'
     d.subtype = 'unesco'
 
     d._display = 'unesco %s' % u.naam
@@ -544,12 +544,11 @@ def from_unesco(u: models.Unesco):
 
 def from_buurt(b: models.Buurt):
     d = Gebied()
-    d.type = 'gebied'
     d.subtype = 'buurt'
 
     d.subtype_id = b.id
     d.naam = b.naam
-    d._display = b.naam
+    d._display = '{} - {}'.format(b.naam, b.code)
     d.code = b.code
     d.centroid = get_centroid(b.geometrie, 'wgs84')
     return d
@@ -557,12 +556,11 @@ def from_buurt(b: models.Buurt):
 
 def from_buurtcombinatie(bc: models.Buurtcombinatie):
     d = Gebied()
-    d.type = 'gebied'
     d.subtype = 'buurtcombinatie'
 
     d.subtype_id = bc.id
     d.naam = bc.naam
-    d._display = bc.naam
+    d._display = '{} - {}'.format(bc.naam, bc.code)
     d.code = bc.code
     d.centroid = get_centroid(bc.geometrie, 'wgs84')
     return d
@@ -570,12 +568,11 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
 
 def from_stadsdeel(sd: models.Stadsdeel):
     d = Gebied()
-    d.type = 'gebied',
     d.subtype = 'stadsdeel'
 
     d.subtype_id = sd.id
     d.naam = sd.naam
-    d._display = sd.naam
+    d._display = '{} - {}'.format(sd.naam, sd.code)
     d.code = sd.code
     d.centroid = get_centroid(sd.geometrie, 'wgs84')
     return d
@@ -583,7 +580,6 @@ def from_stadsdeel(sd: models.Stadsdeel):
 
 def from_grootstedelijk(gs: models.Grootstedelijkgebied):
     d = Gebied()
-    d.type = 'gebied',
     d.subtype = 'grootstedelijk'
 
     d.subtype_id = gs.id
@@ -595,26 +591,25 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
 
 def from_gemeente(g: models.Gemeente):
     d = Gebied()
-    d.type = 'gebied',
     d.subtype = 'gemeente'
 
     d.subtype_id = g.naam
     d.naam = g.naam
-    d._display = g.naam
+    d._display = '{} - {}'.format(g.naam, g.code)
     d.code = g.code
     # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
 
 
-def from_woonplaats(g: models.Gemeente):
+def from_woonplaats(w: models.Woonplaats):
     d = Gebied()
-    d.type = 'gebied',
     d.subtype = 'woonplaats'
 
-    d.subtype_id = g.naam
-    d.naam = g.naam
-    d._display = g.naam
-    d.code = g.landelijk_id
+    d.subtype_id = w.naam
+    d.naam = w.naam
+    #d._display = g.naam
+    d._display = '{} - {}'.format(w.naam, w.code)
+    d.code = w.landelijk_id
     # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
 

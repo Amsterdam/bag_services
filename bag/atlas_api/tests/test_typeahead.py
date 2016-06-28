@@ -203,18 +203,3 @@ class TypeaheadTest(APITestCase):
         self.assertIn(
             "pieter cornelisz. hooftstraat",
             str(response.data))
-
-    def test_random_shit_tests(self):
-        """
-        random stuff that crashes search / inspired by ein smoke tests
-        """
-        source = string.ascii_letters + string.digits + ' ' * 20
-        for i in range(150):
-            KEY_LEN = random.randint(1, 15)
-            keylist = [random.choice(source) for i in range(KEY_LEN)]
-            query = "".join(keylist)
-
-            response = self.client.get("/atlas/typeahead/", {
-                'q': "".join(query)})
-
-            self.assertEqual(response.status_code, 200)

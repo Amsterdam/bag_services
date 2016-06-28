@@ -1261,7 +1261,7 @@ class IndexBuurtcombinatieTask(index.ImportIndexTask):
 
 class IndexStadsdeelTask(index.ImportIndexTask):
     name = "index stadsdeel"
-    queryset = models.Buurt.objects.all()
+    queryset = models.Stadsdeel.objects.all()
 
     def convert(self, obj):
         return documents.from_stadsdeel(obj)
