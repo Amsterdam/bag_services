@@ -697,6 +697,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         """
         query, tokens, i = prepare_input(query)
 
+        if not tokens:
+            return []
+
         return (
             Search()
             .using(client)
