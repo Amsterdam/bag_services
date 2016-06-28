@@ -44,6 +44,12 @@ _details = {
     'kadastraal_subject': 'kadastraalsubject-detail',
     'kadastraal_object': 'kadastraalobject-detail',
     'bouwblok': 'bouwblok-detail',
+
+    'buurt': 'buurt-detail',
+    'buurtcombinatie': 'buurtcombinatie-detail',
+    'stadsdeel': 'stadsdeel-detail',
+    'gemeente': 'gemeente-detail',
+    'woonplaats': 'woonplaats-detail',
 }
 
 BAG = settings.ELASTIC_INDICES['BAG']
@@ -134,6 +140,7 @@ def analyze_query(query_string: str, tokens: list, i: int):
     if not queries:
         queries.extend([
             bagQ.weg_Q,
+            bagQ.gebied_Q,
             brkQ.kadaster_subject_Q,
         ])
 
@@ -194,11 +201,19 @@ def _get_url(request, hit):
     assert hit.subtype
 
     if hit.subtype in _details:
+        if hit.subtype in ['gemeente']:
+            return rest.get_links(
+                view_name=_details[hit.subtype],
+                kwargs={'pk': hit.naam}, request=request)
         return rest.get_links(
             view_name=_details[hit.subtype],
             kwargs={'pk': id}, request=request)
 
-    return None
+    return {
+        'self': {
+            'href': '/{}/{}/{}/notworking'.format(doc_type, hit.subtype, id)
+        }
+    }
 
 
 class QueryMetadata(metadata.SimpleMetadata):
@@ -318,22 +333,28 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         ordered_results = []
 
-        result_order = [
-            'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
-            'kadastraal_object', 'meetbout']
-
-        # This might be better handled on the front end
-        pretty_names = [
-            'Straatnamen', 'Adres', 'Bouwblok',
-            'Kadastrale subjecten', 'Kadastrale objecten',
-            'Meetbouten'
-        ]
+        ro = result_order = OrderedDict()
+        ro['gemeente'] = 'Gemeente'
+        ro['woonplaats'] = 'Woonplaats'
+        ro['stadsdeel'] = 'Stadsdeel'
+        ro['grootstedelijk'] = 'Grootstedelijk'
+        ro['buurtcombinatie'] = 'Buurtcombinatie'
+        ro['buurt'] = 'Buurt'
+        ro['weg'] = 'Straatnamen'
+        ro['verblijfsobject'] = 'Adres'
+        ro['bouwblok'] = 'Bouwblok'
+        ro['kadastraal_subject'] = 'Kadastrale subjecten'
+        ro['kadastraal_object'] = 'Kadastrale objecten'
+        ro['meetbout'] = 'Meetbouten'
 
         # Organizing the results
         for elk_result in results:
             for hit in elk_result:
                 disp = hit._display
                 uri = self._get_uri(request, hit)
+
+                print(uri)
+
                 # Only add results we generate uri for
                 # @TODO this should not be used like this as result filter
 
@@ -346,16 +367,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
                 result_sets[hit.subtype].append({
                     '_display': disp,
-                    'query': disp,
+                    # 'query': disp,
                     'uri': uri
                 })
 
         # Now ordereing the result groups
-        for i in range(len(result_order)):
-            if result_order[i] in result_sets:
+        for i, (subtype, pretty_name) in enumerate(result_order.items()):
+            if subtype in result_sets:
                 ordered_results.append({
-                    'label': pretty_names[i],
-                    'content': result_sets[result_order[i]],
+                    'label': pretty_name,
+                    'content': result_sets[subtype],
                 })
 
         return ordered_results

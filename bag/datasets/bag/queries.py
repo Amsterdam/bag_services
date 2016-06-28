@@ -17,7 +17,11 @@ from collections import OrderedDict
 # from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
 
+from django.conf import settings
+
 log = logging.getLogger('bag_Q')
+
+BAG = settings.ELASTIC_INDICES['BAG']
 
 
 def address_Q(query):
@@ -443,7 +447,8 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
             minimum_should_match=3
         ),
         'sorting': straat_huisnummer_sorting,
-        'size': 60
+        'size': 60,
+        'Index': [BAG]
     }
 
 
@@ -479,6 +484,7 @@ def bouwblok_Q(query, tokens=None, num=None):
 
     return {
         'Q': Q('match_phrase_prefix', code=query),
+        'Index': [BAG]
     }
 
 
@@ -494,6 +500,7 @@ def postcode_Q(query, tokens=None, num=None):
     return {
         "Q": Q("prefix", postcode=query),
         "A": A("terms", field="straatnaam.raw"),
+        'Index': [BAG]
     }
 
 
@@ -518,7 +525,8 @@ def is_postcode_Q(query: str, tokens=None, num=None):
                 Q('term', subtype='weg'),
             ],
         ),
-        's': ['_display']
+        's': ['_display'],
+        'Index': [BAG]
     }
 
 
@@ -596,7 +604,46 @@ def weg_Q(query: str, tokens=None, num=None):
             minimum_should_match=1,
         ),
         'sorting': weg_sorting,
-        'size': 10
+        'size': 10,
+        'Index': [BAG]
+    }
+
+
+def gebied_Q(query: str, tokens=None, num=None):
+    """
+    Create public
+    """
+    return {
+        'Q': Q(
+            'bool',
+            must=[
+                Q('term', type='gebied'),
+            ],
+            should=[
+                Q('match', naam=query),
+                Q(
+                    'multi_match',
+                    query=query,
+                    type="phrase_prefix",
+                    # other streets
+                    fields=[
+                        'naam',
+                        'code']
+                ),
+                Q(
+                    'query_string',
+                    fields=[
+                        'naam',
+                        'code',
+                    ],
+                    query=query,
+                    default_operator='AND'),
+            ],
+            minimum_should_match=1,
+        ),
+        'sorting': weg_sorting,
+        'size': 80,
+        'Index': [BAG]
     }
 
 
@@ -615,6 +662,7 @@ def public_area_Q(query):
                 'subtype',
             ],
         ),
+        'Index': [BAG]
     }
 
 

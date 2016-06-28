@@ -319,6 +319,8 @@ class Gebied(es.DocType):
 
     id = es.String()
 
+    _display = es.String(index='not_analyzed')
+
     naam = es.String(
         analyzer=analyzers.adres,
         fields={
@@ -533,7 +535,9 @@ def from_unesco(u: models.Unesco):
     d.type = 'gebied'
     d.subtype = 'unesco'
 
-    d.naam = 'unesco %s' % u.naam
+    d._display = 'unesco %s' % u.naam
+    d.subtype_id = u.id
+    d.naam = d._display
     d.centroid = get_centroid(u.geometrie, 'wgs84')
     return d
 
@@ -543,8 +547,9 @@ def from_buurt(b: models.Buurt):
     d.type = 'gebied'
     d.subtype = 'buurt'
 
-    d.id = b.id
+    d.subtype_id = b.id
     d.naam = b.naam
+    d._display = b.naam
     d.code = b.code
     d.centroid = get_centroid(b.geometrie, 'wgs84')
     return d
@@ -555,8 +560,9 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
     d.type = 'gebied'
     d.subtype = 'buurtcombinatie'
 
-    d.id = bc.id
+    d.subtype_id = bc.id
     d.naam = bc.naam
+    d._display = bc.naam
     d.code = bc.code
     d.centroid = get_centroid(bc.geometrie, 'wgs84')
     return d
@@ -567,8 +573,9 @@ def from_stadsdeel(sd: models.Stadsdeel):
     d.type = 'gebied',
     d.subtype = 'stadsdeel'
 
-    d.id = sd.id
+    d.subtype_id = sd.id
     d.naam = sd.naam
+    d._display = sd.naam
     d.code = sd.code
     d.centroid = get_centroid(sd.geometrie, 'wgs84')
     return d
@@ -579,8 +586,9 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
     d.type = 'gebied',
     d.subtype = 'grootstedelijk'
 
-    d.id = gs.id
+    d.subtype_id = gs.id
     d.naam = gs.naam
+    d._display = gs.naam
     d.centroid = get_centroid(gs.geometrie, 'wgs84')
     return d
 
@@ -590,8 +598,9 @@ def from_gemeente(g: models.Gemeente):
     d.type = 'gebied',
     d.subtype = 'gemeente'
 
-    d.id = g.id
+    d.subtype_id = g.naam
     d.naam = g.naam
+    d._display = g.naam
     d.code = g.code
     # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
@@ -602,13 +611,12 @@ def from_woonplaats(g: models.Gemeente):
     d.type = 'gebied',
     d.subtype = 'woonplaats'
 
-    d.id = g.id
+    d.subtype_id = g.naam
     d.naam = g.naam
+    d._display = g.naam
     d.code = g.landelijk_id
     # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
-
-
 
 
 def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
