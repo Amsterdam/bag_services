@@ -501,17 +501,16 @@ class SearchViewSet(viewsets.ViewSet):
 
         search = self.search_query(client, query, tokens, i)[start:end]
 
-        ignore_cache = settings.DEBUG
-
-        if settings.DEBUG:
-            if search:
-                log.debug(search.to_dict())
-                sq = search.to_dict()
-                print(json.dumps(sq, indent=4))
-
         if not search:
             log.debug('no elk query')
             return Response([])
+
+        ignore_cache = settings.DEBUG
+
+        if settings.DEBUG:
+            log.debug(search.to_dict())
+            sq = search.to_dict()
+            print(json.dumps(sq, indent=4))
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
@@ -698,6 +697,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         """
         query, tokens, i = prepare_input(query)
 
+        if not is_bouwblok(query, tokens):
+            return []
+
         return (
             Search()
             .using(client)
@@ -707,7 +709,7 @@ class SearchBouwblokViewSet(SearchViewSet):
                 subtype=['bouwblok']
             )
             .query(
-                bagQ.bouwblok_Q(query, tokens)['Q']
+                bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
             )
         )
 
