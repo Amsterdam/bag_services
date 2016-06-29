@@ -1673,7 +1673,7 @@ class IndexGebiedenJob(object):
             # should maybe be added to
             IndexBouwblokTask(),  # This only adds to the bag index,
 
-            DeleteGebiedenTask(),
+            # DeleteGebiedenTask(), DEV Only for document changes
 
             IndexUnescoTask(),
             IndexBuurtTask(),
