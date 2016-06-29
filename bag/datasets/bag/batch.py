@@ -1167,11 +1167,6 @@ BAG_DOC_TYPES = [
 ]
 
 
-class DeleteGebiedenTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BAG']
-    doc_types = [documents.Gebied]
-
-
 class DeleteIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG']
     doc_types = BAG_DOC_TYPES
@@ -1670,12 +1665,10 @@ class IndexGebiedenJob(object):
 
     def tasks(self):
         return [
-            # should maybe be added to
-
-            IndexBouwblokTask(),  # This only adds to the bag index,
+            IndexBouwblokTask(),
 
             # NOTE !! DEVELOPMENT -> Only for document changes
-            #DeleteGebiedenTask(),
+            # DeleteIndexTaskTask(),
 
             IndexUnescoTask(),
             IndexBuurtTask(),
