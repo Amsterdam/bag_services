@@ -363,7 +363,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
                 result_sets[hit.subtype].append({
                     '_display': disp,
-                    # 'query': disp,
                     'uri': uri
                 })
 
