@@ -527,7 +527,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
 
 def from_unesco(u: models.Unesco):
-    d = Gebied()
+    d = Gebied(_id='unseco{}'.format(u.id))
     d.subtype = 'unesco'
 
     d._display = 'unesco %s' % u.naam
@@ -538,7 +538,7 @@ def from_unesco(u: models.Unesco):
 
 
 def from_buurt(b: models.Buurt):
-    d = Gebied()
+    d = Gebied(_id='buurt{}'.format(b.id))
     d.subtype = 'buurt'
 
     d.subtype_id = b.id
@@ -550,7 +550,7 @@ def from_buurt(b: models.Buurt):
 
 
 def from_buurtcombinatie(bc: models.Buurtcombinatie):
-    d = Gebied()
+    d = Gebied(_id='buurtcombinatie{}'.format(bc.id))
     d.subtype = 'buurtcombinatie'
 
     d.subtype_id = bc.id
@@ -562,7 +562,7 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
 
 
 def from_stadsdeel(sd: models.Stadsdeel):
-    d = Gebied()
+    d = Gebied(_id='stadsdeel{}'.format(sd.id))
     d.subtype = 'stadsdeel'
 
     d.subtype_id = sd.id
@@ -575,6 +575,7 @@ def from_stadsdeel(sd: models.Stadsdeel):
 
 def from_grootstedelijk(gs: models.Grootstedelijkgebied):
     d = Gebied()
+    d = Gebied(_id='stadsdeel{}'.format(gs.id))
     d.subtype = 'grootstedelijk'
 
     d.subtype_id = gs.id
