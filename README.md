@@ -67,7 +67,7 @@ To import the latest database from acceptance:
 
 To import the latest elastic index from acceptance:
 
-	docker exec -it $(docker-compose ps -q elasticsearch) update-atlas.sh
+	docker exec -it atlasbackend_elasticsearch_1 update-atlas.sh
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.
