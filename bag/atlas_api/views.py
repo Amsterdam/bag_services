@@ -49,6 +49,7 @@ _details = {
     'buurtcombinatie': 'buurtcombinatie-detail',
     'stadsdeel': 'stadsdeel-detail',
     'gemeente': 'gemeente-detail',
+    'grootstedelijk': 'grootstedelijkgebied-detail',
     'woonplaats': 'woonplaats-detail',
 }
 
@@ -352,8 +353,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
             for hit in elk_result:
                 disp = hit._display
                 uri = self._get_uri(request, hit)
-
-                print(uri)
 
                 # Only add results we generate uri for
                 # @TODO this should not be used like this as result filter

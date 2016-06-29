@@ -593,7 +593,7 @@ def from_gemeente(g: models.Gemeente):
     d = Gebied()
     d.subtype = 'gemeente'
 
-    d.subtype_id = g.naam
+    d.subtype_id = g.naam.lower()
     d.naam = g.naam
     d._display = '{} - {}'.format(g.naam, g.code)
     d.code = g.code
@@ -605,12 +605,10 @@ def from_woonplaats(w: models.Woonplaats):
     d = Gebied()
     d.subtype = 'woonplaats'
 
-    d.subtype_id = w.naam
+    d.subtype_id = w.id
     d.naam = w.naam
-    #d._display = g.naam
-    d._display = '{} - {}'.format(w.naam, w.code)
+    d._display = '{} - {}'.format(w.naam, w.landelijk_id)
     d.code = w.landelijk_id
-    # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
 
 
