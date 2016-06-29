@@ -22,6 +22,7 @@ from elasticsearch_dsl import Q, A
 log = logging.getLogger('bag_Q')
 
 BAG = settings.ELASTIC_INDICES['BAG']
+NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
 def address_Q(query):
@@ -448,7 +449,7 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
         ),
         'sorting': straat_huisnummer_sorting,
         'size': 60,
-        'Index': [BAG]
+        'Index': [NUMMERAANDUIDING]
     }
 
 
@@ -483,7 +484,7 @@ def bouwblok_Q(query, tokens=None, num=None):
     assert tokens
 
     return {
-        'Q': Q('match_phrase_prefix', code=query),
+        'Q': Q('match', code=query),
         'Index': [BAG]
     }
 

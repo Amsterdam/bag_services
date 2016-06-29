@@ -103,22 +103,21 @@ kadaster_object_aanduiding = analysis.token_filter(
 #           Analyzers              #
 ####################################
 
-bouwblok = es.analyzer(
-    'bouwblok',
+bouwblokid = es.analyzer(
+    'bouwbloknummer',
     tokenizer=tokenizer(
-        'edge_ngram_filter',
-        type='edge_ngram',
-        min_gram=2, max_gram=4,
+        'bouwbloktokens',
+        'edge_ngram',
+        min_gram=1, max_gram=4,
         token_chars=["letter", "digit"]),
     filter=['lowercase', divider_stripper],
-    # char_filter=[divider_stripper]
 )
 
 adres = es.analyzer(
     'adres',
     tokenizer='standard',
     filter=['lowercase', 'asciifolding', synonym_filter],
-    # filter=['lowercase', 'asciifolding'],
+    # fi`lter=['lowercase', 'asciifolding'],
     char_filter=[naam_stripper],
 )
 

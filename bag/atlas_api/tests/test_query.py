@@ -120,7 +120,7 @@ class QueryTest(APITestCase):
         )
 
         batch.execute(datasets.bag.batch.IndexBagJob())
-        batch.execute(datasets.bag.batch.IndexGebiedJob())
+        batch.execute(datasets.bag.batch.IndexGebiedenJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
         es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
@@ -152,7 +152,7 @@ class QueryTest(APITestCase):
 
     def test_search_bouwblok_api(self):
         response = self.client.get(
-            "/atlas/search/bouwblok/", {'q': "rn-3"})
+            "/atlas/search/bouwblok/", {'q': "RN3"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

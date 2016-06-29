@@ -289,7 +289,7 @@ class Bouwblok(es.DocType):
     Elasticsearch doc for the bouwblok model
     """
     code = es.String(
-        analyzer=analyzers.bouwblok,
+        analyzer=analyzers.bouwblokid,
         fields={
             'raw': es.String(index='not_analyzed'),
         },
@@ -329,19 +329,14 @@ class Gebied(es.DocType):
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
             'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
         }
     )
 
-    code = es.String(
-        analyzer=analyzers.adres,
+    g_code = es.String(
+        analyzer=analyzers.autocomplete,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
             'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
         }
     )
 
@@ -549,7 +544,7 @@ def from_buurt(b: models.Buurt):
     d.subtype_id = b.id
     d.naam = b.naam
     d._display = '{} - {}'.format(b.naam, b.code)
-    d.code = b.code
+    d.g_code = b.code
     d.centroid = get_centroid(b.geometrie, 'wgs84')
     return d
 
@@ -561,7 +556,7 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
     d.subtype_id = bc.id
     d.naam = bc.naam
     d._display = '{} - {}'.format(bc.naam, bc.code)
-    d.code = bc.code
+    d.g_code = bc.code
     d.centroid = get_centroid(bc.geometrie, 'wgs84')
     return d
 
@@ -573,7 +568,7 @@ def from_stadsdeel(sd: models.Stadsdeel):
     d.subtype_id = sd.id
     d.naam = sd.naam
     d._display = '{} - {}'.format(sd.naam, sd.code)
-    d.code = sd.code
+    d.g_code = sd.code
     d.centroid = get_centroid(sd.geometrie, 'wgs84')
     return d
 
@@ -596,7 +591,7 @@ def from_gemeente(g: models.Gemeente):
     d.subtype_id = g.naam.lower()
     d.naam = g.naam
     d._display = '{} - {}'.format(g.naam, g.code)
-    d.code = g.code
+    d.g_code = g.code
     # d.centroid = get_centroid(g.geometrie, 'wgs84')
     return d
 
@@ -608,7 +603,7 @@ def from_woonplaats(w: models.Woonplaats):
     d.subtype_id = w.id
     d.naam = w.naam
     d._display = '{} - {}'.format(w.naam, w.landelijk_id)
-    d.code = w.landelijk_id
+    d.g_code = w.landelijk_id
     return d
 
 

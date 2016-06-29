@@ -1309,7 +1309,7 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
 
 class IndexBouwblokTask(index.ImportIndexTask):
     name = "index bouwblokken"
-    queryset = models.Bouwblok.objects
+    queryset = models.Bouwblok.objects.all()
 
     def convert(self, obj):
         return documents.from_bouwblok(obj)
@@ -1671,9 +1671,11 @@ class IndexGebiedenJob(object):
     def tasks(self):
         return [
             # should maybe be added to
+
             IndexBouwblokTask(),  # This only adds to the bag index,
 
-            DeleteGebiedenTask(),
+            # NOTE !! DEVELOPMENT -> Only for document changes
+            #DeleteGebiedenTask(),
 
             IndexUnescoTask(),
             IndexBuurtTask(),

@@ -48,7 +48,7 @@ _details = {
     'buurt': 'buurt-detail',
     'buurtcombinatie': 'buurtcombinatie-detail',
     'stadsdeel': 'stadsdeel-detail',
-    'gemeente': 'gemeente-detail',
+
     'grootstedelijk': 'grootstedelijkgebied-detail',
     'woonplaats': 'woonplaats-detail',
 }
@@ -114,13 +114,9 @@ def analyze_query(query_string: str, tokens: list, i: int):
             'test': is_gemeente_kadaster_object,
             'query': [brkQ.gemeente_object_Q],
         },
-
         {
             'test': is_straat_huisnummer,
-            'query': [
-                bagQ.straat_huisnummer_Q,
-                brkQ.kadaster_subject_Q,
-            ],
+            'query': [bagQ.straat_huisnummer_Q]
         },
     ]
 
@@ -309,10 +305,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # nice prety printing
             if settings.DEBUG:
+                print(indexes)
                 sq = search.to_dict()
                 msg = json.dumps(sq, indent=4)
                 print(msg)
-                logging.debug(msg)
+                log.debug(msg)
 
         return result_data
 
@@ -358,7 +355,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 # @TODO this should not be used like this as result filter
 
                 if not uri:
-                    logging.debug('No uri', hit)
+                    log.debug('No uri', hit)
                     continue
 
                 if hit.subtype not in result_sets:
