@@ -44,6 +44,13 @@ _details = {
     'kadastraal_subject': 'kadastraalsubject-detail',
     'kadastraal_object': 'kadastraalobject-detail',
     'bouwblok': 'bouwblok-detail',
+
+    'buurt': 'buurt-detail',
+    'buurtcombinatie': 'buurtcombinatie-detail',
+    'stadsdeel': 'stadsdeel-detail',
+
+    'grootstedelijk': 'grootstedelijkgebied-detail',
+    'woonplaats': 'woonplaats-detail',
 }
 
 BAG = settings.ELASTIC_INDICES['BAG']
@@ -107,13 +114,9 @@ def analyze_query(query_string: str, tokens: list, i: int):
             'test': is_gemeente_kadaster_object,
             'query': [brkQ.gemeente_object_Q],
         },
-
         {
             'test': is_straat_huisnummer,
-            'query': [
-                bagQ.straat_huisnummer_Q,
-                brkQ.kadaster_subject_Q,
-            ],
+            'query': [bagQ.straat_huisnummer_Q]
         },
     ]
 
@@ -134,6 +137,7 @@ def analyze_query(query_string: str, tokens: list, i: int):
     if not queries:
         queries.extend([
             bagQ.weg_Q,
+            bagQ.gebied_Q,
             brkQ.kadaster_subject_Q,
         ])
 
@@ -194,11 +198,19 @@ def _get_url(request, hit):
     assert hit.subtype
 
     if hit.subtype in _details:
+        if hit.subtype in ['gemeente']:
+            return rest.get_links(
+                view_name=_details[hit.subtype],
+                kwargs={'pk': hit.naam}, request=request)
         return rest.get_links(
             view_name=_details[hit.subtype],
             kwargs={'pk': id}, request=request)
 
-    return None
+    return {
+        'self': {
+            'href': '/{}/{}/{}/notworking'.format(doc_type, hit.subtype, id)
+        }
+    }
 
 
 class QueryMetadata(metadata.SimpleMetadata):
@@ -293,10 +305,11 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # nice prety printing
             if settings.DEBUG:
+                print(indexes)
                 sq = search.to_dict()
                 msg = json.dumps(sq, indent=4)
                 print(msg)
-                logging.debug(msg)
+                log.debug(msg)
 
         return result_data
 
@@ -318,27 +331,31 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         ordered_results = []
 
-        result_order = [
-            'weg', 'verblijfsobject', 'bouwblok', 'kadastraal_subject',
-            'kadastraal_object', 'meetbout']
-
-        # This might be better handled on the front end
-        pretty_names = [
-            'Straatnamen', 'Adres', 'Bouwblok',
-            'Kadastrale subjecten', 'Kadastrale objecten',
-            'Meetbouten'
-        ]
+        ro = result_order = OrderedDict()
+        ro['weg'] = 'Straatnamen'
+        ro['gemeente'] = 'Gemeente'
+        ro['woonplaats'] = 'Woonplaats'
+        ro['stadsdeel'] = 'Stadsdeel'
+        ro['grootstedelijk'] = 'Grootstedelijk'
+        ro['buurtcombinatie'] = 'Buurtcombinatie'
+        ro['buurt'] = 'Buurt'
+        ro['verblijfsobject'] = 'Adres'
+        ro['bouwblok'] = 'Bouwblok'
+        ro['kadastraal_subject'] = 'Kadastrale subjecten'
+        ro['kadastraal_object'] = 'Kadastrale objecten'
+        ro['meetbout'] = 'Meetbouten'
 
         # Organizing the results
         for elk_result in results:
             for hit in elk_result:
                 disp = hit._display
                 uri = self._get_uri(request, hit)
+
                 # Only add results we generate uri for
                 # @TODO this should not be used like this as result filter
 
                 if not uri:
-                    logging.debug('No uri', hit)
+                    log.debug('No uri', hit)
                     continue
 
                 if hit.subtype not in result_sets:
@@ -346,16 +363,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
                 result_sets[hit.subtype].append({
                     '_display': disp,
-                    'query': disp,
                     'uri': uri
                 })
 
         # Now ordereing the result groups
-        for i in range(len(result_order)):
-            if result_order[i] in result_sets:
+        for i, (subtype, pretty_name) in enumerate(result_order.items()):
+            if subtype in result_sets:
                 ordered_results.append({
-                    'label': pretty_names[i],
-                    'content': result_sets[result_order[i]],
+                    'label': pretty_name,
+                    'content': result_sets[subtype],
                 })
 
         return ordered_results
@@ -501,17 +517,16 @@ class SearchViewSet(viewsets.ViewSet):
 
         search = self.search_query(client, query, tokens, i)[start:end]
 
-        ignore_cache = settings.DEBUG
-
-        if settings.DEBUG:
-            if search:
-                log.debug(search.to_dict())
-                sq = search.to_dict()
-                print(json.dumps(sq, indent=4))
-
         if not search:
             log.debug('no elk query')
             return Response([])
+
+        ignore_cache = settings.DEBUG
+
+        if settings.DEBUG:
+            log.debug(search.to_dict())
+            sq = search.to_dict()
+            print(json.dumps(sq, indent=4))
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
@@ -698,6 +713,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         """
         query, tokens, i = prepare_input(query)
 
+        if not tokens:
+            return []
+
         return (
             Search()
             .using(client)
@@ -707,7 +725,7 @@ class SearchBouwblokViewSet(SearchViewSet):
                 subtype=['bouwblok']
             )
             .query(
-                bagQ.bouwblok_Q(query, tokens)['Q']
+                bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
             )
         )
 

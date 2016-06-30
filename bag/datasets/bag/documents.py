@@ -289,7 +289,7 @@ class Bouwblok(es.DocType):
     Elasticsearch doc for the bouwblok model
     """
     code = es.String(
-        analyzer=analyzers.bouwblok,
+        analyzer=analyzers.bouwblokid,
         fields={
             'raw': es.String(index='not_analyzed'),
         },
@@ -298,6 +298,51 @@ class Bouwblok(es.DocType):
     subtype = es.String(analyzer=analyzers.subtype)
 
     _display = es.String(index='not_analyzed')
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BAG']
+        all = es.MetaField(enabled=False)
+
+
+class Gebied(es.DocType):
+    """
+    Een vindbaar gebied
+
+    Unesco
+    Buurt
+    Buurtcombinatie
+    Stadsdeel
+    Grootstedelijk
+    Gemeente
+    Woonplaats
+    """
+
+    id = es.String()
+
+    _display = es.String(index='not_analyzed')
+
+    naam = es.String(
+        analyzer=analyzers.adres,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram_edge': es.String(
+                analyzer=analyzers.autocomplete, search_analyzer='standard'
+            ),
+            'ngram': es.String(analyzer=analyzers.ngram),
+        }
+    )
+
+    g_code = es.String(
+        analyzer=analyzers.autocomplete,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(analyzer=analyzers.ngram),
+        }
+    )
+
+    subtype = es.String(analyzer=analyzers.subtype)
+
+    centroid = es.GeoPoint()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -462,6 +507,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = OpenbareRuimte(_id=o.id)
     d.type = 'Openbare ruimte'
+    # weg, water, spoorbaan, terrein, kunstwerk (brug), landschap,..
     d.subtype = o.get_type_display().lower()
 
     d.naam = o.naam
@@ -477,6 +523,88 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.postcode = list(postcodes)
     d.order = analyzers.orderings['openbare_ruimte']
     d._display = d.naam
+    return d
+
+
+def from_unesco(u: models.Unesco):
+    d = Gebied(_id='unseco{}'.format(u.id))
+    d.subtype = 'unesco'
+
+    d._display = 'unesco %s' % u.naam
+    d.subtype_id = u.id
+    d.naam = d._display
+    d.centroid = get_centroid(u.geometrie, 'wgs84')
+    return d
+
+
+def from_buurt(b: models.Buurt):
+    d = Gebied(_id='buurt{}'.format(b.id))
+    d.subtype = 'buurt'
+
+    d.subtype_id = b.id
+    d.naam = b.naam
+    d._display = '{} - {}'.format(b.naam, b.code)
+    d.g_code = b.code
+    d.centroid = get_centroid(b.geometrie, 'wgs84')
+    return d
+
+
+def from_buurtcombinatie(bc: models.Buurtcombinatie):
+    d = Gebied(_id='buurtcombinatie{}'.format(bc.id))
+    d.subtype = 'buurtcombinatie'
+
+    d.subtype_id = bc.id
+    d.naam = bc.naam
+    d._display = '{} - {}'.format(bc.naam, bc.code)
+    d.g_code = bc.code
+    d.centroid = get_centroid(bc.geometrie, 'wgs84')
+    return d
+
+
+def from_stadsdeel(sd: models.Stadsdeel):
+    d = Gebied(_id='stadsdeel{}'.format(sd.id))
+    d.subtype = 'stadsdeel'
+
+    d.subtype_id = sd.id
+    d.naam = sd.naam
+    d._display = '{} - {}'.format(sd.naam, sd.code)
+    d.g_code = sd.code
+    d.centroid = get_centroid(sd.geometrie, 'wgs84')
+    return d
+
+
+def from_grootstedelijk(gs: models.Grootstedelijkgebied):
+    d = Gebied()
+    d = Gebied(_id='stadsdeel{}'.format(gs.id))
+    d.subtype = 'grootstedelijk'
+
+    d.subtype_id = gs.id
+    d.naam = gs.naam
+    d._display = gs.naam
+    d.centroid = get_centroid(gs.geometrie, 'wgs84')
+    return d
+
+
+def from_gemeente(g: models.Gemeente):
+    d = Gebied()
+    d.subtype = 'gemeente'
+
+    d.subtype_id = g.naam.lower()
+    d.naam = g.naam
+    d._display = '{} - {}'.format(g.naam, g.code)
+    d.g_code = g.code
+    # d.centroid = get_centroid(g.geometrie, 'wgs84')
+    return d
+
+
+def from_woonplaats(w: models.Woonplaats):
+    d = Gebied()
+    d.subtype = 'woonplaats'
+
+    d.subtype_id = w.id
+    d.naam = w.naam
+    d._display = '{} - {}'.format(w.naam, w.landelijk_id)
+    d.g_code = w.landelijk_id
     return d
 
 
