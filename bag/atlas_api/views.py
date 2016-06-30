@@ -332,13 +332,13 @@ class TypeaheadViewSet(viewsets.ViewSet):
         ordered_results = []
 
         ro = result_order = OrderedDict()
+        ro['weg'] = 'Straatnamen'
         ro['gemeente'] = 'Gemeente'
         ro['woonplaats'] = 'Woonplaats'
         ro['stadsdeel'] = 'Stadsdeel'
         ro['grootstedelijk'] = 'Grootstedelijk'
         ro['buurtcombinatie'] = 'Buurtcombinatie'
         ro['buurt'] = 'Buurt'
-        ro['weg'] = 'Straatnamen'
         ro['verblijfsobject'] = 'Adres'
         ro['bouwblok'] = 'Bouwblok'
         ro['kadastraal_subject'] = 'Kadastrale subjecten'
