@@ -213,6 +213,6 @@ search.register(
     base_name='postcode')
 
 urlpatterns = [
-    url(r'^gebieden/bouwblok/(?P<code>....)/?$',
-        datasets.bag.views.BouwblokCodeView.as_view()),
+    #url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+    #    datasets.bag.views.BouwblokCodeView.as_view()),
 ]

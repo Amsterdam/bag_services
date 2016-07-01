@@ -26,6 +26,10 @@ from elasticsearch_dsl import Search
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+
+from rest_framework.decorators import api_view
+
+
 # Project
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
@@ -34,6 +38,7 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
+jslog = logging.getLogger('jserror')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -224,6 +229,15 @@ class QueryMetadata(metadata.SimpleMetadata):
             },
         }
         return result
+
+
+@api_view(['GET', 'POST'])
+def javascript_error(request):
+    if request.method == 'POST':
+        data = request.data
+        print('jserrror', data)
+        jslog.error(data)
+    return Response('Ok')
 
 
 # =============================================

@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 import atlas_api.urls
+import atlas_api.views as api_views
 import datasets.bag.views
 import datasets.brk.views
 
@@ -49,4 +50,5 @@ urlpatterns = [
     url(r'^oauth/',
         include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^status/', include('health.urls', namespace='health')),
+    url(r'^javascripterror/$', api_views.javascript_error)
 ]
