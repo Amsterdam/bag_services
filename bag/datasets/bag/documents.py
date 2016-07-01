@@ -64,7 +64,7 @@ class Standplaats(es.DocType):
         analyzer=analyzers.postcode,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.postcode_ng)})
+            'ngram': es.String(analyzer=analyzers.autocomplete)})
     order = es.Integer()
     centroid = es.GeoPoint()
 
@@ -94,7 +94,7 @@ class Verblijfsobject(es.DocType):
         analyzer=analyzers.postcode,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.postcode_ng)})
+            'ngram': es.String(analyzer=analyzers.autocomplete)})
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -153,7 +153,7 @@ class OpenbareRuimte(es.DocType):
         analyzer=analyzers.postcode,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.postcode_ng)})
+            'ngram': es.String(analyzer=analyzers.autocomplete)})
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
@@ -272,7 +272,7 @@ class Nummeraanduiding(es.DocType):
         analyzer=analyzers.postcode,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.postcode_ng)})
+            'ngram': es.String(analyzer=analyzers.autocomplete)})
 
     order = es.Integer()
 

@@ -965,15 +965,17 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if response and response.hits:
             response = response.hits[0].to_dict()
             # Adding RD gepopoint
-            rd_point = Point(*response['centroid'], srid=4326)
-            # Using the newly generated point to replace the elastic results
-            # with geojson
-            response['geometrie'] = json.loads(rd_point.geojson)
-            rd_point.transform(28992)
-            response['geometrie_rd'] = json.loads(rd_point.geojson)
-            # Removing the poscode based fields from the results
-            # del(response['postcode_toevoeging'])
-            # del(response['postcode_huisnummer'])
+            if 'centroid' in response:
+                rd_point = Point(*response['centroid'], srid=4326)
+                # Using the newly generated point to
+                # replace the elastic results
+                # with geojson
+                response['geometrie'] = json.loads(rd_point.geojson)
+                rd_point.transform(28992)
+                response['geometrie_rd'] = json.loads(rd_point.geojson)
+                # Removing the poscode based fields from the results
+                # del(response['postcode_toevoeging'])
+                # del(response['postcode_huisnummer'])
         else:
             response = []
         return Response(response)

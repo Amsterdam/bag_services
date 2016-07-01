@@ -237,7 +237,7 @@ def is_meetbout(query_string, tokens):
     MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
     """
 
-    if len(tokens) > 1:
+    if len(tokens) != 1:
         return False
 
     meetbout = tokens[0]
