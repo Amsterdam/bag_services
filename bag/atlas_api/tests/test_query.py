@@ -173,3 +173,17 @@ class QueryTest(APITestCase):
         self.assertTrue(
             adres.startswith("Rozenstraat 228")
         )
+
+    def test_postcode_exact(self):
+        response = self.client.get(
+            "/search/postcode/", {'q': "1016 SZ 228 a 1"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+
+        # not due to elk scoring it could happen 228 B, scores better
+        # then 228 A
+        adres = response.data['results'][0]['adres']
+        self.assertTrue(
+            adres.startswith("Rozenstraat 228")
+        )

@@ -33,7 +33,7 @@ class Ligplaats(es.DocType):
         analyzer=analyzers.postcode,
         fields={
             'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.postcode_ng),
+            'ngram': es.String(analyzer=analyzers.autocomplete),
         },
     )
     order = es.Integer()

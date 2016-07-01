@@ -180,9 +180,6 @@ atlas = AtlasRouter()
 
 atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
 
-#atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
-# router.register(r'atlas/search', views.SearchViewSet, base_name='search')
-
 # Alias voor nummeraanduiding
 atlas.register(
     r'search/adres',
