@@ -185,3 +185,22 @@ class QueryTest(APITestCase):
         self.assertTrue(
             adres.startswith("Rozenstraat 228")
         )
+
+    def test_postcode_exact_incorrect_house_num(self):
+        response = self.client.get(
+            "/search/postcode/", {'q': "1016 SZ 1"})
+        self.assertEqual(response.status_code, 200)
+
+        # not due to elk scoring it could happen 228 B, scores better
+        # then 228 A
+        self.assertNotIn('adres', response.data)
+
+    def test_postcode_exact_no_house_num(self):
+        response = self.client.get(
+            "/search/postcode/", {'q': "1016 SZ"})
+        self.assertEqual(response.status_code, 200)
+
+        # not due to elk scoring it could happen 228 B, scores better
+        # then 228 A
+        self.assertNotIn('adres', response.data)
+
