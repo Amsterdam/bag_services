@@ -129,8 +129,7 @@ def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
                 Q('term', huisnummer=num)
             ],
         ),
-        'sorting': postcode_huisnummer_sorting,
-        'size': 50  # sample size for custom sort
+        'size': 1  # sample size for custom sort
     }
 
 

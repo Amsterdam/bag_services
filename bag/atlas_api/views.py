@@ -900,8 +900,11 @@ class SearchPostcodeViewSet(SearchViewSet):
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all
-    grond percelen objects that match the elastic search query.
+    Exact match lookup for a postcode and house number with extensions.
+
+    Returns either 1 result for the exact match or 0 if non is found.
+    This endpoint is used for the geocodering of addresses for the
+    afvalophalgebieden.
     """
 
     metadata_class = QueryMetadata
@@ -911,10 +914,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         Execute search in Objects
         """
         # default
-        subq = bagQ.vbo_postcode_Q
-
-        if is_postcode_huisnummer(query, tokens):
-            subq = bagQ.postcode_huisnummer_Q
+        subq = bagQ.postcode_huisnummer_exact_Q
 
         search = Search().using(client).index(NUMMERAANDUIDING).query(
                 subq(query, tokens=tokens, num=i)['Q']
@@ -945,7 +945,11 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
         query = request.query_params['q']
         query, tokens, i = prepare_input(query)
-
+        # Making sure a house number is present
+        # There should be a minimum of 3 tokens:
+        # postcode number, postcode letters and house number
+        if not is_postcode_huisnummer(query, tokens):
+            query = None
         if not query:
             return Response([])
 
