@@ -121,7 +121,7 @@ class LigplaatsFactory(factory.DjangoModelFactory):
         model = models.Ligplaats
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    landelijk_id = id
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     buurt = factory.SubFactory(BuurtFactory)
 
 
@@ -130,7 +130,7 @@ class StandplaatsFactory(factory.DjangoModelFactory):
         model = models.Standplaats
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    landelijk_id = id
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     buurt = factory.SubFactory(BuurtFactory)
 
 
@@ -139,7 +139,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
         model = models.Verblijfsobject
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    landelijk_id = id
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
     reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
