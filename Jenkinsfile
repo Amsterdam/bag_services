@@ -30,7 +30,7 @@ node {
 
     stage "Build"
 
-        def image = docker.build("admin.datapunt.amsterdam.nl:5000/datapunt/bag:${BRANCH}", "web")
+        def image = docker.build("admin.datapunt.amsterdam.nl:5000/datapunt/bag:${BRANCH}")
         image.push()
 
         if (BRANCH == "master") {
