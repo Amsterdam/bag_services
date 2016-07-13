@@ -3,15 +3,9 @@
 node {
 
     String BRANCH = "${env.BRANCH_NAME}"
-    
-    if (BRANCH == "master") {
-        INVENTORY = "production"
-    } else {
-        INVENTORY = "acceptance"
-    }
-    echo "Branch is ${BRANCH}"
-    echo "Inventory is ${INVENTORY}"
+    String INVENTORY = (BRANCH == "master" ? "production" : "acceptance")
 
+    try {
 
     stage "Checkout"
         checkout scm
@@ -23,7 +17,7 @@ node {
             sh "docker-compose up -d"
             sh "sleep 20"
             sh "docker-compose up -d"
-            sh "docker-compose run -u root atlas python manage.py jenkins || echo "Test Failure""
+            sh "docker-compose run -u root atlas python manage.py jenkins"
 
             step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
 
@@ -51,4 +45,11 @@ node {
                         [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
                         [$class: 'StringParameterValue', name: 'BRANCH', value: BRANCH],
                 ]
+}
+    catch (err) {
+        slackSend message: "Problem while building BAG service: ${err}",
+                channel: '#ci-channel'
+
+        throw err
+    }
 }
