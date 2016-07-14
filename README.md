@@ -76,5 +76,3 @@ Your own elastic index import takes approximately 2 hours.
 To run your own elastic index:
 
     docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
-
-test

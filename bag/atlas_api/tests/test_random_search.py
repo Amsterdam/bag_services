@@ -28,6 +28,8 @@ class RandomShitTest(APITestCase):
             '/atlas/search/kadastraalobject/',
             '/atlas/search/postcode/',
             '/atlas/search/openbareruimte/',
+
+            '/search/postcode/',
         ]
 
         for url in search_endpoints:

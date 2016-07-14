@@ -61,6 +61,27 @@ def split_toevoeging(tokens, num):
     return " ".join(extra_tv)
 
 
+def vbo_postcode_Q(query, tokens=None, num=None):
+    """
+    Match part of postcode with a vbo
+    """
+    postcode = "".join(tokens)
+
+    return {
+        'Q': Q(
+            'bool',
+            must=[],
+            should=[
+                {'match': {'postcode': postcode}},
+                {'match': {'postcode.ngram': postcode}},
+                {'match': {'postcode.ngram': query}}
+            ]
+        ),
+        'sorting': postcode_huisnummer_sorting,
+        'size': 50  # sample size for custom sort
+    }
+
+
 def postcode_huisnummer_Q(query, tokens=None, num=None):
 
     """Create query/aggregation for postcode house number search"""
@@ -108,8 +129,7 @@ def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
                 Q('term', huisnummer=num)
             ],
         ),
-        'sorting': postcode_huisnummer_sorting,
-        'size': 50  # sample size for custom sort
+        'size': 1  # sample size for custom sort
     }
 
 
@@ -190,13 +210,6 @@ def tokens_comp_address_Q(query, tokens=None, num=None):
         ),
         # 'S': ['_display']
     }
-
-
-def postcode_and_num_Q(query, tokens=None, num=None):
-    """
-    """
-
-    assert tokens
 
 
 # ambetenaren sort

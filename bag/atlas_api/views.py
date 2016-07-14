@@ -26,6 +26,10 @@ from elasticsearch_dsl import Search
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+
+from rest_framework.decorators import api_view
+
+
 # Project
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
@@ -34,6 +38,7 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
+jslog = logging.getLogger('jserror')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -150,28 +155,6 @@ def analyze_query(query_string: str, tokens: list, i: int):
     return result_queries
 
 
-def prepare_query_string(query_string: str):
-    """
-    Prepares the query string for search.
-    Cleaning up unsupported signes, normalize the search
-    query to something we can better use etc.
-
-    Workings:
-    - Strip whitespace/EOF from the string
-    - Remove '\' at the end of the string
-    - Replace '"' with whitespace
-    """
-    query_string = query_string.strip()
-    # Making sure there is a query string to work with before
-    # and during \ stripping
-    while query_string and (query_string[-1] == '\\'):
-        query_string = query_string[:-1]
-    query_string = query_string.replace('"', ' ')
-    # Last strop to make sure no extra spaces are present
-    query_string = query_string.strip()
-    return query_string
-
-
 def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
@@ -224,6 +207,15 @@ class QueryMetadata(metadata.SimpleMetadata):
             },
         }
         return result
+
+
+@api_view(['GET', 'POST'])
+def javascript_error(request):
+    if request.method == 'POST':
+        data = request.data
+        print('jserrror', data)
+        jslog.error(data)
+    return Response('Ok')
 
 
 # =============================================
@@ -409,7 +401,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = prepare_query_string(request.query_params['q'])
+        query = request.query_params['q']
+        query, tokens, i = prepare_input(query)
 
         if not query:
             return Response([])
@@ -507,7 +500,7 @@ class SearchViewSet(viewsets.ViewSet):
         start = ((page - 1) * self.page_size)
         end = (page * self.page_size)
 
-        query = prepare_query_string(request.query_params['q'])
+        query = request.query_params['q']
         query, tokens, i = prepare_input(query)
 
         client = Elasticsearch(
@@ -907,69 +900,32 @@ class SearchPostcodeViewSet(SearchViewSet):
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all
-    grond percelen objects that match the elastic search query.
+    Exact match lookup for a postcode and house number with extensions.
+
+    Returns either 1 result for the exact match or 0 if non is found.
+    This endpoint is used for the geocodering of addresses for the
+    afvalophalgebieden.
     """
 
     metadata_class = QueryMetadata
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-
-    def normalize_postcode_housenumber(self, pc_num):
-        """
-        Normalizes the poste code and house number so that it
-        will allways look the same to the query
-        Actions:
-        - convert lower case to uppercase letters
-        - makes sure postcode and house number are seperated by a space
-
-        If the normalization fails, the original value is returned.
-        """
-        norm = pc_num.upper()
-        # Under 6 characters there is not enough information
-        if len(norm) > 6:
-            if norm[6] in ['-', '_', '/', '.', ',', '+']:
-                norm = "{0} {1}".format(norm[:6], norm[7:])
-            elif norm[6] != ' ':
-                # It seems that the house nummer is directly attached
-                try:
-                    int(norm[6])
-                except ValueError:
-                    # The format is unclear
-                    norm = pc_num
-        return norm
 
     def search_query(self, client, query, tokens, i):
         """
         Execute search in Objects
         """
-        search = Search().using(self.client).index(BAG).query(
-                bagQ.exact_postcode_house_number_Q(query)
-            )
+        # default
+        subq = bagQ.postcode_huisnummer_exact_Q
+
+        search = Search().using(client).index(NUMMERAANDUIDING).query(
+                subq(query, tokens=tokens, num=i)['Q']
+        )
 
         if settings.DEBUG:
             sq = search.to_dict()
             import json
             print(json.dumps(sq, indent=4))
+
         return search
-
-    def get_exact_response(self, query):
-        """
-        Sends a request for auto complete and returns the result
-        @ TODO there are more efficent ways to return the data
-
-        Optional flag alphabetical is used to determine if the results
-        should be alphabetically ordered. Defaults to True
-        """
-        # Ignoring cache in case debug is on
-        ignore_cache = settings.DEBUG
-
-        result = self.search_query(query).execute(
-            ignore_cache=ignore_cache)
-
-        return result
 
     def list(self, request, *args, **kwargs):
         """
@@ -978,7 +934,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         ---
         parameters:
             - name: q
-              description: Zoek op adres / nummeraanduiding
+              description: Zoek specifiek adres / nummeraanduiding
               required: true
               type: string
               paramType: query
@@ -987,13 +943,25 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = self.normalize_postcode_housenumber(
-            prepare_query_string(request.query_params['q']))
-
+        query = request.query_params['q']
+        query, tokens, i = prepare_input(query)
+        # Making sure a house number is present
+        # There should be a minimum of 3 tokens:
+        # postcode number, postcode letters and house number
+        if not is_postcode_huisnummer(query, tokens):
+            query = None
         if not query:
             return Response([])
 
-        response = self.get_exact_response(query)
+        client = Elasticsearch(
+            settings.ELASTIC_SEARCH_HOSTS,
+            raise_on_error=True
+        )
+
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+        search = self.search_query(client, query, tokens, i)
+        response = search.execute(ignore_cache=ignore_cache)
 
         # Getting the first response.
         # Either there is only one, or a housenumber was given
@@ -1001,15 +969,17 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if response and response.hits:
             response = response.hits[0].to_dict()
             # Adding RD gepopoint
-            rd_point = Point(*response['geometrie'], srid=4326)
-            # Using the newly generated point to replace the elastic results
-            # with geojson
-            response['geometrie'] = json.loads(rd_point.geojson)
-            rd_point.transform(28992)
-            response['geometrie_rd'] = json.loads(rd_point.geojson)
-            # Removing the poscode based fields from the results
-            del(response['postcode_toevoeging'])
-            del(response['postcode_huisnummer'])
+            if 'centroid' in response:
+                rd_point = Point(*response['centroid'], srid=4326)
+                # Using the newly generated point to
+                # replace the elastic results
+                # with geojson
+                response['geometrie'] = json.loads(rd_point.geojson)
+                rd_point.transform(28992)
+                response['geometrie_rd'] = json.loads(rd_point.geojson)
+                # Removing the poscode based fields from the results
+                # del(response['postcode_toevoeging'])
+                # del(response['postcode_huisnummer'])
         else:
             response = []
         return Response(response)

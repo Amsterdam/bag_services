@@ -180,9 +180,6 @@ atlas = AtlasRouter()
 
 atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
 
-#atlas.register(r'postcode', views.SearchExactPostcodeToevoegingViewSet, base_name='postcode')
-# router.register(r'atlas/search', views.SearchViewSet, base_name='search')
-
 # Alias voor nummeraanduiding
 atlas.register(
     r'search/adres',
@@ -213,6 +210,6 @@ search.register(
     base_name='postcode')
 
 urlpatterns = [
-    url(r'^gebieden/bouwblok/(?P<code>....)/?$',
-        datasets.bag.views.BouwblokCodeView.as_view()),
+    #url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+    #    datasets.bag.views.BouwblokCodeView.as_view()),
 ]

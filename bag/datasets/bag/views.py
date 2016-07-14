@@ -148,9 +148,16 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
         serializer: serializers.VerblijfsobjectDetail
 
         """
+        return super().retrieve(request, *args, **kwargs)
 
-        return super().retrieve(
-            request, *args, **kwargs)
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 16:
+            obj = get_object_or_404(models.Verblijfsobject, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.Verblijfsobject, pk=pk)
+
+        return obj
 
 
 class NummeraanduidingFilter(filters.FilterSet):
