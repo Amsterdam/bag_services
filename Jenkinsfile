@@ -18,9 +18,10 @@ node {
             sh "sleep 20"
             sh "docker-compose up -d"
             sh "docker-compose run -u root atlas python manage.py jenkins"
+
+            step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
         }
         finally {
-            step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
 
             sh "docker-compose stop"
             sh "docker-compose rm -f"
