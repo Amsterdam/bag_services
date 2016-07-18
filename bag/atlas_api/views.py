@@ -213,7 +213,6 @@ class QueryMetadata(metadata.SimpleMetadata):
 def javascript_error(request):
     if request.method == 'POST':
         data = request.data
-        print('jserrror', data)
         jslog.error(data)
     return Response('Ok')
 
