@@ -679,6 +679,7 @@ def gebied_Q(query: str, tokens=None, num=None):
             ],
             should=[
                 Q('match', naam=query),
+                {'match': {'naam.ngram': query}},
                 Q(
                     'multi_match',
                     query=query,

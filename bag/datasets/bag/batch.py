@@ -124,10 +124,13 @@ class ImportGmeTask(batch.BasicTask):
             pk=r['sleutelVerzendend'],
             code=r['Gemeentecode'],
             naam=r['Gemeentenaam'],
-            verzorgingsgebied=uva2.uva_indicatie(r['IndicatieVerzorgingsgebied']),
+            verzorgingsgebied=uva2.uva_indicatie(
+                r['IndicatieVerzorgingsgebied']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
 
@@ -161,8 +164,9 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+        if not uva2.uva_geldig(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return None
 
         if not uva2.uva_geldig(r['SDLGME/TijdvakRelatie/begindatumRelatie'],
@@ -173,7 +177,10 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         gemeente_id = r['SDLGME/GME/sleutelVerzendend'] or None
 
         if gemeente_id not in self.gemeentes:
-            log.warn("Stadsdeel {} references non-existing gemeente {}; skipping".format(pk, gemeente_id))
+            log.warn("""
+                Stadsdeel {} references non-existing gemeente {};
+                skipping""".format(
+                pk, gemeente_id))
             return None
 
         code = r['Stadsdeelcode']
@@ -183,17 +190,22 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             naam=r['Stadsdeelnaam'],
             brondocument_naam=r['Brondocumentverwijzing'],
             brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
-            ingang_cyclus=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             gemeente_id=gemeente_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
         )
 
     def process_feature(self, feat):
         code = feat.get('CODE')
         if code not in self.stadsdelen:
-            log.warning('Stadsdeel/SHP {} references non-existing stadsdeel; skipping'.format(code))
+            log.warning(
+                """Stadsdeel/SHP {} references non-existing stadsdeel;
+                skipping""".format(code))
             return
 
         self.stadsdelen[code].geometrie = geo.get_multipoly(feat.geom.wkt)
@@ -233,8 +245,9 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             self.buurten.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+        if not uva2.uva_geldig(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return None
 
         if not uva2.uva_geldig(r['BRTSDL/TijdvakRelatie/begindatumRelatie'],
@@ -244,7 +257,9 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         pk = r['sleutelVerzendend']
         stadsdeel_id = r['BRTSDL/SDL/sleutelVerzendend'] or None
         if stadsdeel_id not in self.stadsdelen:
-            log.warn("Buurt {} references non-existing stadsdeel {}; skipping".format(pk, stadsdeel_id))
+            log.warn("""
+            Buurt {} references non-existing stadsdeel {}; skipping
+            """.format(pk, stadsdeel_id))
             return None
 
         code = r['Buurtcode']
@@ -252,7 +267,9 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         bc_id = self.buurtcombinaties.get(bc_code)
 
         if not bc_id:
-            log.warn("Buurt {} references non-existing buurtcombinatie {}; ignoring".format(pk, bc_code))
+            log.warn("""
+            Buurt {} references non-existing buurtcombinatie {}; ignoring
+            """.format(pk, bc_code))
 
         return code, models.Buurt(
             pk=pk,
@@ -275,8 +292,9 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         vollcode = feat.get('VOLLCODE')
         code = vollcode[1:]
         if code not in self.buurten:
-            log.warning(
-                'Buurt/SHP {} references non-existing buurt; skipping'.format(code))
+            log.warning("""
+            Buurt/SHP {} references non-existing buurt; skipping
+            """.format(code))
             return
 
         self.buurten[code].geometrie = geo.get_multipoly(feat.geom.wkt)
@@ -303,14 +321,18 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.update_metadata_uva2(self.uva_path, 'BBK')
 
     def process(self):
-        self.bouwblokken = dict(uva2.process_uva2(self.uva_path, "BBK", self.process_row))
-        geo.process_shp(self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
+        self.bouwblokken = dict(
+            uva2.process_uva2(self.uva_path, "BBK", self.process_row))
+        geo.process_shp(
+            self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
 
-        models.Bouwblok.objects.bulk_create(self.bouwblokken.values(), batch_size=database.BATCH_SIZE)
+        models.Bouwblok.objects.bulk_create(
+            self.bouwblokken.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                               r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+        if not uva2.uva_geldig(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
             return None
 
         if not uva2.uva_geldig(r['BBKBRT/TijdvakRelatie/begindatumRelatie'],
@@ -320,7 +342,9 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         pk = r['sleutelVerzendend']
         buurt_id = r['BBKBRT/BRT/sleutelVerzendend'] or None
         if buurt_id not in self.buurten:
-            log.warning('Bouwblok {} references non-existing buurt {}; ignoring'.format(pk, buurt_id))
+            log.warning("""
+            Bouwblok {} references non-existing buurt {}; ignoring
+            """.format(pk, buurt_id))
             buurt_id = None
 
         code = r['Bouwbloknummer']
@@ -339,7 +363,9 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process_feature(self, feat):
         code = feat.get('CODE')
         if code not in self.bouwblokken:
-            log.warning('BBK/SHP {} references non-existing bouwblok; skipping'.format(code))
+            log.warning("""
+            BBK/SHP {} references non-existing bouwblok; skipping
+            """.format(code))
             return
 
         self.bouwblokken[code].geometrie = geo.get_multipoly(feat.geom.wkt)
@@ -375,7 +401,9 @@ class ImportWplTask(batch.BasicTask):
         pk = r['sleutelverzendend']
         gemeente_id = r['WPLGME/GME/sleutelVerzendend']
         if gemeente_id not in self.gemeentes:
-            log.warning('Woonplaats {} references non-existing gemeente {}; skipping'.format(pk, gemeente_id))
+            log.warning("""
+            Woonplaats {} references non-existing gemeente {}; skipping
+            """.format(pk, gemeente_id))
             return None
 
         return models.Woonplaats(
@@ -383,12 +411,15 @@ class ImportWplTask(batch.BasicTask):
             landelijk_id=r['Woonplaatsidentificatie'],
             naam=r['Woonplaatsnaam'],
             document_nummer=r['DocumentnummerMutatieWoonplaats'],
-            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieWoonplaats']),
+            document_mutatie=uva2.uva_datum(
+                r['DocumentdatumMutatieWoonplaats']),
             naam_ptt=r['WoonplaatsPTTSchrijfwijze'],
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
             gemeente_id=gemeente_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
@@ -422,9 +453,13 @@ class ImportOprTask(batch.BasicTask):
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
-        self.openbare_ruimtes = dict(uva2.process_uva2(self.path, "OPR", self.process_row))
-        geo.process_wkt(self.wkt_path, "BAG_OPENBARERUIMTE_GEOMETRIE.dat", self.process_wkt_row)
-        models.OpenbareRuimte.objects.bulk_create(self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
+        self.openbare_ruimtes = dict(
+            uva2.process_uva2(self.path, "OPR", self.process_row))
+        geo.process_wkt(
+            self.wkt_path, "BAG_OPENBARERUIMTE_GEOMETRIE.dat",
+            self.process_wkt_row)
+        models.OpenbareRuimte.objects.bulk_create(
+            self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -440,19 +475,27 @@ class ImportOprTask(batch.BasicTask):
         landelijk_id = self.landelijke_ids.get(pk)
 
         if not landelijk_id:
-            log.error('OpenbareRuimte {} references non-existing landelijk_id {}; skipping'.format(pk, pk))
+            log.error("""
+            OpenbareRuimte {} references non-existing landelijk_id {}; skipping
+            """.format(pk, pk))
             return
 
         if bron_id and bron_id not in self.bronnen:
-            log.warning('OpenbareRuimte {} references non-existing bron {}; ignoring'.format(pk, bron_id))
+            log.warning("""
+            OpenbareRuimte {} references non-existing bron {}; ignoring
+            """.format(pk, bron_id))
             bron_id = None
 
         if status_id not in self.statussen:
-            log.warning('OpenbareRuimte {} references non-existing status {}; ignoring'.format(pk, status_id))
+            log.warning("""
+                OpenbareRuimte {} references non-existing status {}; ignoring
+                """.format(pk, status_id))
             status_id = None
 
         if woonplaats_id not in self.woonplaatsen:
-            log.warning('OpenbareRuimte {} references non-existing woonplaats {}; skipping'.format(pk, woonplaats_id))
+            log.warning("""
+            OpenbareRuimte {} references non-existing woonplaats {}; skipping
+            """.format(pk, woonplaats_id))
             return None
 
         return pk, models.OpenbareRuimte(
@@ -462,7 +505,8 @@ class ImportOprTask(batch.BasicTask):
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
             document_nummer=r['DocumentnummerMutatieOpenbareRuimte'],
-            document_mutatie=uva2.uva_datum(r['DocumentdatumMutatieOpenbareRuimte']),
+            document_mutatie=uva2.uva_datum(
+                r['DocumentdatumMutatieOpenbareRuimte']),
             straat_nummer=r['Straatnummer'],
             naam_nen=r['StraatnaamNENSchrijfwijze'],
             naam_ptt=r['StraatnaamPTTSchrijfwijze'],
@@ -470,15 +514,19 @@ class ImportOprTask(batch.BasicTask):
             bron_id=bron_id,
             status_id=status_id,
             woonplaats_id=woonplaats_id,
-            begin_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            einde_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
         )
 
     def process_wkt_row(self, wkt_id, geometrie):
         key = '0' + wkt_id
         if key not in self.openbare_ruimtes:
-            log.warning('OpenbareRuimte/WKT {} references non-existing openbare ruimte {}; skipping'.format(wkt_id, key))
+            log.warning("""
+            OpenbareRuimte/WKT {} references non-existing openbare ruimte {};
+            skipping """.format(wkt_id, key))
             return
 
         self.openbare_ruimtes[key].geometrie = geo.get_multipoly(geometrie)
@@ -553,7 +601,8 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         bron_id = r['NUMBRN/BRN/Code'] or None
         status_id = r['NUMSTS/STS/Code'] or None
         openbare_ruimte_id = r['NUMOPR/OPR/sleutelVerzendend'] or None
-        landelijk_id = self.landelijke_ids.get(r['IdentificatiecodeNummeraanduiding'])
+        landelijk_id = self.landelijke_ids.get(
+            r['IdentificatiecodeNummeraanduiding'])
 
         if not landelijk_id:
             log.error('Nummeraanduiding {} references non-existing landelijk_id {}; skipping'.format(pk, landelijk_id))

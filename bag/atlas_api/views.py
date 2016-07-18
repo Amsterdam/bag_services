@@ -52,7 +52,9 @@ _details = {
     'bouwblok': 'bouwblok-detail',
 
     'buurt': 'buurt-detail',
+    'unesco': 'unesco-detail',
     'buurtcombinatie': 'buurtcombinatie-detail',
+    'gebiedsgerichtwerken': 'gebiedsgerichtwerken-detail',
     'stadsdeel': 'stadsdeel-detail',
 
     'grootstedelijk': 'grootstedelijkgebied-detail',
@@ -63,6 +65,40 @@ BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
+
+
+# autocomplete_group_sizes
+autocomplete_group_sizes = {
+    'Straatnamen': 8,
+    'Adres': 8,
+    'Gebieden': 5,
+    'Kadastrale objecten': 8,
+    'Kadastrale subjecten': 5,
+    'Bouwblok': 5,
+    'Meetbouten': 5,
+}
+
+# result order is defined this way to ensure the
+# order
+ro = result_order = OrderedDict()
+
+ro['weg'] = 'Straatnamen'
+ro['verblijfsobject'] = 'Adres'
+ro['kadastraal_object'] = 'Kadastrale objecten'
+ro['kadastraal_subject'] = 'Kadastrale subjecten'
+
+ro['gemeente'] = 'Gebieden'
+ro['woonplaats'] = 'Gebieden'
+ro['unesco'] = 'Gebieden'
+ro['grootstedelijk'] = 'Gebieden'
+ro['stadsdeel'] = 'Gebieden'
+ro['gebiedsgerichtwerken'] = 'Gebieden'
+ro['buurtcombinatie'] = 'Gebieden'
+ro['buurt'] = 'Gebieden'
+
+ro['bouwblok'] = 'Bouwblok'
+
+ro['meetbout'] = 'Meetbouten'
 
 
 def prepare_input(query_string: str):
@@ -311,31 +347,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
         uri = urlparse(url).path[1:]
         return uri
 
-    def _order_results(self, results, query_string, request):
+    def _group_elk_results(self, request, results):
+        """
+        Group the elk results in their pretty name groups
         """
 
-        @Params
-        result - the elastic search result object
-        query_string - the query string used to search for. This is for exact
-                       match recognition
-        """
-        result_sets = {}
-
-        ordered_results = OrderedDict()
-
-        ro = result_order = OrderedDict()
-        ro['weg'] = 'Straatnamen'
-        ro['gemeente'] = 'Gemeente'
-        ro['woonplaats'] = 'Woonplaats'
-        ro['stadsdeel'] = 'Gebieden'
-        ro['grootstedelijk'] = 'Gebieden'
-        ro['buurtcombinatie'] = 'Gebieden'
-        ro['buurt'] = 'Gebieden'
-        ro['verblijfsobject'] = 'Adres'
-        ro['bouwblok'] = 'Bouwblok'
-        ro['kadastraal_subject'] = 'Kadastrale subjecten'
-        ro['kadastraal_object'] = 'Kadastrale objecten'
-        ro['meetbout'] = 'Meetbouten'
+        result_groups = {}
 
         # Organizing the results
         for elk_result in results:
@@ -350,19 +367,36 @@ class TypeaheadViewSet(viewsets.ViewSet):
                     log.debug('No uri', hit)
                     continue
 
-                if hit.subtype not in result_sets:
-                    result_sets[hit.subtype] = []
+                if hit.subtype not in result_groups:
+                    result_groups[hit.subtype] = []
 
-                result_sets[hit.subtype].append({
+                result_groups[hit.subtype].append({
                     '_display': disp,
                     'uri': uri
                 })
 
-        # Now ordereing the result groups
-        for i, (subtype, pretty_name) in enumerate(result_order.items()):
-            if subtype in result_sets:
+        return result_groups
 
-                # group all gebieden
+    def _order_results(self, results, query_string, request):
+        """
+        Group the elastic search results and order these groups
+
+        @Params
+        result - the elastic search result object
+        query_string - the query string used to search for. This is for exact
+                       match recognition
+        """
+
+        # put the elk results in subtype groups
+        result_groups = self._group_elk_results(request, results)
+
+        ordered_results = OrderedDict()
+
+        # Now order and group result groups
+        # in pretty name/label groups
+        for i, (subtype, pretty_name) in enumerate(result_order.items()):
+            if subtype in result_groups:
+
                 if pretty_name not in ordered_results:
                     ordered_results[pretty_name] = {
                         'label': pretty_name,
@@ -370,9 +404,19 @@ class TypeaheadViewSet(viewsets.ViewSet):
                     }
 
                 ordered_results[pretty_name]['content'].extend(
-                    result_sets[subtype])
+                    result_groups[subtype])
 
-        return [group for group in ordered_results.values()]
+        end_result = []
+
+        # build response with correct autocomplete size
+        for group_name, group in ordered_results.items():
+            size = autocomplete_group_sizes[group_name]
+
+            group['content'] = list(group['content'])[:size]
+
+            end_result.append(group)
+
+        return end_result
 
     def get_autocomplete_response(self, query, request, alphabetical=True):
         """
@@ -385,10 +429,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         results = self.autocomplete_queries(query)
 
-        # Checking if there was aggregation in the autocomplete.
-        # If there was that is what should be used for resutls
-        # Trying aggregation as most autocorrect will have them
-        # matches = OrderedDict()
+        # order and group the elk results
         res = self._order_results(results, query, request)
 
         return res
