@@ -20,9 +20,9 @@ node {
             sh "docker-compose run -u root atlas python manage.py jenkins"
 
             step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
-
         }
         finally {
+
             sh "docker-compose stop"
             sh "docker-compose rm -f"
         }

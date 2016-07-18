@@ -12,6 +12,7 @@ from atlas_api.input_handling import is_straat_huisnummer
 from atlas_api.input_handling import is_kadaster_object
 from atlas_api.input_handling import is_gemeente_kadaster_object
 from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import could_be_bouwblok
 from atlas_api.input_handling import is_meetbout
 from atlas_api.input_handling import first_number
 
@@ -68,7 +69,7 @@ def prepare_input(query_string: str):
     """
     -Cleanup string
     -Tokenize create tokens
-    -Find first occurence of number
+    -Find first occurence of number, NOTE in the future give array of numbers?
     """
     qs, tokens = clean_tokenize(query_string)
     i, num = first_number(tokens)
@@ -213,7 +214,6 @@ class QueryMetadata(metadata.SimpleMetadata):
 def javascript_error(request):
     if request.method == 'POST':
         data = request.data
-        print('jserrror', data)
         jslog.error(data)
     return Response('Ok')
 
@@ -437,8 +437,6 @@ class SearchViewSet(viewsets.ViewSet):
         ./manage.py test atlas_api.tests.test_query --keepdb
 
         """
-        log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
-
         raise NotImplementedError
 
     def _set_followup_url(self, request, result, end,
@@ -709,6 +707,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         if not tokens:
             return []
 
+        if not could_be_bouwblok(query, tokens):
+            return []
+
         return (
             Search()
             .using(client)
@@ -760,12 +761,18 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        search_data = bagQ.openbare_ruimtes(query, tokens=tokens, num=i)
+
+        queries = [
+            search_data['Q']
+        ]
+
         return (
             Search()
             .using(client)
             .index(BAG)
             .query(
-                bagQ.public_area_Q(query)['Q']
+                *queries
             )
         )
 
@@ -784,6 +791,12 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
         return super(SearchOpenbareRuimteViewSet, self).list(
             request, *args, **kwargs)
+
+    def custom_sorting(self, elk_results, query, tokens, i):
+        """
+        Sort by prefix match and then relevance
+        """
+        return bagQ.weg_sorting(elk_results, query, tokens, i)
 
 
 class SearchNummeraanduidingViewSet(SearchViewSet):

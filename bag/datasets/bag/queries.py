@@ -623,6 +623,50 @@ def weg_Q(query: str, tokens=None, num=None):
     }
 
 
+def openbare_ruimtes(query: str, tokens=None, num=None):
+    """
+    Find all openbare ruimtes
+    """
+    return {
+        'Q': Q(
+            'bool',
+
+            must_not=[
+                Q('term', _type='gebied'),
+            ],
+
+            should=[
+                Q(
+                    'multi_match',
+                    query=query,
+                    type="phrase_prefix",
+                    # other streets
+                    fields=[
+                        'naam',
+                        'naam_nen',
+                        'naam_ptt',
+                        'subtype',
+                        'postcode']
+                ),
+                Q(
+                    'query_string',
+                    fields=[
+                        'naam',
+                        'naam_nen',
+                        'subtype',
+                        'naam_ptt'
+                    ],
+                    query=query,
+                    default_operator='AND'),
+            ],
+
+            minimum_should_match=1,
+        ),
+        'sorting': weg_sorting,
+        'Index': [BAG]
+    }
+
+
 def gebied_Q(query: str, tokens=None, num=None):
     """
     Create public
@@ -657,25 +701,6 @@ def gebied_Q(query: str, tokens=None, num=None):
         ),
         'sorting': weg_sorting,
         'size': 5,
-        'Index': [BAG]
-    }
-
-
-def public_area_Q(query):
-    """ Create query/aggregation for public area"""
-    return {
-        'Q': Q(
-            "multi_match",
-            query=query,
-            type="phrase_prefix",
-            slop=12,
-            max_expansions=12,
-            fields=[
-                'naam',
-                'postcode',
-                'subtype',
-            ],
-        ),
         'Index': [BAG]
     }
 
