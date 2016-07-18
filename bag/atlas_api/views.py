@@ -321,16 +321,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         result_sets = {}
 
-        ordered_results = []
+        ordered_results = OrderedDict()
 
         ro = result_order = OrderedDict()
         ro['weg'] = 'Straatnamen'
         ro['gemeente'] = 'Gemeente'
         ro['woonplaats'] = 'Woonplaats'
-        ro['stadsdeel'] = 'Stadsdeel'
-        ro['grootstedelijk'] = 'Grootstedelijk'
-        ro['buurtcombinatie'] = 'Buurtcombinatie'
-        ro['buurt'] = 'Buurt'
+        ro['stadsdeel'] = 'Gebieden'
+        ro['grootstedelijk'] = 'Gebieden'
+        ro['buurtcombinatie'] = 'Gebieden'
+        ro['buurt'] = 'Gebieden'
         ro['verblijfsobject'] = 'Adres'
         ro['bouwblok'] = 'Bouwblok'
         ro['kadastraal_subject'] = 'Kadastrale subjecten'
@@ -361,12 +361,18 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # Now ordereing the result groups
         for i, (subtype, pretty_name) in enumerate(result_order.items()):
             if subtype in result_sets:
-                ordered_results.append({
-                    'label': pretty_name,
-                    'content': result_sets[subtype],
-                })
 
-        return ordered_results
+                # group all gebieden
+                if pretty_name not in ordered_results:
+                    ordered_results[pretty_name] = {
+                        'label': pretty_name,
+                        'content': [],
+                    }
+
+                ordered_results[pretty_name]['content'].extend(
+                    result_sets[subtype])
+
+        return [group for group in ordered_results.values()]
 
     def get_autocomplete_response(self, query, request, alphabetical=True):
         """
