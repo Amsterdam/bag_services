@@ -17,12 +17,11 @@ node {
             sh "docker-compose up -d"
             sh "sleep 20"
             sh "docker-compose up -d"
-            sh "docker-compose run -u root atlas python manage.py jenkins || echo Test failure"
-
-            step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
-
+            sh "docker-compose run -u root atlas python manage.py jenkins"
         }
         finally {
+            step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
+
             sh "docker-compose stop"
             sh "docker-compose rm -f"
         }
