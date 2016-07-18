@@ -12,6 +12,7 @@ from atlas_api.input_handling import is_straat_huisnummer
 from atlas_api.input_handling import is_kadaster_object
 from atlas_api.input_handling import is_gemeente_kadaster_object
 from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import could_be_bouwblok
 from atlas_api.input_handling import is_meetbout
 from atlas_api.input_handling import first_number
 
@@ -704,6 +705,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         query, tokens, i = prepare_input(query)
 
         if not tokens:
+            return []
+
+        if not could_be_bouwblok(query, tokens):
             return []
 
         return (

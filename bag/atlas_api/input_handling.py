@@ -165,17 +165,37 @@ def is_bouwblok(query_string, tokens):
     if len(cijfers) != 2:
         return False
 
-    try:
-        int(letters)
+    if letters.isdigit():
         return False
-    except:
-        pass
 
-    try:
-        int(cijfers)
+    if cijfers.isdigit():
         return True
-    except:
-        pass
+
+
+def could_be_bouwblok(query_string, tokens):
+
+    if len(tokens) > 2:
+        return False
+
+    if len(tokens) == 1:
+        letters = tokens[0]
+        if len(letters) > 2:
+            return False
+        if letters.isdigit():
+            return False
+
+    if len(tokens) == 2:
+        letters = tokens[0]
+        if len(letters) != 2:
+            return False
+        if letters.isdigit():
+            return False
+
+        cijfers = tokens[1]
+        if not cijfers.isdigit():
+            return False
+
+    return True
 
 
 def is_gemeente_kadaster_object(query_string, tokens):
