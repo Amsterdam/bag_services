@@ -25,26 +25,6 @@ BAG = settings.ELASTIC_INDICES['BAG']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
-def address_Q(query):
-    """Create query/aggregation for complete address search"""
-    pass
-
-
-def comp_address_pcode_Q(query, tokens=None):
-
-    """Create query/aggregation for postcode house number search"""
-
-    return {
-        'Q': Q(
-            'bool',
-            must=[
-                Q('term', postcode="".join(tokens[:2])),
-            ]
-        ),
-        # 'S': ['huisnummer', 'toevoeging.raw']
-    }
-
-
 def split_toevoeging(tokens, num):
     """
     """
@@ -59,27 +39,6 @@ def split_toevoeging(tokens, num):
                 extra_tv.append(c)
 
     return " ".join(extra_tv)
-
-
-def vbo_postcode_Q(query, tokens=None, num=None):
-    """
-    Match part of postcode with a vbo
-    """
-    postcode = "".join(tokens)
-
-    return {
-        'Q': Q(
-            'bool',
-            must=[],
-            should=[
-                {'match': {'postcode': postcode}},
-                {'match': {'postcode.ngram': postcode}},
-                {'match': {'postcode.ngram': query}}
-            ]
-        ),
-        'sorting': postcode_huisnummer_sorting,
-        'size': 50  # sample size for custom sort
-    }
 
 
 def postcode_huisnummer_Q(query, tokens=None, num=None):
@@ -300,7 +259,7 @@ def find_next_10_best_results(end_result, best_bucket, sorted_results):
             sorted_results.pop(logic_bucket)
 
 
-def postcode_huisnummer_sorting(elk_results, query, tokens, i):
+def postcode_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
     """
     Sort vbo / nummeraanduiding restult in a 'logical' way
     """
@@ -334,10 +293,14 @@ def postcode_huisnummer_sorting(elk_results, query, tokens, i):
         add_to_end_result(end_result, bucket, ordered_vbo_street_num)
         # first result
 
-    return end_result[:10]
+    # limit
+    if limit:
+        return end_result[:limit]
+
+    return end_result
 
 
-def straat_huisnummer_sorting(elk_results, query, tokens, i):
+def straat_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
     """
     Sort by relevant and 'logical' steet - huisnummer - toevoeging
     """
@@ -368,7 +331,10 @@ def straat_huisnummer_sorting(elk_results, query, tokens, i):
         add_to_end_result(end_result, bucket, ordered_vbo_street_num)
         # first result
 
-    return end_result[:10]
+    # limit
+    if limit:
+        return end_result[:limit]
+    return end_result
 
 
 def bucket_vbo_weg_results(elk_results: list, prefix: str):
@@ -404,6 +370,7 @@ def vbo_straat_sorting(
     Sort results by prefix street and housenumber
     """
     assert i <= 1
+
     end_result = []
 
     buckets, prefix, the_rest = bucket_vbo_weg_results(elk_results, query)
