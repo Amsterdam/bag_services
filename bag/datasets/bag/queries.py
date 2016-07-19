@@ -671,6 +671,7 @@ def gebied_Q(query: str, tokens=None, num=None):
     """
     Create public
     """
+
     return {
         'Q': Q(
             'bool',
@@ -678,7 +679,8 @@ def gebied_Q(query: str, tokens=None, num=None):
                 Q('term', _type='gebied'),
             ],
             should=[
-                Q('match', naam=query),
+                {'match': {'naam.ngram': query}},
+                {'match': {'naam.raw': query}},
                 Q(
                     'multi_match',
                     query=query,
@@ -686,6 +688,8 @@ def gebied_Q(query: str, tokens=None, num=None):
                     # other streets
                     fields=[
                         'naam',
+                        'naam.ngram',
+                        'naam.raw',
                         'code']
                 ),
                 Q(
