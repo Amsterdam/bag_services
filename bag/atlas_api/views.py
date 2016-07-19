@@ -319,6 +319,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
             if 'sorting' in q:
                 result = q['sorting'](result, query_clean, tokens, i)
 
+            # apply custom filtering.
+            if 'filtering' in q:
+                result = q['filtering'](result, query_clean, tokens, i)
+
             # Get the datas!
             result_data.append(result)
 
