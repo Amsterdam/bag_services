@@ -39,7 +39,6 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
-jslog = logging.getLogger('jserror')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -244,14 +243,6 @@ class QueryMetadata(metadata.SimpleMetadata):
             },
         }
         return result
-
-
-@api_view(['GET', 'POST'])
-def javascript_error(request):
-    if request.method == 'POST':
-        data = request.data
-        jslog.error(data)
-    return Response('Ok')
 
 
 # =============================================
