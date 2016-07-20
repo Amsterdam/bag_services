@@ -39,7 +39,6 @@ from datasets.generic import rest
 
 
 log = logging.getLogger('search')
-jslog = logging.getLogger('jserror')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -246,14 +245,6 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-@api_view(['GET', 'POST'])
-def javascript_error(request):
-    if request.method == 'POST':
-        data = request.data
-        jslog.error(data)
-    return Response('Ok')
-
-
 # =============================================
 # Search view sets
 # =============================================
@@ -327,6 +318,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
             # apply custom sorting.
             if 'sorting' in q:
                 result = q['sorting'](result, query_clean, tokens, i)
+
+            # apply custom filtering.
+            if 'filtering' in q:
+                result = q['filtering'](result, query_clean, tokens, i)
 
             # Get the datas!
             result_data.append(result)
@@ -892,13 +887,16 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         Sort by relevant street and then numbers
         """
+
         if is_postcode_huisnummer(query, tokens):
-            i = 2
+            return bagQ.postcode_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
+        elif i >= 1 and is_straat_huisnummer(query, tokens):
+            return bagQ.straat_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
 
-        if i < 1:
-            return bagQ.vbo_straat_sorting(elk_results, query, tokens, i)
-
-        return bagQ.straat_huisnummer_sorting(elk_results, query, tokens, i)
+        # sort by street name only
+        return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
 
 
 class SearchPostcodeViewSet(SearchViewSet):
