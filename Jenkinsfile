@@ -47,7 +47,6 @@ node {
             image.push("latest")
         }
     }
-}
 
 node {
     stage name: "Deploy", concurrency: 1
