@@ -21,7 +21,7 @@ Developing
 
 Use `docker-compose` to start a local database. Use `sudo` if you're running on Linux.
 
-	docker-compose up -d
+	docker-compose up -d --build
 
 Create a new virtual env, and execute the following:
 
@@ -45,29 +45,13 @@ To see the various options for partial imports, execute:
 Importing the latest backup
 ---------------------------
 
-Run `docker-compose` to determine the name of your database image:
-
-	$ docker-compose ps
-               Name                          Command               State                       Ports
-    ---------------------------------------------------------------------------------------------------------------------
-    atlasbackend_atlas_1           /bin/sh -c /app/docker-ent ...   Up      0.0.0.0:32772->8080/tcp
-    atlasbackend_database_1        /docker-entrypoint.sh postgres   Up      0.0.0.0:5434->5432/tcp
-    atlasbackend_elasticsearch_1   /docker-entrypoint.sh elas ...   Up      0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp
-
-
-In this example, it's `atlasbackend_database_1`. Use that name in the following command:
-
-    docker-compose pull
-    docker-compose build
-    docker-compose up -d
-
 To import the latest database from acceptance:
 
-    docker exec -it atlasbackend_database_1 update-atlas.sh
+    docker-compose exec database update-atlas.sh
 
 To import the latest elastic index from acceptance:
 
-	docker exec -it atlasbackend_elasticsearch_1 update-atlas.sh
+	docker-compose exec elasticsearch update-atlas.sh
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.
@@ -75,4 +59,4 @@ The elastic index import takes approximately 5 minutes.
 Your own elastic index import takes approximately 2 hours.
 To run your own elastic index:
 
-    docker exec -it atlasbackend_atlas_1 /app/manage.py run_import --no-import
+    docker-compose exec atlas /app/manage.py run_import --no-import
