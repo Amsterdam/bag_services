@@ -520,6 +520,9 @@ def bucket_weg_results(elk_results: list, prefix: str):
     label_results = []
 
     for r in elk_results:
+        if not hasattr(r, 'naam'):
+            continue
+
         straatnaam = r.naam
         if straatnaam.lower().startswith(prefix):
             label = straatnaam.replace(prefix, "")

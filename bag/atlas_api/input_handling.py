@@ -83,7 +83,7 @@ def is_postcode(query_string, tokens):
             try:
                 int(tokens[0])
                 return True
-            except:
+            except ValueError:
                 pass
 
     elif len(tokens) == 2:
@@ -93,7 +93,7 @@ def is_postcode(query_string, tokens):
 
         try:
             int(tokens[0])
-        except:
+        except ValueError:
             return False
 
         if len(tokens[1]) > 2:
@@ -102,7 +102,7 @@ def is_postcode(query_string, tokens):
         try:
             int(tokens[1])
             return False
-        except:
+        except ValueError:
             return True
 
     return False
@@ -268,5 +268,5 @@ def is_meetbout(query_string, tokens):
     try:
         int(meetbout)
         return True
-    except:
+    except ValueError:
         return False
