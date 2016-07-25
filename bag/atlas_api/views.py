@@ -1,42 +1,32 @@
 # Python
-from collections import OrderedDict
 import json
 import logging
+from collections import OrderedDict
 from urllib.parse import quote, urlparse
 
-# input validation
-from atlas_api.input_handling import clean_tokenize
-from atlas_api.input_handling import is_postcode
-from atlas_api.input_handling import is_postcode_huisnummer
-from atlas_api.input_handling import is_straat_huisnummer
-from atlas_api.input_handling import is_kadaster_object
-from atlas_api.input_handling import is_gemeente_kadaster_object
-from atlas_api.input_handling import is_bouwblok
-from atlas_api.input_handling import could_be_bouwblok
-from atlas_api.input_handling import is_meetbout
-from atlas_api.input_handling import first_number
-
-
-# Packages
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search
-# from elasticsearch_dsl import Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from rest_framework.decorators import api_view
-
-
-# Project
+from atlas_api.input_handling import clean_tokenize
+from atlas_api.input_handling import could_be_bouwblok
+from atlas_api.input_handling import first_number
+from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import is_gemeente_kadaster_object
+from atlas_api.input_handling import is_kadaster_object
+from atlas_api.input_handling import is_meetbout
+from atlas_api.input_handling import is_postcode
+from atlas_api.input_handling import is_postcode_huisnummer
+from atlas_api.input_handling import is_straat_huisnummer
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
 from datasets.generic import queries as genQ
 from datasets.generic import rest
-
 
 log = logging.getLogger('search')
 
@@ -64,7 +54,6 @@ BAG = settings.ELASTIC_INDICES['BAG']
 BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
-
 
 # autocomplete_group_sizes
 autocomplete_group_sizes = {
@@ -111,7 +100,7 @@ def prepare_input(query_string: str):
     return qs, tokens, i
 
 
-def analyze_query(query_string: str, tokens: list, i: int):
+def analyze_query(query_string: str, tokens: [str], i: int):
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -125,14 +114,14 @@ def analyze_query(query_string: str, tokens: list, i: int):
 
     returns a list of queries that should be used
     """
-    # Too little informatation to search on
+    # Too little information to search on
     if len(query_string) < 2:
         return []
 
     # A collection of regex and the query they generate
     query_selector = [
         {
-            'test':  is_postcode,
+            'test': is_postcode,
             'query': [bagQ.is_postcode_Q],
         },
         {
@@ -151,7 +140,7 @@ def analyze_query(query_string: str, tokens: list, i: int):
             'test': is_kadaster_object,
             'query': [brkQ.kadaster_object_Q],
         },
-        {   # support Amsterdam S .. kadaster notations
+        {  # support Amsterdam S .. kadaster notations
             'test': is_gemeente_kadaster_object,
             'query': [brkQ.gemeente_object_Q],
         },
@@ -281,7 +270,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         result_data = []
 
-        size = 15     # default size
+        size = 15  # default size
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
@@ -294,10 +283,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             search = (
                 Search()
-                .using(self.client)
-                .index(*indexes)
-                .query(q['Q'])
-                )
+                    .using(self.client)
+                    .index(*indexes)
+                    .query(q['Q'])
+            )
 
             if 's' in q:
                 search = search.sort(*q['s'])
@@ -413,22 +402,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return end_result
 
-    def get_autocomplete_response(self, query, request, alphabetical=True):
-        """
-        Sends a request for auto complete and returns the result
-        @ TODO there are more efficent ways to return the data
-
-        Optional flag alphabetical is used to determine if the results
-        should be alphabetically ordered. Defaults to True
-        """
-
-        results = self.autocomplete_queries(query)
-
-        # order and group the elk results
-        res = self._order_results(results, query, request)
-
-        return res
-
     def list(self, request, *args, **kwargs):
         """
         returns result options
@@ -447,22 +420,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         if not query:
             return Response([])
 
-        response = self.get_autocomplete_response(query, request)
+        results = self.autocomplete_queries(query)
+        response = self._order_results(results, query, request)
 
         return Response(response)
 
 
 class SearchViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects
-    that match the elastic search query.
-
-    *NOTE*
-
-    We assume the input is correct but could be incomplete
-
-    for example: seaching for a not existing
-    Rozengracht 3 will rerurn Rozengracht 3-1 which does exist
+    Base class for ViewSets implementing search.
     """
 
     metadata_class = QueryMetadata
@@ -470,19 +436,21 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, query: str, tokens: [str], i: int):
         """
-        Execute search.
+        Construct the search query that is executed by this view set.
 
-        ./manage.py test atlas_api.tests.test_query --keepdb
-
+        :param client: the ElasticSearch client.
+        :param query: The preprocessed query: a lower-cased, cleaned-up version of the original query.
+        :param tokens: The tokenized query: a list of strings
+        :param i: Index of the first numeric token in the tokens list.
         """
         raise NotImplementedError
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
         """
-        Add pageing links for result set to response object
+        Add paging links for result set to response object
         """
         # make query url friendly again
         url_query = quote(query)
@@ -586,8 +554,7 @@ class SearchViewSet(viewsets.ViewSet):
         return Response(response)
 
     def custom_sorting(self, result_hits: list,
-                       query: str, tokens: list, i: int):
-
+                       query: str, tokens: [str], i: int):
         return result_hits
 
     def create_summary_aggregations(self, request, result, response):
@@ -597,8 +564,6 @@ class SearchViewSet(viewsets.ViewSet):
         """
         if not hasattr(response, 'aggregations'):
             return
-
-        response['type_summary'] = []
 
         response['type_summary'] = [
             self.normalize_bucket(field, request)
@@ -647,13 +612,13 @@ class SearchSubjectViewSet(SearchViewSet):
         """
         return (
             Search()
-            .using(client)
-            .index(BRK)
-            .filter(
+                .using(client)
+                .index(BRK)
+                .filter(
                 'terms',
                 subtype=['kadastraal_subject']
             )
-            .query(
+                .query(
                 brkQ.kadaster_subject_Q(query)['Q']
             ).sort('naam.raw')
         )
@@ -701,33 +666,17 @@ class SearchObjectViewSet(SearchViewSet):
 
         return (
             Search()
-            .using(client)
-            .index(BRK)
-            .filter(
+                .using(client)
+                .index(BRK)
+                .filter(
                 'terms',
                 subtype=['kadastraal_object']
             )
-            .query(
+                .query(
                 *queries
             )
-            .sort('aanduiding')
+                .sort('aanduiding')
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op kadastraal object
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchObjectViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchBouwblokViewSet(SearchViewSet):
@@ -752,32 +701,16 @@ class SearchBouwblokViewSet(SearchViewSet):
 
         return (
             Search()
-            .using(client)
-            .index(BAG)
-            .filter(
+                .using(client)
+                .index(BAG)
+                .filter(
                 'terms',
                 subtype=['bouwblok']
             )
-            .query(
+                .query(
                 bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
             )
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op kadastraal object
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchBouwblokViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -809,28 +742,12 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
         return (
             Search()
-            .using(client)
-            .index(BAG)
-            .query(
+                .using(client)
+                .index(BAG)
+                .query(
                 *queries
             )
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op openbare ruimte
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchOpenbareRuimteViewSet, self).list(
-            request, *args, **kwargs)
 
     def custom_sorting(self, elk_results, query, tokens, i):
         """
@@ -876,9 +793,9 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         # default response search roads
         return (
             Search()
-            .using(client)
-            .index(NUMMERAANDUIDING)
-            .query(*queries)
+                .using(client)
+                .index(NUMMERAANDUIDING)
+                .query(*queries)
         )
 
     def custom_sorting(self, elk_results, query, tokens, i):
@@ -929,29 +846,13 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return (
             Search()
-            .using(client)
-            .index(BAG, NUMMERAANDUIDING)
-            .query(
+                .using(client)
+                .index(BAG, NUMMERAANDUIDING)
+                .query(
                 'bool',
                 should=query
             )
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op adres / nummeraanduiding
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchPostcodeViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
@@ -973,7 +874,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         subq = bagQ.postcode_huisnummer_exact_Q
 
         search = Search().using(client).index(NUMMERAANDUIDING).query(
-                subq(query, tokens=tokens, num=i)['Q']
+            subq(query, tokens=tokens, num=i)['Q']
         )
 
         if settings.DEBUG:

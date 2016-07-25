@@ -11,12 +11,9 @@
 # Python
 import logging
 import re
+from collections import OrderedDict
 
 from django.conf import settings
-
-from collections import OrderedDict
-# Packages
-# from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl import Q, A
 
 log = logging.getLogger('bag_Q')
@@ -42,7 +39,6 @@ def split_toevoeging(tokens, num):
 
 
 def postcode_huisnummer_Q(query, tokens=None, num=None):
-
     """Create query/aggregation for postcode house number search"""
 
     assert tokens
@@ -69,7 +65,6 @@ def postcode_huisnummer_Q(query, tokens=None, num=None):
 
 
 def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
-
     """Create query/aggregation for postcode house number search"""
 
     assert tokens
@@ -119,14 +114,14 @@ def search_streetname_Q(query, tokens=None, num=None):
             'bool',
             should=[
                 Q('query_string',
-                    fields=[
-                        'comp_address',
-                        'comp_address_nen',
-                        'comp_address_ptt',
-                        'postcode^3',
-                    ],
-                    query=query,
-                    default_operator='AND'),
+                  fields=[
+                      'comp_address',
+                      'comp_address_nen',
+                      'comp_address_ptt',
+                      'postcode^3',
+                  ],
+                  query=query,
+                  default_operator='AND'),
                 Q(
                     'multi_match',
                     query=query,
@@ -173,7 +168,6 @@ def tokens_comp_address_Q(query, tokens=None, num=None):
 
 # ambetenaren sort
 def vbo_natural_sort(l):
-
     def alphanum_key(key):
         return [t for t in re.split('([0-9]+)', key[0])]
 
@@ -208,7 +202,6 @@ def built_vbo_buckets(elk_results, extra):
     rbs = relevant_bucket_sorted = OrderedDict()
 
     for r in elk_results:
-
         straatnaam = r.straatnaam_keyword
         bucket = straatnaam + str(r.huisnummer)
 
@@ -230,7 +223,6 @@ def built_vbo_postcode_buckets(elk_results, extra):
     rbs = relevant_bucket_sorted = OrderedDict()
 
     for r in elk_results:
-
         # determin bucket key
         postcode = r.postcode
         bucket = postcode + str(r.huisnummer)
@@ -245,7 +237,6 @@ def built_vbo_postcode_buckets(elk_results, extra):
 
 
 def find_next_10_best_results(end_result, best_bucket, sorted_results):
-
     for i in range(10):
         # bucket N0, N1, N2, N3..
         logic_bucket = '%s%s' % (best_bucket, i)
@@ -268,7 +259,7 @@ def postcode_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
 
     end_result = []
 
-    extra = tokens[i+1:]  # toevoeginen
+    extra = tokens[i + 1:]  # toevoeginen
 
     # bucket vbo's by streetnames in order of elk results/relevance
     sorted_results = built_vbo_postcode_buckets(elk_results, extra)
@@ -306,7 +297,7 @@ def straat_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
     """
     end_result = []
 
-    extra = tokens[i+1:]  # toevoeginen
+    extra = tokens[i + 1:]  # toevoeginen
 
     # bucket vbo's by streetnames in order of elk results/relevance
     sorted_results = built_vbo_buckets(elk_results, extra)
@@ -438,15 +429,15 @@ def street_name_Q(query):
     return {
         'A': A('terms', field="straatnaam.raw"),
         'Q': Q(
-                "multi_match",
-                query=query,
-                type='phrase_prefix',
-                fields=[
-                    "straatnaam.ngram_edge",
-                    "straatnaam_nen.ngram_edge",
-                    "straatnaam_ptt.ngram_edge",
-                ],
-            ),
+            "multi_match",
+            query=query,
+            type='phrase_prefix',
+            fields=[
+                "straatnaam.ngram_edge",
+                "straatnaam_nen.ngram_edge",
+                "straatnaam_ptt.ngram_edge",
+            ],
+        ),
     }
 
 
