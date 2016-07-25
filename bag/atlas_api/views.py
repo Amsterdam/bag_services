@@ -142,7 +142,7 @@ def analyze_query(query_string: str, tokens: [str], i: int):
         },
         {  # support Amsterdam S .. kadaster notations
             'test': is_gemeente_kadaster_object,
-            'query': [brkQ.gemeente_object_Q],
+            'query': [brkQ.kadaster_object_Q],
         },
         {
             'test': is_straat_huisnummer,
@@ -652,29 +652,17 @@ class SearchObjectViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        queries = []
+        q = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']
 
-        if is_gemeente_kadaster_object(query, tokens):
-            queries = [
-                brkQ.gemeente_object_Q(query, tokens=tokens, num=i)['Q']]
-        elif is_kadaster_object(query, tokens):
-            queries = [
-                brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']]
-
-        if not queries:
+        if not q:
             return []
 
         return (
             Search()
                 .using(client)
                 .index(BRK)
-                .filter(
-                'terms',
-                subtype=['kadastraal_object']
-            )
-                .query(
-                *queries
-            )
+                .filter('terms', subtype=['kadastraal_object'])
+                .query(q)
                 .sort('aanduiding')
         )
 

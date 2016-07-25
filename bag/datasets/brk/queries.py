@@ -7,153 +7,83 @@
  They all return a dict with the Q and A keyes
 ==================================================
 """
-from elasticsearch_dsl import Q, A
-from django.conf import settings
-
 import logging
+
+from django.conf import settings
+from elasticsearch_dsl import Q, A
 
 log = logging.getLogger(__name__)
 
 BRK = settings.ELASTIC_INDICES['BRK']
 
 
-def add_object_nummer_query(must, should, kad_code_tokens):
+class KadastraalObjectQuery(object):
     """
+    Combines all KOT query analysis into a single helper class.
     """
-    objectnummer = kad_code_tokens[2]
 
-    should.extend([
-        Q('match', objectnummer=objectnummer),
-        Q(
-            'multi_match',
-            type='phrase_prefix',
-            fields=[
-                "objectnummer",
-                "objectnummer.ngram",
-                "objectnummer.raw"
-            ],
-            query=objectnummer,
-        )
-    ])
+    gemeente_code = None  # Example: ASD15
+    gemeente_naam = None  # Example: Amsterdam
+    sectie = None  # Example: S
+    object_nummer = None  # Example: 0002
+    index_letter = None  # Example: A
+    index_nummer = None  # Example: 0000
 
-    if objectnummer.isdigit():
-        should.append({
-                'term': {
-                    'objectnummer.int': int(objectnummer)
-                }})
+    def __init__(self, tokens: [str]):
+        """
+        Initialize the query with the individual Kadastraal Object tokens.
 
-    if len(kad_code_tokens) > 3 or len(objectnummer) == 5:
-        if objectnummer.isdigit():
-            must.append({
-                'term': {
-                    'objectnummer.int': int(objectnummer)}
-                }
-            )
+        Examples:
+        ['asd', 15','s', '00000','a','0000']
+        ['amsterdam', 's', '00000', 'a', '0000']
 
+        ['gemeente', 'sectie', 'object-nummer', 'index-letter', 'index-nummer']
 
-def specialize_kad_code_search(must, should, kad_code_tokens):
-    """
-    Given kad_code_tokens detemine how precise the elastic query
-    should be
-    """
-    if len(kad_code_tokens) >= 2:
-        sectieletter = kad_code_tokens[1]
-        must.append(Q('term', sectie=sectieletter))
+        :param tokens:
+        """
+        if len(tokens) < 2:
+            # Hier kunnen we niets mee
+            return
 
-    # if there is an indexl we must match it
-    if len(kad_code_tokens) >= 4:
-        indexl = kad_code_tokens[3]
+        # We zorgen ervoor dat alle indices bestaan. Dit om te voorkomen dat we de hele tijd moeilijk
+        # lopen te checken
+        tokens = tokens[:] + [None, None, None]
 
-        if indexl.isdigit():
-            if int(indexl) == 0:
-                kad_code_tokens.insert(3, 'g')
-            else:
-                kad_code_tokens.insert(3, 'a')
+        # Gemeente-code (twee tokens, waarvan het eerste drie letters) of Gemeente-naam (één token)
+        if len(tokens[0]) == 3:
+            self.gemeente_code = tokens[0] + tokens[1]
+            tokens = tokens[2:]
+        else:
+            self.gemeente_naam = tokens[0]
+            tokens = tokens[1:]
 
-        indexl = kad_code_tokens[3]
-        must.append(Q('term', indexletter=indexl))
+        self.sectie = tokens[0]
+        self.object_nummer = tokens[1]
 
-    # if there is an object nummer try to mach it
-    if len(kad_code_tokens) >= 3:
-        add_object_nummer_query(must, should, kad_code_tokens)
+        # Vermoedelijk: index-letter, maar het kan ook een getal zijn met een impliciete index-letter 'A'
+        index_thingie = tokens[2]
+        if index_thingie in ['a', 'g']:
+            self.index_letter = index_thingie
+            self.index_nummer = tokens[3]
+        elif index_thingie:
+            self.index_letter = 'a'
+            self.index_nummer = index_thingie
 
+    def object_nummer_is_exact(self):
+        """
+        Returns true if the object nummer is an exact query (i.e. 5 digits long)
+        """
+        return self.object_nummer and len(self.object_nummer) == 5
 
-def determine_kadcode(tokens):
-    """
-    Given kadcode split it in parts
-
-    tokens   = ['ASD', 15','S', '00000','A','0000']
-
-    kad_code = ['ASD15','S', '00000','A','0000']
-    """
-    # ASD 15 -> ASD15
-    gemeente_code = "".join(tokens[:2])
-    # ASD 15 G 12345 A 0001
-    kad_code_tokens = tokens[2:]
-    kad_code_tokens.insert(0, gemeente_code)
-    kad_code = " ".join(kad_code_tokens)
-
-    return gemeente_code, kad_code, kad_code_tokens
+    def index_nummer_is_exact(self):
+        """
+        Returns true if the index nummer is an exact query (i.e. 4 digits long)
+        """
+        return self.index_nummer and len(self.index_nummer) == 4
 
 
-def kad_code_sorter(results, query, tokens, num):
-    """
-    Sort matching kot objects 'logically'
-    """
-    return results
-    gemeente_code, kad_code, kad_code_tokens = determine_kadcode(tokens)
-
-
-def kad_code_filter(results, query, tokens, num):
-    """
-    Filter irrelevant items that do not match
-    perceelnummer / objectnummer
-    """
-    gemeente_code, kad_code, kad_code_tokens = determine_kadcode(tokens)
-
-    if len(kad_code_tokens) < 2:
-        # nothing to filter on
-        return results
-
-    objectnummer = None
-    perceelnummer = None
-
-    # add index letter if needed
-    if len(kad_code_tokens) >= 4:
-        indexl = kad_code_tokens[3]
-        if indexl.isdigit():
-            if int(indexl) == 0:
-                kad_code_tokens.insert(3, 'g')
-            else:
-                kad_code_tokens.insert(3, 'a')
-
-    # determine objectnummer
-    if len(kad_code_tokens) >= 3:
-        objectnummer = kad_code_tokens[2]
-
-    # determine perceelnummer
-    if len(kad_code_tokens) == 5:
-        perceelnummer = kad_code_tokens[4]
-
-    filtered_results = []
-
-    # check if exact search data is in search result
-    for hit in results:
-        display = hit._display
-        if objectnummer:
-            if objectnummer not in display:
-                continue
-
-        if perceelnummer:
-            if perceelnummer not in display:
-                continue
-
-        filtered_results.append(hit)
-
-    return filtered_results
-
-
-def kadaster_object_Q(query, tokens=None, num=None):
+# noinspection PyPep8Naming
+def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
     """
     Create query/aggregation for kadaster object search
 
@@ -164,115 +94,38 @@ def kadaster_object_Q(query, tokens=None, num=None):
     City      L1     D1           L2      D2
     0         1      2             3       4
 
-    *NOTE* ASD15 will be joined to one token
     """
-
-    assert tokens
-    # kad_code = ASD15 G 12345 A 0001
-    gemeente_code, kad_code, kad_code_tokens = determine_kadcode(tokens)
-
-    must = [
-      Q('term', gemeente_code=gemeente_code)
-    ]
-
-    should = [
-        Q(
-            'multi_match',
-            type='phrase_prefix',
-            fields=[
-                "aanduiding.raw",
-                "aanduiding.ngram",
-                "aanduiding"],
-            query=kad_code,
-        ),
-        Q('match', aanduiding=kad_code)
-    ]
-
-    specialize_kad_code_search(must, should, kad_code_tokens)
-
-    return {
-        'Q': Q(
-            'bool',
-            must=must,
-            should=should
-            ),
-        'sorting': kad_code_sorter,
-        'filtering': kad_code_filter
-    }
-
-
-def match_code_object_Q(query, tokens=None, num=None):
-    """
-    For normal search try to match some part of aanduiding
-    """
-
+    kot_query = KadastraalObjectQuery(tokens)
     must = []
-    should = [
-        Q(
-            'multi_match',
-            type='phrase_prefix',
-            fields=[
-                "aanduiding.raw",
-                "aanduiding.ngram",
-                "aanduiding"],
-            query=query,
-        ),
-        Q('match', aanduiding=query)
-    ]
+
+    if kot_query.gemeente_code:
+        must.append({'term': {'gemeente_code': kot_query.gemeente_code}})
+
+    if kot_query.gemeente_naam:
+        must.append({'term': {'gemeente': kot_query.gemeente_naam}})
+
+    if kot_query.sectie:
+        must.append({'term': {'sectie': kot_query.sectie}})
+
+    if kot_query.object_nummer:
+        if kot_query.object_nummer_is_exact():
+            must.append({'term': {'objectnummer.keyword': int(kot_query.object_nummer)}})
+        else:
+            must.append({'prefix': {'objectnummer.raw': int(kot_query.object_nummer)}})
+
+    if kot_query.index_letter:
+        must.append(Q('term', indexletter=kot_query.index_letter))
+
+    if kot_query.index_nummer:
+        if kot_query.index_nummer_is_exact():
+            must.append({'term': {'indexnummer.keyword': int(kot_query.index_nummer)}})
+        else:
+            must.append({'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
 
     return {
         'Q': Q(
             'bool',
-            must=must,
-            should=should
-            )
-    }
-
-
-def gemeente_filter_codes(query, tokens=None, num=None):
-    """
-    Filter irrelevant items
-
-    gemeente cad codes
-    """
-
-
-def gemeente_object_Q(query, tokens=None, num=None):
-    """
-    Amsterdam S      00000         A    0000
-    Stad      Sectie objectnr indexl indexnr
-    City      L1     D1           L2      D2
-    0         1      2             3       4
-    """
-
-    assert tokens
-
-    kad_code_tokens = tokens
-    kad_code = " ".join(kad_code_tokens[1:])
-
-    must = [Q('term', gemeente=tokens[0])]
-
-    should = [
-        Q(
-            'multi_match',
-            type='phrase_prefix',
-            fields=[
-                "short_aanduiding.ngram",
-                "short_aanduiding"],
-            query=kad_code,
-        ),
-        Q('match', short_aanduiding=kad_code)
-    ]
-
-    # replace gemeente token with None
-    kad_code_tokens[0] = None
-    specialize_kad_code_search(must, should, kad_code_tokens)
-
-    return {
-        'Q': Q(
-            'bool',
-            must=must,
-            should=should
+            must=must
         )
     }
 
@@ -289,7 +142,7 @@ def kadaster_subject_Q(query, tokens=None, num=None):
             type='phrase_prefix',
             fields=[
                 "naam"]
-            ),
+        ),
         'size': 5,
         'Index': [BRK]
     }
