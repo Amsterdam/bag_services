@@ -444,8 +444,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
-        query, tokens, i = prepare_input(query)
-
         if not query:
             return Response([])
 
