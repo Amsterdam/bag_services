@@ -34,8 +34,7 @@ node {
     }, {
             step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
 
-            sh "docker-compose stop"
-            sh "docker-compose rm -f"
+        sh "docker-compose down"
         }
 
     stage "Build"
