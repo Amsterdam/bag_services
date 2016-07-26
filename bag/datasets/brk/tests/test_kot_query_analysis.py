@@ -32,6 +32,7 @@ class KadastraalObjectQueryTest(TestCase):
             (['amr', '03', 'b', '47'], 'amr03', None, 'b', '47', None, None),
             (['aalsmeer', 'b', '47'], None, 'aalsmeer', 'b', '47', None, None),
             (['asd', '15', 'ar', '45', 'g', '0'], 'asd15', None, 'ar', '45', 'g', '0'),
+            (['asd', '15', 'a', 'konijn', 'g', 'eend'], 'asd15', None, 'a', None, 'g', None),
         ]
 
         for t in test_cases:
