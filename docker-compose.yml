@@ -26,6 +26,5 @@ atlas:
   volumes:
     - $PWD/reports:/app/reports
   environment:
-    SECRET_KEY: hoi
     DATABASE_NAME: atlas
     DATABASE_PASSWORD: insecure
