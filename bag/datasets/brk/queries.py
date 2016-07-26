@@ -116,7 +116,7 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
 
     if kot_query.object_nummer:
         if kot_query.object_nummer_is_exact():
-            must.append({'term': {'objectnummer.keyword': int(kot_query.object_nummer)}})
+            must.append({'term': {'objectnummer.int': int(kot_query.object_nummer)}})
         else:
             must.append({'prefix': {'objectnummer.raw': int(kot_query.object_nummer)}})
 
@@ -125,7 +125,7 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
 
     if kot_query.index_nummer:
         if kot_query.index_nummer_is_exact():
-            must.append({'term': {'indexnummer.keyword': int(kot_query.index_nummer)}})
+            must.append({'term': {'indexnummer.int': int(kot_query.index_nummer)}})
         else:
             must.append({'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
 
