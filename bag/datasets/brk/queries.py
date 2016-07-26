@@ -69,6 +69,13 @@ class KadastraalObjectQuery(object):
             self.index_letter = 'a'
             self.index_nummer = index_thingie
 
+        # clean-up index nummer and object nummer
+        if self.object_nummer and not self.object_nummer.isdigit():
+            self.object_nummer = None
+
+        if self.index_nummer and not self.index_nummer.isdigit():
+            self.index_nummer = None
+
     def object_nummer_is_exact(self):
         """
         Returns true if the object nummer is an exact query (i.e. 5 digits long)
