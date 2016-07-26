@@ -298,7 +298,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # get the result from elastic
             try:
-                print(q['Q'])
                 result = search.execute(ignore_cache=ignore_cache)
             except:
                 log.error(

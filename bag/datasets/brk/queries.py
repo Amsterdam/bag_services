@@ -114,7 +114,7 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
     if kot_query.sectie:
         must.append({'term': {'sectie': kot_query.sectie}})
 
-    if kot_query.object_nummer:
+    if kot_query.object_nummer and int(kot_query.object_nummer):
         if kot_query.object_nummer_is_exact():
             must.append({'term': {'objectnummer.int': int(kot_query.object_nummer)}})
         else:
@@ -123,7 +123,7 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
     if kot_query.index_letter:
         must.append(Q('term', indexletter=kot_query.index_letter))
 
-    if kot_query.index_nummer:
+    if kot_query.index_nummer and int(kot_query.index_nummer):
         if kot_query.index_nummer_is_exact():
             must.append({'term': {'indexnummer.int': int(kot_query.index_nummer)}})
         else:
