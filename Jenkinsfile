@@ -26,16 +26,12 @@ node {
 
     stage "Test"
     tryStep "Test",  {
-            sh "docker-compose build"
-            sh "docker-compose up -d"
-            sh "sleep 20"
-            sh "docker-compose up -d"
-            sh "docker-compose run -u root atlas python manage.py jenkins"
+        sh "docker-compose -f .jenkins/docker-compose.yml run -u root --rm tests"
     }, {
-            step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
+        step([$class: "JUnitResultArchiver", testResults: "reports/junit.xml"])
 
-        sh "docker-compose down"
-        }
+        sh "docker-compose -f .jenkins/docker-compose.yml down"
+    }
 
     stage "Build"
 

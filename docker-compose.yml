@@ -23,8 +23,6 @@ atlas:
     - elasticsearch:elasticsearch
   ports:
     - "8080"
-  volumes:
-    - $PWD/reports:/app/reports
   environment:
     DATABASE_NAME: atlas
     DATABASE_PASSWORD: insecure
