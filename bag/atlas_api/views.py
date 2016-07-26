@@ -652,7 +652,9 @@ class SearchObjectViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        q = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']
+        query_object = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)
+
+        q = query_object['Q']
 
         if not q:
             return []
@@ -663,7 +665,7 @@ class SearchObjectViewSet(SearchViewSet):
                 .index(BRK)
                 .filter('terms', subtype=['kadastraal_object'])
                 .query(q)
-                .sort('aanduiding')
+                .sort(*query_object['s'])
         )
 
 

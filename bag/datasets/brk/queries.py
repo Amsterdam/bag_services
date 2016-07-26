@@ -133,7 +133,8 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
         'Q': Q(
             'bool',
             must=must
-        )
+        ),
+        's': ['aanduiding'],
     }
 
 
