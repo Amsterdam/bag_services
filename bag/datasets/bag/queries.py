@@ -87,25 +87,6 @@ def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
     }
 
 
-def comp_address_Q(query, tokens=None, num=None):
-    """Create query/aggregation for complete address search"""
-
-    return {
-        'A': A('terms', field='adres.raw'),
-        'Q': Q(
-            'query_string',
-            fields=[
-                'comp_address',
-                'comp_address_nen',
-                'comp_address_ptt',
-                'comp_address_pcode^4'],
-            query=query,
-            default_operator='AND',
-        ),
-        # 'S': ['_display']
-    }
-
-
 def search_streetname_Q(query, tokens=None, num=None):
     """Create query/aggregation for address search"""
 
@@ -174,7 +155,7 @@ def vbo_natural_sort(l):
     return sorted(l, key=alphanum_key)
 
 
-def built_sort_key(toevoeging, extra):
+def _build_sort_key(toevoeging, extra):
     # remove what user already typed
     end_part = toevoeging.replace(" ", "")
 
@@ -194,7 +175,7 @@ def add_to_end_result(end_result, bucket, ordered_vbo_street_num):
         end_result.append(hit)
 
 
-def built_vbo_buckets(elk_results, extra):
+def _build_vbo_buckets(elk_results, extra):
     """
     Build buckets per street-num for the elk results
     keeping the results in order or the elk_score/relevance
@@ -206,7 +187,7 @@ def built_vbo_buckets(elk_results, extra):
         bucket = straatnaam + str(r.huisnummer)
 
         # create sortkey for vbo street sorting
-        sort_key = built_sort_key(r.toevoeging, extra)
+        sort_key = _build_sort_key(r.toevoeging, extra)
         # group results by streetnames
         street_result = rbs.setdefault(bucket, [])
         # add sortkey and result to street selection
@@ -227,7 +208,7 @@ def built_vbo_postcode_buckets(elk_results, extra):
         postcode = r.postcode
         bucket = postcode + str(r.huisnummer)
         # create sortkey for vbo street sorting
-        sort_key = built_sort_key(r.toevoeging, extra)
+        sort_key = _build_sort_key(r.toevoeging, extra)
         # group results by postcodes
         street_result = rbs.setdefault(bucket, [])
         # add sortkey and result to postcode selection
@@ -293,26 +274,26 @@ def postcode_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
 
 def straat_huisnummer_sorting(elk_results, query, tokens, i, limit=10):
     """
-    Sort by relevant and 'logical' steet - huisnummer - toevoeging
+    Sort by relevant and 'logical' street - huisnummer - toevoeging
     """
     end_result = []
 
-    extra = tokens[i + 1:]  # toevoeginen
+    extra = tokens[i + 1:]  # toevoegingen
 
     # bucket vbo's by streetnames in order of elk results/relevance
-    sorted_results = built_vbo_buckets(elk_results, extra)
+    sorted_results = _build_vbo_buckets(elk_results, extra)
 
-    # The first highest scoreing result
+    # The first highest scoring result
     if sorted_results:
         best_bucket, street_result = list(sorted_results.items())[0]
         ordered_vbo_street_num = vbo_natural_sort(street_result)
-        # add the highest scored hit to fist result
+        # add the highest scored hit to first result
         add_to_end_result(end_result, best_bucket, ordered_vbo_street_num)
         sorted_results.pop(best_bucket)
     else:
         return []
 
-    # Add The next (10) most logical results (number wise)
+    # Add the next (10) most logical results (number wise)
     # derived from the best bucket
     find_next_10_best_results(end_result, best_bucket, sorted_results)
 
@@ -424,31 +405,6 @@ def straat_huisnummer_Q(query, tokens=None, num=None):
     }
 
 
-def street_name_Q(query):
-    """Create query/aggregation for street name search"""
-    return {
-        'A': A('terms', field="straatnaam.raw"),
-        'Q': Q(
-            "multi_match",
-            query=query,
-            type='phrase_prefix',
-            fields=[
-                "straatnaam.ngram_edge",
-                "straatnaam_nen.ngram_edge",
-                "straatnaam_ptt.ngram_edge",
-            ],
-        ),
-    }
-
-
-def house_number_Q(query):
-    """Create query/aggregation for house number search"""
-
-    return {
-        'Q': Q("match_phrase_prefix", huisnummer_variation=query),
-    }
-
-
 def bouwblok_Q(query, tokens=None, num=None):
     """ Create query/aggregation for bouwblok search"""
 
@@ -456,22 +412,6 @@ def bouwblok_Q(query, tokens=None, num=None):
 
     return {
         'Q': Q('match', code=query),
-        'Index': [BAG]
-    }
-
-
-def postcode_Q(query, tokens=None, num=None):
-    """
-    Create query/aggregation for postcode search
-
-    The postcode query uses a prefix query which is a not
-    analyzed query. Therefore, in order to find matches when an uppercase
-    letter is given the string is changed to lowercase, and remove whitespaces
-    """
-
-    return {
-        "Q": Q("prefix", postcode=query),
-        "A": A("terms", field="straatnaam.raw"),
         'Index': [BAG]
     }
 
@@ -668,14 +608,3 @@ def gebied_Q(query: str, tokens=None, num=None):
         'size': 5,
         'Index': [BAG]
     }
-
-
-def exact_postcode_house_number_Q(query):
-    """Create a query form an exact match on the address"""
-    return Q(
-        'bool',
-        should=[
-            Q('term', postcode_huisnummer=query),
-            Q('term', postcode_toevoeging=query)],
-        minimum_should_match=1,
-    )

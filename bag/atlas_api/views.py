@@ -2,6 +2,7 @@
 import json
 import logging
 from collections import OrderedDict
+from collections import defaultdict
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
@@ -56,7 +57,7 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
 # autocomplete_group_sizes
-autocomplete_group_sizes = {
+_autocomplete_group_sizes = {
     'Straatnamen': 8,
     'Adres': 8,
     'Gebieden': 5,
@@ -66,27 +67,34 @@ autocomplete_group_sizes = {
     'Meetbouten': 5,
 }
 
-# result order is defined this way to ensure the
-# order
-ro = result_order = OrderedDict()
+_autocomplete_group_order = [
+    'Straatnamen',
+    'Adres',
+    'Gebieden',
+    'Kadastrale objecten',
+    'Kadastrale subjecten',
+    'Bouwblok',
+    'Meetbouten',
+]
 
-ro['weg'] = 'Straatnamen'
-ro['verblijfsobject'] = 'Adres'
-ro['kadastraal_object'] = 'Kadastrale objecten'
-ro['kadastraal_subject'] = 'Kadastrale subjecten'
-
-ro['gemeente'] = 'Gebieden'
-ro['woonplaats'] = 'Gebieden'
-ro['unesco'] = 'Gebieden'
-ro['grootstedelijk'] = 'Gebieden'
-ro['stadsdeel'] = 'Gebieden'
-ro['gebiedsgerichtwerken'] = 'Gebieden'
-ro['buurtcombinatie'] = 'Gebieden'
-ro['buurt'] = 'Gebieden'
-
-ro['bouwblok'] = 'Bouwblok'
-
-ro['meetbout'] = 'Meetbouten'
+_subtype_mapping = {
+    'weg': 'Straatnamen',
+    'verblijfsobject': 'Adres',
+    'ligplaats': 'Adres',
+    'standplaats': 'Adres',
+    'kadastraal_object': 'Kadastrale objecten',
+    'kadastraal_subject': 'Kadastrale subjecten',
+    'gemeente': 'Gebieden',
+    'woonplaats': 'Gebieden',
+    'unesco': 'Gebieden',
+    'grootstedelijk': 'Gebieden',
+    'stadsdeel': 'Gebieden',
+    'gebiedsgerichtwerken': 'Gebieden',
+    'buurtcombinatie': 'Gebieden',
+    'buurt': 'Gebieden',
+    'bouwblok': 'Bouwblok',
+    'meetbout': 'Meetbouten',
+}
 
 
 def prepare_input(query_string: str):
@@ -298,6 +306,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # get the result from elastic
             try:
+                print(search)
+                print(q['Q'])
                 result = search.execute(ignore_cache=ignore_cache)
             except:
                 log.error(
@@ -335,33 +345,19 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         Group the elk results in their pretty name groups
         """
+        flat_results = (hit for r in results for hit in r)
+        result_groups = defaultdict(list)
 
-        result_groups = {}
-
-        # Organizing the results
-        for elk_result in results:
-            for hit in elk_result:
-                disp = hit._display
-                uri = self._get_uri(request, hit)
-
-                # Only add results we generate uri for
-                # @TODO this should not be used like this as result filter
-
-                if not uri:
-                    log.debug('No uri', hit)
-                    continue
-
-                if hit.subtype not in result_groups:
-                    result_groups[hit.subtype] = []
-
-                result_groups[hit.subtype].append({
-                    '_display': disp,
-                    'uri': uri
-                })
+        for hit in flat_results:
+            group = _subtype_mapping[hit.subtype]
+            result_groups[group].append({
+                '_display': hit._display,
+                'uri': self._get_uri(request, hit)
+            })
 
         return result_groups
 
-    def _order_results(self, results, query_string, request):
+    def _order_results(self, results, request):
         """
         Group the elastic search results and order these groups
 
@@ -374,33 +370,20 @@ class TypeaheadViewSet(viewsets.ViewSet):
         # put the elk results in subtype groups
         result_groups = self._group_elk_results(request, results)
 
-        ordered_results = OrderedDict()
+        ordered_results = []
 
-        # Now order and group result groups
-        # in pretty name/label groups
-        for i, (subtype, pretty_name) in enumerate(result_order.items()):
-            if subtype in result_groups:
+        for group in _autocomplete_group_order:
+            if group not in result_groups:
+                continue
 
-                if pretty_name not in ordered_results:
-                    ordered_results[pretty_name] = {
-                        'label': pretty_name,
-                        'content': [],
-                    }
+            size = _autocomplete_group_sizes[group]
 
-                ordered_results[pretty_name]['content'].extend(
-                    result_groups[subtype])
+            ordered_results.append({
+                'label': group,
+                'content': result_groups[group][:size]
+            })
 
-        end_result = []
-
-        # build response with correct autocomplete size
-        for group_name, group in ordered_results.items():
-            size = autocomplete_group_sizes[group_name]
-
-            group['content'] = list(group['content'])[:size]
-
-            end_result.append(group)
-
-        return end_result
+        return ordered_results
 
     def list(self, request, *args, **kwargs):
         """
@@ -421,7 +404,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         results = self.autocomplete_queries(query)
-        response = self._order_results(results, query, request)
+        response = self._order_results(results, request)
 
         return Response(response)
 
