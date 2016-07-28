@@ -306,8 +306,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # get the result from elastic
             try:
-                print(search)
-                print(q['Q'])
                 result = search.execute(ignore_cache=ignore_cache)
             except:
                 log.error(
@@ -324,14 +322,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             # Get the datas!
             result_data.append(result)
-
-            # nice prety printing
-            if settings.DEBUG:
-                print(indexes)
-                sq = search.to_dict()
-                msg = json.dumps(sq, indent=4)
-                print(msg)
-                log.debug(msg)
 
         return result_data
 
@@ -504,11 +494,6 @@ class SearchViewSet(viewsets.ViewSet):
             return Response([])
 
         ignore_cache = settings.DEBUG
-
-        if settings.DEBUG:
-            log.debug(search.to_dict())
-            sq = search.to_dict()
-            print(json.dumps(sq, indent=4))
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
@@ -849,11 +834,6 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         search = Search().using(client).index(NUMMERAANDUIDING).query(
             subq(query, tokens=tokens, num=i)['Q']
         )
-
-        if settings.DEBUG:
-            sq = search.to_dict()
-            import json
-            print(json.dumps(sq, indent=4))
 
         return search
 
