@@ -88,6 +88,11 @@ class KadastraalObjectQuery(object):
         """
         return self.index_nummer and len(self.index_nummer) == 4
 
+    def is_empty(self):
+        return (not self.gemeente_code and not self.gemeente_naam
+                and not self.sectie and not self.object_nummer
+                and not self.index_letter and not self.index_nummer)
+
 
 # noinspection PyPep8Naming
 def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
@@ -103,6 +108,9 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
 
     """
     kot_query = KadastraalObjectQuery(tokens)
+    if kot_query.is_empty():
+        return {'Q': None}
+
     must = []
 
     if kot_query.gemeente_code:
