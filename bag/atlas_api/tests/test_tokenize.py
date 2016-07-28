@@ -194,6 +194,32 @@ class TokenizeTest(TestCase):
             clean_qs, tokens = ih.clean_tokenize(test)
             self.assertFalse(ih.is_bouwblok(clean_qs, tokens))
 
+    def test_true_could_be_bouwblok(self):
+
+        true_cases = [
+            'AA1',
+            'A',
+            'AB-99',
+        ]
+
+        for test in true_cases:
+            clean_qs, tokens = ih.clean_tokenize(test)
+            self.assertTrue(ih.could_be_bouwblok(clean_qs, tokens))
+
+    def test_false_could_be_bouwblok(self):
+
+        false_cases = [
+            '12ABC',
+            '12',
+            'A9 CA',
+            '99 CA BB',
+            '999 C',
+        ]
+
+        for test in false_cases:
+            clean_qs, tokens = ih.clean_tokenize(test)
+            self.assertFalse(ih.could_be_bouwblok(clean_qs, tokens))
+
     def test_true_street_name_and_huisnummer(self):
         true_cases = [
             'ABC 1'

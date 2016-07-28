@@ -11,6 +11,20 @@ elasticsearch:
   user: root
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
+tests:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - ../reports:/app/reports
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+    METADATA_URL: ""
+  command: bash -c "/app/docker-wait.sh && python manage.py jenkins"
+
 importer:
   build: ..
   links:

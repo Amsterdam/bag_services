@@ -1,44 +1,35 @@
 # Python
-from collections import OrderedDict
 import json
 import logging
+from collections import OrderedDict
+from collections import defaultdict
 from urllib.parse import quote, urlparse
 
-# input validation
-from atlas_api.input_handling import clean_tokenize
-from atlas_api.input_handling import is_postcode
-from atlas_api.input_handling import is_postcode_huisnummer
-from atlas_api.input_handling import is_straat_huisnummer
-from atlas_api.input_handling import is_kadaster_object
-from atlas_api.input_handling import is_gemeente_kadaster_object
-from atlas_api.input_handling import is_bouwblok
-from atlas_api.input_handling import is_meetbout
-from atlas_api.input_handling import first_number
-
-
-# Packages
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search
-# from elasticsearch_dsl import Q
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from rest_framework.decorators import api_view
-
-
-# Project
+from atlas_api.input_handling import clean_tokenize
+from atlas_api.input_handling import could_be_bouwblok
+from atlas_api.input_handling import first_number
+from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import is_gemeente_kadaster_object
+from atlas_api.input_handling import is_kadaster_object
+from atlas_api.input_handling import is_meetbout
+from atlas_api.input_handling import is_postcode
+from atlas_api.input_handling import is_postcode_huisnummer
+from atlas_api.input_handling import is_straat_huisnummer
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
 from datasets.generic import queries as genQ
 from datasets.generic import rest
 
-
 log = logging.getLogger('search')
-jslog = logging.getLogger('jserror')
 
 # Mapping of subtypes with detail views
 _details = {
@@ -51,7 +42,9 @@ _details = {
     'bouwblok': 'bouwblok-detail',
 
     'buurt': 'buurt-detail',
+    'unesco': 'unesco-detail',
     'buurtcombinatie': 'buurtcombinatie-detail',
+    'gebiedsgerichtwerken': 'gebiedsgerichtwerken-detail',
     'stadsdeel': 'stadsdeel-detail',
 
     'grootstedelijk': 'grootstedelijkgebied-detail',
@@ -63,19 +56,59 @@ BRK = settings.ELASTIC_INDICES['BRK']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
 
+# autocomplete_group_sizes
+_autocomplete_group_sizes = {
+    'Straatnamen': 8,
+    'Adres': 8,
+    'Gebieden': 5,
+    'Kadastrale objecten': 8,
+    'Kadastrale subjecten': 5,
+    'Bouwblok': 5,
+    'Meetbouten': 5,
+}
+
+_autocomplete_group_order = [
+    'Straatnamen',
+    'Adres',
+    'Gebieden',
+    'Kadastrale objecten',
+    'Kadastrale subjecten',
+    'Bouwblok',
+    'Meetbouten',
+]
+
+_subtype_mapping = {
+    'weg': 'Straatnamen',
+    'verblijfsobject': 'Adres',
+    'ligplaats': 'Adres',
+    'standplaats': 'Adres',
+    'kadastraal_object': 'Kadastrale objecten',
+    'kadastraal_subject': 'Kadastrale subjecten',
+    'gemeente': 'Gebieden',
+    'woonplaats': 'Gebieden',
+    'unesco': 'Gebieden',
+    'grootstedelijk': 'Gebieden',
+    'stadsdeel': 'Gebieden',
+    'gebiedsgerichtwerken': 'Gebieden',
+    'buurtcombinatie': 'Gebieden',
+    'buurt': 'Gebieden',
+    'bouwblok': 'Bouwblok',
+    'meetbout': 'Meetbouten',
+}
+
 
 def prepare_input(query_string: str):
     """
     -Cleanup string
     -Tokenize create tokens
-    -Find first occurence of number
+    -Find first occurence of number, NOTE in the future give array of numbers?
     """
     qs, tokens = clean_tokenize(query_string)
     i, num = first_number(tokens)
     return qs, tokens, i
 
 
-def analyze_query(query_string: str, tokens: list, i: int):
+def analyze_query(query_string: str, tokens: [str], i: int):
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -89,14 +122,14 @@ def analyze_query(query_string: str, tokens: list, i: int):
 
     returns a list of queries that should be used
     """
-    # Too little informatation to search on
+    # Too little information to search on
     if len(query_string) < 2:
         return []
 
     # A collection of regex and the query they generate
     query_selector = [
         {
-            'test':  is_postcode,
+            'test': is_postcode,
             'query': [bagQ.is_postcode_Q],
         },
         {
@@ -115,9 +148,9 @@ def analyze_query(query_string: str, tokens: list, i: int):
             'test': is_kadaster_object,
             'query': [brkQ.kadaster_object_Q],
         },
-        {   # support Amsterdam S .. kadaster notations
+        {  # support Amsterdam S .. kadaster notations
             'test': is_gemeente_kadaster_object,
-            'query': [brkQ.gemeente_object_Q],
+            'query': [brkQ.kadaster_object_Q],
         },
         {
             'test': is_straat_huisnummer,
@@ -209,15 +242,6 @@ class QueryMetadata(metadata.SimpleMetadata):
         return result
 
 
-@api_view(['GET', 'POST'])
-def javascript_error(request):
-    if request.method == 'POST':
-        data = request.data
-        print('jserrror', data)
-        jslog.error(data)
-    return Response('Ok')
-
-
 # =============================================
 # Search view sets
 # =============================================
@@ -254,7 +278,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         result_data = []
 
-        size = 15     # default size
+        size = 15  # default size
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
@@ -267,10 +291,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             search = (
                 Search()
-                .using(self.client)
-                .index(*indexes)
-                .query(q['Q'])
-                )
+                    .using(self.client)
+                    .index(*indexes)
+                    .query(q['Q'])
+            )
 
             if 's' in q:
                 search = search.sort(*q['s'])
@@ -292,16 +316,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
             if 'sorting' in q:
                 result = q['sorting'](result, query_clean, tokens, i)
 
+            # apply custom filtering.
+            if 'filtering' in q:
+                result = q['filtering'](result, query_clean, tokens, i)
+
             # Get the datas!
             result_data.append(result)
-
-            # nice prety printing
-            if settings.DEBUG:
-                print(indexes)
-                sq = search.to_dict()
-                msg = json.dumps(sq, indent=4)
-                print(msg)
-                log.debug(msg)
 
         return result_data
 
@@ -311,81 +331,49 @@ class TypeaheadViewSet(viewsets.ViewSet):
         uri = urlparse(url).path[1:]
         return uri
 
-    def _order_results(self, results, query_string, request):
+    def _group_elk_results(self, request, results):
         """
+        Group the elk results in their pretty name groups
+        """
+        flat_results = (hit for r in results for hit in r)
+        result_groups = defaultdict(list)
+
+        for hit in flat_results:
+            group = _subtype_mapping[hit.subtype]
+            result_groups[group].append({
+                '_display': hit._display,
+                'uri': self._get_uri(request, hit)
+            })
+
+        return result_groups
+
+    def _order_results(self, results, request):
+        """
+        Group the elastic search results and order these groups
 
         @Params
         result - the elastic search result object
         query_string - the query string used to search for. This is for exact
                        match recognition
         """
-        result_sets = {}
+
+        # put the elk results in subtype groups
+        result_groups = self._group_elk_results(request, results)
 
         ordered_results = []
 
-        ro = result_order = OrderedDict()
-        ro['weg'] = 'Straatnamen'
-        ro['gemeente'] = 'Gemeente'
-        ro['woonplaats'] = 'Woonplaats'
-        ro['stadsdeel'] = 'Stadsdeel'
-        ro['grootstedelijk'] = 'Grootstedelijk'
-        ro['buurtcombinatie'] = 'Buurtcombinatie'
-        ro['buurt'] = 'Buurt'
-        ro['verblijfsobject'] = 'Adres'
-        ro['bouwblok'] = 'Bouwblok'
-        ro['kadastraal_subject'] = 'Kadastrale subjecten'
-        ro['kadastraal_object'] = 'Kadastrale objecten'
-        ro['meetbout'] = 'Meetbouten'
+        for group in _autocomplete_group_order:
+            if group not in result_groups:
+                continue
 
-        # Organizing the results
-        for elk_result in results:
-            for hit in elk_result:
-                disp = hit._display
-                uri = self._get_uri(request, hit)
+            size = _autocomplete_group_sizes[group]
 
-                # Only add results we generate uri for
-                # @TODO this should not be used like this as result filter
-
-                if not uri:
-                    log.debug('No uri', hit)
-                    continue
-
-                if hit.subtype not in result_sets:
-                    result_sets[hit.subtype] = []
-
-                result_sets[hit.subtype].append({
-                    '_display': disp,
-                    'uri': uri
-                })
-
-        # Now ordereing the result groups
-        for i, (subtype, pretty_name) in enumerate(result_order.items()):
-            if subtype in result_sets:
-                ordered_results.append({
-                    'label': pretty_name,
-                    'content': result_sets[subtype],
-                })
+            ordered_results.append({
+                'label': group,
+                'content': result_groups[group][:size]
+            })
 
         return ordered_results
-
-    def get_autocomplete_response(self, query, request, alphabetical=True):
-        """
-        Sends a request for auto complete and returns the result
-        @ TODO there are more efficent ways to return the data
-
-        Optional flag alphabetical is used to determine if the results
-        should be alphabetically ordered. Defaults to True
-        """
-
-        results = self.autocomplete_queries(query)
-
-        # Checking if there was aggregation in the autocomplete.
-        # If there was that is what should be used for resutls
-        # Trying aggregation as most autocorrect will have them
-        # matches = OrderedDict()
-        res = self._order_results(results, query, request)
-
-        return res
 
     def list(self, request, *args, **kwargs):
         """
@@ -402,27 +390,18 @@ class TypeaheadViewSet(viewsets.ViewSet):
             return Response([])
 
         query = request.query_params['q']
-        query, tokens, i = prepare_input(query)
-
         if not query:
             return Response([])
 
-        response = self.get_autocomplete_response(query, request)
+        results = self.autocomplete_queries(query)
+        response = self._order_results(results, request)
 
         return Response(response)
 
 
 class SearchViewSet(viewsets.ViewSet):
     """
-    Given a query parameter `q`, this function returns a subset of all objects
-    that match the elastic search query.
-
-    *NOTE*
-
-    We assume the input is correct but could be incomplete
-
-    for example: seaching for a not existing
-    Rozengracht 3 will rerurn Rozengracht 3-1 which does exist
+    Base class for ViewSets implementing search.
     """
 
     metadata_class = QueryMetadata
@@ -430,21 +409,21 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, query: str, tokens: [str], i: int):
         """
-        Execute search.
+        Construct the search query that is executed by this view set.
 
-        ./manage.py test atlas_api.tests.test_query --keepdb
-
+        :param client: the ElasticSearch client.
+        :param query: The preprocessed query: a lower-cased, cleaned-up version of the original query.
+        :param tokens: The tokenized query: a list of strings
+        :param i: Index of the first numeric token in the tokens list.
         """
-        log.debug('using indices %s %s %s', BAG, BRK, NUMMERAANDUIDING)
-
         raise NotImplementedError
 
     def _set_followup_url(self, request, result, end,
                           response, query, page):
         """
-        Add pageing links for result set to response object
+        Add paging links for result set to response object
         """
         # make query url friendly again
         url_query = quote(query)
@@ -516,11 +495,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         ignore_cache = settings.DEBUG
 
-        if settings.DEBUG:
-            log.debug(search.to_dict())
-            sq = search.to_dict()
-            print(json.dumps(sq, indent=4))
-
         try:
             result = search.execute(ignore_cache=ignore_cache)
         except TransportError:
@@ -548,8 +522,7 @@ class SearchViewSet(viewsets.ViewSet):
         return Response(response)
 
     def custom_sorting(self, result_hits: list,
-                       query: str, tokens: list, i: int):
-
+                       query: str, tokens: [str], i: int):
         return result_hits
 
     def create_summary_aggregations(self, request, result, response):
@@ -559,8 +532,6 @@ class SearchViewSet(viewsets.ViewSet):
         """
         if not hasattr(response, 'aggregations'):
             return
-
-        response['type_summary'] = []
 
         response['type_summary'] = [
             self.normalize_bucket(field, request)
@@ -609,13 +580,13 @@ class SearchSubjectViewSet(SearchViewSet):
         """
         return (
             Search()
-            .using(client)
-            .index(BRK)
-            .filter(
+                .using(client)
+                .index(BRK)
+                .filter(
                 'terms',
                 subtype=['kadastraal_subject']
             )
-            .query(
+                .query(
                 brkQ.kadaster_subject_Q(query)['Q']
             ).sort('naam.raw')
         )
@@ -649,47 +620,21 @@ class SearchObjectViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        queries = []
+        query_object = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)
 
-        if is_gemeente_kadaster_object(query, tokens):
-            queries = [
-                brkQ.gemeente_object_Q(query, tokens=tokens, num=i)['Q']]
-        elif is_kadaster_object(query, tokens):
-            queries = [
-                brkQ.kadaster_object_Q(query, tokens=tokens, num=i)['Q']]
+        q = query_object['Q']
 
-        if not queries:
+        if not q:
             return []
 
         return (
             Search()
-            .using(client)
-            .index(BRK)
-            .filter(
-                'terms',
-                subtype=['kadastraal_object']
-            )
-            .query(
-                *queries
-            )
-            .sort('aanduiding')
+                .using(client)
+                .index(BRK)
+                .filter('terms', subtype=['kadastraal_object'])
+                .query(q)
+                .sort(*query_object['s'])
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op kadastraal object
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchObjectViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchBouwblokViewSet(SearchViewSet):
@@ -709,34 +654,21 @@ class SearchBouwblokViewSet(SearchViewSet):
         if not tokens:
             return []
 
+        if not could_be_bouwblok(query, tokens):
+            return []
+
         return (
             Search()
-            .using(client)
-            .index(BAG)
-            .filter(
+                .using(client)
+                .index(BAG)
+                .filter(
                 'terms',
                 subtype=['bouwblok']
             )
-            .query(
+                .query(
                 bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
             )
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op kadastraal object
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchBouwblokViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -760,30 +692,26 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        search_data = bagQ.openbare_ruimtes(query, tokens=tokens, num=i)
+
+        queries = [
+            search_data['Q']
+        ]
+
         return (
             Search()
-            .using(client)
-            .index(BAG)
-            .query(
-                bagQ.public_area_Q(query)['Q']
+                .using(client)
+                .index(BAG)
+                .query(
+                *queries
             )
         )
 
-    def list(self, request, *args, **kwargs):
+    def custom_sorting(self, elk_results, query, tokens, i):
         """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op openbare ruimte
-              required: true
-              type: string
-              paramType: query
+        Sort by prefix match and then relevance
         """
-
-        return super(SearchOpenbareRuimteViewSet, self).list(
-            request, *args, **kwargs)
+        return bagQ.weg_sorting(elk_results, query, tokens, i)
 
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
@@ -823,22 +751,25 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         # default response search roads
         return (
             Search()
-            .using(client)
-            .index(NUMMERAANDUIDING)
-            .query(*queries)
+                .using(client)
+                .index(NUMMERAANDUIDING)
+                .query(*queries)
         )
 
     def custom_sorting(self, elk_results, query, tokens, i):
         """
         Sort by relevant street and then numbers
         """
+
         if is_postcode_huisnummer(query, tokens):
-            i = 2
+            return bagQ.postcode_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
+        elif i >= 1 and is_straat_huisnummer(query, tokens):
+            return bagQ.straat_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
 
-        if i < 1:
-            return bagQ.vbo_straat_sorting(elk_results, query, tokens, i)
-
-        return bagQ.straat_huisnummer_sorting(elk_results, query, tokens, i)
+        # sort by street name only
+        return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
 
 
 class SearchPostcodeViewSet(SearchViewSet):
@@ -873,29 +804,13 @@ class SearchPostcodeViewSet(SearchViewSet):
 
         return (
             Search()
-            .using(client)
-            .index(BAG, NUMMERAANDUIDING)
-            .query(
+                .using(client)
+                .index(BAG, NUMMERAANDUIDING)
+                .query(
                 'bool',
                 should=query
             )
         )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op adres / nummeraanduiding
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchPostcodeViewSet, self).list(
-            request, *args, **kwargs)
 
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
@@ -917,13 +832,8 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         subq = bagQ.postcode_huisnummer_exact_Q
 
         search = Search().using(client).index(NUMMERAANDUIDING).query(
-                subq(query, tokens=tokens, num=i)['Q']
+            subq(query, tokens=tokens, num=i)['Q']
         )
-
-        if settings.DEBUG:
-            sq = search.to_dict()
-            import json
-            print(json.dumps(sq, indent=4))
 
         return search
 

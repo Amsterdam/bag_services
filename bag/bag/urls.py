@@ -50,5 +50,4 @@ urlpatterns = [
     url(r'^oauth/',
         include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^status/', include('health.urls', namespace='health')),
-    url(r'^search/javascripterror/$', api_views.javascript_error)
 ]
