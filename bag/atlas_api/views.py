@@ -154,7 +154,8 @@ def analyze_query(query_string: str, tokens: [str], i: int):
         },
         {
             'test': is_straat_huisnummer,
-            'query': [bagQ.straat_huisnummer_Q]
+            # 'query': [bagQ.straat_huisnummer_Q]
+            'query': [bagQ.straatnaam_huisnummer_Q]
         },
     ]
 
@@ -742,8 +743,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
                     query, tokens=tokens, num=i)['Q']]
 
         elif is_straat_huisnummer(query, tokens):
-            queries = [
-                bagQ.tokens_comp_address_Q(query, tokens=tokens, num=i)['Q']]
+            queries = [bagQ.straatnaam_huisnummer_Q(query, tokens, i)['Q']]
+                # bagQ.tokens_comp_address_Q(query, tokens=tokens, num=i)['Q']]
 
         if not queries:
             queries = [bagQ.search_streetname_Q(query)['Q']]
@@ -761,15 +762,16 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         Sort by relevant street and then numbers
         """
 
-        if is_postcode_huisnummer(query, tokens):
-            return bagQ.postcode_huisnummer_sorting(
-                elk_results, query, tokens, i, limit=0)
-        elif i >= 1 and is_straat_huisnummer(query, tokens):
-            return bagQ.straat_huisnummer_sorting(
-                elk_results, query, tokens, i, limit=0)
-
+        # if is_postcode_huisnummer(query, tokens):
+        #     return bagQ.postcode_huisnummer_sorting(
+        #         elk_results, query, tokens, i, limit=0)
+        # elif i >= 1 and is_straat_huisnummer(query, tokens):
+        #     return bagQ.straat_huisnummer_sorting(
+        #         elk_results, query, tokens, i, limit=0)
+        #
         # sort by street name only
-        return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
+        # return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
+        return elk_results
 
 
 class SearchPostcodeViewSet(SearchViewSet):

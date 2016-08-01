@@ -119,34 +119,6 @@ def search_streetname_Q(query, tokens=None, num=None):
     }
 
 
-def tokens_comp_address_Q(query, tokens=None, num=None):
-    """Create query/aggregation for complete address search"""
-
-    assert tokens
-    assert num
-
-    street_part = " ".join(tokens[:num])
-    num = tokens[num]
-
-    return {
-        'A': A('terms', field='adres.raw'),
-        'Q': Q(
-            'bool',
-            must=[
-                Q('query_string', fields=[
-                    'comp_address',
-                    'comp_address_nen',
-                    'comp_address_ptt',
-                    'comp_address_pcode^2'],
-                  query=street_part,
-                  default_operator='AND'),
-                Q('term', huisnummer=num),
-            ]
-        ),
-        # 'S': ['_display']
-    }
-
-
 # ambetenaren sort
 def vbo_natural_sort(l):
     def alphanum_key(key):
@@ -360,51 +332,6 @@ def vbo_straat_sorting(
     return end_result
 
 
-def straat_huisnummer_Q(query, tokens=None, num=None):
-    """
-    # Breaking the query to street name and house number
-    # --------------------------------------------------
-    # Finding the housenumber part
-
-    # Quering exactly on street name and prefix on house number
-    """
-    assert tokens
-    assert num
-
-    street_part = " ".join(tokens[:num])
-
-    split_tv = split_toevoeging(tokens, num)
-
-    # huisnummer is/should be first number
-    num = tokens[num]
-
-    return {
-        'Q': Q(
-            'bool',
-            must=[
-            ],
-
-            should=[
-                Q('match', straatnaam=street_part),
-                Q('match', straatnaam_nen=street_part),
-                Q('match', straatnaam_ptt=street_part),
-
-                Q('match', straatnaam_keyword=street_part),
-                Q('match', straatnaam_nen_keyword=street_part),
-                Q('match', straatnaam_ptt_keyword=street_part),
-
-                # Q('match', huisnummer=num),
-                Q('term', huisnummer=num, boost=3),
-                Q('match_phrase', toevoeging=split_tv),
-            ],
-            minimum_should_match=3
-        ),
-        'sorting': straat_huisnummer_sorting,
-        'size': 60,
-        'Index': [NUMMERAANDUIDING]
-    }
-
-
 def bouwblok_Q(query, tokens=None, num=None):
     """ Create query/aggregation for bouwblok search"""
 
@@ -607,4 +534,39 @@ def gebied_Q(query: str, tokens=None, num=None):
         'sorting': weg_sorting,
         'size': 5,
         'Index': [BAG]
+    }
+
+
+def straatnaam_huisnummer_Q(query: str, tokens: [str], num: int = None):
+    street_part = " ".join(tokens[:num])
+
+    split_tv = split_toevoeging(tokens, num)
+
+    q = {
+        'bool': {
+            'must': [
+                {
+                    'multi_match': {
+                        'query': street_part,
+                        'type': 'phrase_prefix',
+                        'fields': [
+                            'straatnaam',
+                            'straatnaam_nen',
+                            'straatnaam_ptt',
+                        ]
+                    },
+                },
+                {
+                    'prefix': {
+                        'toevoeging': split_tv,
+                    }
+                },
+            ],
+        },
+    }
+
+    return {
+        'Q': q,
+        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        'Index': [NUMMERAANDUIDING]
     }
