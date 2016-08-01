@@ -105,4 +105,3 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # Generate https
 
 CSRF_COOKIE_SECURE = True
 
-print("Debug: %s" % DEBUG)
