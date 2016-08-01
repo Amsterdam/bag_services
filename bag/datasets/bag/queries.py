@@ -83,7 +83,7 @@ def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
                 Q('term', huisnummer=num)
             ],
         ),
-        'Index': NUMMERAANDUIDING,
+        'Index': [NUMMERAANDUIDING],
         's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
         'size': 1  # sample size for custom sort
     }
@@ -554,7 +554,7 @@ def straatnaam_Q(query: str, tokens: [str], num: int = None):
             },
         },
         's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'Index': NUMMERAANDUIDING,
+        'Index': [NUMMERAANDUIDING],
     }
 
 
@@ -589,5 +589,5 @@ def straatnaam_huisnummer_Q(query: str, tokens: [str], num: int = None):
     return {
         'Q': q,
         's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'Index': NUMMERAANDUIDING,
+        'Index': [NUMMERAANDUIDING],
     }

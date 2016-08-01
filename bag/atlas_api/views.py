@@ -309,7 +309,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except:
-                log.error(
+                log.exception(
                     'FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
                 continue
 
@@ -750,7 +750,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         return (
             Search()
                 .using(client)
-                .index(q['Index'])
+                .index(*q['Index'])
                 .query(q['Q'])
                 .sort(*q['s'])
         )
