@@ -39,14 +39,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
-        'slackbot': {
-            'level': 'INFO',
-            'class': 'pyslack.SlackHandler',
-            'formatter': 'slack',
-            'token': 'xoxp-6265386162-12398459668-19042721156-74355df29d',
-            'username': 'atlas backend',
-            'channel': '#devops',
-        },
     },
 
     'root': {
@@ -82,7 +74,7 @@ LOGGING = {
 
         # Log all unhandled exceptions
         'django.request': {
-                'handlers': ['console', 'slackbot'],
+                'handlers': ['console'],
                 'level': 'ERROR',
                 'propagate': False,
         },
