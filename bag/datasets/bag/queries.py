@@ -14,7 +14,7 @@ import re
 from collections import OrderedDict
 
 from django.conf import settings
-from elasticsearch_dsl import Q, A
+from elasticsearch_dsl import Q
 
 log = logging.getLogger('bag_Q')
 
@@ -83,6 +83,8 @@ def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
                 Q('term', huisnummer=num)
             ],
         ),
+        'Index': NUMMERAANDUIDING,
+        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
         'size': 1  # sample size for custom sort
     }
 
@@ -537,6 +539,25 @@ def gebied_Q(query: str, tokens=None, num=None):
     }
 
 
+def straatnaam_Q(query: str, tokens: [str], num: int = None):
+    street_part = " ".join(tokens)
+    return {
+        'Q': {
+            'multi_match': {
+                'query': street_part,
+                'type': 'phrase_prefix',
+                'fields': [
+                    'straatnaam',
+                    'straatnaam_nen',
+                    'straatnaam_ptt',
+                ]
+            },
+        },
+        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        'Index': NUMMERAANDUIDING,
+    }
+
+
 def straatnaam_huisnummer_Q(query: str, tokens: [str], num: int = None):
     street_part = " ".join(tokens[:num])
 
@@ -568,5 +589,5 @@ def straatnaam_huisnummer_Q(query: str, tokens: [str], num: int = None):
     return {
         'Q': q,
         's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'Index': [NUMMERAANDUIDING]
+        'Index': NUMMERAANDUIDING,
     }

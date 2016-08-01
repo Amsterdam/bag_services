@@ -735,26 +735,24 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        queries = []
+        q = None
 
         if is_postcode_huisnummer(query, tokens):
-            queries = [
-                bagQ.postcode_huisnummer_exact_Q(
-                    query, tokens=tokens, num=i)['Q']]
+            q = bagQ.postcode_huisnummer_exact_Q(query, tokens=tokens, num=i)
 
         elif is_straat_huisnummer(query, tokens):
-            queries = [bagQ.straatnaam_huisnummer_Q(query, tokens, i)['Q']]
-                # bagQ.tokens_comp_address_Q(query, tokens=tokens, num=i)['Q']]
+            q = bagQ.straatnaam_huisnummer_Q(query, tokens, i)
 
-        if not queries:
-            queries = [bagQ.search_streetname_Q(query)['Q']]
+        if not q:
+            q = bagQ.straatnaam_Q(query, tokens, i)
 
         # default response search roads
         return (
             Search()
                 .using(client)
-                .index(NUMMERAANDUIDING)
-                .query(*queries)
+                .index(q['Index'])
+                .query(q['Q'])
+                .sort(*q['s'])
         )
 
     def custom_sorting(self, elk_results, query, tokens, i):
