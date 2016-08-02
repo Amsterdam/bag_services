@@ -11,7 +11,39 @@ elasticsearch:
   user: root
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
+tests:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - ../reports:/app/reports
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+    METADATA_URL: ""
+  command: bash -c "/app/docker-wait.sh && python manage.py jenkins"
+
 importer:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+    METADATA_URL: "${METADATA_URL}"
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py migrate \
+            && python manage.py run_import --no-index \
+            && python manage.py elastic_indices --delete"
+
+importer_el1:
   build: ..
   links:
     - database:database
@@ -24,8 +56,38 @@ importer:
     DATABASE_PASSWORD: insecure
   command: >
     bash -c "/app/docker-wait.sh \
-            && python manage.py migrate \
-            && python manage.py run_import"
+            && python manage.py elastic_indices gebieden wkpb --build \
+            && python manage.py elastic_indices bag brk --partial=1/3 --build"
+
+importer_el2:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py elastic_indices bag brk --partial=2/3 --build"
+
+importer_el3:
+  build: ..
+  links:
+    - database:database
+    - elasticsearch:elasticsearch
+  volumes:
+    - /mnt/data/diva_import:/app/diva
+  environment:
+    DATABASE_NAME: atlas
+    DATABASE_USER: atlas
+    DATABASE_PASSWORD: insecure
+  command: >
+    bash -c "/app/docker-wait.sh \
+            && python manage.py elastic_indices bag brk --partial=3/3 --build"
 
 db-backup:
   image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
@@ -42,11 +104,12 @@ db-backup:
                         -t brk* \
                         -t wkpb* \
                         -t geo*  \
-                        -t auth* \
-                        -t django_site  \
+                        -T django*  \
+                        -T auth*  \
+                        -T oauth2*  \
                         -U atlas \
                         -h db -p 5432 \
-                        atlas > /tmp/backups/atlas.dump"
+                        atlas > /tmp/backups/database.dump"
 
 el-backup:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
@@ -57,7 +120,7 @@ el-backup:
   user: root
   command: >
     bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
-            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"atlas\" }' "
+            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' "
 
 web-static:
   build: ..

@@ -1,0 +1,895 @@
+# Python
+import json
+import logging
+from collections import OrderedDict
+from collections import defaultdict
+from urllib.parse import quote, urlparse
+
+from django.conf import settings
+from django.contrib.gis.geos import Point
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import TransportError
+from elasticsearch_dsl import Search
+from rest_framework import viewsets, metadata
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+from atlas_api.input_handling import clean_tokenize
+from atlas_api.input_handling import could_be_bouwblok
+from atlas_api.input_handling import first_number
+from atlas_api.input_handling import is_bouwblok
+from atlas_api.input_handling import is_gemeente_kadaster_object
+from atlas_api.input_handling import is_kadaster_object
+from atlas_api.input_handling import is_meetbout
+from atlas_api.input_handling import is_postcode
+from atlas_api.input_handling import is_postcode_huisnummer
+from atlas_api.input_handling import is_straat_huisnummer
+from datasets.bag import queries as bagQ
+from datasets.brk import queries as brkQ
+from datasets.generic import queries as genQ
+from datasets.generic import rest
+
+log = logging.getLogger('search')
+
+# Mapping of subtypes with detail views
+_details = {
+    'ligplaats': 'ligplaats-detail',
+    'standplaats': 'standplaats-detail',
+    'verblijfsobject': 'verblijfsobject-detail',
+    'openbare_ruimte': 'openbareruimte-detail',
+    'kadastraal_subject': 'kadastraalsubject-detail',
+    'kadastraal_object': 'kadastraalobject-detail',
+    'bouwblok': 'bouwblok-detail',
+
+    'buurt': 'buurt-detail',
+    'unesco': 'unesco-detail',
+    'buurtcombinatie': 'buurtcombinatie-detail',
+    'gebiedsgerichtwerken': 'gebiedsgerichtwerken-detail',
+    'stadsdeel': 'stadsdeel-detail',
+
+    'grootstedelijk': 'grootstedelijkgebied-detail',
+    'woonplaats': 'woonplaats-detail',
+}
+
+BAG = settings.ELASTIC_INDICES['BAG']
+BRK = settings.ELASTIC_INDICES['BRK']
+NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
+
+# autocomplete_group_sizes
+_autocomplete_group_sizes = {
+    'Straatnamen': 8,
+    'Adres': 8,
+    'Gebieden': 5,
+    'Kadastrale objecten': 8,
+    'Kadastrale subjecten': 5,
+    'Bouwblok': 5,
+    'Meetbouten': 5,
+}
+
+_autocomplete_group_order = [
+    'Straatnamen',
+    'Adres',
+    'Gebieden',
+    'Kadastrale objecten',
+    'Kadastrale subjecten',
+    'Bouwblok',
+    'Meetbouten',
+]
+
+_subtype_mapping = {
+    'weg': 'Straatnamen',
+    'verblijfsobject': 'Adres',
+    'ligplaats': 'Adres',
+    'standplaats': 'Adres',
+    'kadastraal_object': 'Kadastrale objecten',
+    'kadastraal_subject': 'Kadastrale subjecten',
+    'gemeente': 'Gebieden',
+    'woonplaats': 'Gebieden',
+    'unesco': 'Gebieden',
+    'grootstedelijk': 'Gebieden',
+    'stadsdeel': 'Gebieden',
+    'gebiedsgerichtwerken': 'Gebieden',
+    'buurtcombinatie': 'Gebieden',
+    'buurt': 'Gebieden',
+    'bouwblok': 'Bouwblok',
+    'meetbout': 'Meetbouten',
+}
+
+
+def prepare_input(query_string: str):
+    """
+    -Cleanup string
+    -Tokenize create tokens
+    -Find first occurence of number, NOTE in the future give array of numbers?
+    """
+    qs, tokens = clean_tokenize(query_string)
+    i, num = first_number(tokens)
+    return qs, tokens, i
+
+
+def analyze_query(query_string: str, tokens: [str], i: int):
+    """
+    Looks at the query string being filled and tries
+    to make conclusions about what is actually being searched.
+    This is useful to reduce number of queries and reduce result size
+
+    Looking for:
+    - Only a number, 5 digits or more -> nap bout
+    - 4 digit number and 1 or 2 letters.
+        space between the numer and letters is possible -> postcode
+    - Two letters followed by 1 or 2 digits -> bouwblok
+
+    returns a list of queries that should be used
+    """
+    # Too little information to search on
+    if len(query_string) < 2:
+        return []
+
+    # A collection of regex and the query they generate
+    query_selector = [
+        {
+            'test': is_postcode,
+            'query': [bagQ.is_postcode_Q],
+        },
+        {
+            'test': is_bouwblok,
+            'query': [bagQ.bouwblok_Q],
+        },
+        {
+            'test': is_meetbout,
+            'query': [genQ.meetbout_Q],
+        },
+        {
+            'test': is_postcode_huisnummer,
+            'query': [bagQ.postcode_huisnummer_Q],
+        },
+        {
+            'test': is_kadaster_object,
+            'query': [brkQ.kadaster_object_Q],
+        },
+        {  # support Amsterdam S .. kadaster notations
+            'test': is_gemeente_kadaster_object,
+            'query': [brkQ.kadaster_object_Q],
+        },
+        {
+            'test': is_straat_huisnummer,
+            'query': [bagQ.straat_huisnummer_Q]
+        },
+    ]
+
+    queries = []
+
+    for option in query_selector:
+        if option['test'](query_string, tokens):
+            queries.extend(
+                option['query']
+            )
+            # only match one query!
+            # this maybe needs to change in the future
+            # but should be avoided if possible
+            break
+
+    # Checking for a case in which no matches are found.
+    # In which case, defaulting to address/openbare ruimte
+    if not queries:
+        queries.extend([
+            bagQ.weg_Q,
+            bagQ.gebied_Q,
+            brkQ.kadaster_subject_Q,
+        ])
+
+    result_queries = []
+
+    # FIXME superqueries
+    for q in queries:
+        result_queries.append(q(query_string, tokens=tokens, num=i))
+
+    return result_queries
+
+
+def _get_url(request, hit):
+    """
+    Given an elk hit determine the uri for each hit
+    """
+
+    doc_type, id = hit.meta.doc_type, hit.meta.id
+
+    if hasattr(hit, 'subtype_id'):
+        id = hit.subtype_id if hit.subtype_id else id
+
+    if doc_type in _details:
+        return rest.get_links(
+            view_name=_details[doc_type],
+            kwargs={'pk': id}, request=request)
+
+    if doc_type == 'meetbout':
+        return {
+            'self': {
+                'href': '/meetbouten/meetbout/{}'.format(id)
+            }
+        }
+
+    # hit must have subtype
+    assert hit.subtype
+
+    if hit.subtype in _details:
+        if hit.subtype in ['gemeente']:
+            return rest.get_links(
+                view_name=_details[hit.subtype],
+                kwargs={'pk': hit.naam}, request=request)
+        return rest.get_links(
+            view_name=_details[hit.subtype],
+            kwargs={'pk': id}, request=request)
+
+    return {
+        'self': {
+            'href': '/{}/{}/{}/notworking'.format(doc_type, hit.subtype, id)
+        }
+    }
+
+
+class QueryMetadata(metadata.SimpleMetadata):
+    def determine_metadata(self, request, view):
+        result = super().determine_metadata(request, view)
+        result['parameters'] = {
+            'q': {
+                'type': 'string',
+                'description': 'The query to search for',
+                'required': False,
+            },
+        }
+        return result
+
+
+# =============================================
+# Search view sets
+# =============================================
+class TypeaheadViewSet(viewsets.ViewSet):
+    """
+    Given a query parameter `q`, this function returns a
+    subset of all objects
+    that (partially) match the specified query.
+
+    *NOTE*
+
+    We assume spelling errors and therefore it is possible
+    to have unexpected results
+
+    We use many datasets by trying to guess about the input
+    - adresses, public spaces, bouwblok, meetbouten
+
+    """
+    metadata_class = QueryMetadata
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+
+    def autocomplete_queries(self, query):
+        """provice autocomplete suggestions"""
+
+        # i = index first number in tokens
+        query_clean, tokens, i = prepare_input(query)
+
+        query_components = analyze_query(query_clean, tokens, i)
+
+        indexes = [BAG, BRK, NUMMERAANDUIDING]
+
+        result_data = []
+
+        size = 15  # default size
+
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+
+        # create elk queries
+        for q in query_components:
+
+            if 'Index' in q:
+                indexes = q['Index']
+
+            search = (
+                Search()
+                    .using(self.client)
+                    .index(*indexes)
+                    .query(q['Q'])
+            )
+
+            if 's' in q:
+                search = search.sort(*q['s'])
+
+            if 'size' in q:
+                size = q['size']
+
+            search = search[0:size]
+
+            # get the result from elastic
+            try:
+                result = search.execute(ignore_cache=ignore_cache)
+            except:
+                log.error(
+                    'FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
+                continue
+
+            # apply custom sorting.
+            if 'sorting' in q:
+                result = q['sorting'](result, query_clean, tokens, i)
+
+            # apply custom filtering.
+            if 'filtering' in q:
+                result = q['filtering'](result, query_clean, tokens, i)
+
+            # Get the datas!
+            result_data.append(result)
+
+        return result_data
+
+    def _get_uri(self, request, hit):
+        # Retrieves the uri part for an item
+        url = _get_url(request, hit)['self']['href']
+        uri = urlparse(url).path[1:]
+        return uri
+
+    def _group_elk_results(self, request, results):
+        """
+        Group the elk results in their pretty name groups
+        """
+        flat_results = (hit for r in results for hit in r)
+        result_groups = defaultdict(list)
+
+        for hit in flat_results:
+            group = _subtype_mapping[hit.subtype]
+            result_groups[group].append({
+                '_display': hit._display,
+                'uri': self._get_uri(request, hit)
+            })
+
+        return result_groups
+
+    def _order_results(self, results, request):
+        """
+        Group the elastic search results and order these groups
+
+        @Params
+        result - the elastic search result object
+        query_string - the query string used to search for. This is for exact
+                       match recognition
+        """
+
+        # put the elk results in subtype groups
+        result_groups = self._group_elk_results(request, results)
+
+        ordered_results = []
+
+        for group in _autocomplete_group_order:
+            if group not in result_groups:
+                continue
+
+            size = _autocomplete_group_sizes[group]
+
+            ordered_results.append({
+                'label': group,
+                'content': result_groups[group][:size]
+            })
+
+        return ordered_results
+
+    def list(self, request, *args, **kwargs):
+        """
+        returns result options
+        ---
+        parameters:
+            - name: q
+              description: givven search q give Result suggestions
+              required: true
+              type: string
+              paramType: query
+        """
+        if 'q' not in request.query_params:
+            return Response([])
+
+        query = request.query_params['q']
+        if not query:
+            return Response([])
+
+        results = self.autocomplete_queries(query)
+        response = self._order_results(results, request)
+
+        return Response(response)
+
+
+class SearchViewSet(viewsets.ViewSet):
+    """
+    Base class for ViewSets implementing search.
+    """
+
+    metadata_class = QueryMetadata
+    page_size = 100
+    url_name = 'search-list'
+    page_limit = 10
+
+    def search_query(self, client, query: str, tokens: [str], i: int):
+        """
+        Construct the search query that is executed by this view set.
+
+        :param client: the ElasticSearch client.
+        :param query: The preprocessed query: a lower-cased, cleaned-up version of the original query.
+        :param tokens: The tokenized query: a list of strings
+        :param i: Index of the first numeric token in the tokens list.
+        """
+        raise NotImplementedError
+
+    def _set_followup_url(self, request, result, end,
+                          response, query, page):
+        """
+        Add paging links for result set to response object
+        """
+        # make query url friendly again
+        url_query = quote(query)
+        # Finding link to self via reverse url search
+        followup_url = reverse(self.url_name, request=request)
+
+        self_url = "{}?q={}&page={}".format(
+            followup_url, url_query, page)
+
+        response['_links'] = OrderedDict([
+            ('self', {'href': self_url}),
+            ('next', {'href': None}),
+            ('prev', {'href': None})
+        ])
+
+        # Finding and setting prev and next pages
+        if end < result.hits.total:
+            if end < (self.page_size * self.page_limit):
+                # There should be a next
+                response['_links']['next']['href'] = "{}?q={}&page={}".format(
+                    followup_url, url_query, page + 1)
+        if page == 2:
+            response['_links']['prev']['href'] = "{}?q={}".format(
+                followup_url, url_query)
+        elif page > 2:
+            response['_links']['prev']['href'] = "{}?q={}&page={}".format(
+                followup_url, url_query, page - 1)
+
+    def list(self, request, *args, **kwargs):
+        """
+        Create a response list
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal object
+              required: true
+              type: string
+              paramType: query
+
+        """
+
+        if 'q' not in request.query_params:
+            return Response([])
+
+        page = 1
+        if 'page' in request.query_params:
+            # limit search results pageing in elastic is slow
+            page = int(request.query_params['page'])
+            if page > self.page_limit:
+                page = self.page_limit
+
+        start = ((page - 1) * self.page_size)
+        end = (page * self.page_size)
+
+        query = request.query_params['q']
+        query, tokens, i = prepare_input(query)
+
+        client = Elasticsearch(
+            settings.ELASTIC_SEARCH_HOSTS,
+            raise_on_error=True
+        )
+
+        search = self.search_query(client, query, tokens, i)[start:end]
+
+        if not search:
+            log.debug('no elk query')
+            return Response([])
+
+        ignore_cache = settings.DEBUG
+
+        try:
+            result = search.execute(ignore_cache=ignore_cache)
+        except TransportError:
+            log.exception("Could not execute search query " + query)
+            # Todo fix this
+            # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
+            return Response([])
+
+        response = OrderedDict()
+
+        self._set_followup_url(request, result, end, response, query, page)
+
+        count = result.hits.total
+        response['count_hits'] = count
+        response['count'] = count
+
+        self.create_summary_aggregations(request, result, response)
+        # if hits are > 3 and < 1000
+        # custom sorting?
+        ordered_results = self.custom_sorting(result.hits, query, tokens, i)
+
+        response['results'] = [
+            self.normalize_hit(h, request) for h in ordered_results]
+
+        return Response(response)
+
+    def custom_sorting(self, result_hits: list,
+                       query: str, tokens: [str], i: int):
+        return result_hits
+
+    def create_summary_aggregations(self, request, result, response):
+        """
+        If there are aggregations within the search result.
+        show them
+        """
+        if not hasattr(response, 'aggregations'):
+            return
+
+        response['type_summary'] = [
+            self.normalize_bucket(field, request)
+            for field in result.aggregations['by_subtype']['buckets']]
+
+    def normalize_bucket(self, field, request):
+        result = OrderedDict()
+        result.update(field.to_dict())
+        return result
+
+    def get_url(self, request, hit):
+        """
+        """
+        return _get_url(request, hit)
+
+    def normalize_hit(self, hit, request):
+        result = OrderedDict()
+        result['_links'] = self.get_url(request, hit)
+
+        result['type'] = hit.meta.doc_type
+        result['dataset'] = hit.meta.index
+        result.update(hit.to_dict())
+
+        return result
+
+
+class SearchSubjectViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    kadastraal subjects (VVE, personen) objects
+    that match the elastic search query.
+
+    Een Kadastraal Subject is een persoon die
+    in de kadastrale registratie voorkomt.
+    Het betreft hier zowel natuurlijk- als niet natuurlijk personen.
+
+    https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/kadastraal-subject/
+
+    """
+
+    url_name = 'search/kadastraalsubject-list'
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search on Subject
+        """
+        return (
+            Search()
+                .using(client)
+                .index(BRK)
+                .filter(
+                'terms',
+                subtype=['kadastraal_subject']
+            )
+                .query(
+                brkQ.kadaster_subject_Q(query)['Q']
+            ).sort('naam.raw')
+        )
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek op kadastraal subject
+              required: true
+              type: string
+              paramType: query
+        """
+
+        return super(SearchSubjectViewSet, self).list(
+            request, *args, **kwargs)
+
+
+class SearchObjectViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = 'search/kadastraalobject-list'
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search in Objects
+        """
+        query_object = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)
+
+        q = query_object['Q']
+
+        if not q:
+            return []
+
+        return (
+            Search()
+                .using(client)
+                .index(BRK)
+                .filter('terms', subtype=['kadastraal_object'])
+                .query(q)
+                .sort(*query_object['s'])
+        )
+
+
+class SearchBouwblokViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = 'search/bouwblok-list'
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search in Objects
+        """
+        query, tokens, i = prepare_input(query)
+
+        if not tokens:
+            return []
+
+        if not could_be_bouwblok(query, tokens):
+            return []
+
+        return (
+            Search()
+                .using(client)
+                .index(BAG)
+                .filter(
+                'terms',
+                subtype=['bouwblok']
+            )
+                .query(
+                bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
+            )
+        )
+
+
+class SearchOpenbareRuimteViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset
+    of all openabare ruimte objects that match the elastic search query.
+
+    Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
+    zodanig aangewezen en van een naam voorziene
+    buitenruimte die binnen één woonplaats is gelegen.
+
+    Als openbare ruimte worden onder meer aangemerkt weg, water,
+    terrein, spoorbaan en landschappelijk gebied.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/
+
+    """
+    url_name = 'search/openbareruimte-list'
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search in Objects
+        """
+        search_data = bagQ.openbare_ruimtes(query, tokens=tokens, num=i)
+
+        queries = [
+            search_data['Q']
+        ]
+
+        return (
+            Search()
+                .using(client)
+                .index(BAG)
+                .query(
+                *queries
+            )
+        )
+
+    def custom_sorting(self, elk_results, query, tokens, i):
+        """
+        Sort by prefix match and then relevance
+        """
+        return bagQ.weg_sorting(elk_results, query, tokens, i)
+
+
+class SearchNummeraanduidingViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset
+    of nummeraanduiding objects that match the elastic search query.
+
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
+    het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject,
+    standplaats of ligplaats.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
+
+    """
+    url_name = 'search/adres-list'
+    custom_sort = True
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search in Objects
+        """
+        queries = []
+
+        if is_postcode_huisnummer(query, tokens):
+            queries = [
+                bagQ.postcode_huisnummer_exact_Q(
+                    query, tokens=tokens, num=i)['Q']]
+
+        elif is_straat_huisnummer(query, tokens):
+            queries = [
+                bagQ.tokens_comp_address_Q(query, tokens=tokens, num=i)['Q']]
+
+        if not queries:
+            queries = [bagQ.search_streetname_Q(query)['Q']]
+
+        # default response search roads
+        return (
+            Search()
+                .using(client)
+                .index(NUMMERAANDUIDING)
+                .query(*queries)
+        )
+
+    def custom_sorting(self, elk_results, query, tokens, i):
+        """
+        Sort by relevant street and then numbers
+        """
+
+        if is_postcode_huisnummer(query, tokens):
+            return bagQ.postcode_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
+        elif i >= 1 and is_straat_huisnummer(query, tokens):
+            return bagQ.straat_huisnummer_sorting(
+                elk_results, query, tokens, i, limit=0)
+
+        # sort by street name only
+        return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
+
+
+class SearchPostcodeViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset
+    of nummeraanduiding objects that match the elastic search query.
+
+    Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
+    het bevoegde gemeentelijke orgaan als
+    zodanig toegekende aanduiding van een verblijfsobject,
+    standplaats of ligplaats.
+
+    http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
+
+    """
+    url_name = 'search/postcode-list'
+
+    def search_query(self, client, query, tokens, i):
+        """Creating the actual query to ES"""
+
+        if is_postcode_huisnummer(query, tokens):
+            query = [
+                bagQ.postcode_huisnummer_Q(
+                    query,
+                    tokens=tokens, num=2)['Q'],
+            ]
+        else:
+            postcode = "".join(tokens[:2])
+            query = [
+                bagQ.weg_Q(postcode)['Q']
+            ]
+
+        return (
+            Search()
+                .using(client)
+                .index(BAG, NUMMERAANDUIDING)
+                .query(
+                'bool',
+                should=query
+            )
+        )
+
+
+class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
+    """
+    Exact match lookup for a postcode and house number with extensions.
+
+    Returns either 1 result for the exact match or 0 if non is found.
+    This endpoint is used for the geocodering of addresses for the
+    afvalophalgebieden.
+    """
+
+    metadata_class = QueryMetadata
+
+    def search_query(self, client, query, tokens, i):
+        """
+        Execute search in Objects
+        """
+        # default
+        subq = bagQ.postcode_huisnummer_exact_Q
+
+        search = Search().using(client).index(NUMMERAANDUIDING).query(
+            subq(query, tokens=tokens, num=i)['Q']
+        )
+
+        return search
+
+    def list(self, request, *args, **kwargs):
+        """
+        Show search results
+
+        ---
+        parameters:
+            - name: q
+              description: Zoek specifiek adres / nummeraanduiding
+              required: true
+              type: string
+              paramType: query
+        """
+
+        if 'q' not in request.query_params:
+            return Response([])
+
+        query = request.query_params['q']
+        query, tokens, i = prepare_input(query)
+        # Making sure a house number is present
+        # There should be a minimum of 3 tokens:
+        # postcode number, postcode letters and house number
+        if not is_postcode_huisnummer(query, tokens):
+            query = None
+        if not query:
+            return Response([])
+
+        client = Elasticsearch(
+            settings.ELASTIC_SEARCH_HOSTS,
+            raise_on_error=True
+        )
+
+        # Ignoring cache in case debug is on
+        ignore_cache = settings.DEBUG
+        search = self.search_query(client, query, tokens, i)
+        response = search.execute(ignore_cache=ignore_cache)
+
+        # Getting the first response.
+        # Either there is only one, or a housenumber was given
+        # where only extensions are available, in which case any result will do
+        if response and response.hits:
+            response = response.hits[0].to_dict()
+            # Adding RD gepopoint
+            if 'centroid' in response:
+                rd_point = Point(*response['centroid'], srid=4326)
+                # Using the newly generated point to
+                # replace the elastic results
+                # with geojson
+                response['geometrie'] = json.loads(rd_point.geojson)
+                rd_point.transform(28992)
+                response['geometrie_rd'] = json.loads(rd_point.geojson)
+                # Removing the poscode based fields from the results
+                # del(response['postcode_toevoeging'])
+                # del(response['postcode_huisnummer'])
+        else:
+            response = []
+        return Response(response)

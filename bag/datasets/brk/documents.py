@@ -1,0 +1,131 @@
+import elasticsearch_dsl as es
+
+from datasets.generic import analyzers
+from django.conf import settings
+
+
+class KadastraalObject(es.DocType):
+    aanduiding = es.String(
+        analyzer=analyzers.postcode,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'keyword': es.String(
+                analyzer=analyzers.kad_obj_aanduiding_keyword)
+        })
+
+    # The search aanduiding is the aanduiding without the "acd00 " prefix
+    # remove this in future
+    short_aanduiding = es.String(
+        analyzer=analyzers.kad_obj_aanduiding,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding_keyword)
+        })
+
+    sectie = es.String()
+
+    objectnummer = es.String(
+        analyzer=analyzers.ngram,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'int': es.Integer(),
+            'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
+        }
+    )
+
+    indexletter = es.String()
+    indexnummer = es.String(
+        analyzer=analyzers.ngram,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'int': es.Integer(),
+            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
+            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
+        }
+    )
+
+    order = es.Integer()
+    centroid = es.GeoPoint()
+
+    gemeente = es.String()
+    gemeente_code = es.String()
+
+    subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
+
+
+class KadastraalSubject(es.DocType):
+    naam = es.String(
+        analyzer=analyzers.naam,
+        fields={
+            'raw': es.String(index='not_analyzed'),
+            'ngram': es.String(
+                analyzer=analyzers.kad_sbj_naam,
+                search_analyzer=analyzers.kad_obj_aanduiding_keyword)})
+
+    natuurlijk_persoon = es.Boolean()
+    geslachtsnaam = es.String(analyzer=analyzers.naam)
+    order = es.Integer()
+
+    subtype = es.String(analyzer=analyzers.subtype)
+    _display = es.String(index='not_analyzed')
+
+    class Meta:
+        index = settings.ELASTIC_INDICES['BRK']
+        all = es.MetaField(enabled=False)
+
+
+def from_kadastraal_subject(ks):
+    d = KadastraalSubject(_id=ks.pk)
+
+    if ks.is_natuurlijk_persoon():
+        d.natuurlijk_persoon = True
+
+        d.geslachtsnaam = ks.naam
+    else:
+        d.natuurlijk_persoon = False
+
+    d.naam = ks.volledige_naam()
+    d.order = analyzers.orderings['kadastraal_subject']
+    d.subtype = 'kadastraal_subject'
+    d._display = d.naam
+
+    return d
+
+
+def from_kadastraal_object(ko):
+    d = KadastraalObject(_id=ko.pk)
+
+    d.aanduiding = ko.get_aanduiding_spaties()
+
+    d.gemeente = ko.kadastrale_gemeente.naam
+    d.gemeente_code = ko.kadastrale_gemeente.id
+
+    d.sectie = ko.sectie.sectie
+    d.objectnummer = ko.perceelnummer
+    d.indexletter = ko.indexletter
+    d.indexnummer = ko.indexnummer
+
+    d.short_aanduiding = d.aanduiding[6:]
+
+    d.order = analyzers.orderings['kadastraal_object']
+
+    d.subtype = 'kadastraal_object'
+    # Finding the centeroid
+    geometrie = ko.point_geom or ko.poly_geom
+    if geometrie:
+        centroid = geometrie.centroid
+        centroid.transform('wgs84')
+
+        d.centroid = centroid.coords
+
+    d._display = d.aanduiding
+
+    return d

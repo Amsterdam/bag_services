@@ -1,6 +1,9 @@
-*.pyc 
+*.pyc
 *.pyo
 .idea
 *.iml
 batch.log
 .env
+**/__pycache__
+.jenkins/backups/
+reports/

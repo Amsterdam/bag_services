@@ -22,8 +22,8 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 VOLUME /app/diva/
-ENV DJANGO_SETTINGS_MODULE=atlas_import.settings.docker
+ENV DJANGO_SETTINGS_MODULE=bag.settings.docker
 
 USER datapunt
-COPY atlas_import /app/
+COPY bag /app/
 CMD /app/docker-entrypoint.sh
