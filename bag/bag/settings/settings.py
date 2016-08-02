@@ -153,7 +153,6 @@ ALLOWED_HOSTS = [
     '.localdomain',
     '.datapunt.amsterdam.nl',
     '.amsterdam.nl',
-    '.service.consul',
 ]
 
 REST_FRAMEWORK = {
