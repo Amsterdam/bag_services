@@ -45,11 +45,6 @@ _details = {
     'woonplaats': 'woonplaats-detail',
 }
 
-BAG = settings.ELASTIC_INDICES['BAG']
-BRK = settings.ELASTIC_INDICES['BRK']
-NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-MEETBOUTEN = settings.ELASTIC_INDICES['MEETBOUTEN']
-
 # autocomplete_group_sizes
 _autocomplete_group_sizes = {
     'Straatnamen': 8,
@@ -454,36 +449,16 @@ class SearchViewSet(viewsets.ViewSet):
         response['count_hits'] = count
         response['count'] = count
 
-        self.create_summary_aggregations(request, result, response)
-        # if hits are > 3 and < 1000
-        # custom sorting?
         ordered_results = self.custom_sorting(result.hits, query, tokens, i)
 
-        response['results'] = [
-            self.normalize_hit(h, request) for h in ordered_results]
+        response['results'] = [self.normalize_hit(h, request)
+                               for h in ordered_results]
 
         return Response(response)
 
     def custom_sorting(self, result_hits: list,
                        query: str, tokens: [str], i: int):
         return result_hits
-
-    def create_summary_aggregations(self, request, result, response):
-        """
-        If there are aggregations within the search result.
-        show them
-        """
-        if not hasattr(response, 'aggregations'):
-            return
-
-        response['type_summary'] = [
-            self.normalize_bucket(field, request)
-            for field in result.aggregations['by_subtype']['buckets']]
-
-    def normalize_bucket(self, field, request):
-        result = OrderedDict()
-        result.update(field.to_dict())
-        return result
 
     def get_url(self, request, hit):
         """
