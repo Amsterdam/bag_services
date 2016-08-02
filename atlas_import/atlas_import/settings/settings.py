@@ -142,6 +142,7 @@ ALLOWED_HOSTS = [
     '.datalabamsterdam.nl',
     '.datapunt.amsterdam.nl',
     '.amsterdam.nl',
+    '.service.consul',
 ]
 
 REST_FRAMEWORK = {
