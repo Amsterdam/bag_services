@@ -30,7 +30,6 @@ class ElasticQueryWrapper(object):
                  query: typing.Optional[dict],
                  sort_fields: [str] = None,
                  indexes: [str] = None,
-                 aggregation: dict = None,
                  size: int = None,
                  custom_sort_function: typing.Callable = None
                  ):
@@ -38,15 +37,13 @@ class ElasticQueryWrapper(object):
         :param query: an elastic search query
         :param sort_fields: an optional list of fields to use for server-side sorting
         :param indexes: an optional list of indexes to use
-        :param aggregation: an optional elastic search aggregation
-        :param size: an optional limit on size of the result set
 
+        :param size: an optional limit on size of the result set
         :param custom_sort_function: an optional function to use for client-side sorting
         """
         self.query = query
         self.sort_fields = sort_fields
         self.indexes = indexes
-        self.aggregation = aggregation
         self.size = size
         self.custom_sort_function = custom_sort_function
 

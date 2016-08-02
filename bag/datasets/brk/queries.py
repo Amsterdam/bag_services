@@ -82,7 +82,4 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         ),
         sort_fields=['naam.raw'],
         indexes=[BRK],
-
-        aggregation=A('terms', field='naam.raw'),
-        size=5,
     )
