@@ -15,19 +15,13 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from atlas_api.input_handling import clean_tokenize
-from atlas_api.input_handling import could_be_bouwblok
 from atlas_api.input_handling import first_number
-from atlas_api.input_handling import is_bouwblok
-from atlas_api.input_handling import is_gemeente_kadaster_object
-from atlas_api.input_handling import is_kadaster_object
-from atlas_api.input_handling import is_meetbout
-from atlas_api.input_handling import is_postcode
-from atlas_api.input_handling import is_postcode_huisnummer
-from atlas_api.input_handling import is_straat_huisnummer
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
 from datasets.generic import queries as genQ
 from datasets.generic import rest
+from datasets.generic.queries import ElasticQueryWrapper
+from datasets.generic.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger('search')
 
@@ -108,85 +102,63 @@ def prepare_input(query_string: str):
     return qs, tokens, i
 
 
-def analyze_query(query_string: str, tokens: [str], i: int):
+def select_queries(query_string: str) -> [ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
-    This is useful to reduce number of queries and reduce result size
+    This is useful to reduce the number of queries and reduce the result size
 
-    Looking for:
-    - Only a number, 5 digits or more -> nap bout
-    - 4 digit number and 1 or 2 letters.
-        space between the numer and letters is possible -> postcode
-    - Two letters followed by 1 or 2 digits -> bouwblok
-
-    returns a list of queries that should be used
+    Returns a list of queries that should be used
     """
     # Too little information to search on
     if len(query_string) < 2:
         return []
 
+    analyzer = QueryAnalyzer(query_string)
+
     # A collection of regex and the query they generate
-    query_selector = [
+    query_selectors = [
         {
-            'test': is_postcode,
-            'query': [bagQ.is_postcode_Q],
+            'test': analyzer.is_postcode_prefix,
+            'query': bagQ.postcode_query,
         },
         {
-            'test': is_bouwblok,
-            'query': [bagQ.bouwblok_Q],
+            'test': analyzer.is_bouwblok_exact,
+            'query': bagQ.bouwblok_query,
         },
         {
-            'test': is_meetbout,
-            'query': [genQ.meetbout_Q],
+            'test': analyzer.is_meetbout_prefix,
+            'query': genQ.meetbout_query,
         },
         {
-            'test': is_postcode_huisnummer,
-            'query': [bagQ.postcode_huisnummer_Q],
+            'test': analyzer.is_postcode_huisnummer_prefix,
+            'query': bagQ.postcode_huisnummer_query,
         },
         {
-            'test': is_kadaster_object,
-            'query': [brkQ.kadaster_object_Q],
-        },
-        {  # support Amsterdam S .. kadaster notations
-            'test': is_gemeente_kadaster_object,
-            'query': [brkQ.kadaster_object_Q],
+            'test': analyzer.is_kadastraal_object_prefix,
+            'query': brkQ.kadastraal_object_query,
         },
         {
-            'test': is_straat_huisnummer,
-            # 'query': [bagQ.straat_huisnummer_Q]
-            'query': [bagQ.straatnaam_huisnummer_Q]
+            'test': analyzer.is_straatnaam_huisnummer_prefix,
+            'query': bagQ.straatnaam_huisnummer_query,
         },
     ]
 
-    queries = []
-
-    for option in query_selector:
-        if option['test'](query_string, tokens):
-            queries.extend(
-                option['query']
-            )
-            # only match one query!
-            # this maybe needs to change in the future
-            # but should be avoided if possible
-            break
+    queries = [s['query'] for s in query_selectors if s['test']()]
+    if len(queries) > 1:
+        # beperk tot 1 query. Voor nu in elk geval.
+        queries = queries[:1]
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
-        queries.extend([
-            bagQ.weg_Q,
-            bagQ.gebied_Q,
-            brkQ.kadaster_subject_Q,
-        ])
+        queries = [
+            bagQ.weg_query,
+            bagQ.gebied_query,
+            brkQ.kadastraal_subject_query,
+        ]
 
-    result_queries = []
-
-    # FIXME superqueries
-    for q in queries:
-        result_queries.append(q(query_string, tokens=tokens, num=i))
-
-    return result_queries
+    return [q(analyzer) for q in queries]
 
 
 def _get_url(request, hit):
@@ -268,58 +240,32 @@ class TypeaheadViewSet(viewsets.ViewSet):
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
     def autocomplete_queries(self, query):
-        """provice autocomplete suggestions"""
+        """provide autocomplete suggestions"""
 
-        # i = index first number in tokens
-        query_clean, tokens, i = prepare_input(query)
-
-        query_components = analyze_query(query_clean, tokens, i)
-
-        indexes = [BAG, BRK, NUMMERAANDUIDING]
+        query_components = select_queries(query)
 
         result_data = []
-
-        size = 15  # default size
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
 
         # create elk queries
-        for q in query_components:
+        for q in query_components:  # type: ElasticQueryWrapper
 
-            if 'Index' in q:
-                indexes = q['Index']
-
-            search = (
-                Search()
-                    .using(self.client)
-                    .index(*indexes)
-                    .query(q['Q'])
-            )
-
-            if 's' in q:
-                search = search.sort(*q['s'])
-
-            if 'size' in q:
-                size = q['size']
-
-            search = search[0:size]
+            search = q.to_elasticsearch_object(self.client)
 
             # get the result from elastic
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except:
-                log.exception(
-                    'FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
+                log.exception('FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
                 continue
 
             # apply custom sorting.
-            if 'sorting' in q:
-                result = q['sorting'](result, query_clean, tokens, i)
-
-            # apply custom filtering.
-            if 'filtering' in q:
-                result = q['filtering'](result, query_clean, tokens, i)
+            if q.custom_sort_function:
+                # i = index first number in tokens
+                query_clean, tokens, i = prepare_input(query)
+                result = q.custom_sort_function(result, query_clean, tokens, i)
 
             # Get the datas!
             result_data.append(result)
@@ -410,14 +356,9 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, client, query: str, tokens: [str], i: int):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Construct the search query that is executed by this view set.
-
-        :param client: the ElasticSearch client.
-        :param query: The preprocessed query: a lower-cased, cleaned-up version of the original query.
-        :param tokens: The tokenized query: a list of strings
-        :param i: Index of the first numeric token in the tokens list.
         """
         raise NotImplementedError
 
@@ -481,6 +422,7 @@ class SearchViewSet(viewsets.ViewSet):
         end = (page * self.page_size)
 
         query = request.query_params['q']
+        analyzer = QueryAnalyzer(query)
         query, tokens, i = prepare_input(query)
 
         client = Elasticsearch(
@@ -488,7 +430,7 @@ class SearchViewSet(viewsets.ViewSet):
             raise_on_error=True
         )
 
-        search = self.search_query(client, query, tokens, i)[start:end]
+        search = self.search_query(client, analyzer)[start:end]
 
         if not search:
             log.debug('no elk query')
@@ -575,38 +517,12 @@ class SearchSubjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalsubject-list'
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search on Subject
         """
-        return (
-            Search()
-                .using(client)
-                .index(BRK)
-                .filter(
-                'terms',
-                subtype=['kadastraal_subject']
-            )
-                .query(
-                brkQ.kadaster_subject_Q(query)['Q']
-            ).sort('naam.raw')
-        )
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek op kadastraal subject
-              required: true
-              type: string
-              paramType: query
-        """
-
-        return super(SearchSubjectViewSet, self).list(
-            request, *args, **kwargs)
+        search = brkQ.kadastraal_subject_query(analyzer).to_elasticsearch_object(client)
+        return search.filter('terms', subtype=['kadastraal_subject'])
 
 
 class SearchObjectViewSet(SearchViewSet):
@@ -617,25 +533,15 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
-        query_object = brkQ.kadaster_object_Q(query, tokens=tokens, num=i)
-
-        q = query_object['Q']
-
-        if not q:
+        if not analyzer.is_kadastraal_object_prefix():
             return []
 
-        return (
-            Search()
-                .using(client)
-                .index(BRK)
-                .filter('terms', subtype=['kadastraal_object'])
-                .query(q)
-                .sort(*query_object['s'])
-        )
+        search = brkQ.kadastraal_object_query(analyzer).to_elasticsearch_object(client)
+        return search.filter('terms', subtype=['kadastraal_object'])
 
 
 class SearchBouwblokViewSet(SearchViewSet):
@@ -646,30 +552,15 @@ class SearchBouwblokViewSet(SearchViewSet):
 
     url_name = 'search/bouwblok-list'
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
-        query, tokens, i = prepare_input(query)
-
-        if not tokens:
+        if not analyzer.is_bouwblok_prefix():
             return []
 
-        if not could_be_bouwblok(query, tokens):
-            return []
-
-        return (
-            Search()
-                .using(client)
-                .index(BAG)
-                .filter(
-                'terms',
-                subtype=['bouwblok']
-            )
-                .query(
-                bagQ.bouwblok_Q(query, tokens=tokens, num=i)['Q']
-            )
-        )
+        search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
+        return search.filter('terms', subtype=['bouwblok'])
 
 
 class SearchOpenbareRuimteViewSet(SearchViewSet):
@@ -689,24 +580,12 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     url_name = 'search/openbareruimte-list'
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
-        search_data = bagQ.openbare_ruimtes(query, tokens=tokens, num=i)
-
-        queries = [
-            search_data['Q']
-        ]
-
-        return (
-            Search()
-                .using(client)
-                .index(BAG)
-                .query(
-                *queries
-            )
-        )
+        search_data = bagQ.openbare_ruimte_query(analyzer)
+        return search_data.to_elasticsearch_object(client)
 
     def custom_sorting(self, elk_results, query, tokens, i):
         """
@@ -731,45 +610,23 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     url_name = 'search/adres-list'
     custom_sort = True
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
         q = None
 
-        if is_postcode_huisnummer(query, tokens):
-            q = bagQ.postcode_huisnummer_exact_Q(query, tokens=tokens, num=i)
+        if analyzer.is_postcode_huisnummer_prefix():
+            q = bagQ.postcode_huisnummer_exact_query(analyzer)
 
-        elif is_straat_huisnummer(query, tokens):
-            q = bagQ.straatnaam_huisnummer_Q(query, tokens, i)
+        elif analyzer.is_straatnaam_huisnummer_prefix():
+            q = bagQ.straatnaam_huisnummer_query(analyzer)
 
         if not q:
-            q = bagQ.straatnaam_Q(query, tokens, i)
+            q = bagQ.straatnaam_query(analyzer)
 
         # default response search roads
-        return (
-            Search()
-                .using(client)
-                .index(*q['Index'])
-                .query(q['Q'])
-                .sort(*q['s'])
-        )
-
-    def custom_sorting(self, elk_results, query, tokens, i):
-        """
-        Sort by relevant street and then numbers
-        """
-
-        # if is_postcode_huisnummer(query, tokens):
-        #     return bagQ.postcode_huisnummer_sorting(
-        #         elk_results, query, tokens, i, limit=0)
-        # elif i >= 1 and is_straat_huisnummer(query, tokens):
-        #     return bagQ.straat_huisnummer_sorting(
-        #         elk_results, query, tokens, i, limit=0)
-        #
-        # sort by street name only
-        # return bagQ.vbo_straat_sorting(elk_results, query, tokens, -1)
-        return elk_results
+        return q.to_elasticsearch_object(client)
 
 
 class SearchPostcodeViewSet(SearchViewSet):
@@ -787,30 +644,13 @@ class SearchPostcodeViewSet(SearchViewSet):
     """
     url_name = 'search/postcode-list'
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """Creating the actual query to ES"""
 
-        if is_postcode_huisnummer(query, tokens):
-            query = [
-                bagQ.postcode_huisnummer_Q(
-                    query,
-                    tokens=tokens, num=2)['Q'],
-            ]
+        if analyzer.is_postcode_huisnummer_prefix():
+            return bagQ.postcode_huisnummer_query(analyzer).to_elasticsearch_object(client)
         else:
-            postcode = "".join(tokens[:2])
-            query = [
-                bagQ.weg_Q(postcode)['Q']
-            ]
-
-        return (
-            Search()
-                .using(client)
-                .index(BAG, NUMMERAANDUIDING)
-                .query(
-                'bool',
-                should=query
-            )
-        )
+            return bagQ.weg_query(analyzer).to_elasticsearch_object(client)
 
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
@@ -824,18 +664,11 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
 
-    def search_query(self, client, query, tokens, i):
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
-        # default
-        subq = bagQ.postcode_huisnummer_exact_Q
-
-        search = Search().using(client).index(NUMMERAANDUIDING).query(
-            subq(query, tokens=tokens, num=i)['Q']
-        )
-
-        return search
+        return bagQ.postcode_huisnummer_exact_query(analyzer).to_elasticsearch_object(client)
 
     def list(self, request, *args, **kwargs):
         """
@@ -853,14 +686,12 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        query = request.query_params['q']
-        query, tokens, i = prepare_input(query)
+        analyzer = QueryAnalyzer(request.query_params['q'])
+
         # Making sure a house number is present
         # There should be a minimum of 3 tokens:
         # postcode number, postcode letters and house number
-        if not is_postcode_huisnummer(query, tokens):
-            query = None
-        if not query:
+        if not analyzer.is_postcode_huisnummer_prefix():
             return Response([])
 
         client = Elasticsearch(
@@ -870,7 +701,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
-        search = self.search_query(client, query, tokens, i)
+        search = self.search_query(client, analyzer)
         response = search.execute(ignore_cache=ignore_cache)
 
         # Getting the first response.

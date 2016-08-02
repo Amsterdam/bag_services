@@ -12,90 +12,15 @@ import logging
 from django.conf import settings
 from elasticsearch_dsl import Q, A
 
+from datasets.generic.queries import ElasticQueryWrapper
+from datasets.generic.query_analyzer import QueryAnalyzer
+
 log = logging.getLogger(__name__)
 
 BRK = settings.ELASTIC_INDICES['BRK']
 
 
-class KadastraalObjectQuery(object):
-    """
-    Combines all KOT query analysis into a single helper class.
-    """
-
-    gemeente_code = None  # Example: ASD15
-    gemeente_naam = None  # Example: Amsterdam
-    sectie = None  # Example: S
-    object_nummer = None  # Example: 0002
-    index_letter = None  # Example: A
-    index_nummer = None  # Example: 0000
-
-    def __init__(self, tokens: [str]):
-        """
-        Initialize the query with the individual Kadastraal Object tokens.
-
-        Examples:
-        ['asd', 15','s', '00000','a','0000']
-        ['amsterdam', 's', '00000', 'a', '0000']
-
-        ['gemeente', 'sectie', 'object-nummer', 'index-letter', 'index-nummer']
-
-        :param tokens:
-        """
-        if len(tokens) < 2:
-            # Hier kunnen we niets mee
-            return
-
-        # We zorgen ervoor dat alle indices bestaan. Dit om te voorkomen dat we de hele tijd moeilijk
-        # lopen te checken
-        tokens = tokens[:] + [None, None, None]
-
-        # Gemeente-code (twee tokens, waarvan het eerste drie letters) of Gemeente-naam (één token)
-        if len(tokens[0]) == 3:
-            self.gemeente_code = tokens[0] + tokens[1]
-            tokens = tokens[2:]
-        else:
-            self.gemeente_naam = tokens[0]
-            tokens = tokens[1:]
-
-        self.sectie = tokens[0]
-        self.object_nummer = tokens[1]
-
-        # Vermoedelijk: index-letter, maar het kan ook een getal zijn met een impliciete index-letter 'A'
-        index_thingie = tokens[2]
-        if index_thingie in ['a', 'g']:
-            self.index_letter = index_thingie
-            self.index_nummer = tokens[3]
-        elif index_thingie:
-            self.index_letter = 'a'
-            self.index_nummer = index_thingie
-
-        # clean-up index nummer and object nummer
-        if self.object_nummer and not self.object_nummer.isdigit():
-            self.object_nummer = None
-
-        if self.index_nummer and not self.index_nummer.isdigit():
-            self.index_nummer = None
-
-    def object_nummer_is_exact(self):
-        """
-        Returns true if the object nummer is an exact query (i.e. 5 digits long)
-        """
-        return self.object_nummer and len(self.object_nummer) == 5
-
-    def index_nummer_is_exact(self):
-        """
-        Returns true if the index nummer is an exact query (i.e. 4 digits long)
-        """
-        return self.index_nummer and len(self.index_nummer) == 4
-
-    def is_empty(self):
-        return (not self.gemeente_code and not self.gemeente_naam
-                and not self.sectie and not self.object_nummer
-                and not self.index_letter and not self.index_nummer)
-
-
-# noinspection PyPep8Naming
-def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
+def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Create query/aggregation for kadaster object search
 
@@ -107,9 +32,9 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
     0         1      2             3       4
 
     """
-    kot_query = KadastraalObjectQuery(tokens)
+    kot_query = analyzer.get_kadastraal_object_query()
     if kot_query.is_empty():
-        return {'Q': None}
+        return ElasticQueryWrapper(query=None)
 
     must = []
 
@@ -137,28 +62,27 @@ def kadaster_object_Q(query: str, tokens: [str] = None, num: int = None):
         else:
             must.append({'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
 
-    return {
-        'Q': Q(
-            'bool',
-            must=must
-        ),
-        's': ['aanduiding'],
-    }
+    return ElasticQueryWrapper(
+        query=Q('bool', must=must),
+        sort_fields=['aanduiding'],
+        indexes=[BRK],
+    )
 
 
-def kadaster_subject_Q(query, tokens=None, num=None):
+def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """Create query/aggregation for kadaster subject search"""
-    return {
-        'A': A('terms', field='naam.raw'),
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'multi_match',
             slop=12,  # match "stephan preeker" with "stephan jacob preeker"
             max_expansions=12,
-            query=query,
+            query=analyzer.query,
             type='phrase_prefix',
-            fields=[
-                "naam"]
+            fields=["naam"]
         ),
-        'size': 5,
-        'Index': [BRK]
-    }
+        sort_fields=['naam.raw'],
+        indexes=[BRK],
+
+        aggregation=A('terms', field='naam.raw'),
+        size=5,
+    )

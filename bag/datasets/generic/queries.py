@@ -11,31 +11,76 @@
 # Packages
 # from elasticsearch_dsl import Search, Q, A
 
-from elasticsearch_dsl import Q
-
 import logging
+
+import typing as typing
+from elasticsearch_dsl import Search
+
+from datasets.generic.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger(__name__)
 
 
-def meetbout_Q(query, tokens=None, num=None):
+class ElasticQueryWrapper(object):
+    """
+    Wrapper object for dynamically constructing elastic search queries.
+    """
+
+    def __init__(self,
+                 query: typing.Optional[dict],
+                 sort_fields: [str] = None,
+                 indexes: [str] = None,
+                 aggregation: dict = None,
+                 size: int = None,
+                 custom_sort_function: typing.Callable = None
+                 ):
+        """
+        :param query: an elastic search query
+        :param sort_fields: an optional list of fields to use for server-side sorting
+        :param indexes: an optional list of indexes to use
+        :param aggregation: an optional elastic search aggregation
+        :param size: an optional limit on size of the result set
+
+        :param custom_sort_function: an optional function to use for client-side sorting
+        """
+        self.query = query
+        self.sort_fields = sort_fields
+        self.indexes = indexes
+        self.aggregation = aggregation
+        self.size = size
+        self.custom_sort_function = custom_sort_function
+
+    def to_elasticsearch_object(self, client) -> Search:
+        assert self.indexes
+
+        search = (
+            Search()
+                .using(client)
+                .index(*self.indexes)
+                .query(self.query)
+        )
+        if self.sort_fields:
+            search = search.sort(*self.sort_fields)
+
+        size = 15  # default size
+        if self.size:
+            size = self.size
+
+        search = search[0:size]
+
+        return search
+
+
+def meetbout_query(analyzer: QueryAnalyzer):
     """
     Main 'One size fits all' search query used
     """
-    log.debug('%20s %s', meetbout_Q.__name__, query)
-
-    return {
-        'Q': Q(
-            "multi_match",
-            query=query,
-            # type="most_fields",
-            # type="phrase",
-            type="phrase_prefix",
-            slop=12,
-            max_expansions=12,
-            fields=[
-                "meetboutnummer",
-            ]
-        ),
-        'Index': ['meetbouten']
-    }
+    return ElasticQueryWrapper(
+        query={
+            "prefix": {
+                "meetboutnummer": analyzer.query,
+            }
+        },
+        sort_fields=["_display"],
+        indexes=['meetbouten'],
+    )

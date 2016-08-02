@@ -1,19 +1,6 @@
 import string
 import re
 
-# Regexes for query analysis
-# The regex are bulit on the assumption autocomplete starts at 3 characters
-# Postcode regex matches 4 digits, possible dash or space then 0-2 letters
-PCODE_REGEX = re.compile('^[1-9]\d{2}\d?[ \-]?[a-zA-Z]?[a-zA-Z]?$')
-
-# Address postcode regex
-PCODE_NUM_REGEX = re.compile(
-    '^1\d{4}[ \-]?[a-zA-Z]{2}[ \-](\d|[a-zA-Z])*$')
-
-# Recognise house number in the search string
-HOUSE_NUMBER = re.compile('((\d+)((( |\-)?[a-zA-Z\-]{0,3})|(( |\-)\d*)))$')
-
-
 REPLACE_TABLE = "".maketrans(
     string.punctuation, len(string.punctuation)*" ")
 
@@ -146,32 +133,6 @@ def is_postcode_huisnummer(query_string, tokens):
     return False
 
 
-def is_bouwblok(query_string, tokens):
-    """
-    Bouwblok regex matches 2 digits a letter and
-    an optional second letter
-
-    BOUWBLOK_REGEX = re.compile('^[a-zA-Z][a-zA-Z]\d{1,2}$')
-    """
-    if len(tokens) != 2:
-        return False
-
-    letters = tokens[0]
-    cijfers = tokens[1]
-
-    if len(letters) != 2:
-        return False
-
-    if len(cijfers) != 2:
-        return False
-
-    if letters.isdigit():
-        return False
-
-    if cijfers.isdigit():
-        return True
-
-
 def could_be_bouwblok(query_string, tokens):
 
     if len(tokens) > 2:
@@ -198,75 +159,3 @@ def could_be_bouwblok(query_string, tokens):
     return True
 
 
-def is_gemeente_kadaster_object(query_string, tokens):
-    """
-    Given Amsterdam XX 12345 X 1234
-
-    We should search all ASDx kadaster object codes
-    """
-    if len(tokens) < 2:
-        return False
-
-    # S, AK, D
-    if len(tokens[1]) > 2:
-        return False
-
-    if tokens[1].isdigit():
-        return False
-
-    if len(tokens) >= 3:
-        if not tokens[2].isdigit():
-            return False
-
-    return True
-
-
-def is_kadaster_object(query_string, tokens):
-    """
-    """
-    if len(tokens) < 2:
-        return False
-
-    letters = tokens[0]
-    cijfers = tokens[1]
-
-    if len(letters) != 3:
-        return False
-
-    if len(cijfers) != 2:
-        return False
-
-    if letters.isdigit():
-        return False
-
-    if not cijfers.isdigit():
-        return False
-
-    # fail when there is a space in the query string
-    # ASD15 OK
-    # ASD 15 NOT OK
-    if not query_string.startswith("".join(tokens[:2])):
-        return False
-
-    return True
-
-
-def is_meetbout(query_string, tokens):
-    """
-    Meetbout regex matches up to 8 digits
-    MEETBOUT_REGEX = re.compile('^\d{3,8}\b$')
-    """
-
-    if len(tokens) != 1:
-        return False
-
-    meetbout = tokens[0]
-
-    if len(meetbout) > 8 or len(meetbout) < 5:
-        return False
-
-    try:
-        int(meetbout)
-        return True
-    except ValueError:
-        return False

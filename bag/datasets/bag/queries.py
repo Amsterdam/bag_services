@@ -16,112 +16,64 @@ from collections import OrderedDict
 from django.conf import settings
 from elasticsearch_dsl import Q
 
+from datasets.generic.queries import ElasticQueryWrapper
+from datasets.generic.query_analyzer import QueryAnalyzer
+
 log = logging.getLogger('bag_Q')
 
 BAG = settings.ELASTIC_INDICES['BAG']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
-def split_toevoeging(tokens, num):
-    """
-    """
-    extra_tv = []
-
-    # split toevoeging in a way
-    for token in tokens[num:]:
-        if token[0].isdigit():
-            extra_tv.append(token)
-        else:
-            for c in token:
-                extra_tv.append(c)
-
-    return " ".join(extra_tv)
-
-
-def postcode_huisnummer_Q(query, tokens=None, num=None):
+def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """Create query/aggregation for postcode house number search"""
 
-    assert tokens
+    postcode, huisnummer, toevoeging = analyzer.get_postcode_huisnummer_toevoeging()
 
-    num = int(tokens[2])
-    split_tv = split_toevoeging(tokens, 2)
+    return ElasticQueryWrapper(
+        query={
+            'bool': {
+                'must': [
+                    {
+                        'term': {
+                            'postcode': postcode,
+                        }
+                    },
+                    {
+                        'prefix': {
+                            'toevoeging': toevoeging,
+                        }
+                    },
+                ],
+            },
+        },
+        indexes=[BAG, NUMMERAANDUIDING],
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+    )
 
-    # Third token must be house number
 
-    return {
-        'Q': Q(
-            'bool',
-            must=[
-                Q('term', postcode="".join(tokens[:2])),
-                Q('match_phrase', toevoeging=split_tv),
-            ],
-            should=[
-                Q('term', huisnummer=num, boost=3),
-            ]
-        ),
-        'sorting': postcode_huisnummer_sorting,
-        'size': 50  # sample size for custom sort
-    }
-
-
-def postcode_huisnummer_exact_Q(query, tokens=None, num=None):
+def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer):
     """Create query/aggregation for postcode house number search"""
 
-    assert tokens
+    postcode, huisnummer, toevoeging = analyzer.get_postcode_huisnummer_toevoeging()
 
-    num = int(tokens[2])
-    split_tv = split_toevoeging(tokens, 2)
-
-    # Third token must be house number
-
-    return {
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'bool',
             must=[
-                Q('term', postcode="".join(tokens[:2])),
-                Q('match_phrase', toevoeging=split_tv),
-                Q('term', huisnummer=num)
+                Q('term', postcode=postcode),
+                Q('match_phrase', toevoeging=toevoeging),
+                Q('term', huisnummer=huisnummer)
             ],
         ),
-        'Index': [NUMMERAANDUIDING],
-        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'size': 1  # sample size for custom sort
-    }
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        indexes=[NUMMERAANDUIDING],
+
+        size=1
+    )
 
 
-def search_streetname_Q(query, tokens=None, num=None):
-    """Create query/aggregation for address search"""
-
-    return {
-        'Q': Q(
-            'bool',
-            should=[
-                Q('query_string',
-                  fields=[
-                      'comp_address',
-                      'comp_address_nen',
-                      'comp_address_ptt',
-                      'postcode^3',
-                  ],
-                  query=query,
-                  default_operator='AND'),
-                Q(
-                    'multi_match',
-                    query=query,
-                    type="phrase_prefix",
-                    # other streets
-                    fields=[
-                        'comp_address',
-                        'comp_address_nen',
-                        'comp_address_ptt',
-                        'postcode^3',
-                    ]
-                ),
-            ])
-    }
-
-
-# ambetenaren sort
+# ambtenaren sort
 def vbo_natural_sort(l):
     def alphanum_key(key):
         return [t for t in re.split('([0-9]+)', key[0])]
@@ -334,31 +286,30 @@ def vbo_straat_sorting(
     return end_result
 
 
-def bouwblok_Q(query, tokens=None, num=None):
+def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ Create query/aggregation for bouwblok search"""
+    return ElasticQueryWrapper(
+        query={
+            "prefix": {
+                "code.raw": analyzer.get_bouwblok(),
+            },
+        },
+        sort_fields=['_display'],
 
-    assert tokens
-
-    return {
-        'Q': Q('match', code=query),
-        'Index': [BAG]
-    }
+        indexes=[BAG],
+    )
 
 
-def is_postcode_Q(query: str, tokens=None, num=None):
+def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ create query/aggregation for public area"""
 
-    assert tokens
-
-    postcode = "".join(tokens[:2])
-
-    return {
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'bool',
             must=[
                 Q(
                     'multi_match',
-                    query=postcode,
+                    query=analyzer.get_postcode(),
                     type="phrase_prefix",
                     # other streets
                     fields=['postcode']
@@ -366,9 +317,9 @@ def is_postcode_Q(query: str, tokens=None, num=None):
                 Q('term', subtype='weg'),
             ],
         ),
-        's': ['_display'],
-        'Index': [BAG]
-    }
+        sort_fields=['_display'],
+        indexes=[BAG]
+    )
 
 
 def bucket_weg_results(elk_results: list, prefix: str):
@@ -414,11 +365,11 @@ def weg_sorting(elk_results: list, query: str, tokens: list, num: int):
     return end_result
 
 
-def weg_Q(query: str, tokens=None, num=None):
+def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ create query/aggregation for public area"""
 
-    return {
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'bool',
             must=[
                 Q('term', subtype='weg'),
@@ -426,7 +377,7 @@ def weg_Q(query: str, tokens=None, num=None):
             should=[
                 Q(
                     'multi_match',
-                    query=query,
+                    query=analyzer.get_straatnaam(),
                     type="phrase_prefix",
                     # other streets
                     fields=[
@@ -442,23 +393,23 @@ def weg_Q(query: str, tokens=None, num=None):
                         'naam_nen',
                         'naam_ptt'
                     ],
-                    query=query,
+                    query=analyzer.get_straatnaam(),
                     default_operator='AND'),
             ],
             minimum_should_match=1,
         ),
-        'sorting': weg_sorting,
-        'size': 10,
-        'Index': [BAG]
-    }
+        indexes=[BAG],
+        custom_sort_function=weg_sorting,
+        size=10,
+    )
 
 
-def openbare_ruimtes(query: str, tokens=None, num=None):
+def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Find all openbare ruimtes
     """
-    return {
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'bool',
 
             must_not=[
@@ -468,7 +419,7 @@ def openbare_ruimtes(query: str, tokens=None, num=None):
             should=[
                 Q(
                     'multi_match',
-                    query=query,
+                    query=analyzer.get_straatnaam(),
                     type="phrase_prefix",
                     # other streets
                     fields=[
@@ -486,34 +437,34 @@ def openbare_ruimtes(query: str, tokens=None, num=None):
                         'subtype',
                         'naam_ptt'
                     ],
-                    query=query,
+                    query=analyzer.get_straatnaam(),
                     default_operator='AND'),
             ],
 
             minimum_should_match=1,
         ),
-        'sorting': weg_sorting,
-        'Index': [BAG]
-    }
+        indexes=[BAG],
+        custom_sort_function=weg_sorting,
+    )
 
 
-def gebied_Q(query: str, tokens=None, num=None):
+def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Create public
     """
 
-    return {
-        'Q': Q(
+    return ElasticQueryWrapper(
+        query=Q(
             'bool',
             must=[
                 Q('term', _type='gebied'),
             ],
             should=[
-                {'match': {'naam.ngram': query}},
-                {'match': {'naam.raw': query}},
+                {'match': {'naam.ngram': analyzer.query}},
+                {'match': {'naam.raw': analyzer.query}},
                 Q(
                     'multi_match',
-                    query=query,
+                    query=analyzer.query,
                     type="phrase_prefix",
                     # other streets
                     fields=[
@@ -528,21 +479,21 @@ def gebied_Q(query: str, tokens=None, num=None):
                         'naam',
                         'code',
                     ],
-                    query=query,
+                    query=analyzer.query,
                     default_operator='AND'),
             ],
             minimum_should_match=1,
         ),
-        'sorting': weg_sorting,
-        'size': 5,
-        'Index': [BAG]
-    }
+        indexes=[BAG],
+        custom_sort_function=weg_sorting,
+        size=5,
+    )
 
 
-def straatnaam_Q(query: str, tokens: [str], num: int = None):
-    street_part = " ".join(tokens)
-    return {
-        'Q': {
+def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    street_part = analyzer.get_straatnaam()
+    return ElasticQueryWrapper(
+        query={
             'multi_match': {
                 'query': street_part,
                 'type': 'phrase_prefix',
@@ -553,41 +504,37 @@ def straatnaam_Q(query: str, tokens: [str], num: int = None):
                 ]
             },
         },
-        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'Index': [NUMMERAANDUIDING],
-    }
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        indexes=[NUMMERAANDUIDING]
+    )
 
 
-def straatnaam_huisnummer_Q(query: str, tokens: [str], num: int = None):
-    street_part = " ".join(tokens[:num])
+def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    straat, huisnummer, toevoeging = analyzer.get_straatnaam_huisnummer_toevoeging()
 
-    split_tv = split_toevoeging(tokens, num)
-
-    q = {
-        'bool': {
-            'must': [
-                {
-                    'multi_match': {
-                        'query': street_part,
-                        'type': 'phrase_prefix',
-                        'fields': [
-                            'straatnaam',
-                            'straatnaam_nen',
-                            'straatnaam_ptt',
-                        ]
+    return ElasticQueryWrapper(
+        query={
+            'bool': {
+                'must': [
+                    {
+                        'multi_match': {
+                            'query': straat,
+                            'type': 'phrase_prefix',
+                            'fields': [
+                                'straatnaam',
+                                'straatnaam_nen',
+                                'straatnaam_ptt',
+                            ]
+                        },
                     },
-                },
-                {
-                    'prefix': {
-                        'toevoeging': split_tv,
-                    }
-                },
-            ],
+                    {
+                        'prefix': {
+                            'toevoeging': toevoeging,
+                        }
+                    },
+                ],
+            },
         },
-    }
-
-    return {
-        'Q': q,
-        's': ['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
-        'Index': [NUMMERAANDUIDING],
-    }
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        indexes=[NUMMERAANDUIDING]
+    )
