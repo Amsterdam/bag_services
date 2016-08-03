@@ -76,7 +76,7 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query={
             "prefix": {
-                "code.raw": analyzer.get_bouwblok(),
+                "code.raw": analyzer.get_bouwblok().upper(),        # upper, want raw is case-sensitive
             },
         },
         sort_fields=['_display'],
