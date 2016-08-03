@@ -586,7 +586,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         q = None
 
         if analyzer.is_postcode_huisnummer_prefix():
-            q = bagQ.postcode_huisnummer_exact_query(analyzer)
+            q = bagQ.postcode_huisnummer_query(analyzer)
 
         elif analyzer.is_straatnaam_huisnummer_prefix():
             q = bagQ.straatnaam_huisnummer_query(analyzer)
