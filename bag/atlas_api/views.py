@@ -23,7 +23,7 @@ from datasets.generic import rest
 from datasets.generic.queries import ElasticQueryWrapper
 from datasets.generic.query_analyzer import QueryAnalyzer
 
-log = logging.getLogger('search')
+log = logging.getLogger(__name__)
 
 # Mapping of subtypes with detail views
 _details = {
@@ -139,14 +139,19 @@ def select_queries(query_string: str) -> [ElasticQueryWrapper]:
         },
     ]
 
-    queries = [s['query'] for s in query_selectors if s['test']()]
-    if len(queries) > 1:
-        # beperk tot 1 query. Voor nu in elk geval.
-        queries = queries[:1]
+    queries = []
+    for s in query_selectors:
+        f = s['test']
+        if f():
+            log.debug('Matched %s for query <%s>', f.__name__, query_string)
+            # beperk tot 1 query. Voor nu in elk geval.
+            queries = [s['query']]
+            break
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
+        log.debug("No matches for %s, using defaults", query_string)
         queries = [
             bagQ.weg_query,
             bagQ.gebied_query,
