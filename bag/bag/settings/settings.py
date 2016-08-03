@@ -67,10 +67,12 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework_gis',
     'rest_framework_swagger',
+    'corsheaders',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -170,6 +172,14 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
 }
+
+CORS_ORIGIN_ALLOW_ALL = True # if True, the whitelist will not be used and all origins will be accepted
+
+CORS_ORIGIN_REGEX_WHITELIST = (
+    '^(https?://)?localhost(:\d+)?$',
+    '^(https?://)?.*\.amsterdam\.nl$',
+    '^(https?://)*.datapunt..amsterdam\.nl$',
+)
 
 # Security
 
