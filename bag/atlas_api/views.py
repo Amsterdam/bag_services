@@ -562,12 +562,6 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         search_data = bagQ.openbare_ruimte_query(analyzer)
         return search_data.to_elasticsearch_object(client)
 
-    def custom_sorting(self, elk_results, query, tokens, i):
-        """
-        Sort by prefix match and then relevance
-        """
-        return bagQ.weg_sorting(elk_results, query, tokens, i)
-
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """

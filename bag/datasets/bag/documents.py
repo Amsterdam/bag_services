@@ -1,11 +1,10 @@
 # Python
-import json
 # Packages
 import elasticsearch_dsl as es
-# Project
-from . import models
-from datasets.generic import analyzers
 from django.conf import settings
+
+from datasets.generic import analyzers
+from . import models
 
 
 class Ligplaats(es.DocType):
@@ -110,7 +109,6 @@ class Verblijfsobject(es.DocType):
 
 
 class OpenbareRuimte(es.DocType):
-
     naam = es.String(
         analyzer=analyzers.adres,
         fields={
@@ -233,8 +231,8 @@ class Nummeraanduiding(es.DocType):
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
-            }
-        )
+        }
+    )
     comp_address_nen = es.String(
         analyzer=analyzers.adres,
         fields={
@@ -242,31 +240,31 @@ class Nummeraanduiding(es.DocType):
             'ngram': es.String(
                 analyzer=analyzers.autocomplete,
                 search_analyzer='standard')
-            }
-        )
+        }
+    )
     comp_address_ptt = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
-            }
-        )
+        }
+    )
     comp_address_pcode = es.String(
         analyzer=analyzers.adres,
         fields={
             'raw': es.String(index='not_analyzed'),
             'ngram': es.String(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
-            }
-        )
+        }
+    )
 
     huisnummer = es.Integer(
         fields={'variation': es.String(analyzer=analyzers.huisnummer)})
 
     toevoeging = es.String(analyzer=analyzers.toevoeging,
-        fields={'raw': es.String(index='not_analyzed')}
-    )
+                           fields={'raw': es.String(index='not_analyzed')}
+                           )
 
     postcode = es.String(
         analyzer=analyzers.postcode,
@@ -329,6 +327,7 @@ class Gebied(es.DocType):
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
             'ngram': es.String(analyzer=analyzers.ngram),
+            'keyword': es.String(analyzer=analyzers.subtype),
         }
     )
 
@@ -433,16 +432,16 @@ def from_bouwblok(n: models.Bouwblok):
     doc._display = n.code
     return doc
 
-def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
+def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
     doc.comp_address = "{0} {1}".format(n.openbare_ruimte.naam,
-                                            n.toevoeging)
+                                        n.toevoeging)
     doc.comp_address_nen = "{0} {1}".format(n.openbare_ruimte.naam_nen,
-                                                n.toevoeging)
+                                            n.toevoeging)
     doc.comp_address_ptt = "{0} {1}".format(n.openbare_ruimte.naam_ptt,
-                                                n.toevoeging)
+                                            n.toevoeging)
     doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
@@ -457,7 +456,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     if n.bron:
         doc.bron = n.bron.omschrijving
 
-    #if not doc.subtype:
+    # if not doc.subtype:
     #    return doc
 
     doc.subtype = n.get_type_display().lower()
@@ -479,7 +478,6 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
 
 def from_standplaats(s: models.Standplaats):
-
     d = Standplaats(_id=s.id)
 
     update_adres(d, s.hoofdadres)
@@ -626,7 +624,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc.nummeraanduiding_id = n.id
     doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
     doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
-    doc.subtype='exact'
+    doc.subtype = 'exact'
 
     # Retriving the geolocation is dependent on the geometrie
     if n.verblijfsobject:
@@ -640,4 +638,3 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     doc._display = doc.adres
 
     return doc
-
