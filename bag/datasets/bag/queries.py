@@ -170,7 +170,7 @@ def _basis_openbare_ruimte_query(analyzer: QueryAnalyzer,
             }
         },
         indexes=[BAG],
-        sort_fields=['_score', 'naam'],
+        sort_fields=['_score', 'naam.keyword'],
         size=10,
     )
 

@@ -86,17 +86,6 @@ _subtype_mapping = {
 }
 
 
-def prepare_input(query_string: str):
-    """
-    -Cleanup string
-    -Tokenize create tokens
-    -Find first occurence of number, NOTE in the future give array of numbers?
-    """
-    qs, tokens = clean_tokenize(query_string)
-    i, num = first_number(tokens)
-    return qs, tokens, i
-
-
 def select_queries(query_string: str) -> [ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
@@ -261,12 +250,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
                 log.exception('FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
                 continue
 
-            # apply custom sorting.
-            if q.custom_sort_function:
-                # i = index first number in tokens
-                query_clean, tokens, i = prepare_input(query)
-                result = q.custom_sort_function(result, query_clean, tokens, i)
-
             # Get the datas!
             result_data.append(result)
 
@@ -423,7 +406,6 @@ class SearchViewSet(viewsets.ViewSet):
 
         query = request.query_params['q']
         analyzer = QueryAnalyzer(query)
-        query, tokens, i = prepare_input(query)
 
         client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
@@ -454,16 +436,10 @@ class SearchViewSet(viewsets.ViewSet):
         response['count_hits'] = count
         response['count'] = count
 
-        ordered_results = self.custom_sorting(result.hits, query, tokens, i)
-
         response['results'] = [self.normalize_hit(h, request)
-                               for h in ordered_results]
+                               for h in result.hits]
 
         return Response(response)
-
-    def custom_sorting(self, result_hits: list,
-                       query: str, tokens: [str], i: int):
-        return result_hits
 
     def get_url(self, request, hit):
         """
