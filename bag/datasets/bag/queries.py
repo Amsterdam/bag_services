@@ -76,7 +76,7 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query={
             "prefix": {
-                "code.raw": analyzer.get_bouwblok(),
+                "code.raw": analyzer.get_bouwblok().upper(),        # upper, want raw is case-sensitive
             },
         },
         sort_fields=['_display'],
@@ -170,7 +170,7 @@ def _basis_openbare_ruimte_query(analyzer: QueryAnalyzer,
             }
         },
         indexes=[BAG],
-        sort_fields=['_score', 'naam'],
+        sort_fields=['_score', 'naam.keyword'],
         size=10,
     )
 
