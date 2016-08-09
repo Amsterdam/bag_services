@@ -1,12 +1,14 @@
 import re
 import string
 
-_REPLACE_TABLE = "".maketrans(string.punctuation, len(string.punctuation) * " ")
+_REPLACE_TABLE = "".maketrans(
+    string.punctuation, len(string.punctuation) * " ")
 
 
 class KadastraalObjectQuery(object):
     """
-    The KadastraalObjectQuery wraps an original query into its constituent components.
+    The KadastraalObjectQuery wraps an original query into its constituent
+    components.
     """
 
     gemeente_code = None  # Example: ASD15
@@ -32,11 +34,12 @@ class KadastraalObjectQuery(object):
             # Hier kunnen we niets mee
             return
 
-        # We zorgen ervoor dat alle indices bestaan. Dit om te voorkomen dat we de hele tijd moeilijk
-        # lopen te checken
+        # We zorgen ervoor dat alle indices bestaan. Dit om te voorkomen dat
+        # we de hele tijd moeilijk lopen te checken
         tokens = tokens[:] + [None, None, None]
 
-        # Gemeente-code (twee tokens, waarvan het eerste drie letters) of Gemeente-naam (één token)
+        # Gemeente-code (twee tokens, waarvan het eerste drie letters) of
+        # Gemeente-naam (één token)
         if len(tokens[0]) == 3:
             self.gemeente_code = tokens[0] + tokens[1]
             tokens = tokens[2:]
@@ -47,14 +50,26 @@ class KadastraalObjectQuery(object):
         self.sectie = tokens[0]
         self.object_nummer = tokens[1]
 
-        # Vermoedelijk: index-letter, maar het kan ook een getal zijn met een impliciete index-letter 'A'
+        # it is possible to use a shortcut notation for index letter - number
+        # 'g' is always followed by 0. if a number larger then 0 is found then
+        # posibilities:
+        #   g 0
+        #   0 -> g 0
+        #   a 7
+        #   7 -> a 7
+        # So the 2nd token can be 'a' or 'g' or 'number'.
+        # if perceelnumber is 0 then meaning was 'g 0'. else 'a perceelnumber'
         index_thingie = tokens[2]
         if index_thingie in ['a', 'g']:
             self.index_letter = index_thingie
             self.index_nummer = tokens[3]
-        elif index_thingie:
-            self.index_letter = 'a'
-            self.index_nummer = index_thingie
+        elif index_thingie and index_thingie.isdigit():
+            if int(index_thingie) > 0:
+                self.index_letter = 'a'
+                self.index_nummer = index_thingie
+            else:
+                self.index_letter = 'g'
+                self.index_nummer = 0
 
         # clean-up index nummer and object nummer
         if self.object_nummer and not self.object_nummer.isdigit():
@@ -65,7 +80,8 @@ class KadastraalObjectQuery(object):
 
     def object_nummer_is_exact(self):
         """
-        Returns true if the object nummer is an exact query (i.e. 5 digits long)
+        Returns true if the object nummer is an exact query (i.e. 5 digits
+        long)
         """
         return self.object_nummer and len(self.object_nummer) == 5
 
@@ -83,8 +99,9 @@ class KadastraalObjectQuery(object):
 
 class QueryAnalyzer(object):
     """
-    The QueryAnalyzer takes a plain query string and performs various analyses on it.
-    It contains various is_XXX methods that are used to determine if this query could refer to an XXX.
+    The QueryAnalyzer takes a plain query string and performs various analyses
+    on it.  It contains various is_XXX methods that are used to determine if
+    this query could refer to an XXX.
     """
 
     def __init__(self, query: str):
@@ -116,7 +133,8 @@ class QueryAnalyzer(object):
         if self._token_count < 2:
             return False
 
-        return self._is_kadastraal_object_code() or self._is_kadastraal_object_gemeente()
+        return self._is_kadastraal_object_code() or \
+            self._is_kadastraal_object_gemeente()
 
     def _is_kadastraal_object_code(self):
         """
@@ -140,7 +158,7 @@ class QueryAnalyzer(object):
             return False
         return True
 
-    def _is_kadastraal_object_gemeente(self):
+    def _is_kadastraal_object_gemeente(self) -> bool:
         """
         Returns true if this is a kadastraal object like 'Amsterdam S...'
         """
@@ -203,15 +221,16 @@ class QueryAnalyzer(object):
 
     def get_bouwblok(self) -> str:
         """
-        Assuming that the query represents a bouwblok, this returns the bouwblok query
+        Assuming that the query represents a bouwblok, this returns the
+        bouwblok query
         """
         assert self.is_bouwblok_prefix()
         return self.query
 
     def is_postcode_prefix(self) -> bool:
         """
-        Returns true if this query could refer to a postcode. This requires at least 4 digits, followed by at most
-        two non-digits.
+        Returns true if this query could refer to a postcode. This requires at
+        least 4 digits, followed by at most two non-digits.
         """
         if self._token_count == 1:
             cijfers = self._tokens[0]
@@ -233,15 +252,16 @@ class QueryAnalyzer(object):
 
     def get_postcode(self):
         """
-        Assuming this query refers to a postcode, this returns the postcode query.
+        Assuming this query refers to a postcode, this returns the postcode
+        query.
         """
         assert self.is_postcode_prefix()
         return " ".join(self._tokens[:2])
 
     def is_postcode_huisnummer_prefix(self) -> bool:
         """
-        Returns true if this query could refer to postcode/huisnummer combination. This requires a full postcode
-        followed by a huisnummer.
+        Returns true if this query could refer to postcode/huisnummer
+        combination. This requires a full postcode followed by a huisnummer.
         """
         if self._token_count < 3:
             return False
@@ -257,8 +277,8 @@ class QueryAnalyzer(object):
 
     def _contruct_huisnummer_toevoeging(self, start_index) -> str:
         """
-        Constructs a huisnummer/toevoeging combination from the tokens starting at
-        start_index.
+        Constructs a huisnummer/toevoeging combination from the tokens
+        starting at start_index.
         """
         result = []
         for token in self._tokens[start_index:]:
@@ -271,8 +291,8 @@ class QueryAnalyzer(object):
 
     def get_postcode_huisnummer_toevoeging(self) -> (str, int, str):
         """
-        Assuming that this query represents a postcode_huisnummer, this returns
-        the postcode, the huisnummer and the huisnummer + toevoeging.
+        Assuming that this query represents a postcode_huisnummer, this
+        returns the postcode, the huisnummer and the huisnummer + toevoeging.
         """
         assert self.is_postcode_huisnummer_prefix()
 
@@ -283,7 +303,8 @@ class QueryAnalyzer(object):
 
     def is_straatnaam_huisnummer_prefix(self) -> bool:
         """
-        Returns true if this query could refer to straatnaam/huisnummer combination.
+        Returns true if this query could refer to straatnaam/huisnummer
+        combination.
         """
         if self._token_count < 2:
             return False
@@ -302,12 +323,14 @@ class QueryAnalyzer(object):
 
         straat = " ".join(self._tokens[:self._huisnummer_index])
         huisnummer = int(self._tokens[self._huisnummer_index])
-        huisnummer_toevoeging = self._contruct_huisnummer_toevoeging(self._huisnummer_index)
+        huisnummer_toevoeging = \
+            self._contruct_huisnummer_toevoeging(self._huisnummer_index)
 
         return straat, huisnummer, huisnummer_toevoeging
 
     def get_straatnaam(self) -> str:
         """
-        Assuming that this query represents a straatnaam, this returns the straatnaam.
+        Assuming that this query represents a straatnaam, this returns the
+        straatnaam.
         """
         return " ".join(self._tokens)

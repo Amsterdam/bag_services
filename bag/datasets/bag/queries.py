@@ -26,7 +26,8 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """Create query/aggregation for postcode house number search"""
 
-    postcode, huisnummer, toevoeging = analyzer.get_postcode_huisnummer_toevoeging()
+    postcode, huisnummer, toevoeging = \
+        analyzer.get_postcode_huisnummer_toevoeging()
 
     return ElasticQueryWrapper(
         query={
@@ -53,7 +54,8 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer):
     """Create query/aggregation for postcode house number search"""
 
-    postcode, huisnummer, toevoeging = analyzer.get_postcode_huisnummer_toevoeging()
+    postcode, huisnummer, toevoeging = \
+        analyzer.get_postcode_huisnummer_toevoeging()
 
     return ElasticQueryWrapper(
         query=Q(
@@ -76,7 +78,8 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query={
             "prefix": {
-                "code.raw": analyzer.get_bouwblok().upper(),        # upper, want raw is case-sensitive
+                # upper, want raw is case-sensitive
+                "code.raw": analyzer.get_bouwblok().upper(),
             },
         },
         sort_fields=['_display'],
@@ -107,9 +110,10 @@ def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def _basis_openbare_ruimte_query(analyzer: QueryAnalyzer,
-                                 must: [dict] = None,
-                                 must_not: [dict] = None) -> ElasticQueryWrapper:
+def _basis_openbare_ruimte_query(
+        analyzer: QueryAnalyzer,
+        must: [dict] = None,
+        must_not: [dict] = None) -> ElasticQueryWrapper:
     """
     Basis openbare-ruimte query.
 
@@ -117,17 +121,18 @@ def _basis_openbare_ruimte_query(analyzer: QueryAnalyzer,
     """
 
     # Logica:
-    # Het doel is om 'echte' prefix-matches te sorteren vóór phrase-prefix matches.
-    # Met alleen phrase-prefix kan dat niet, dus we gebruiken twee 'should' queries
-    # waarvan er minimaal één moet matchen. Met de constant_score wrapper zorgen we
-    # ervoor dat alle 'prefix' matches een score van 10 krijgen, en alle 'phrase_prefix'
-    # matches een score van 5. De 'constant_score' op de 'must' voorkomt dat die in de weg
-    # zit.
-    # Op basis van deze output kunnen we vervolgens ordenen op score, gevolgd door naam.
+    # Het doel is om 'echte' prefix-matches te sorteren vóór phrase-prefix
+    # matches.  Met alleen phrase-prefix kan dat niet, dus we gebruiken twee
+    # 'should' queries waarvan er minimaal één moet matchen. Met de
+    # constant_score wrapper zorgen we ervoor dat alle 'prefix' matches een
+    # score van 10 krijgen, en alle 'phrase_prefix' matches een score van 5.
+    # De 'constant_score' op de 'must' voorkomt dat die in de weg zit.  Op
+    # basis van deze output kunnen we vervolgens ordenen op score, gevolgd
+    # door naam.
     #
-    # Voorbeelden:
-    # Zoeken op Weesp, geeft eerst Weesperstraat, dan pas Metrostation Weesperstraat.
-    # Zoeken op Prinsen, geeft eerst Prinsengracht, dan pas Korte Prinsengracht.
+    # Voorbeelden: Zoeken op Weesp, geeft eerst Weesperstraat, dan pas
+    # Metrostation Weesperstraat.  Zoeken op Prinsen, geeft eerst
+    # Prinsengracht, dan pas Korte Prinsengracht.
 
     _must = [{'constant_score': {'query': q}} for q in (must or [])]
     _must_not = [{'constant_score': {'query': q}} for q in (must_not or [])]
@@ -222,8 +227,11 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
-    straat, huisnummer, toevoeging = analyzer.get_straatnaam_huisnummer_toevoeging()
+def straatnaam_huisnummer_query(
+        analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+
+    straat, huisnummer, toevoeging = \
+        analyzer.get_straatnaam_huisnummer_toevoeging()
 
     return ElasticQueryWrapper(
         query={
