@@ -25,7 +25,7 @@ class CodeOmschrijvingUvaTask(batch.BasicTask):
         self.path = path
 
     def before(self):
-        database.clear_models(self.model)
+        pass
 
     def after(self):
         pass
@@ -106,7 +106,7 @@ class ImportGmeTask(batch.BasicTask):
         self.path = path
 
     def before(self):
-        database.clear_models(models.Gemeente)
+        pass
 
     def after(self):
         pass
@@ -145,7 +145,6 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.stadsdelen = dict()
 
     def before(self):
-        database.clear_models(models.Stadsdeel)
         self.gemeentes = set(
             models.Gemeente.objects.values_list("pk", flat=True))
 
@@ -223,7 +222,7 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurtcombinaties = dict()
 
     def before(self):
-        database.clear_models(models.Buurt)
+        # database.clear_models(models.Buurt)
         self.stadsdelen = set(
             models.Stadsdeel.objects.values_list("pk", flat=True))
         self.buurtcombinaties = dict(
@@ -312,7 +311,6 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.bouwblokken = dict()
 
     def before(self):
-        database.clear_models(models.Bouwblok)
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
     def after(self):
@@ -379,7 +377,6 @@ class ImportWplTask(batch.BasicTask):
         self.gemeentes = set()
 
     def before(self):
-        database.clear_models(models.Woonplaats)
         self.gemeentes = set(
             models.Gemeente.objects.values_list("pk", flat=True))
 
@@ -437,7 +434,6 @@ class ImportOprTask(batch.BasicTask):
         self.openbare_ruimtes = dict()
 
     def before(self):
-        database.clear_models(models.OpenbareRuimte)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(
             models.Status.objects.values_list("pk", flat=True))
@@ -550,7 +546,6 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.landelijke_ids = dict()
 
     def before(self):
-        database.clear_models(models.Nummeraanduiding)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(
             models.Status.objects.values_list("pk", flat=True))
@@ -748,7 +743,6 @@ class ImportLigTask(batch.BasicTask):
         self.ligplaatsen = dict()
 
     def before(self):
-        database.clear_models(models.Ligplaats)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
@@ -834,7 +828,6 @@ class ImportStaTask(batch.BasicTask):
         self.standplaatsen = dict()
 
     def before(self):
-        database.clear_models(models.Standplaats)
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
@@ -923,7 +916,6 @@ class ImportVboTask(batch.BasicTask):
         self.landelijke_ids = dict()
 
     def before(self):
-        database.clear_models(models.Verblijfsobject)
         self.redenen_afvoer = set(models.RedenAfvoer.objects.values_list("pk", flat=True))
         self.redenen_opvoer = set(models.RedenOpvoer.objects.values_list("pk", flat=True))
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
@@ -1090,7 +1082,6 @@ class ImportPndTask(batch.BasicTask):
         self.landelijke_ids = dict()
 
     def before(self):
-        database.clear_models(models.Pand)
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.bouwblokken = set(models.Bouwblok.objects.values_list("pk", flat=True))
 
@@ -1164,7 +1155,6 @@ class ImportPndVboTask(batch.BasicTask):
         self.vbos = set()
 
     def before(self):
-        database.clear_models(models.VerblijfsobjectPandRelatie)
 
         self.panden = frozenset(
             models.Pand.objects.values_list("pk", flat=True))
@@ -1394,7 +1384,6 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         self.stadsdelen = dict()
 
     def before(self):
-        database.clear_models(models.Buurtcombinatie)
         self.stadsdelen = dict(
             models.Stadsdeel.objects.values_list("code", "id"))
 
@@ -1441,7 +1430,6 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         self.stadsdelen = dict()
 
     def before(self):
-        database.clear_models(models.Gebiedsgerichtwerken)
         self.stadsdelen = dict(
             models.Stadsdeel.objects.values_list("code", "pk"))
 
@@ -1485,7 +1473,7 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        database.clear_models(models.Grootstedelijkgebied)
+        pass
 
     def after(self):
         pass
@@ -1520,7 +1508,7 @@ class ImportUnescoTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        database.clear_models(models.Unesco)
+        pass
 
     def after(self):
         pass
