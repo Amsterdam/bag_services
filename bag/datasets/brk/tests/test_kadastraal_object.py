@@ -6,6 +6,7 @@ from datasets.brk.tests import factories
 
 
 class ImportKadastraalObjectTaskTest(TaskTestCase):
+
     def setUp(self):
         factories.KadastraleSectieFactory.create(
             sectie='A',

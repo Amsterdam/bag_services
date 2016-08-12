@@ -22,7 +22,7 @@ class ImportBeperkingcodeTask(batch.BasicTask):
         self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
 
     def before(self):
-        database.clear_models(models.Beperkingcode)
+        pass
 
     def after(self):
         pass
@@ -49,7 +49,7 @@ class ImportWkpbBroncodeTask(batch.BasicTask):
         self.source = os.path.join(source_path, 'wpb_broncode.dat')
 
     def before(self):
-        database.clear_models(models.Broncode)
+        pass
 
     def after(self):
         pass
@@ -78,7 +78,6 @@ class ImportBeperkingTask(batch.BasicTask):
         self.codes = set()
 
     def before(self):
-        database.clear_models(models.Beperking)
         self.codes = set(models.Beperkingcode.objects.values_list('pk', flat=True))
 
     def after(self):
@@ -124,7 +123,6 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         self.beperkingen = dict()
 
     def before(self):
-        database.clear_models(models.Brondocument)
         self.codes = set(models.Broncode.objects.values_list('pk', flat=True))
         self.beperkingen = dict(models.Beperking.objects.values_list('inschrijfnummer', 'pk'))
 
@@ -174,7 +172,6 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.kot = dict()
 
     def before(self):
-        database.clear_models(models.BeperkingKadastraalObject)
         self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
         self.kot = dict(brk.KadastraalObject.objects.values_list('aanduiding', 'pk'))
 
@@ -218,7 +215,7 @@ class ImportBeperkingVerblijfsobjectTask(object):
     name = "Import WKPB - Beperking-VBO"
 
     def before(self):
-        database.clear_models(models.BeperkingVerblijfsobject)
+        pass
 
     def execute(self):
         with db.connection.cursor() as c:

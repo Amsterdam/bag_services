@@ -39,7 +39,7 @@ class ImportGemeenteTask(batch.BasicTask):
         self.path = path
 
     def before(self):
-        database.clear_models(models.Gemeente)
+        pass
 
     def after(self):
         pass
@@ -63,7 +63,6 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         self.gemeentes = set()
 
     def before(self):
-        database.clear_models(models.KadastraleGemeente)
         self.gemeentes = set(models.Gemeente.objects.values_list('gemeente', flat=True))
 
     def after(self):
@@ -97,7 +96,6 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         self.gemeentes = set()
 
     def before(self):
-        database.clear_models(models.KadastraleSectie)
         self.gemeentes = set(
             models.KadastraleGemeente.objects.values_list('pk', flat=True))
 
@@ -143,15 +141,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         self.rechtsvorm = dict()
 
     def before(self):
-        database.clear_models(
-                models.KadastraalSubject,
-                models.Geslacht,
-                models.Beschikkingsbevoegdheid,
-                models.AanduidingNaam,
-                models.Land,
-                models.Adres,
-                models.Rechtsvorm,
-        )
+        pass
 
     def after(self):
         self.geslacht.clear()
@@ -318,12 +308,6 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.subjects = set()
 
     def before(self):
-        database.clear_models(
-                models.KadastraalObject,
-                models.SoortGrootte,
-                models.CultuurCodeOnbebouwd,
-                models.CultuurCodeBebouwd,
-        )
 
         secties = models.KadastraleSectie.objects.select_related(
             'kadastrale_gemeente').all()
@@ -457,11 +441,6 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.kot = set()
 
     def before(self):
-        database.clear_models(
-                models.ZakelijkRecht,
-                models.AardZakelijkRecht,
-                models.AppartementsrechtsSplitsType,
-        )
         self.kst = set(
             models.KadastraalSubject.objects.values_list("id", flat=True))
         self.kot = set(
@@ -550,10 +529,6 @@ class ImportAantekeningTask(batch.BasicTask):
         self.kot = set()
 
     def before(self):
-        database.clear_models(
-                models.Aantekening,
-                models.AardAantekening,
-        )
         self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
         self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
 
@@ -610,9 +585,6 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         self.vbo = set()
 
     def before(self):
-        database.clear_models(
-                models.KadastraalObjectVerblijfsobjectRelatie,
-        )
         self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
         self.vbo = set(bag.Verblijfsobject.objects.values_list("id", flat=True))
 
@@ -646,7 +618,7 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
     name = "Import Kadaster - KOT-KOT"
 
     def before(self):
-        database.clear_models(models.APerceelGPerceelRelatie)
+        pass
 
     def process(self):
         with db.connection.cursor() as c:
@@ -670,7 +642,7 @@ class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
     name = "Import Kadaster - ZRT-VBO"
 
     def before(self):
-        database.clear_models(models.ZakelijkRechtVerblijfsobjectRelatie)
+        pass
 
     def process(self):
         with db.connection.cursor() as c:
