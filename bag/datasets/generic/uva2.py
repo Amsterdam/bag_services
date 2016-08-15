@@ -5,8 +5,6 @@ import os
 import re
 from contextlib import contextmanager
 
-__author__ = 'yigalduppen'
-
 log = logging.getLogger(__name__)
 
 uva2_date_re = re.compile(r'^.*/[a-zA-Z]+_(\d{8})_N_\d{8}_\d{8}\.uva2$', re.IGNORECASE)

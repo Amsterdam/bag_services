@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-__author__ = 'yigalduppen'
-
 
 class ReadOnlyAdmin(admin.ModelAdmin):
     readonly_fields = []
