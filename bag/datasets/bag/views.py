@@ -270,6 +270,15 @@ class PandViewSet(rest.AtlasViewSet):
         return super().retrieve(
             request, *args, **kwargs)
 
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 16:
+            obj = get_object_or_404(models.Pand, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.Pand, pk=pk)
+
+        return obj
+
 
 class OpenbareRuimteViewSet(rest.AtlasViewSet):
     """

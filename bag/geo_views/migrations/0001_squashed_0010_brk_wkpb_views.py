@@ -145,7 +145,7 @@ WHERE
 SELECT
   p.id                                      AS id,
   p.geometrie                               AS geometrie,
-  p.id                                      AS display,
+  p.landelijk_id                            AS display,
   'bag/pand'                                AS type,
   site.domain || 'bag/pand/' || p.id || '/' AS uri
 FROM
