@@ -34,7 +34,6 @@ node {
         image.push()
         image.push("develop")
     }
-}
 
     stage 'Test'
     tryStep "test", {
@@ -44,6 +43,7 @@ node {
 
         sh "docker-compose -p bag -f .jenkins/docker-compose.yml down"
     }
+}
 
 
 node {
