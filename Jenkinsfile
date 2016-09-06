@@ -28,6 +28,13 @@ node {
         sh "docker-compose build"
     }
 
+    stage "Build develop image"
+    tryStep "build", {
+        def image = docker.build("admin.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
+        image.push()
+        image.push("develop")
+    }
+}
 
     stage 'Test'
     tryStep "test", {
@@ -38,13 +45,6 @@ node {
         sh "docker-compose -p bag -f .jenkins/docker-compose.yml down"
     }
 
-    stage "Build develop image"
-    tryStep "build", {
-        def image = docker.build("admin.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
-        image.push()
-        image.push("develop")
-    }
-}
 
 node {
     stage name: "Deploy to ACC", concurrency: 1
