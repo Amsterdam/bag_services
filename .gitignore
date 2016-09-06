@@ -7,3 +7,4 @@ batch.log
 **/__pycache__
 .jenkins/backups/
 reports/
+.DS_Store

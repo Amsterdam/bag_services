@@ -18,7 +18,6 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -32,7 +31,6 @@ PARTIAL_IMPORT = dict(
     numerator=0,
     denominator=1
 )
-
 
 DATAPUNT_API_URL = os.getenv(
     # note the ending /
@@ -100,7 +98,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bag.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
@@ -110,7 +107,6 @@ DATABASES = {
         'NAME': 'atlas'
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -136,12 +132,11 @@ ELASTIC_INDICES = {
 
 if TESTING:
     for k, v in ELASTIC_INDICES.items():
-        ELASTIC_INDICES[k] = ELASTIC_INDICES[k] + 'test'
+        ELASTIC_INDICES[k] += 'test'
 
 BATCH_SETTINGS = dict(
     batch_size=4000
 )
-
 
 STATIC_URL = '/static/'
 
