@@ -88,7 +88,7 @@ class ViewsTest(TestCase):
         row = self.get_row('geo_bag_pand')
         self.assertEqual(row['id'], p.id)
         self.assertIn("geometrie", row)
-        self.assertEqual(row['display'], p.id)
+        self.assertEqual(row['display'], p.landelijk_id)
         self.assertEqual(row['type'], 'bag/pand')
         self.assertIn(row['uri'], '{}bag/pand/{}/'.format(URL, p.id))
 
