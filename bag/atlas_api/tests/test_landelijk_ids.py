@@ -10,6 +10,8 @@ class LandelijkIDTest(APITestCase):
         self.na = bag_factories.NummeraanduidingFactory.create()
         self.pand = bag_factories.PandFactory.create()
 
+        self.pand_vbo = bag_factories.VerblijfsobjectPandRelatie()
+
     def test_vbo_amsterdams_id(self):
         res = self.client.get('/bag/verblijfsobject/{}/'.format(self.vbo.id))
         self.assertEquals(200, res.status_code)
@@ -20,6 +22,18 @@ class LandelijkIDTest(APITestCase):
             self.vbo.landelijk_id))
         self.assertEquals(200, res.status_code)
         self.assertEquals(self.vbo.id, res.data['sleutelverzendend'])
+
+    def test_vbo_pand_landelijk_id(self):
+
+        res = self.client.get(
+            '/bag/verblijfsobject/?panden__landelijk_id={}'.format(
+                self.pand_vbo.pand.landelijk_id))
+
+        self.assertEquals(200, res.status_code)
+
+        self.assertEquals(
+            self.pand_vbo.verblijfsobject.id,
+            res.json()['results'][0]['id'])
 
     def test_nummeraanduiding_amsterdams_id(self):
         res = self.client.get('/bag/nummeraanduiding/{}/'.format(

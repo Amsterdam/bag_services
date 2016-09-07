@@ -134,6 +134,15 @@ class StandplaatsFactory(factory.DjangoModelFactory):
     buurt = factory.SubFactory(BuurtFactory)
 
 
+class PandFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Pand
+
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
+    bouwblok = factory.SubFactory(BouwblokFactory)
+
+
 class VerblijfsobjectFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Verblijfsobject
@@ -145,13 +154,13 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     buurt = factory.SubFactory(BuurtFactory)
 
 
-class PandFactory(factory.DjangoModelFactory):
+class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):
     class Meta:
-        model = models.Pand
+        model = models.VerblijfsobjectPandRelatie
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
-    bouwblok = factory.SubFactory(BouwblokFactory)
+    pand = factory.SubFactory(PandFactory)
+    verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
 
 
 class WoonplaatsFactory(factory.DjangoModelFactory):
@@ -189,7 +198,8 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     type = '01'  # default verblijfsobject
     postcode = '1000AN'  # default postcode..
 
-    _openbare_ruimte_naam = factory.LazyAttribute(lambda o: o.openbare_ruimte.naam)
+    _openbare_ruimte_naam = factory.LazyAttribute(
+        lambda o: o.openbare_ruimte.naam)
 
 
 class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
