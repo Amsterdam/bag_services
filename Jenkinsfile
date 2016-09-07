@@ -50,7 +50,7 @@ node {
                     parameters: [
                             [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
                             [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
-                            [$class: 'StringParameterValue', name: 'BRANCH', value: 'master'],
+                            [$class: 'StringParameterValue', name: 'BRANCH', value: 'develop'],
                     ]
         }
     }
