@@ -16,7 +16,6 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 import atlas_api.urls
-import atlas_api.views as api_views
 import datasets.bag.views
 import datasets.brk.views
 
