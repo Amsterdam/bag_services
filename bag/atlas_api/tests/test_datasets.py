@@ -71,11 +71,24 @@ class BrowseDatasetsTestCase(APITestCase):
         """
 
         self.assertEqual(
-            response.status_code, 200,
+            200, response.status_code,
             'Wrong response code for {}'.format(url))
 
         self.assertEqual(
-            response['Content-Type'], 'application/json',
+            'application/json', response['Content-Type'],
+            'Wrong Content-Type for {}'.format(url))
+
+    def valid_html_response(self, url, response):
+        """
+        Helper method to check common status/json
+        """
+
+        self.assertEqual(
+            200, response.status_code,
+            'Wrong response code for {}'.format(url))
+
+        self.assertEqual(
+            'text/html; charset=utf-8', response['Content-Type'],
             'Wrong Content-Type for {}'.format(url))
 
     def test_lists(self):
@@ -101,11 +114,48 @@ class BrowseDatasetsTestCase(APITestCase):
 
             self.assertIn('_display', detail.data)
 
+    def test_lists_html(self):
+        for url in self.datasets:
+            response = self.client.get('/{}/?format=api'.format(url))
+
+            self.valid_html_response(url, response)
+
+            self.assertIn(
+                'count', response.data, 'No count attribute in {}'.format(url))
+            self.assertNotEqual(
+                response.data['count'],
+                0, 'Wrong result count for {}'.format(url))
+
+    def test_details_html(self):
+        for url in self.datasets:
+            response = self.client.get('/{}/?format=api'.format(url))
+
+            url = response.data['results'][0]['_links']['self']['href']
+            detail = self.client.get(url)
+
+            self.valid_html_response(url, detail)
+
+            self.assertIn('_display', detail.data)
+
     def test_brk_object_wkpb(self):
 
         url = 'brk/object'
 
         response = self.client.get('/{}/'.format(url))
+
+        test_id = response.data['results'][0]['id']
+
+        test_url = reverse('brk-object-wkpb', args=[test_id])
+
+        detail = self.client.get(test_url)
+
+        self.valid_response(test_url, detail)
+
+    def test_brk_object_wkpb_html(self):
+
+        url = 'brk/object'
+
+        response = self.client.get('/{}/?format=api'.format(url))
 
         test_id = response.data['results'][0]['id']
 
