@@ -1,7 +1,6 @@
 import datetime
 
 from django.contrib.gis.geos import Point
-from django.test import TransactionTestCase
 
 from datasets.bag.tests import factories
 from .. import models, batch
@@ -650,7 +649,7 @@ class ImportVboPndTask(TaskTestCase):
 
     def task(self):
         return batch.ImportPndVboTask(BAG)
-    
+
     def test_import(self):
         self.run_task()
 

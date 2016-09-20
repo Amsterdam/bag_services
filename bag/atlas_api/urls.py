@@ -1,8 +1,4 @@
-from django.conf.urls import url, include
-
 from rest_framework import routers
-
-from django.conf import settings
 
 import datasets.bag.views
 import datasets.brk.views
