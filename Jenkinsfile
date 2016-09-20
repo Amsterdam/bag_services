@@ -58,6 +58,7 @@ node {
 
 
 stage('Waiting for approval') {
+    slackSend channel: '#ci-channel', color: 'warning', message: 'BAG is waiting for Production Release - please confirm'
     input "Deploy to Production?"
 }
 
