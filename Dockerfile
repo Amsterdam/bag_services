@@ -27,3 +27,4 @@ ENV DJANGO_SETTINGS_MODULE=bag.settings.docker
 USER datapunt
 COPY bag /app/
 CMD /app/docker-entrypoint.sh
+
