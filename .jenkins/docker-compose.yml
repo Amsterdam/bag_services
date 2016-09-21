@@ -8,7 +8,7 @@ elasticsearch:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
   volumes:
     - ./backups/elasticsearch:/tmp/backups
-  user: root
+  user: jenkins
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
 tests:
@@ -117,7 +117,7 @@ el-backup:
     - elasticsearch:el
   volumes:
     - ./backups/elasticsearch:/tmp/backups
-  user: root
+  user: jenkins
   command: >
     bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
             && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' "
