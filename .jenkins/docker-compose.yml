@@ -8,7 +8,7 @@ elasticsearch:
   image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
   volumes:
     - ./backups/elasticsearch:/tmp/backups
-  user: jenkins
+  user: root
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
 tests:
