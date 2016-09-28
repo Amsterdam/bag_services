@@ -16,8 +16,6 @@ tests:
   links:
     - database:database
     - elasticsearch:elasticsearch
-  volumes:
-    - ../reports:/app/reports
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
