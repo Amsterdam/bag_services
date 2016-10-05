@@ -1,5 +1,5 @@
 database:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
+  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
   ports:
     - "5434:5432"
   environment:
@@ -8,7 +8,7 @@ database:
     POSTGRES_DB: atlas
 
 elasticsearch:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
+  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
   command: elasticsearch -Des.network.host=0.0.0.0
   ports:
     - "9200:9200"

@@ -1,11 +1,11 @@
 database:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
+  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
   environment:
     POSTGRES_PASSWORD: insecure
     POSTGRES_USER: atlas
 
 elasticsearch:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
   volumes:
     - ./backups/elasticsearch:/tmp/backups
   user: root
@@ -88,7 +88,7 @@ importer_el3:
             && python manage.py elastic_indices bag brk --partial=3/3 --build"
 
 db-backup:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/postgres
+  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
   links:
     - database:db
   volumes:
@@ -110,7 +110,7 @@ db-backup:
                         atlas > /tmp/backups/database.dump"
 
 el-backup:
-  image: admin.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
   links:
     - elasticsearch:el
   volumes:
