@@ -305,7 +305,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return ordered_results
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request):
         """
         returns result options
         ---

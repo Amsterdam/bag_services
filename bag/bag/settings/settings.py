@@ -23,9 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('BAG_SECRET_KEY', 'insecure')
+insecure_key = 'insecure'
 
-DEBUG = False
+SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
+DEBUG = SECRET_KEY == insecure_key
 
 # Application definition
 PARTIAL_IMPORT = dict(
