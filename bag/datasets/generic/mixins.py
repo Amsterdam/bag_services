@@ -1,4 +1,3 @@
-from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.db import models
 
 

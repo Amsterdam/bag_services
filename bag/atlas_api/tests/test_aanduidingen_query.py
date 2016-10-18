@@ -1,5 +1,4 @@
 # Python
-from unittest import skip
 # Package
 from rest_framework.test import APITestCase
 # Project
@@ -42,7 +41,7 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=42,
             huisletter='F',
-            toevoeging='1',
+            huisnummer_toevoeging='1',
             type='01',  # Verblijfsobject
             openbare_ruimte=straat
         )
@@ -50,7 +49,7 @@ class SubjectSearchTest(APITestCase):
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=43,
             huisletter='F',
-            toevoeging='1',
+            huisnummer_toevoeging='1',
             type='01',  # Verblijfsobject
             openbare_ruimte=straat
         )

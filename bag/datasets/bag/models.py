@@ -801,7 +801,8 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.pand_id and self.verblijfsobject_id:
-            self.id = self.pand_id + '_' + self.verblijfsobject_id
+            self.id = '{pid}_{vid}'.format(pid=self.pand_id,
+                                           vid=self.verblijfsobject_id)
 
     def __str__(self):
         return "Pand-Verblijfsobject({}-{})".format(

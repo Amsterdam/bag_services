@@ -12,8 +12,9 @@ class SearchRouter(routers.DefaultRouter):
 
     End point for different search uris, offering data not directly reflected in the models
     """
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class Search(cls):
@@ -32,8 +33,9 @@ class BagRouter(routers.DefaultRouter):
     ligplaatsen en de bijbehorende adressen en de benoeming van
     woonplaatsen en openbare ruimten.
     """
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class BAG(cls):
@@ -52,8 +54,9 @@ class GebiedenRouter(routers.DefaultRouter):
     registratie gegevens van de grootstedelijke gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de
     gebieden van gebiedsgericht werken.
     """
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class Gebieden(cls):
@@ -72,8 +75,9 @@ class BrkRouter(routers.DefaultRouter):
     vruchtgebruik) en leidingnetwerken. Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
     oppervlakte, kadastrale grens en de grenzen van het rijk, de provincies en gemeenten.
     """
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class BRK(cls):
@@ -91,8 +95,9 @@ class WkpbRouter(routers.DefaultRouter):
     bevat alle bij wet genoemde beperkingenbesluiten op onroerende
     zaken, die het gemeentebestuur heeft opgelegd.
     """
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class WKPB(cls):
@@ -107,8 +112,8 @@ class AtlasRouter(routers.DefaultRouter):
     Specifieke functionaliteit voor de Atlas API.
     """
 
-    def get_api_root_view(self):
-        view = super().get_api_root_view()
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
         class Atlas(cls):
@@ -129,7 +134,6 @@ bag.register(r'nummeraanduiding', datasets.bag.views.NummeraanduidingViewSet)
 bag.register(r'pand', datasets.bag.views.PandViewSet)
 bag.register(r'woonplaats', datasets.bag.views.WoonplaatsViewSet)
 
-
 gebieden = GebiedenRouter()
 gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
 gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
@@ -142,7 +146,6 @@ gebieden.register(
 gebieden.register(
     r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
-
 
 brk = BrkRouter()
 brk.register(r'gemeente', datasets.brk.views.GemeenteViewSet)
@@ -163,12 +166,10 @@ brk.register(r'object-expand',
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
 
-
 wkpb = WkpbRouter()
 wkpb.register(r'beperking', datasets.wkpb.views.BeperkingView)
 wkpb.register(r'brondocument', datasets.wkpb.views.BrondocumentView)
 wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
-
 
 atlas = AtlasRouter()
 
@@ -206,6 +207,6 @@ search.register(
     base_name='postcode')
 
 urlpatterns = [
-    #url(r'^gebieden/bouwblok/(?P<code>....)/?$',
+    # url(r'^gebieden/bouwblok/(?P<code>....)/?$',
     #    datasets.bag.views.BouwblokCodeView.as_view()),
 ]

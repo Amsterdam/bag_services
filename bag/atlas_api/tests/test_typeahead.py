@@ -5,7 +5,7 @@ import random
 # Packages
 from rest_framework.test import APITestCase
 # Project
-from batch import batch
+import batch
 import datasets.bag.batch
 from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
@@ -15,7 +15,7 @@ class TypeaheadTest(APITestCase):
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(APITestCase, cls).setUpClass()
 
         anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
@@ -86,7 +86,7 @@ class TypeaheadTest(APITestCase):
         for i in range(100, 120):
             bag_factories.NummeraanduidingFactory.create(
                 openbare_ruimte=rozengracht, huisnummer=i,
-                toevoeging=2,
+                huisnummer_toevoeging=2,
                 hoofdadres=True, postcode='1088RG')
 
         # create some random nummeraanduidingen
@@ -100,7 +100,7 @@ class TypeaheadTest(APITestCase):
 
             bag_factories.NummeraanduidingFactory.create(
                 openbare_ruimte=openbare_ruimte, huisnummer=hi,
-                toevoeging=tv,
+                huisnummer_toevoeging=tv,
                 hoofdadres=True, postcode=postcode)
 
         eerste_ganshof = bag_factories.OpenbareRuimteFactory.create(
@@ -134,8 +134,8 @@ class TypeaheadTest(APITestCase):
             huisletter='P',
             hoofdadres=True, postcode='1188TV')
 
-        batch.execute(datasets.bag.batch.IndexBagJob())
-        batch.execute(datasets.brk.batch.IndexKadasterJob())
+        batch.batch.execute(datasets.bag.batch.IndexBagJob())
+        batch.batch.execute(datasets.brk.batch.IndexKadasterJob())
 
     def test_match_openbare_ruimte(self):
         response = self.client.get('/atlas/typeahead/', {'q': '100'})

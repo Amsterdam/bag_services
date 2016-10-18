@@ -21,7 +21,7 @@ tests:
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
     METADATA_URL: ""
-  command: bash -c "/app/docker-wait.sh && python manage.py jenkins"
+  command: bash -c "/app/docker-wait.sh && python manage.py test"
 
 importer:
   build: ..

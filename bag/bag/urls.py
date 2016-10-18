@@ -33,8 +33,6 @@ urlpatterns = [
         datasets.brk.views.KadastraalObjectWkpbView.as_view(),
         name='brk-object-wkpb'),
 
-    url(r'^bag/docs/', include('rest_framework_swagger.urls')),
-
     url(r'^bag/', include(atlas_api.urls.bag.urls)),
     url(r'^gebieden/', include(atlas_api.urls.gebieden.urls)),
     url(r'^brk/', include(atlas_api.urls.brk.urls)),
