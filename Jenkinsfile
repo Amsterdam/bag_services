@@ -41,6 +41,10 @@ node {
     }
 }
 
+String BRANCH = "${env.BRANCH_NAME}"
+
+if (BRANCH == "master") {
+
 node {
     stage("Deploy to ACC") {
         tryStep "deployment", {
@@ -48,6 +52,7 @@ node {
                     parameters: [
                             [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
                             [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
+                            [$class: 'StringParameterValue', name: 'BRANCH', value: 'master'],
                     ]
         }
     }
@@ -80,7 +85,9 @@ node {
                     parameters: [
                             [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
                             [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
+                            [$class: 'StringParameterValue', name: 'BRANCH', value: 'master'],
                     ]
+            }
         }
     }
 }
