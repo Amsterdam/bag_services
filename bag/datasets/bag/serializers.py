@@ -126,7 +126,7 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
 
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-
+    status = Status()
     class Meta:
         model = models.Nummeraanduiding
         fields = (
@@ -134,6 +134,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_display',
             'landelijk_id',
             'hoofdadres',
+            'status',
         )
 
 
