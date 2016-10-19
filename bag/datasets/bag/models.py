@@ -737,7 +737,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     def _woonplaats(self):
         return self.hoofdadres.woonplaats if self.hoofdadres else None
 
-
 class Pand(
         mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         mixins.ImportStatusMixin, mixins.DocumentStatusMixin,

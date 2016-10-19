@@ -26,7 +26,7 @@ Use `docker-compose` to start a local database. Use `sudo` if you're running on 
 Create a new virtual env, and execute the following:
 
 	pip install -r requirements.txt
-	export DJANGO_SETTINGS_MODULE=bag.settings.local
+	export DJANGO_SETTINGS_MODULE=bag.settings.docker
 	./bag/manage.py migrate
 	./bag/manage.py runserver
 
