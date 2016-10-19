@@ -126,7 +126,7 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
 
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-
+    status = Status()
     class Meta:
         model = models.Nummeraanduiding
         fields = (
@@ -134,6 +134,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_display',
             'landelijk_id',
             'hoofdadres',
+            'status',
         )
 
 
@@ -166,6 +167,8 @@ class Standplaats(BagMixin, rest.HALSerializer):
 
 class Verblijfsobject(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+    status = Status()
+    hoofdadres = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Verblijfsobject
@@ -174,7 +177,12 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             '_display',
             'landelijk_id',
             'id',
+            'status',
+            'hoofdadres',
         )
+
+    def get_hoofdadres(self, obj):
+        return True if obj.hoofdadres else None
 
 
 class Pand(BagMixin, rest.HALSerializer):
