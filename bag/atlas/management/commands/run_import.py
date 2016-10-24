@@ -102,5 +102,5 @@ class Command(BaseCommand):
                     result = batch.execute(job_class())
                     self.act_on_result(result)
 
-        # NO LONGER USED
-        # call_command('create_geo_tables')
+        # Geosearch uses the materialized views
+        call_command('create_geo_tables')
