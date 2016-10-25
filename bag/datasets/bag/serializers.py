@@ -127,6 +127,7 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
+
     class Meta:
         model = models.Nummeraanduiding
         fields = (
@@ -296,6 +297,7 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
             'naam',
         )
 
+
 class BuurtDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     bouwblokken = rest.RelatedSummaryField()
@@ -354,6 +356,7 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
 
     class Meta:
         model = models.Gebiedsgerichtwerken
+
         fields = (
             '_links',
             '_display',
@@ -511,6 +514,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     type = serializers.CharField(source='get_type_display')
     buurt = Buurt()
     buurtcombinatie = Buurtcombinatie()
+    gebiedsgerichtwerken = Gebiedsgerichtwerken()
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
     woonplaats = Woonplaats()
@@ -551,6 +555,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'verblijfsobject',
             'buurt',
             'buurtcombinatie',
+            'gebiedsgerichtwerken',
             'stadsdeel',
             'woonplaats',
             'bouwblok',
@@ -930,6 +935,7 @@ class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
     buurtcombinatie = Buurtcombinatie()
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
+    gebiedsgerichtwerken = Gebiedsgerichtwerken()
     woonplaats = Woonplaats()
     gemeente = Gemeente()
 
