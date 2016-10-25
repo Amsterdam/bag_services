@@ -296,7 +296,6 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
             'naam',
         )
 
-
 class BuurtDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     bouwblokken = rest.RelatedSummaryField()
@@ -358,6 +357,7 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            'code',
             'naam',
         )
 
@@ -656,6 +656,7 @@ class VerblijfsobjectDetail(
 
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
+    _gebiedsgerichtwerken = Gebiedsgerichtwerken()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
@@ -708,6 +709,7 @@ class VerblijfsobjectDetail(
 
             '_buurtcombinatie',
             '_stadsdeel',
+            '_gebiedsgerichtwerken',
             '_gemeente',
             '_woonplaats',
         )
@@ -964,6 +966,7 @@ class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
             'buurt',
             'buurtcombinatie',
             'stadsdeel',
+            'gebiedsgerichtwerken',
             'woonplaats',
             'gemeente',
 

@@ -302,6 +302,35 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return dct
 
 
+class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM', 'CODE', 'STADSDEEL',
+     'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    """
+
+    id = models.CharField(max_length=4, primary_key=True)
+    code = models.CharField(max_length=4)
+    naam = models.CharField(max_length=100)
+    stadsdeel = models.ForeignKey(
+        Stadsdeel, related_name='gebiedsgerichtwerken')
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Gebiedsgerichtwerken"
+        verbose_name_plural = "Gebiedsgerichtwerken"
+        ordering = ('code',)
+
+    def __str__(self):
+        return "{} ({})".format(self.naam, self.code)
+
+
 class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
                        models.Model):
@@ -468,6 +497,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         s = self.stadsdeel
         return s.gemeente if s else None
 
+    @property
+    def gebiedsgerichtwerken(self):
+        a = self.adresseerbaar_object
+        return a._gebiedsgerichtwerken if a else None
+
 
 class AdresseerbaarObjectMixin(object):
     @property
@@ -506,6 +540,10 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True, related_name='ligplaatsen')
+
+    _gebiedsgerichtwerken = models.ForeignKey(
+        Gebiedsgerichtwerken, related_name='ligplaatsen', null=True)
+
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     # gedenormaliseerde velden
@@ -572,6 +610,10 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     bron = models.ForeignKey(Bron, null=True)
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(Buurt, null=True, related_name='standplaatsen')
+
+    _gebiedsgerichtwerken = models.ForeignKey(
+        Gebiedsgerichtwerken, related_name='standplaatsen', null=True)
+
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     # gedenormaliseerde velden
@@ -667,6 +709,9 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     geometrie = geo.PointField(null=True, srid=28992)
 
+    _gebiedsgerichtwerken = models.ForeignKey(
+        Gebiedsgerichtwerken, related_name='adressen', null=True)
+
     # gedenormaliseerde velden
     _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
     _huisnummer = models.IntegerField(null=True)
@@ -736,6 +781,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     @property
     def _woonplaats(self):
         return self.hoofdadres.woonplaats if self.hoofdadres else None
+
 
 class Pand(
         mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
@@ -843,35 +889,6 @@ class Buurtcombinatie(
 
     def _gemeente(self):
         return self.stadsdeel.gemeente
-
-
-class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
-    """
-    model for data from shp files
-
-    layer.fields:
-
-    ['NAAM', 'CODE', 'STADSDEEL',
-     'INGSDATUM', 'EINDDATUM', 'DOCNR', 'DOCDATUM']
-    """
-
-    id = models.CharField(max_length=4, primary_key=True)
-    code = models.CharField(max_length=4)
-    naam = models.CharField(max_length=100)
-    stadsdeel = models.ForeignKey(
-        Stadsdeel, related_name='gebiedsgerichtwerken')
-
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
-    objects = geo.GeoManager()
-
-    class Meta:
-        verbose_name = "Gebiedsgerichtwerken"
-        verbose_name_plural = "Gebiedsgerichtwerken"
-        ordering = ('code',)
-
-    def __str__(self):
-        return "{} ({})".format(self.naam, self.code)
 
 
 class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):

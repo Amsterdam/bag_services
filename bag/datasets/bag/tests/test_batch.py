@@ -665,3 +665,38 @@ class ImportVboPndTask(TaskTestCase):
         self.assertEqual([p.id for p in v1.panden.all()], [p.id])
 
 
+class UpdateGebiedenTask(TaskTestCase):
+
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
+            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportStsTask(BAG),
+            batch.ImportVboTask(BAG),
+            batch.ImportStaTask(BAG, BAG_WKT),
+            batch.ImportLigTask(BAG, BAG_WKT),
+            batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP)
+        ]
+
+    def task(self):
+        assert models.Verblijfsobject.objects.count() > 0
+        return batch.UpdateGebiedenAttributenTask()
+
+    def test_import(self):
+        self.run_task()
+
+        vb_n = models.Verblijfsobject.objects.filter(
+            _gebiedsgerichtwerken__isnull=True)
+
+        std_n = models.Standplaats.objects.filter(
+            _gebiedsgerichtwerken__isnull=True)
+
+        lig_n = models.Ligplaats.objects.filter(
+            _gebiedsgerichtwerken__isnull=True)
+
+        # check that everything has a GGW code
+        self.assertTrue(vb_n.count() == 0)
+        self.assertTrue(std_n.count() == 0)
+        self.assertTrue(lig_n.count() == 0)

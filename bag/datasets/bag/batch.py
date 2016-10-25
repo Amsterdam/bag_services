@@ -1607,6 +1607,46 @@ WHERE opr.id = num.openbare_ruimte_id
             """)
 
 
+class UpdateGebiedenAttributenTask(batch.BasicTask):
+    """
+    Denormalize gebieden attributen
+    """
+
+    name = "Denormalize data"
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+        for ggw in models.Gebiedsgerichtwerken.objects.all():
+            vbos = models.Verblijfsobject.objects.filter(
+                    geometrie__within=ggw.geometrie)
+
+            log.debug('Update Gebiedsgerichtwerken %s key %s VBO',
+                      ggw.naam, vbos.count())
+
+            vbos.update(_gebiedsgerichtwerken=ggw.id)
+
+            standplaatsen = models.Standplaats.objects.filter(
+                geometrie__within=ggw.geometrie)
+
+            log.debug('Update Gebiedsgerichtwerken %s key %s Standplaats',
+                      ggw.naam, standplaatsen.count())
+
+            standplaatsen.update(_gebiedsgerichtwerken=ggw.id)
+
+            ligplaatsen = models.Ligplaats.objects.filter(
+                geometrie__within=ggw.geometrie)
+
+            log.debug('Update Gebiedsgerichtwerken %s key %s Ligplaats',
+                      ggw.naam, ligplaatsen.count())
+
+            ligplaatsen.update(_gebiedsgerichtwerken=ggw.id)
+
+
 class ImportBagJob(object):
     name = "Import BAG"
 
@@ -1655,6 +1695,7 @@ class ImportBagJob(object):
             ImportUnescoTask(self.gebieden_shp),
 
             DenormalizeDataTask(),
+            UpdateGebiedenAttributenTask(),
         ]
 
 

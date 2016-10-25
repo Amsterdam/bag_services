@@ -80,6 +80,8 @@ _subtype_mapping = {
     'stadsdeel': 'Gebieden',
     'gebiedsgerichtwerken': 'Gebieden',
     'buurtcombinatie': 'Gebieden',
+    'overig terrein': 'Gebieden',
+    'overig gebouwd object': 'Gebieden',
     'buurt': 'Gebieden',
     'bouwblok': 'Bouwblok',
     'meetbout': 'Meetbouten',
