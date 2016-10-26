@@ -28,6 +28,7 @@ class RandomShitTest(APITestCase):
             '/atlas/search/kadastraalobject/',
             '/atlas/search/postcode/',
             '/atlas/search/openbareruimte/',
+            '/atlas/search/gebied/',
 
             '/search/postcode/',
         ]

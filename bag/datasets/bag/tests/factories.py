@@ -112,7 +112,14 @@ class BouwblokFactory(factory.DjangoModelFactory):
         django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=4, chars=string.digits)
+
+    code = '%s%s' % (
+        fuzzy.FuzzyText(length=2, chars=string.ascii_letters).fuzz(),
+        fuzzy.FuzzyText(length=2, chars=string.digits).fuzz(),
+    )
+
+    # code = fuzzy.FuzzyText(length=4, chars=string.digits)
+
     buurt = factory.SubFactory(BuurtFactory)
 
 
