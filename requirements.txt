@@ -37,3 +37,4 @@ sphinx-me==0.3
 sqlparse==0.2.1
 uritemplate==3.0.0
 urllib3==1.18
+python-swiftclient==3.0.0
