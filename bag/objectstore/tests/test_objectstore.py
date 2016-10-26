@@ -14,7 +14,7 @@ class TestObjectstore(TestCase):
         res = self.objectstore._get_full_container_list([])
         self.assertEqual(len(res), 0)
 
-        objects = ['diva/bag/{}'.format(filename) for filename in os.listdir('diva/bag')]
+        objects = ['{}'.format(filename) for filename in os.listdir('/bag')]
         self.assertEqual(len(objects), 29)
 
         for ob in objects:
@@ -23,10 +23,10 @@ class TestObjectstore(TestCase):
             content_type = mimetypes.MimeTypes().guess_type(ob)[0]
             if not content_type:
                 content_type = "application/octet-stream"
-            res = self.objectstore.put_to_objectstore(ob_name, content, content_type)
+            res = self.objectstore.put_to_objectstore('{}'.format(ob_name), content, content_type)
 
         res = self.objectstore._get_full_container_list([])
-        self.assertEqual(len(res), 29)
+        self.assertEqual(len(res), 30)
 
         # clean up
         stored_objects = self.objectstore._get_full_container_list([])

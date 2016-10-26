@@ -9,12 +9,9 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
 
-data_dir = settings.DIVA_DIR
+data_dir = settings._DIR
 
 bag_connection = Connection(**settings.OBJECTSTORE)
-
-if __name__ == "__main__":
-    get_latest_zipfile(bag_connection, 'BAG')
 
 
 class ObjectStore():
