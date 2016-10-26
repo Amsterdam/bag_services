@@ -274,6 +274,10 @@ class Nummeraanduiding(es.DocType):
 
     order = es.Integer()
 
+    hoofdadres = es.Boolean()
+    status_code = es.Integer()
+    status_omschrijving = es.String()
+
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
 
@@ -452,6 +456,12 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
+
+    doc.hoofdadres = n.hoofdadres
+
+    if n.status:
+        doc.status_code = n.status.code
+        doc.status_omschrijving = n.status.omschrijving
 
     if n.bron:
         doc.bron = n.bron.omschrijving

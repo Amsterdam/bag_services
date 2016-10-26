@@ -521,6 +521,27 @@ class SearchBouwblokViewSet(SearchViewSet):
         return search.filter('terms', subtype=['bouwblok'])
 
 
+class SearchGebiedenViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = 'search/gebieden-list'
+
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+        """
+        Execute search in Objects
+        """
+        if analyzer.is_bouwblok_prefix():
+            search = bagQ.bouwblok_query(
+                analyzer).to_elasticsearch_object(client)
+            return search.filter('terms', subtype=['bouwblok'])
+        else:
+            search = bagQ.gebied_query(
+                analyzer).to_elasticsearch_object(client)
+
+
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset

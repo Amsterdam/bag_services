@@ -184,6 +184,11 @@ atlas.register(
 atlas.register(
     r'search/bouwblok',
     views.SearchBouwblokViewSet, base_name='search/bouwblok')
+
+atlas.register(
+    r'search/gebied',
+    views.SearchBouwblokViewSet, base_name='search/gebied')
+
 atlas.register(
     r'search/kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
