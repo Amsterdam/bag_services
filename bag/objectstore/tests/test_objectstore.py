@@ -1,7 +1,7 @@
 import os
 import mimetypes
 from django.test import TestCase
-from from unittest import skip
+from unittest import skip
 
 
 from ..objectstore  import ObjectStore
