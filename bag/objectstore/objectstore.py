@@ -1,4 +1,5 @@
 import logging
+import os
 from swiftclient.client import Connection
 from django.conf import settings
 
@@ -8,10 +9,27 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
-
-data_dir = settings._DIR
-
+data_dir = settings.DIVA_DIR
 bag_connection = Connection(**settings.OBJECTSTORE)
+
+
+def fetch_importfiles():
+    store = ObjectStore()
+    prefixes = [('bagtest', 'bag_test'),
+                ('bag', 'bag'),
+                ('bagwkt', 'bag_wkt'),
+                ('beperkingen', 'beperkingen'),
+                ('brk', 'brk'),
+                ('brkshp', 'brk_shp'),
+                ('gebieden', 'gebieden'),
+                ('gebiedenshp', 'gebieden_shp')]
+    for s, f in prefixes:
+        os.makedirs(os.path.join(data_dir, f), exist_ok=True)
+        for ob in store._get_full_container_list([], prefix='{}/'.format(s)):
+            fname = os.path.join(data_dir, f, ob['name'].split('/')[-1])
+            newfile = open(fname, 'wb')
+            newfile.write(store.get_store_object(ob['name']))
+            newfile.close()
 
 
 class ObjectStore():
@@ -21,13 +39,13 @@ class ObjectStore():
         self.conn = Connection(**settings.OBJECTSTORE)
         self.container = 'BAG'
 
-    def get_store_object(self, object_meta_data):
+    def get_store_object(self, name):
         """
         Returns the object store
         :param object_meta_data:
         :return:
         """
-        return self.conn.get_object(object_meta_data['container'], object_meta_data['name'])[1]
+        return self.conn.get_object(self.container, name)[1]
 
     def get_store_objects(self, path):
         return self._get_full_container_list([], prefix=path)

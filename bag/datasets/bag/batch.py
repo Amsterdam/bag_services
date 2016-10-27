@@ -13,6 +13,7 @@ from django.utils.text import slugify
 from batch import batch
 from datasets.generic import uva2, index, database, geo, metadata
 from . import models, documents
+from objectstore.objectstore import fetch_importfiles
 
 log = logging.getLogger(__name__)
 
@@ -1655,10 +1656,14 @@ class ImportBagJob(object):
         if not os.path.exists(diva):
             raise ValueError("DIVA_DIR not found: {}".format(diva))
 
+        # upload files from objectstore to `DIVA_DIR`
+        fetch_importfiles()
+
         self.bag = os.path.join(diva, 'bag')
         self.bag_wkt = os.path.join(diva, 'bag_wkt')
         self.gebieden = os.path.join(diva, 'gebieden')
         self.gebieden_shp = os.path.join(diva, 'gebieden_shp')
+
 
     def tasks(self):
         return [
