@@ -8,7 +8,7 @@ from ..objectstore  import ObjectStore
 class TestObjectstore(TestCase):
 
     def setUp(self):
-        self.objectstore = ObjectStore()
+        self.objectstore = ObjectStore('BAG')
 
     def test_objects(self):
 

@@ -16,7 +16,6 @@ bag_connection = Connection(**settings.OBJECTSTORE)
 def fetch_importfiles():
     """
     Fetches all files mentioned in prefixes and writes them to `data_dir`/prefixes[1]
-    last_modified: '2016-10-27T07:08:47.744400'
     :return:
     """
     store = ObjectStore('BAG')
@@ -49,7 +48,8 @@ def fetch_importfiles():
         os.makedirs(os.path.join(data_dir, f['dir_name']), exist_ok=True)
         numfiles = len(f['prefix'])
         if numfiles > 0:
-            # get the latest modified files
+            # get the latest modified files, by reverse sorting then on `last_modified` and take the number of
+            # unique prefixes.
             container_list = sorted(store._get_full_container_list([], prefix='{}/'.format(s)),
                                     key=lambda l: l['last_modified'], reverse=True)[:numfiles]
         else:
