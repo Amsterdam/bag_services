@@ -14,8 +14,6 @@ from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from atlas_api.input_handling import clean_tokenize
-from atlas_api.input_handling import first_number
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
 from datasets.generic import queries as genQ
@@ -414,7 +412,9 @@ class SearchViewSet(viewsets.ViewSet):
             raise_on_error=True
         )
 
-        search = self.search_query(client, analyzer)[start:end]
+        # get the result from elastic
+        elk_query = self.search_query(client, analyzer)
+        search = elk_query[start:end]
 
         if not search:
             log.debug('no elk query')
@@ -424,8 +424,9 @@ class SearchViewSet(viewsets.ViewSet):
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
-        except TransportError:
+        except(TransportError):
             log.exception("Could not execute search query " + query)
+            log.exception(json.dumps(search.to_dict(), indent=4))
             # Todo fix this
             # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
@@ -479,7 +480,8 @@ class SearchSubjectViewSet(SearchViewSet):
         """
         Execute search on Subject
         """
-        search = brkQ.kadastraal_subject_query(analyzer).to_elasticsearch_object(client)
+        search = brkQ.kadastraal_subject_query(analyzer)\
+            .to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_subject'])
 
 
@@ -521,6 +523,33 @@ class SearchBouwblokViewSet(SearchViewSet):
         return search.filter('terms', subtype=['bouwblok'])
 
 
+class SearchGebiedenViewSet(SearchViewSet):
+    """
+    Given a query parameter `q`, this function returns a subset of all
+    grond percelen objects that match the elastic search query.
+    """
+
+    url_name = 'search/gebied-list'
+
+    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+        """
+        Execute search in Objects
+        """
+        # parameters
+        # bouwblok
+
+        if analyzer.is_bouwblok_prefix():
+            search = bagQ.bouwblok_query(
+                analyzer).to_elasticsearch_object(client)
+            search = search.filter('terms', subtype=['bouwblok'])
+            return search
+        else:
+            search = bagQ.gebied_query(
+                analyzer).to_elasticsearch_object(client)
+
+        return search
+
+
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -550,6 +579,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
+
+    [/search/adres/?q=silodam 340](https://api.datapunt.amsterdam.nl/search/adres/?q=silodam 340)
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -586,6 +617,10 @@ class SearchPostcodeViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
 
+    voorbeeld:
+
+    [/search/postcode/?q=1013AW](https://api.datapunt.amsterdam.nl/search/postcode/?q=1013AW)
+
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
     zodanig toegekende aanduiding van een verblijfsobject,
@@ -600,7 +635,8 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
-            return bagQ.postcode_huisnummer_query(analyzer).to_elasticsearch_object(client)
+            return bagQ.postcode_huisnummer_query(analyzer)\
+                   .to_elasticsearch_object(client)
         else:
             return bagQ.weg_query(analyzer).to_elasticsearch_object(client)
 
@@ -620,7 +656,8 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         """
         Execute search in Objects
         """
-        return bagQ.postcode_huisnummer_exact_query(analyzer).to_elasticsearch_object(client)
+        return bagQ.postcode_huisnummer_exact_query(analyzer)\
+            .to_elasticsearch_object(client)
 
     def list(self, request, *args, **kwargs):
         """

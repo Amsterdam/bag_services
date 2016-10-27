@@ -10,7 +10,8 @@ class SearchRouter(routers.DefaultRouter):
     """
     Search
 
-    End point for different search uris, offering data not directly reflected in the models
+    End point for different search uris, offering data not directly reflected
+    in the models
     """
 
     def get_api_root_view(self, **kwargs):
@@ -49,11 +50,11 @@ class GebiedenRouter(routers.DefaultRouter):
     """
     Gebieden
 
-    In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/)
-    worden de Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken vastgelegd. Verder bevat de
-    registratie gegevens van de grootstedelijke gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de
-    gebieden van gebiedsgericht werken.
-    """
+    In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/) worden de
+    Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken
+    vastgelegd. Verder bevat de registratie gegevens van de grootstedelijke
+    gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de gebieden
+    van gebiedsgericht werken.  """
 
     def get_api_root_view(self, **kwargs):
         view = super().get_api_root_view(**kwargs)
@@ -71,9 +72,11 @@ class BrkRouter(routers.DefaultRouter):
     BRK Basisregistratie kadaster
 
     De [Basisregistratie kadaster (BRK)](https://www.amsterdam.nl/stelselpedia/brk-index/)
-    bevat informatie over percelen, eigendom, hypotheken, beperkte rechten (zoals recht van erfpacht, opstal en
-    vruchtgebruik) en leidingnetwerken. Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
-    oppervlakte, kadastrale grens en de grenzen van het rijk, de provincies en gemeenten.
+    bevat informatie over percelen, eigendom, hypotheken, beperkte rechten
+    (zoals recht van erfpacht, opstal en vruchtgebruik) en leidingnetwerken.
+    Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
+    oppervlakte, kadastrale grens en de grenzen van het rijk, de provincies en
+    gemeenten.
     """
 
     def get_api_root_view(self, **kwargs):
@@ -142,7 +145,7 @@ gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
 gebieden.register(
     r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
 gebieden.register(
-    r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+    r'gebiedsgerichterken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
 gebieden.register(
     r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
@@ -184,6 +187,11 @@ atlas.register(
 atlas.register(
     r'search/bouwblok',
     views.SearchBouwblokViewSet, base_name='search/bouwblok')
+
+atlas.register(
+    r'search/gebied',
+    views.SearchGebiedenViewSet, base_name='search/gebied')
+
 atlas.register(
     r'search/kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
@@ -202,11 +210,7 @@ atlas.register(
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
 search = SearchRouter()
+
 search.register(
     r'postcode', views.SearchExactPostcodeToevoegingViewSet,
     base_name='postcode')
-
-urlpatterns = [
-    # url(r'^gebieden/bouwblok/(?P<code>....)/?$',
-    #    datasets.bag.views.BouwblokCodeView.as_view()),
-]

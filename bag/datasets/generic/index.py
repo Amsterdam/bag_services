@@ -105,7 +105,10 @@ class ImportIndexTask(object):
 
         for i, start in enumerate(range(start_index, end_part, batch_size)):
             end = min(start + batch_size, end_part)
+            t_start = time.time()
             yield (i+1, total_batches+1, start, end, total, qs[start:end])
+            log.debug("CHUNK %5s - %-5s  in %.3f seconds" % (
+                start, end, time.time() - t_start))
 
     def execute(self):
         """

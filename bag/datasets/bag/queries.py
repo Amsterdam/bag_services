@@ -77,9 +77,10 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ Create query/aggregation for bouwblok search"""
     return ElasticQueryWrapper(
         query={
-            "prefix": {
+            "match": {
                 # upper, want raw is case-sensitive
-                "code.raw": analyzer.get_bouwblok().upper(),
+                # "code.raw": analyzer.get_bouwblok().upper(),
+                "code": analyzer.get_bouwblok()
             },
         },
         sort_fields=['_display'],
@@ -113,7 +114,8 @@ def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
         must: [dict] = None,
-        must_not: [dict] = None) -> ElasticQueryWrapper:
+        must_not: [dict] = None,
+        useorder: [bool] = False) -> ElasticQueryWrapper:
     """
     Basis openbare-ruimte query.
 
@@ -137,6 +139,9 @@ def _basis_openbare_ruimte_query(
     _must = [{'constant_score': {'query': q}} for q in (must or [])]
     _must_not = [{'constant_score': {'query': q}} for q in (must_not or [])]
 
+    sort_fields = ['_score', 'naam.keyword']
+    if useorder:
+        sort_fields = ['order', '_score', 'naam']
     return ElasticQueryWrapper(
         query={
             'bool': {
@@ -175,7 +180,7 @@ def _basis_openbare_ruimte_query(
             }
         },
         indexes=[BAG],
-        sort_fields=['_score', 'naam.keyword'],
+        sort_fields=sort_fields,
         size=10,
     )
 
@@ -203,7 +208,7 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Maak een query voor gebieden.
     """
-    return _basis_openbare_ruimte_query(analyzer, must=[{
+    return _basis_openbare_ruimte_query(analyzer, useorder=True, must=[{
         'term': {'_type': 'gebied'}
     }])
 

@@ -46,6 +46,8 @@ class LigplaatsViewSet(rest.AtlasViewSet):
         'buurt__buurtcombinatie',
         'buurt__stadsdeel',
         'buurt__stadsdeel__gemeente',
+        '_gebiedsgerichtwerken',
+
     )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
@@ -85,6 +87,7 @@ class StandplaatsViewSet(rest.AtlasViewSet):
         'buurt__buurtcombinatie',
         'buurt__stadsdeel',
         'buurt__stadsdeel__gemeente',
+        '_gebiedsgerichtwerken',
     )
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
@@ -133,7 +136,7 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
         'ligging',
         'toegang',
         'reden_opvoer',
-
+        '_gebiedsgerichtwerken',
     )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject

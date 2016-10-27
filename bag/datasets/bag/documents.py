@@ -274,6 +274,10 @@ class Nummeraanduiding(es.DocType):
 
     order = es.Integer()
 
+    hoofdadres = es.Boolean()
+    status_code = es.Integer()
+    status_omschrijving = es.String()
+
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
 
@@ -338,6 +342,9 @@ class Gebied(es.DocType):
             'ngram': es.String(analyzer=analyzers.ngram),
         }
     )
+
+    # gebied order
+    order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
 
@@ -453,6 +460,12 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
 
+    doc.hoofdadres = n.hoofdadres
+
+    if n.status:
+        doc.status_code = n.status.code
+        doc.status_omschrijving = n.status.omschrijving
+
     if n.bron:
         doc.bron = n.bron.omschrijving
 
@@ -532,8 +545,9 @@ def from_unesco(u: models.Unesco):
     d._display = '{} ({})'.format(u.naam, d.subtype)
 
     d.subtype_id = u.id
-    d.naam = d._display
+    d.naam = u.naam
     d.centroid = get_centroid(u.geometrie, 'wgs84')
+    d.order = 1
     return d
 
 
@@ -546,6 +560,7 @@ def from_buurt(b: models.Buurt):
     d._display = '{} ({})'.format(b.naam, d.subtype)
     d.g_code = b.code
     d.centroid = get_centroid(b.geometrie, 'wgs84')
+    d.order = 6
     return d
 
 
@@ -557,19 +572,21 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
     d.naam = bc.naam
     d._display = '{} ({})'.format(bc.naam, d.subtype)
     d.g_code = bc.code
+    d.order = 5
     d.centroid = get_centroid(bc.geometrie, 'wgs84')
     return d
 
 
 def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
-    d = Gebied(_id='gebiedsgerichtwerken{}'.format(gg.id))
+    d = Gebied(_id='gebiedsgericht{}'.format(gg.id))
     d.subtype = 'gebiedsgerichtwerken'
 
     d.subtype_id = gg.id
     d.naam = gg.naam
-    d._display = '{} ({})'.format(gg.naam, d.subtype)
+    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht')
     d.g_code = gg.code
     d.centroid = get_centroid(gg.geometrie, 'wgs84')
+    d.order = 4
     return d
 
 
@@ -581,6 +598,7 @@ def from_stadsdeel(sd: models.Stadsdeel):
     d.naam = sd.naam
     d._display = '{} ({})'.format(sd.naam, d.subtype)
     d.g_code = sd.code
+    d.order = 3
     d.centroid = get_centroid(sd.geometrie, 'wgs84')
     return d
 
@@ -593,6 +611,7 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
     d.naam = gs.naam
     d._display = '{} ({})'.format(gs.naam, d.subtype)
     d.centroid = get_centroid(gs.geometrie, 'wgs84')
+    d.order = 2
     return d
 
 
@@ -604,6 +623,7 @@ def from_gemeente(g: models.Gemeente):
     d.naam = g.naam
     d._display = '{} ({})'.format(g.naam, d.subtype)
     d.g_code = g.code
+    d.order = 1
     return d
 
 
@@ -615,6 +635,7 @@ def from_woonplaats(w: models.Woonplaats):
     d.naam = w.naam
     d._display = '{} ({})'.format(w.naam, d.subtype)
     d.g_code = w.landelijk_id
+    d.order = 2
     return d
 
 
