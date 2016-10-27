@@ -14,19 +14,49 @@ bag_connection = Connection(**settings.OBJECTSTORE)
 
 
 def fetch_importfiles():
-    store = ObjectStore()
-    prefixes = [('bagtest', 'bag_test'),
-                ('bag', 'bag'),
-                ('bagwkt', 'bag_wkt'),
-                ('beperkingen', 'beperkingen'),
-                ('brk', 'brk'),
-                ('brkshp', 'brk_shp'),
-                ('gebieden', 'gebieden'),
-                ('gebiedenshp', 'gebieden_shp')]
+    """
+    Fetches all files mentioned in prefixes and writes them to `data_dir`/prefixes[1]
+    last_modified: '2016-10-27T07:08:47.744400'
+    :return:
+    """
+    store = ObjectStore('BAG')
+    prefixes = [
+        ('bagtest', {'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC', 'NUM', 'NUMLIGHFD',
+                                'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD', 'NUMVBONVN',
+                                'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG', 'WPL', 'VBO', 'WPL', 'OPR',
+                                'NUM', 'VBO', 'STA', 'LIG', 'PND',],
+                     'dir_name': 'bag_test'}),
+
+        ('bag', {'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC', 'NUM', 'NUMLIGHFD',
+                            'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD', 'NUMVBONVN',
+                            'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG', 'WPL', 'VBO', 'WPL', 'OPR',
+                            'NUM', 'VBO', 'STA', 'LIG', 'PND',],
+                 'dir_name': 'bag'}),
+
+        ('bagwkt', {'dir_name': 'bag_wkt', 'prefix': []}),
+        ('beperkingen', {'dir_name': 'beperkingen', 'prefix': []}),
+        ('brk', {'prefix': ['BRK_zakelijk_recht', 'BRK_stukdeel', 'BRK_kadastraal_Subject',
+                            'BRK_kadastraal_object',
+                            'BRK_brk-bag',
+                            'BRK_aantekening'],
+                 'dir_name': 'brk', }),
+
+        ('brkshp', {'dir_name': 'brk_shp', 'prefix': []}),
+        ('gebieden', {'dir_name': 'gebieden', 'prefix': ['BBK', 'BRT', 'GME', 'SDL',]}),
+        ('gebiedenshp', {'dir_name': 'gebieden_shp', 'prefix': []})]
+
     for s, f in prefixes:
-        os.makedirs(os.path.join(data_dir, f), exist_ok=True)
-        for ob in store._get_full_container_list([], prefix='{}/'.format(s)):
-            fname = os.path.join(data_dir, f, ob['name'].split('/')[-1])
+        os.makedirs(os.path.join(data_dir, f['dir_name']), exist_ok=True)
+        numfiles = len(f['prefix'])
+        if numfiles > 0:
+            # get the latest modified files
+            container_list = sorted(store._get_full_container_list([], prefix='{}/'.format(s)),
+                                    key=lambda l: l['last_modified'], reverse=True)[:numfiles]
+        else:
+            container_list = store._get_full_container_list([], prefix='{}/'.format(s))
+
+        for ob in container_list:
+            fname = os.path.join(data_dir, f['dir_name'], ob['name'].split('/')[-1])
             newfile = open(fname, 'wb')
             newfile.write(store.get_store_object(ob['name']))
             newfile.close()
@@ -35,9 +65,9 @@ def fetch_importfiles():
 class ObjectStore():
     RESP_LIMIT = 10000  # serverside limit of the response
 
-    def __init__(self):
+    def __init__(self, container):
         self.conn = Connection(**settings.OBJECTSTORE)
-        self.container = 'BAG'
+        self.container = container
 
     def get_store_object(self, name):
         """

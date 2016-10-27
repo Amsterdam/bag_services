@@ -12,6 +12,12 @@ class TestObjectstore(TestCase):
 
     def test_objects(self):
 
+        # clean up
+        stored_objects = self.objectstore._get_full_container_list([])
+        for ob in stored_objects:
+            if ob['name'].startswith('bagtest/'):
+                self.objectstore.delete_from_objectstore(ob['name'])
+
         res = self.objectstore._get_full_container_list([])
         self.assertEqual(len(res), 7)
 
@@ -28,13 +34,3 @@ class TestObjectstore(TestCase):
 
         res = self.objectstore._get_full_container_list([])
         self.assertEqual(len(res), 36)
-
-        # clean up
-        stored_objects = self.objectstore._get_full_container_list([])
-        for ob in stored_objects:
-            if ob['name'].startswith('bagtest/'):
-                self.objectstore.delete_from_objectstore(ob['name'])
-
-        # check clean up
-        res = self.objectstore._get_full_container_list([])
-        self.assertEqual(len(res), 7)
