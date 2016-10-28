@@ -10,7 +10,7 @@ django-oauth==1.1
 django-oauth-toolkit==0.10.0
 django-rest-swagger==2.0.7
 django-shotgun==0.2
-djangorestframework==3.4.7
+djangorestframework==3.5.1
 djangorestframework-gis==0.10.1
 djangorestframework-jwt==1.8.0
 drf-extensions==0.3.1
