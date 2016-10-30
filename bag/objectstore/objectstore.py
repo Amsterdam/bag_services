@@ -20,38 +20,28 @@ def fetch_importfiles():
     """
     store = ObjectStore('BAG')
     prefixes = [
-        ('bagtest', {
-            'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC',
-                       'NUM', 'NUMLIGHFD',
-                       'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD',
-                       'NUMVBONVN',
-                       'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG',
-                       'WPL', 'VBO', 'WPL', 'OPR',
-                       'NUM', 'VBO', 'STA', 'LIG', 'PND', ],
-            'dir_name': 'bag_test'}),
+        ('bagtest', {'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC', 'NUM', 'NUMLIGHFD',
+                                'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD', 'NUMVBONVN',
+                                'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG', 'WPL', 'VBO', 'WPL', 'OPR',
+                                'NUM', 'VBO', 'STA', 'LIG', 'PND',],
+                     'dir_name': 'bag_test'}),
 
-        ('bag', {
-            'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC',
-                       'NUM', 'NUMLIGHFD',
-                       'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD',
-                       'NUMVBONVN',
-                       'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG',
-                       'WPL', 'VBO', 'WPL', 'OPR',
-                       'NUM', 'VBO', 'STA', 'LIG', 'PND', ],
-            'dir_name': 'bag'}),
+        ('bag', {'prefix': ['AVR', 'EGM', 'BRN', 'FNG', 'LGG', 'GBK', 'LIG', 'LOC', 'NUM', 'NUMLIGHFD',
+                            'NUMLIGNVN', 'NUMSTANVN', 'NUMSTAHFD', 'NUMVBOHFD', 'NUMVBONVN',
+                            'OVR', 'OPR', 'PND', 'PNDVBO', 'STS', 'STA', 'TGG', 'WPL', 'VBO', 'WPL', 'OPR',
+                            'NUM', 'VBO', 'STA', 'LIG', 'PND',],
+                 'dir_name': 'bag'}),
 
         ('bagwkt', {'dir_name': 'bag_wkt', 'prefix': []}),
         ('beperkingen', {'dir_name': 'beperkingen', 'prefix': []}),
-        ('brk', {'prefix': ['BRK_zakelijk_recht', 'BRK_stukdeel',
-                            'BRK_kadastraal_Subject',
+        ('brk', {'prefix': ['BRK_zakelijk_recht', 'BRK_stukdeel', 'BRK_kadastraal_Subject',
                             'BRK_kadastraal_object',
                             'BRK_brk-bag',
                             'BRK_aantekening'],
-                 'dir_name': 'brk',}),
+                 'dir_name': 'brk', }),
 
         ('brkshp', {'dir_name': 'brk_shp', 'prefix': []}),
-        ('gebieden',
-         {'dir_name': 'gebieden', 'prefix': ['BBK', 'BRT', 'GME', 'SDL', ]}),
+        ('gebieden', {'dir_name': 'gebieden', 'prefix': ['BBK', 'BRT', 'GME', 'SDL',]}),
         ('gebiedenshp', {'dir_name': 'gebieden_shp', 'prefix': []})]
 
     for s, f in prefixes:
@@ -60,17 +50,13 @@ def fetch_importfiles():
         if numfiles > 0:
             # get the latest modified files, by reverse sorting then on `last_modified` and take the number of
             # unique prefixes.
-            container_list = sorted(
-                store._get_full_container_list([], prefix='{}/'.format(s)),
-                key=lambda l: l['last_modified'], reverse=True)[:numfiles]
+            container_list = sorted(store._get_full_container_list([], prefix='{}/'.format(s)),
+                                    key=lambda l: l['last_modified'], reverse=True)[:numfiles]
         else:
-            container_list = store._get_full_container_list([],
-                                                            prefix='{}/'.format(
-                                                                s))
+            container_list = store._get_full_container_list([], prefix='{}/'.format(s))
 
         for ob in container_list:
-            fname = os.path.join(data_dir, f['dir_name'],
-                                 ob['name'].split('/')[-1])
+            fname = os.path.join(data_dir, f['dir_name'], ob['name'].split('/')[-1])
             newfile = open(fname, 'wb')
             newfile.write(store.get_store_object(ob['name']))
             newfile.close()
@@ -108,8 +94,7 @@ class ObjectStore():
         objects_from_store = self._get_full_container_list(
             [], delimiter='/', prefix=path
         )
-        return [store_object['subdir'] for store_object in objects_from_store if
-                'subdir' in store_object]
+        return [store_object['subdir'] for store_object in objects_from_store if 'subdir' in store_object]
 
     def files(self, path, file_id):
         file_list = self._get_full_container_list(
@@ -120,9 +105,7 @@ class ObjectStore():
         return file_list
 
     def put_to_objectstore(self, object_name, object_content, content_type):
-        return self.conn.put_object(self.container, object_name,
-                                    contents=object_content,
-                                    content_type=content_type)
+        return self.conn.put_object(self.container, object_name, contents=object_content, content_type=content_type)
 
     def delete_from_objectstore(self, object_name):
         return self.conn.delete_object(self.container, object_name)

@@ -10,6 +10,7 @@ from batch.models import JobExecution
 
 
 class Command(BaseCommand):
+
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     imports = dict(
@@ -74,8 +75,7 @@ class Command(BaseCommand):
 
     def act_on_result(self, job_execution):
         if job_execution.status == JobExecution.STATUS_FAILED:
-            self.stderr.write(
-                "Job {} failed, exiting".format(job_execution.name))
+            self.stderr.write("Job {} failed, exiting".format(job_execution.name))
             sys.exit(1)
 
     def handle(self, *args, **options):
@@ -86,7 +86,7 @@ class Command(BaseCommand):
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 sys.exit(1)
 
-        sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
+        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
 

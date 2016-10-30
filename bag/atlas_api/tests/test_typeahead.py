@@ -12,6 +12,7 @@ import datasets.brk.batch
 
 
 class TypeaheadTest(APITestCase):
+
     @classmethod
     def setUpClass(cls):
         super(APITestCase, cls).setUpClass()
@@ -116,6 +117,7 @@ class TypeaheadTest(APITestCase):
             hoofdadres=True, postcode='1055GH')
 
         for i in range(100, 120):
+
             test_hof = bag_factories.OpenbareRuimteFactory.create(
                 naam="testE%shof" % i)
 

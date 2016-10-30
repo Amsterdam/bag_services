@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core import checks
 
-
 @checks.register
 def check_elasticsearch(app_configs, **kwargs):
     import elasticsearch
@@ -16,8 +15,7 @@ def check_elasticsearch(app_configs, **kwargs):
         return [checks.Error("ELASTIC_SEARCH_HOSTS not in settings")]
     except BaseException as e:
         return [checks.Error(
-            "No elastic search server found on {}".format(
-                settings.ELASTIC_SEARCH_HOSTS),
+            "No elastic search server found on {}".format(settings.ELASTIC_SEARCH_HOSTS),
         )]
 
 
@@ -31,10 +29,8 @@ def check_database(app_configs, **kwargs):
         return []
     except BaseException as e:
         return [checks.Error(
-            "No database found on {}".format(
-                settings.DATABASES['default'].get('HOST')),
+            "No database found on {}".format(settings.DATABASES['default'].get('HOST')),
         )]
-
 
 @checks.register
 def check_gal(app_configs, **kwargs):

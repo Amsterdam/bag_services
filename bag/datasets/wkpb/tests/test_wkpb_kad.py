@@ -5,6 +5,7 @@ from datasets.brk.tests import factories as brk_factories
 
 
 class ImportWkpbBepKad(TaskTestCase):
+
     def setUp(self):
         super().setUp()
         brk_factories.KadastraalObjectFactory.create(
@@ -26,8 +27,7 @@ class ImportWkpbBepKad(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        bk = models.BeperkingKadastraalObject.objects.get(
-            pk='1001730_ASD12P03580A0061')
+        bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
         self.assertEqual(bk.beperking.id, 1001730)
         self.assertIsNotNone(bk.kadastraal_object)
         self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')

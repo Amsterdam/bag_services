@@ -73,6 +73,5 @@ def update_url(url, page):
     else:
         params['page'] = page
 
-    return urllib.parse.urlunparse(
-        (url_parts.scheme, url_parts.netloc, url_parts.path, url_parts.params,
-         urllib.parse.urlencode(params), url_parts.fragment))
+    return urllib.parse.urlunparse((url_parts.scheme, url_parts.netloc, url_parts.path, url_parts.params,
+                                    urllib.parse.urlencode(params), url_parts.fragment))

@@ -247,8 +247,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except:
-                log.exception('FAILED ELK SEARCH: %s',
-                              json.dumps(search.to_dict()))
+                log.exception('FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
                 continue
 
             # Get the datas!
@@ -481,7 +480,7 @@ class SearchSubjectViewSet(SearchViewSet):
         """
         Execute search on Subject
         """
-        search = brkQ.kadastraal_subject_query(analyzer) \
+        search = brkQ.kadastraal_subject_query(analyzer)\
             .to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_subject'])
 
@@ -501,8 +500,7 @@ class SearchObjectViewSet(SearchViewSet):
         if not analyzer.is_kadastraal_object_prefix():
             return []
 
-        search = brkQ.kadastraal_object_query(analyzer).to_elasticsearch_object(
-            client)
+        search = brkQ.kadastraal_object_query(analyzer).to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_object'])
 
 
@@ -637,8 +635,8 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
-            return bagQ.postcode_huisnummer_query(analyzer) \
-                .to_elasticsearch_object(client)
+            return bagQ.postcode_huisnummer_query(analyzer)\
+                   .to_elasticsearch_object(client)
         else:
             return bagQ.weg_query(analyzer).to_elasticsearch_object(client)
 
@@ -658,7 +656,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         """
         Execute search in Objects
         """
-        return bagQ.postcode_huisnummer_exact_query(analyzer) \
+        return bagQ.postcode_huisnummer_exact_query(analyzer)\
             .to_elasticsearch_object(client)
 
     def list(self, request, *args, **kwargs):

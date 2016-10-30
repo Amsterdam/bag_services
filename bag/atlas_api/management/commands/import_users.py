@@ -11,8 +11,7 @@ from datasets.brk import models as brk_models
 
 class Command(BaseCommand):
     view_sensitive_details_permission_brk = Permission.objects.get(
-        content_type=ContentType.objects.get_for_model(
-            brk_models.KadastraalSubject),
+        content_type=ContentType.objects.get_for_model(brk_models.KadastraalSubject),
         codename='view_sensitive_details'
     )
 
@@ -28,8 +27,7 @@ class Command(BaseCommand):
 
             for row in reader:
                 username = row[0].lower()
-                joined = datetime.datetime.strptime(row[1], "%d-%m-%Y").replace(
-                    tzinfo=UTC())
+                joined = datetime.datetime.strptime(row[1], "%d-%m-%Y").replace(tzinfo=UTC())
                 self.create_user(username, joined)
 
     def create_user(self, username, joined):

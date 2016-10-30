@@ -19,64 +19,64 @@ class Status(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
 
 
 class RedenAfvoer(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Reden Afvoer"
         verbose_name_plural = "Reden Afvoer"
 
 
 class RedenOpvoer(
-    mixins.ImportStatusMixin,
-    mixins.CodeOmschrijvingMixin, models.Model):
+            mixins.ImportStatusMixin,
+            mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Reden Opvoer"
         verbose_name_plural = "Reden Opvoer"
 
 
 class Eigendomsverhouding(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+            mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+            models.Model):
     class Meta:
         verbose_name = "Eigendomsverhouding"
         verbose_name_plural = "Eigendomsverhoudingen"
 
 
 class Financieringswijze(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Financieringswijze"
         verbose_name_plural = "Financieringswijzes"
 
 
 class Ligging(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Ligging"
         verbose_name_plural = "Ligging"
 
 
 class Gebruik(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Gebruik"
         verbose_name_plural = "Gebruik"
 
 
 class LocatieIngang(
-    mixins.ImportStatusMixin,
-    mixins.CodeOmschrijvingMixin, models.Model):
+        mixins.ImportStatusMixin,
+        mixins.CodeOmschrijvingMixin, models.Model):
     class Meta:
         verbose_name = "Locatie Ingang"
         verbose_name_plural = "Locaties Ingang"
 
 
 class Toegang(
-    mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-    models.Model):
+        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
+        models.Model):
     class Meta:
         verbose_name = "Toegang"
         verbose_name_plural = "Toegang"
@@ -98,9 +98,10 @@ class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
 
 
 class Woonplaats(
-    mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-    mixins.ImportStatusMixin,
-    mixins.DocumentStatusMixin, models.Model):
+        mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+        mixins.ImportStatusMixin,
+        mixins.DocumentStatusMixin, models.Model):
+
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
@@ -783,9 +784,9 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
 
 class Pand(
-    mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-    mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-    models.Model):
+        mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
+        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
+        models.Model):
     """
     Een PAND is de kleinste bij de totstandkoming functioneel en
     bouwkundig-constructief zelfstandige eenheid die direct
@@ -854,7 +855,7 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
 
 
 class Buurtcombinatie(
-    mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
+        mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
     """
     model for data from shp files
 

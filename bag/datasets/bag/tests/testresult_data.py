@@ -624,28 +624,28 @@ test_elk_vbo_result = [
         "straatnaam_keyword": "Eerste Jan van der Heijdenstraat"
     },
     {
-        "straatnaam_nen": "1e Jan vd Heijdenstr",
-        "comp_address_nen": "1e Jan vd Heijdenstr 20 4",
-        "straatnaam_nen_keyword": "1e Jan vd Heijdenstr",
-        "straatnaam": "Eerste Jan van der Heijdenstraat",
-        "straatnaam_ptt": "1E J VD HEYDENSTR",
-        "centroid": [
-            4.887266534844395,
-            52.352836421891304
-        ],
-        "comp_address_pcode": "1072TT 20 4",
-        "comp_address": "Eerste Jan van der Heijdenstraat 20 4",
-        "comp_address_ptt": "1E J VD HEYDENSTR 20 4",
-        "subtype": "verblijfsobject",
-        "postcode": "1072TT",
-        "huisnummer": 20,
-        "subtype_id": "03630001009436",
-        "adres": "Eerste Jan van der Heijdenstraat 20-4",
-        "straatnaam_ptt_keyword": "1E J VD HEYDENSTR",
-        "order": 50,
-        "_display": "Eerste Jan van der Heijdenstraat 20-4",
-        "toevoeging": "20 4",
-        "straatnaam_keyword": "Eerste Jan van der Heijdenstraat"
+    "straatnaam_nen": "1e Jan vd Heijdenstr",
+    "comp_address_nen": "1e Jan vd Heijdenstr 20 4",
+    "straatnaam_nen_keyword": "1e Jan vd Heijdenstr",
+    "straatnaam": "Eerste Jan van der Heijdenstraat",
+    "straatnaam_ptt": "1E J VD HEYDENSTR",
+    "centroid": [
+        4.887266534844395,
+        52.352836421891304
+    ],
+    "comp_address_pcode": "1072TT 20 4",
+    "comp_address": "Eerste Jan van der Heijdenstraat 20 4",
+    "comp_address_ptt": "1E J VD HEYDENSTR 20 4",
+    "subtype": "verblijfsobject",
+    "postcode": "1072TT",
+    "huisnummer": 20,
+    "subtype_id": "03630001009436",
+    "adres": "Eerste Jan van der Heijdenstraat 20-4",
+    "straatnaam_ptt_keyword": "1E J VD HEYDENSTR",
+    "order": 50,
+    "_display": "Eerste Jan van der Heijdenstraat 20-4",
+    "toevoeging": "20 4",
+    "straatnaam_keyword": "Eerste Jan van der Heijdenstraat"
     },
     {
         "straatnaam": "Eerste Jan van der Heijdenstraat",
@@ -862,5 +862,5 @@ test_elk_vbo_result = [
         "straatnaam_nen_keyword": "1e Jan vd Heijdenstr",
         "toevoeging": "26 4",
         "straatnaam_keyword": "Eerste Jan van der Heijdenstraat"
-    }
+        }
 ]

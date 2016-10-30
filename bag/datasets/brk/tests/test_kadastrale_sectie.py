@@ -4,6 +4,7 @@ from datasets.brk.tests import factories
 
 
 class ImportKadastraleSectieTaskTest(TaskTestCase):
+
     def setUp(self):
         super().setUp()
         factories.KadastraleGemeenteFactory.create(pk="ASD15")
@@ -21,3 +22,4 @@ class ImportKadastraleSectieTaskTest(TaskTestCase):
         self.assertEqual(s.sectie, 'S')
         self.assertEqual(s.kadastrale_gemeente.pk, 'ASD15')
         self.assertIsNotNone(s.geometrie)
+

@@ -6,6 +6,7 @@ from django.test import TestCase
 
 
 class TaskTestCase(TestCase):
+
     def setUp(self):
         for r in self.requires():
             r.execute()

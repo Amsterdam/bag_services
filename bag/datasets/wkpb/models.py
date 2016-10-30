@@ -52,8 +52,8 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     datum_einde = models.DateField(null=True)
 
     kadastrale_objecten = models.ManyToManyField(
-        brk.KadastraalObject, through='BeperkingKadastraalObject',
-        related_name="beperkingen")
+            brk.KadastraalObject, through='BeperkingKadastraalObject',
+            related_name="beperkingen")
 
     verblijfsobjecten = models.ManyToManyField(
         bag.Verblijfsobject,

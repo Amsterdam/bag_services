@@ -16,16 +16,16 @@ class ImportBeperkingVerblijfsobjectTaskTest(TaskTestCase):
         kot2b = brk_factories.KadastraalObjectFactory.create()
 
         brk.KadastraalObjectVerblijfsobjectRelatie.objects.create(
-            verblijfsobject=self.vbo1,
-            kadastraal_object=kot1,
+                verblijfsobject=self.vbo1,
+                kadastraal_object=kot1,
         )
         brk.KadastraalObjectVerblijfsobjectRelatie.objects.create(
-            verblijfsobject=self.vbo2,
-            kadastraal_object=kot2a,
+                verblijfsobject=self.vbo2,
+                kadastraal_object=kot2a,
         )
         brk.KadastraalObjectVerblijfsobjectRelatie.objects.create(
-            verblijfsobject=self.vbo2,
-            kadastraal_object=kot2b,
+                verblijfsobject=self.vbo2,
+                kadastraal_object=kot2b,
         )
 
         self.bep1 = factories.BeperkingFactory.create()
@@ -33,18 +33,10 @@ class ImportBeperkingVerblijfsobjectTaskTest(TaskTestCase):
         self.bep2b1 = factories.BeperkingFactory.create()
         self.bep2b2 = factories.BeperkingFactory.create()
 
-        models.BeperkingKadastraalObject.objects.create(id='a',
-                                                        kadastraal_object=kot1,
-                                                        beperking=self.bep1)
-        models.BeperkingKadastraalObject.objects.create(id='b',
-                                                        kadastraal_object=kot2a,
-                                                        beperking=self.bep2a)
-        models.BeperkingKadastraalObject.objects.create(id='c',
-                                                        kadastraal_object=kot2b,
-                                                        beperking=self.bep2b1)
-        models.BeperkingKadastraalObject.objects.create(id='d',
-                                                        kadastraal_object=kot2b,
-                                                        beperking=self.bep2b2)
+        models.BeperkingKadastraalObject.objects.create(id='a', kadastraal_object=kot1, beperking=self.bep1)
+        models.BeperkingKadastraalObject.objects.create(id='b', kadastraal_object=kot2a, beperking=self.bep2a)
+        models.BeperkingKadastraalObject.objects.create(id='c', kadastraal_object=kot2b, beperking=self.bep2b1)
+        models.BeperkingKadastraalObject.objects.create(id='d', kadastraal_object=kot2b, beperking=self.bep2b2)
 
     def task(self):
         return batch.ImportBeperkingVerblijfsobjectTask()
@@ -59,5 +51,5 @@ class ImportBeperkingVerblijfsobjectTaskTest(TaskTestCase):
         vbo2_beperkingen = set([obj.id for obj in self.vbo2.beperkingen.all()])
 
         self.assertEqual(vbo1_beperkingen, {self.bep1.id})
-        self.assertEqual(vbo2_beperkingen,
-                         {self.bep2a.id, self.bep2b1.id, self.bep2b2.id})
+        self.assertEqual(vbo2_beperkingen, {self.bep2a.id, self.bep2b1.id, self.bep2b2.id})
+

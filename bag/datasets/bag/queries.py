@@ -234,6 +234,7 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 
 def straatnaam_huisnummer_query(
         analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+
     straat, huisnummer, toevoeging = \
         analyzer.get_straatnaam_huisnummer_toevoeging()
 

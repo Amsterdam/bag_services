@@ -55,11 +55,11 @@ class BeperkingView(AtlasViewSet):
     queryset = models.Beperking.objects.all()
     queryset_detail = (
         models.Beperking.objects
-            .prefetch_related(Prefetch(
+        .prefetch_related(Prefetch(
             'documenten',
             queryset=models.Brondocument.objects.select_related('bron')
         ))
-            .select_related('beperkingtype')
+        .select_related('beperkingtype')
     )
     template_name = "wkpb/beperking.html"
     filter_fields = ('kadastrale_objecten__id', 'verblijfsobjecten__id')
@@ -90,7 +90,7 @@ class BrondocumentView(AtlasViewSet):
     serializer_detail_class = serializers.BrondocumentDetail
 
     queryset = models.Brondocument.objects.all()
-    filter_fields = ('bron', 'beperking',)
+    filter_fields = ('bron', 'beperking', )
 
     def retrieve(self, request, *args, **kwargs):
         """

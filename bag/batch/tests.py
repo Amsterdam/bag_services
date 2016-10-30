@@ -108,8 +108,7 @@ class DurationTestCase(SimpleTestCase):
         ]
 
         for start, end, expected in cases:
-            startdate = timezone.datetime(2000, 1, 1, start[0], start[1],
-                                          start[2])
+            startdate = timezone.datetime(2000, 1, 1, start[0], start[1], start[2])
             enddate = timezone.datetime(2000, 1, 1, end[0], end[1], end[2])
             d = models._duration(startdate, enddate)
             self.assertEqual(d, expected)

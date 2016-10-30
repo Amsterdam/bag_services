@@ -7,6 +7,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('bag', '0005_auto_20160321_1122'),
     ]
@@ -15,25 +16,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='ligplaats',
             name='_gebiedsgerichtwerken',
-            field=models.ForeignKey(null=True,
-                                    on_delete=django.db.models.deletion.CASCADE,
-                                    related_name='ligplaatsen',
-                                    to='bag.Gebiedsgerichtwerken'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='ligplaatsen', to='bag.Gebiedsgerichtwerken'),
         ),
         migrations.AddField(
             model_name='standplaats',
             name='_gebiedsgerichtwerken',
-            field=models.ForeignKey(null=True,
-                                    on_delete=django.db.models.deletion.CASCADE,
-                                    related_name='standplaatsen',
-                                    to='bag.Gebiedsgerichtwerken'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='standplaatsen', to='bag.Gebiedsgerichtwerken'),
         ),
         migrations.AddField(
             model_name='verblijfsobject',
             name='_gebiedsgerichtwerken',
-            field=models.ForeignKey(null=True,
-                                    on_delete=django.db.models.deletion.CASCADE,
-                                    related_name='adressen',
-                                    to='bag.Gebiedsgerichtwerken'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='adressen', to='bag.Gebiedsgerichtwerken'),
         ),
     ]

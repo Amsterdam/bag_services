@@ -11,6 +11,7 @@ import datasets.brk.batch
 
 
 class SubjectSearchTest(APITestCase):
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

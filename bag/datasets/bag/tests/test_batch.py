@@ -332,6 +332,7 @@ class ImportUnescoTest(TaskTestCase):
 
 # bag
 class ImportLigTest(TaskTestCase):
+
     def setUp(self):
         factories.StatusFactory.create(code='33')
         factories.BuurtFactory.create(pk='03630000000491')
@@ -599,6 +600,7 @@ class ImportNumTest(TaskTestCase):
 
 
 class ImportPndTest(TaskTestCase):
+
     def setUp(self):
         factories.StatusFactory.create(pk='31')
         factories.BouwblokFactory.create(pk='03630012102404')
@@ -659,12 +661,12 @@ class ImportVboPndTask(TaskTestCase):
         v2 = models.Verblijfsobject.objects.get(pk='03630000716112')
         v3 = models.Verblijfsobject.objects.get(pk='03630000716086')
 
-        self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()],
-                              [v1.id, v2.id, v3.id])
+        self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()], [v1.id, v2.id, v3.id])
         self.assertEqual([p.id for p in v1.panden.all()], [p.id])
 
 
 class UpdateGebiedenTask(TaskTestCase):
+
     def requires(self):
         return [
             batch.ImportGmeTask(GEBIEDEN),

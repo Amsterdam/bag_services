@@ -47,7 +47,6 @@ class VerblijfsobjectAdmin(admin_mixins.ReadOnlyAdmin):
 class WoonplaatsAdmin(admin_mixins.ReadOnlyAdmin):
     list_display = ('landelijk_id', 'naam')
 
-
 # Register your models here.
 admin.site.register(models.Bron, CodeOmschrijvingAdmin)
 admin.site.register(models.Buurt, BuurtAdmin)

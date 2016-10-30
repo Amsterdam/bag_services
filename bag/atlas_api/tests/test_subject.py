@@ -7,6 +7,7 @@ from datasets.brk.tests import factories as brk_factories
 
 
 class SubjectSearchTest(APITestCase):
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

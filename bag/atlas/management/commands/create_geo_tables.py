@@ -20,11 +20,10 @@ class Command(BaseCommand):
                     table_info.name,
                 ))
 
-                cursor.execute(
-                    'CREATE INDEX {}_idx ON {}_mat USING GIST(geometrie)'.format(
-                        table_info.name,
-                        table_info.name,
-                    ))
+                cursor.execute('CREATE INDEX {}_idx ON {}_mat USING GIST(geometrie)'.format(
+                    table_info.name,
+                    table_info.name,
+                ))
 
                 cursor.execute('CLUSTER {}_idx ON {}_mat'.format(
                     table_info.name,
@@ -33,5 +32,4 @@ class Command(BaseCommand):
 
                 cursor.execute('VACUUM ANALYZE {}_mat'.format(table_info.name))
 
-                self.stdout.write(
-                    'created geotable {}_mat'.format(table_info.name))
+                self.stdout.write('created geotable {}_mat'.format(table_info.name))

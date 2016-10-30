@@ -6,6 +6,7 @@ import uuid
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('brk', '0020_auto_20151216_1733'),
     ]
@@ -14,7 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='kadastraalobjectverblijfsobjectrelatie',
             name='id',
-            field=models.UUIDField(primary_key=True, serialize=False,
-                                   default=uuid.uuid4),
+            field=models.UUIDField(primary_key=True, serialize=False, default=uuid.uuid4),
         ),
     ]

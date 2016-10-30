@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('bag', '0003_auto_20160203_1552'),
     ]
@@ -14,8 +15,7 @@ class Migration(migrations.Migration):
             name='RedenOpvoer',
             fields=[
                 ('date_modified', models.DateTimeField(auto_now=True)),
-                ('code', models.CharField(max_length=4, serialize=False,
-                                          primary_key=True)),
+                ('code', models.CharField(max_length=4, serialize=False, primary_key=True)),
                 ('omschrijving', models.CharField(max_length=150, null=True)),
             ],
             options={

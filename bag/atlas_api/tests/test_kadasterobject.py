@@ -16,6 +16,7 @@ log = logging.getLogger('search')
 
 
 class ObjectSearchTest(APITestCase):
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

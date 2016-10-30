@@ -4,6 +4,7 @@ from datasets.bag.tests import factories as bag_factories
 
 
 class LandelijkIDTest(APITestCase):
+
     def setUp(self):
         self.vbo = bag_factories.VerblijfsobjectFactory.create()
         self.na = bag_factories.NummeraanduidingFactory.create()
@@ -23,6 +24,7 @@ class LandelijkIDTest(APITestCase):
         self.assertEquals(self.vbo.id, res.data['sleutelverzendend'])
 
     def test_vbo_pand_landelijk_id(self):
+
         res = self.client.get(
             '/bag/verblijfsobject/?panden__landelijk_id={}'.format(
                 self.pand_vbo.pand.landelijk_id))

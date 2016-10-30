@@ -1,10 +1,9 @@
 infn = 'wpb_belemmering_50.dat'
 
-
 def createBelPerc(ids):
     basefn = 'wpb_belemmering_perceel'
-    infile = open(basefn + '.dat', 'r')
-    outfile = open(basefn + '_50.dat', 'w')
+    infile = open(basefn + '.dat','r')
+    outfile = open(basefn + '_50.dat','w')
     for line in infile:
         items = line.strip().split(';')
         if items[5] in ids:
@@ -12,11 +11,10 @@ def createBelPerc(ids):
     infile.close()
     outfile.close()
 
-
 def createBrondoc(nrs):
     basefn = 'wpb_brondocument'
-    infile = open(basefn + '.dat', 'r')
-    outfile = open(basefn + '_50.dat', 'w')
+    infile = open(basefn + '.dat','r')
+    outfile = open(basefn + '_50.dat','w')
     for line in infile:
         items = line.strip().split(';')
         if items[0] in nrs:
@@ -25,13 +23,13 @@ def createBrondoc(nrs):
     outfile.close()
 
 
-infile = open(infn, 'r')
+infile = open(infn,'r')
 ids = []
 nrs = []
 for line in infile:
-    # print line
+    #print line
     items = line.strip().split(';')
-    # print items[0], items[1]
+    #print items[0], items[1]
     ids.append(items[0])
     nrs.append(items[1])
 infile.close()
@@ -42,3 +40,4 @@ print(nrs)
 
 createBelPerc(ids)
 createBrondoc(nrs)
+

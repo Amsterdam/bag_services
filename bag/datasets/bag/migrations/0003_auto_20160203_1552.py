@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('bag', '0002_auto_20160119_1248'),
     ]
@@ -12,9 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='nummeraanduiding',
-            options={'verbose_name_plural': 'Nummeraanduidingen', 'ordering': (
-            '_openbare_ruimte_naam', 'huisnummer', 'huisletter',
-            'huisnummer_toevoeging'), 'verbose_name': 'Nummeraanduiding'},
+            options={'verbose_name_plural': 'Nummeraanduidingen', 'ordering': ('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging'), 'verbose_name': 'Nummeraanduiding'},
         ),
         migrations.AddField(
             model_name='nummeraanduiding',
@@ -23,7 +22,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterIndexTogether(
             name='nummeraanduiding',
-            index_together=set([('_openbare_ruimte_naam', 'huisnummer',
-                                 'huisletter', 'huisnummer_toevoeging')]),
+            index_together=set([('_openbare_ruimte_naam', 'huisnummer', 'huisletter', 'huisnummer_toevoeging')]),
         ),
     ]

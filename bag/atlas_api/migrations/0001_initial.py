@@ -30,12 +30,12 @@ def remove_atlas_client(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('oauth2_provider', '0002_08_updates'),
         ('auth', '0006_require_contenttypes_0002'),
     ]
 
     operations = [
-        migrations.RunPython(code=create_atlas_client,
-                             reverse_code=remove_atlas_client)
+        migrations.RunPython(code=create_atlas_client, reverse_code=remove_atlas_client)
     ]

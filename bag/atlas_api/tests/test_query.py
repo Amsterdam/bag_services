@@ -203,3 +203,4 @@ class QueryTest(APITestCase):
         # not due to elk scoring it could happen 228 B, scores better
         # then 228 A
         self.assertNotIn('adres', response.data)
+

@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('brk', '0015_auto_20151215_1430'),
     ]
@@ -19,13 +20,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='zakelijkrecht',
             name='betrokken_bij',
-            field=models.ForeignKey(related_name='betrokken_bij_set', null=True,
-                                    to='brk.KadastraalSubject'),
+            field=models.ForeignKey(related_name='betrokken_bij_set', null=True, to='brk.KadastraalSubject'),
         ),
         migrations.AlterField(
             model_name='zakelijkrecht',
             name='ontstaan_uit',
-            field=models.ForeignKey(related_name='ontstaan_uit_set', null=True,
-                                    to='brk.KadastraalSubject'),
+            field=models.ForeignKey(related_name='ontstaan_uit_set', null=True, to='brk.KadastraalSubject'),
         ),
     ]

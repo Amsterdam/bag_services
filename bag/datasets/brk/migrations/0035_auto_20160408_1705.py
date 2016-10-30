@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('brk', '0034_kadastraalobject_geom_point'),
     ]

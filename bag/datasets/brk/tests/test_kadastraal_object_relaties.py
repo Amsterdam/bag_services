@@ -15,24 +15,24 @@ class ImportKadastraalObjectRelatiesTaskTest(TaskTestCase):
         s2 = factories.KadastraalSubjectFactory.create()
 
         factories.ZakelijkRechtFactory.create(
-            kadastraal_object=self.g1,
-            betrokken_bij=s1,
+                kadastraal_object=self.g1,
+                betrokken_bij=s1,
         )
         factories.ZakelijkRechtFactory.create(
-            kadastraal_object=self.a1,
-            ontstaan_uit=s1,
+                kadastraal_object=self.a1,
+                ontstaan_uit=s1,
         )
         factories.ZakelijkRechtFactory.create(
-            kadastraal_object=self.g2,
-            betrokken_bij=s2,
+                kadastraal_object=self.g2,
+                betrokken_bij=s2,
         )
         factories.ZakelijkRechtFactory.create(
-            kadastraal_object=self.a2,
-            ontstaan_uit=s2,
+                kadastraal_object=self.a2,
+                ontstaan_uit=s2,
         )
         factories.ZakelijkRechtFactory.create(
-            kadastraal_object=self.a3,
-            ontstaan_uit=s2,
+                kadastraal_object=self.a3,
+                ontstaan_uit=s2,
         )
 
     def task(self):

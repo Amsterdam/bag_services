@@ -5,6 +5,7 @@ from django.db import models, migrations
 
 
 class Migration(migrations.Migration):
+
     dependencies = [
         ('batch', '0002_auto_20150715_0747'),
     ]
@@ -13,7 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='taskexecution',
             name='job',
-            field=models.ForeignKey(related_name='task_executions',
-                                    to='batch.JobExecution'),
+            field=models.ForeignKey(related_name='task_executions', to='batch.JobExecution'),
         ),
     ]

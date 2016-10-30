@@ -8,7 +8,6 @@ class Command(BaseCommand):
     """
     Test script for looking up related kot models for a verblijfsobject
     """
-
     def handle(self, *args, **options):
         vbo = Verblijfsobject.objects.get(pk='03630000749400')
 
@@ -43,15 +42,15 @@ class Command(BaseCommand):
                 print(' - %s' % pk)
 
     def get_apercelen(self, gpercelen_pks, exclude_pks):
-        return KadastraalObject \
-            .objects \
-            .filter(indexletter='A', g_percelen__pk__in=gpercelen_pks) \
+        return KadastraalObject\
+            .objects\
+            .filter(indexletter='A', g_percelen__pk__in=gpercelen_pks)\
             .exclude(pk__in=exclude_pks)
 
     def get_gpercelen(self, apercelen_pks, exclude_pks):
-        return KadastraalObject \
-            .objects \
-            .filter(indexletter='G', a_percelen__pk__in=apercelen_pks) \
+        return KadastraalObject\
+            .objects\
+            .filter(indexletter='G', a_percelen__pk__in=apercelen_pks)\
             .exclude(pk__in=exclude_pks)
 
 
