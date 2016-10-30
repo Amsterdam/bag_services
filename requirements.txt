@@ -19,7 +19,7 @@ django-shotgun==0.2
 drf-extensions==0.3.1
 drf-hal-json==0.9.1
 drf-nested-fields==0.9.3
-elasticsearch==5.0.0
+elasticsearch==2.4.0
 elasticsearch-dsl==2.1.0
 factory-boy==2.7.0
 fake-factory==0.7.2
