@@ -10,7 +10,6 @@ import datasets.brk.batch
 
 
 class GebiedSearchTest(APITestCase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -23,7 +22,6 @@ class GebiedSearchTest(APITestCase):
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
 
     def find(self, naam, tussenhaakjes=None):
-
         response = self.client.get(
             '/atlas/search/gebied/', dict(q=naam))
         self.assertEqual(response.status_code, 200)

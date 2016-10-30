@@ -2,11 +2,10 @@ import string
 import re
 
 REPLACE_TABLE = "".maketrans(
-    string.punctuation, len(string.punctuation)*" ")
+    string.punctuation, len(string.punctuation) * " ")
 
 
 def first_number(input_tokens):
-
     for i, token in enumerate(input_tokens):
         if token.isdigit():
             return i, token
@@ -96,7 +95,6 @@ def is_postcode(query_string, tokens):
 
 
 def is_straat_huisnummer(query_string, tokens):
-
     if len(tokens) < 2:
         return False
 
@@ -162,5 +160,3 @@ def could_be_bouwblok(query_string, tokens):
             return False
 
     return True
-
-

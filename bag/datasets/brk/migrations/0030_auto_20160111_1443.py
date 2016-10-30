@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0029_auto_20160106_1154'),
     ]
@@ -19,6 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='zakelijkrecht',
             name='id',
-            field=models.CharField(max_length=183, serialize=False, primary_key=True),
+            field=models.CharField(max_length=183, serialize=False,
+                                   primary_key=True),
         ),
     ]

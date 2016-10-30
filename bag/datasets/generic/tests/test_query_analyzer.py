@@ -7,11 +7,13 @@ class QueryAnalyzerTest(TestCase):
     def _check(self, method, name, true_cases, false_cases):
         for query in true_cases:
             analyzed_query = QueryAnalyzer(query)
-            self.assertTrue(method(analyzed_query), "{} should be {}".format(query, name))
+            self.assertTrue(method(analyzed_query),
+                            "{} should be {}".format(query, name))
 
         for query in false_cases:
             analyzed_query = QueryAnalyzer(query)
-            self.assertFalse(method(analyzed_query), "{} should be {}".format(query, name))
+            self.assertFalse(method(analyzed_query),
+                             "{} should be {}".format(query, name))
 
     def test_is_meetbout_prefix(self):
         self._check(QueryAnalyzer.is_meetbout_prefix,
@@ -174,7 +176,8 @@ class QueryAnalyzerTest(TestCase):
             ('Nieuwe achtergracht 105 2', 'nieuwe achtergracht', 105, '105 2'),
             ('Nieuwe achtergracht 105', 'nieuwe achtergracht', 105, '105'),
             ('P C HOOFT 10', 'p c hooft', 10, '10'),
-            ('Eerste Jan van der Heijdenstraat 22-2A', 'eerste jan van der heijdenstraat', 22, '22 2 a')
+            ('Eerste Jan van der Heijdenstraat 22-2A',
+             'eerste jan van der heijdenstraat', 22, '22 2 a')
         ]
         for case in test_cases:
             analyzer = QueryAnalyzer(case[0])
@@ -188,31 +191,52 @@ class KadastraalObjectQueryTest(TestCase):
     def test_parsing(self):
         test_cases = [
             # tokens, gemeente_code, gemeente_naam, sectie, object_nummer, index_letter, index_nummer
-            (['asd', '15', 's', '00045'], 'asd15', None, 's', '00045', None, None),
-            (['asd', '15', 's', '00045', 'g'], 'asd15', None, 's', '00045', 'g', None),
-            (['asd', '15', 's', '00045', 'g', '0000'], 'asd15', None, 's', '00045', 'g', '0000'),
+            (['asd', '15', 's', '00045'], 'asd15', None, 's', '00045', None,
+             None),
+            (['asd', '15', 's', '00045', 'g'], 'asd15', None, 's', '00045', 'g',
+             None),
+            (['asd', '15', 's', '00045', 'g', '0000'], 'asd15', None, 's',
+             '00045', 'g', '0000'),
             (['aalsmeer', 'b'], None, 'aalsmeer', 'b', None, None, None, None),
             (['amr', '03'], 'amr03', None, None, None, None, None),
             (['amr', '03', 'b'], 'amr03', None, 'b', None, None, None),
             (['amr', '03', 'b', '334'], 'amr03', None, 'b', '334', None, None),
-            (['amr', '03', 'b', '03347'], 'amr03', None, 'b', '03347', None, None),
-            (['amr', '03', 'b', '3347'], 'amr03', None, 'b', '3347', None, None),
-            (['amr', '03', 'b', '03347', 'g', '0000'], 'amr03', None, 'b', '03347', 'g', '0000'),
-            (['amr', '03', 'b', '05054', 'a', '0002'], 'amr03', None, 'b', '05054', 'a', '0002'),
-            (['amr', '03', 'b', '5054', 'a', '2'], 'amr03', None, 'b', '5054', 'a', '2'),
-            (['amr', '03', 'b', '05054', '0002'], 'amr03', None, 'b', '05054', 'a', '0002'),
-            (['amr', '03', 'b', '5054', '2'], 'amr03', None, 'b', '5054', 'a', '2'),
-            (['aalsmeer', 'b', '03347'], None, 'aalsmeer', 'b', '03347', None, None),
-            (['aalsmeer', 'b', '3347'], None, 'aalsmeer', 'b', '3347', None, None),
-            (['aalsmeer', 'b', '03347', 'g', '0000'], None, 'aalsmeer', 'b', '03347', 'g', '0000'),
-            (['aalsmeer', 'b', '05054', 'a', '0002'], None, 'aalsmeer', 'b', '05054', 'a', '0002'),
-            (['aalsmeer', 'b', '5054', 'a', '2'], None, 'aalsmeer', 'b', '5054', 'a', '2'),
-            (['aalsmeer', 'b', '05054', '0002'], None, 'aalsmeer', 'b', '05054', 'a', '0002'),
-            (['aalsmeer', 'b', '5054', '2'], None, 'aalsmeer', 'b', '5054', 'a', '2'),
+            (['amr', '03', 'b', '03347'], 'amr03', None, 'b', '03347', None,
+             None),
+            (
+            ['amr', '03', 'b', '3347'], 'amr03', None, 'b', '3347', None, None),
+            (['amr', '03', 'b', '03347', 'g', '0000'], 'amr03', None, 'b',
+             '03347', 'g', '0000'),
+            (['amr', '03', 'b', '05054', 'a', '0002'], 'amr03', None, 'b',
+             '05054', 'a', '0002'),
+            (['amr', '03', 'b', '5054', 'a', '2'], 'amr03', None, 'b', '5054',
+             'a', '2'),
+            (['amr', '03', 'b', '05054', '0002'], 'amr03', None, 'b', '05054',
+             'a', '0002'),
+            (['amr', '03', 'b', '5054', '2'], 'amr03', None, 'b', '5054', 'a',
+             '2'),
+            (['aalsmeer', 'b', '03347'], None, 'aalsmeer', 'b', '03347', None,
+             None),
+            (['aalsmeer', 'b', '3347'], None, 'aalsmeer', 'b', '3347', None,
+             None),
+            (['aalsmeer', 'b', '03347', 'g', '0000'], None, 'aalsmeer', 'b',
+             '03347', 'g', '0000'),
+            (['aalsmeer', 'b', '05054', 'a', '0002'], None, 'aalsmeer', 'b',
+             '05054', 'a', '0002'),
+            (['aalsmeer', 'b', '5054', 'a', '2'], None, 'aalsmeer', 'b', '5054',
+             'a', '2'),
+            (['aalsmeer', 'b', '05054', '0002'], None, 'aalsmeer', 'b', '05054',
+             'a', '0002'),
+            (['aalsmeer', 'b', '5054', '2'], None, 'aalsmeer', 'b', '5054', 'a',
+             '2'),
             (['amr', '03', 'b', '47'], 'amr03', None, 'b', '47', None, None),
             (['aalsmeer', 'b', '47'], None, 'aalsmeer', 'b', '47', None, None),
-            (['asd', '15', 'ar', '45', 'g', '0'], 'asd15', None, 'ar', '45', 'g', '0'),
-            (['asd', '15', 'a', 'konijn', 'g', 'eend'], 'asd15', None, 'a', None, 'g', None),
+            (
+            ['asd', '15', 'ar', '45', 'g', '0'], 'asd15', None, 'ar', '45', 'g',
+            '0'),
+            (
+            ['asd', '15', 'a', 'konijn', 'g', 'eend'], 'asd15', None, 'a', None,
+            'g', None),
         ]
 
         for case in test_cases:

@@ -11,7 +11,6 @@ import time
 
 
 class Command(BaseCommand):
-
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     indexes = {
@@ -96,7 +95,7 @@ class Command(BaseCommand):
             numerator = int(numerator) - 1
             denominator = int(denominator)
 
-            assert(numerator < denominator)
+            assert (numerator < denominator)
 
             settings.PARTIAL_IMPORT['numerator'] = numerator
             settings.PARTIAL_IMPORT['denominator'] = denominator
@@ -112,7 +111,7 @@ class Command(BaseCommand):
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 return
 
-        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
+        sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
 
         self.stdout.write("Working on {}".format(", ".join(sets)))
 

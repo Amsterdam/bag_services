@@ -7,7 +7,6 @@ from geo_views import migrate
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('geo_views', '0001_squashed_0010_brk_wkpb_views'),
     ]

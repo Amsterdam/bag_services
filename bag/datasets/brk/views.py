@@ -136,7 +136,7 @@ class KadastraleSectieViewSet(AtlasViewSet):
     queryset = models.KadastraleSectie.objects.all()
     queryset_detail = (
         models.KadastraleSectie.objects
-        .select_related(
+            .select_related(
             'kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
@@ -217,7 +217,7 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (
         models.KadastraalSubject.objects
-        .select_related(
+            .select_related(
             'rechtsvorm', 'woonadres', 'woonadres__buitenland_land',
             'postadres', 'postadres__buitenland_land'))
 
@@ -396,7 +396,6 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
 
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
-
     # FIXME can this be faster?
     # FIXME I think there is an index missing somewhere.. not sure
     # take 500ms per object
@@ -406,13 +405,13 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
             'voornaamste_gerechtigde',
             'kadastrale_gemeente',
             'kadastrale_gemeente__gemeente').prefetch_related(
-                'a_percelen',
-                'g_percelen',
-                'aantekeningen',
-                'beperkingen',
-            )
-
+            'a_percelen',
+            'g_percelen',
+            'aantekeningen',
+            'beperkingen',
         )
+
+    )
 
     pagination_class = rest.LimitedHALPagination
 
@@ -461,9 +460,9 @@ class ZakelijkRechtViewSet(AtlasViewSet):
     """
     queryset = (
         models.ZakelijkRecht.objects
-        .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
-        .all()
-        .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
+            .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
+            .all()
+            .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
@@ -531,7 +530,7 @@ class AantekeningViewSet(AtlasViewSet):
 
     queryset_detail = (
         models.Aantekening.objects
-        .select_related(
+            .select_related(
             'aard_aantekening', 'opgelegd_door',
             'kadastraal_object', 'kadastraal_object__sectie',
             'kadastraal_object__kadastrale_gemeente')

@@ -642,7 +642,6 @@ class BouwblokCodeView(RedirectView):
 
 
 class StadsdeelCodeView(RedirectView):
-
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):

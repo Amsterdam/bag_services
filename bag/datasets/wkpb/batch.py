@@ -32,7 +32,8 @@ class ImportBeperkingcodeTask(batch.BasicTask):
             rows = csv.reader(f, delimiter=';')
             objects = [self.process_row(row) for row in rows]
 
-        models.Beperkingcode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+        models.Beperkingcode.objects.bulk_create(objects,
+                                                 batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Beperkingcode(
@@ -60,7 +61,8 @@ class ImportWkpbBroncodeTask(batch.BasicTask):
             objects = [self.process_row(r) for r in rows]
 
         models.Broncode.objects.all().delete()
-        models.Broncode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+        models.Broncode.objects.bulk_create(objects,
+                                            batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Broncode(
@@ -78,7 +80,8 @@ class ImportBeperkingTask(batch.BasicTask):
         self.codes = set()
 
     def before(self):
-        self.codes = set(models.Beperkingcode.objects.values_list('pk', flat=True))
+        self.codes = set(
+            models.Beperkingcode.objects.values_list('pk', flat=True))
 
     def after(self):
         self.codes.clear()
@@ -86,9 +89,11 @@ class ImportBeperkingTask(batch.BasicTask):
     def process(self):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
-            objects = [obj for obj in (self.process_row(r) for r in rows) if obj]
+            objects = [obj for obj in (self.process_row(r) for r in rows) if
+                       obj]
 
-        models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+        models.Beperking.objects.bulk_create(objects,
+                                             batch_size=database.BATCH_SIZE)
 
     def get_date(self, s):
         if s:
@@ -101,7 +106,9 @@ class ImportBeperkingTask(batch.BasicTask):
         datum_einde = self.get_date(r[4])
         vandaag = datetime.date.today()
         if datum_einde and datum_einde < vandaag:
-            log.warning('Beperking {} no longer valid; end date {} was before {}'.format(r[0], datum_einde, vandaag))
+            log.warning(
+                'Beperking {} no longer valid; end date {} was before {}'.format(
+                    r[0], datum_einde, vandaag))
             return None
 
         return models.Beperking(
@@ -124,7 +131,8 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
 
     def before(self):
         self.codes = set(models.Broncode.objects.values_list('pk', flat=True))
-        self.beperkingen = dict(models.Beperking.objects.values_list('inschrijfnummer', 'pk'))
+        self.beperkingen = dict(
+            models.Beperking.objects.values_list('inschrijfnummer', 'pk'))
 
     def after(self):
         self.codes.clear()
@@ -134,9 +142,11 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         with open(self.source) as f:
             rows = csv.reader(f, delimiter=';')
             objects = (self.process_row(r) for r in rows)
-            object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
+            object_dict = dict((o.pk, o) for o in
+                               objects)  # make unique; input contains duplicate IDs
 
-        models.Brondocument.objects.bulk_create(object_dict.values(), batch_size=database.BATCH_SIZE)
+        models.Brondocument.objects.bulk_create(object_dict.values(),
+                                                batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         pers_afsch = {'0': False, '1': True}.get(r[4], None)
@@ -147,14 +157,17 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         beperking_id = self.beperkingen.get(inschrijfnummer)
 
         if not beperking_id:
-            log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
-                                                                                                inschrijfnummer))
+            log.warning(
+                'Brondocument {} references non-existing beperking {}; ignoring'.format(
+                    inschrijfnummer,
+                    inschrijfnummer))
 
         return models.Brondocument(
             pk=inschrijfnummer,
             inschrijfnummer=inschrijfnummer,
             bron_id=bron_id,
-            documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
+            documentnaam=r[3][:21],
+            # afknippen, omdat data corrupt is (zie brondocument: 5820)
             persoonsgegevens_afschermen=pers_afsch,
             soort_besluit=r[5],
             beperking_id=beperking_id
@@ -172,8 +185,10 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.kot = dict()
 
     def before(self):
-        self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
-        self.kot = dict(brk.KadastraalObject.objects.values_list('aanduiding', 'pk'))
+        self.beperkingen = set(
+            models.Beperking.objects.values_list('pk', flat=True))
+        self.kot = dict(
+            brk.KadastraalObject.objects.values_list('aanduiding', 'pk'))
 
     def after(self):
         self.beperkingen.clear()
@@ -187,19 +202,23 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             rows = csv.reader(f, delimiter=';')
             objects = [o for o in (self.process_row(r) for r in rows) if o]
 
-        models.BeperkingKadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
+        models.BeperkingKadastraalObject.objects.bulk_create(objects,
+                                                             batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
         beperking_id = int(r[5])
 
         if beperking_id not in self.beperkingen:
-            log.warning('WPB references non-existing beperking {}; skipping'.format(beperking_id))
+            log.warning(
+                'WPB references non-existing beperking {}; skipping'.format(
+                    beperking_id))
             return None
 
         if not aanduiding or aanduiding not in self.kot:
-            log.warning('Beperking {} references non-existing kadastraal object {}; skipping'
-                        .format(beperking_id, aanduiding))
+            log.warning(
+                'Beperking {} references non-existing kadastraal object {}; skipping'
+                .format(beperking_id, aanduiding))
             return None
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)

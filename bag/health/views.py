@@ -10,7 +10,6 @@ from elasticsearch_dsl import Search
 from datasets.bag.models import Verblijfsobject
 from datasets.wkpb.models import Beperking
 
-
 log = logging.getLogger(__name__)
 
 

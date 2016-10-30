@@ -93,7 +93,6 @@ class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
 
 
 class RelatedSummaryField(serializers.Field):
-
     def to_representation(self, value):
         count = value.count()
         model_name = value.model.__name__
@@ -112,7 +111,6 @@ class RelatedSummaryField(serializers.Field):
 
 
 class DisplayField(serializers.Field):
-
     def __init__(self, *args, **kwargs):
         kwargs['source'] = '*'
         kwargs['read_only'] = True
@@ -123,7 +121,6 @@ class DisplayField(serializers.Field):
 
 
 class MultipleGeometryField(serializers.Field):
-
     read_only = True
 
     def get_attribute(self, obj):

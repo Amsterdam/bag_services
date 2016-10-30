@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0030_auto_20160111_1443'),
     ]
@@ -14,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='aperceelgperceelrelatie',
             name='id',
-            field=models.CharField(max_length=121, serialize=False, primary_key=True),
+            field=models.CharField(max_length=121, serialize=False,
+                                   primary_key=True),
         ),
     ]

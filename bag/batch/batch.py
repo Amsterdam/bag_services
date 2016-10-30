@@ -44,7 +44,9 @@ def _execute_task(job_execution, task):
         tear_down = getattr(task, "tear_down", None)
 
     log.debug("Starting task: %s", task_name)
-    task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
+    task_execution = TaskExecution.objects.create(job=job_execution,
+                                                  name=task_name,
+                                                  date_started=timezone.now())
 
     try:
         try:

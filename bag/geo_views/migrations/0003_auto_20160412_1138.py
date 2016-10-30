@@ -7,14 +7,13 @@ from geo_views import migrate
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0035_auto_20160408_1705'),
         ('geo_views', '0002_display_subtype'),
     ]
 
     operations = [
-            migrate.ManageView(view_name='geo_lki_kadastraalobject', sql="""
+        migrate.ManageView(view_name='geo_lki_kadastraalobject', sql="""
 SELECT
   ko.id                                                     AS id,
   ko.aanduiding                                             AS volledige_code,
@@ -26,7 +25,7 @@ SELECT
 FROM brk_kadastraalobject ko, django_site site
 WHERE site.name = 'API Domain'
 """),
-            migrate.ManageView(view_name='geo_wkpb', sql="""
+        migrate.ManageView(view_name='geo_wkpb', sql="""
 SELECT
   bk.id                                            AS id,
   bp.beperkingtype_id                              AS beperkingtype_id,
@@ -45,6 +44,5 @@ WHERE
   site.name = 'API Domain'
   AND bp.beperkingtype_id <> 'HS'
           """,
-        ),
+                           ),
     ]
-

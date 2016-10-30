@@ -18,7 +18,7 @@ def random_poly():
 class GemeenteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gemeente
-        django_get_or_create = ('gemeente', )
+        django_get_or_create = ('gemeente',)
 
     gemeente = factory.LazyAttribute(lambda o: f.city())
     geometrie = random_poly()
@@ -83,11 +83,11 @@ class KadastraalSubjectFactory(factory.DjangoModelFactory):
 
     pk = fuzzy.FuzzyText(length=60)
     type = fuzzy.FuzzyChoice(
-            choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
-                     models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
+        choices=(models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
+                 models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK))
     bron = fuzzy.FuzzyChoice(
-            choices=(models.KadastraalSubject.BRON_KADASTER,
-                     models.KadastraalSubject.BRON_REGISTRATIE))
+        choices=(models.KadastraalSubject.BRON_KADASTER,
+                 models.KadastraalSubject.BRON_REGISTRATIE))
     woonadres = factory.SubFactory(AdresFactory)
     postadres = factory.SubFactory(AdresFactory)
 

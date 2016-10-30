@@ -134,7 +134,7 @@ class QueryAnalyzer(object):
             return False
 
         return self._is_kadastraal_object_code() or \
-            self._is_kadastraal_object_gemeente()
+               self._is_kadastraal_object_gemeente()
 
     def _is_kadastraal_object_code(self):
         """

@@ -14,7 +14,8 @@ class ImportBeperkingcode(TaskTestCase):
         self.run_task()
 
         a = models.Beperkingcode.objects.get(pk='VI')
-        self.assertEqual(a.omschrijving, 'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
+        self.assertEqual(a.omschrijving,
+                         'Aanwijzing van gronden, Wet Voorkeursrecht gemeenten')
 
 
 class ImportWkpbBroncode(TaskTestCase):
@@ -64,8 +65,10 @@ class ImportBeperking(TaskTestCase):
 
         b = models.Beperking.objects.get(pk=1001730)
         self.assertEqual(b.inschrijfnummer, 1156)
-        self.assertEqual(b.beperkingtype.omschrijving, 'Melding, bevel, beschikking of vordering Wet bodembescherming')
+        self.assertEqual(b.beperkingtype.omschrijving,
+                         'Melding, bevel, beschikking of vordering Wet bodembescherming')
         self.assertEqual(b.datum_in_werking, datetime.date(2008, 12, 17))
         self.assertEqual(b.datum_einde, None)
 
-        self.assertRaises(models.Beperking.DoesNotExist, models.Beperking.objects.get, pk=1001832)
+        self.assertRaises(models.Beperking.DoesNotExist,
+                          models.Beperking.objects.get, pk=1001832)

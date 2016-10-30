@@ -3,12 +3,10 @@ import mimetypes
 from django.test import TestCase
 from unittest import skip
 
-
-from ..objectstore  import ObjectStore
+from ..objectstore import ObjectStore
 
 
 class TestObjectstore(TestCase):
-
     def setUp(self):
         self.objectstore = ObjectStore('BAG')
 
@@ -24,7 +22,8 @@ class TestObjectstore(TestCase):
         res = self.objectstore._get_full_container_list([])
         self.assertEqual(len(res), 7)
 
-        objects = ['diva/bag/{}'.format(filename) for filename in os.listdir('diva/bag')]
+        objects = ['diva/bag/{}'.format(filename) for filename in
+                   os.listdir('diva/bag')]
         self.assertEqual(len(objects), 29)
 
         for ob in objects:
@@ -33,7 +32,8 @@ class TestObjectstore(TestCase):
             content_type = mimetypes.MimeTypes().guess_type(ob)[0]
             if not content_type:
                 content_type = "application/octet-stream"
-            self.objectstore.put_to_objectstore('bagtest/{}'.format(ob_name), content, content_type)
+            self.objectstore.put_to_objectstore('bagtest/{}'.format(ob_name),
+                                                content, content_type)
 
         res = self.objectstore._get_full_container_list([])
         self.assertEqual(len(res), 36)

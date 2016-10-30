@@ -13,4 +13,3 @@ class ImportGemeenteTaskTest(TaskTestCase):
         self.assertIsNotNone(gemeente)
         self.assertEqual(gemeente.gemeente, 'Amsterdam')
         self.assertIsNotNone(gemeente.geometrie)
-

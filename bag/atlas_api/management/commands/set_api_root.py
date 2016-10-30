@@ -5,9 +5,9 @@ from django.core.management import BaseCommand
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
-        parser.add_argument('base_uri', help='Base URI for the API, such as https://somesite.com/api/')
+        parser.add_argument('base_uri',
+                            help='Base URI for the API, such as https://somesite.com/api/')
 
     def handle(self, *args, **options):
         base = options['base_uri']

@@ -16,7 +16,6 @@ class BrowseDatasetsTestCase(APITestCase):
         'bag/standplaats',
         'bag/verblijfsobject',
 
-
         'bag/pand',
         'bag/nummeraanduiding',
         'bag/openbareruimte',

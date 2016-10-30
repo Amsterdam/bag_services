@@ -4,7 +4,6 @@ from rest_framework.test import APITestCase
 
 
 class RedirectsTest(APITestCase):
-
     def testBouwblokCode(self):
         bbk = factories.BouwblokFactory.create(code='AN34')
         res = self.client.get('/gebieden/bouwblok/AN34/')

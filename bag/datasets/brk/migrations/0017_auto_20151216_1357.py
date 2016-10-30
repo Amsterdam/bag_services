@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0016_auto_20151215_1526'),
     ]
@@ -55,7 +54,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='kadastraalobject',
             name='g_percelen',
-            field=models.ManyToManyField(related_name='a_percelen', to='brk.KadastraalObject'),
+            field=models.ManyToManyField(related_name='a_percelen',
+                                         to='brk.KadastraalObject'),
         ),
         migrations.AddField(
             model_name='zakelijkrecht',

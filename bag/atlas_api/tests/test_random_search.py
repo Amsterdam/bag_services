@@ -6,11 +6,11 @@ from rest_framework.test import APITestCase
 # Project
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class RandomShitTest(APITestCase):
-
     def test_random_shit_typeahead(self):
         """
         random stuff that crashes search / inspired by ein smoke tests

@@ -7,9 +7,15 @@ from geo_views import migrate
 
 
 class Migration(migrations.Migration):
-    replaces = [('geo_views', '0001_bag_views'), ('geo_views', '0002_lki_views'), ('geo_views', '0003_wkpb_views'),
-                ('geo_views', '0004_lki_views'), ('geo_views', '0005_bag_views'), ('geo_views', '0006_bag_views'),
-                ('geo_views', '0007_update_views'), ('geo_views', '0008_wkpb_view'), ('geo_views', '0009_bag_opr_view'),
+    replaces = [('geo_views', '0001_bag_views'),
+                ('geo_views', '0002_lki_views'),
+                ('geo_views', '0003_wkpb_views'),
+                ('geo_views', '0004_lki_views'),
+                ('geo_views', '0005_bag_views'),
+                ('geo_views', '0006_bag_views'),
+                ('geo_views', '0007_update_views'),
+                ('geo_views', '0008_wkpb_view'),
+                ('geo_views', '0009_bag_opr_view'),
                 ('geo_views', '0010_brk_wkpb_views')]
 
     dependencies = [
@@ -22,8 +28,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrate.ManageView(
-                view_name='geo_bag_bouwblok',
-                sql="""
+            view_name='geo_bag_bouwblok',
+            sql="""
 SELECT
   bb.id                                               AS id,
   bb.code                                             AS code,
@@ -40,8 +46,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_buurt',
-                sql="""
+            view_name='geo_bag_buurt',
+            sql="""
 SELECT
   b.id                                            AS id,
   b.code                                          AS code,
@@ -55,8 +61,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_buurtcombinatie',
-                sql="""
+            view_name='geo_bag_buurtcombinatie',
+            sql="""
 SELECT
   bc.id                                                      AS id,
   bc.vollcode                                                AS vollcode,
@@ -70,8 +76,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_gebiedsgerichtwerken',
-                sql="""
+            view_name='geo_bag_gebiedsgerichtwerken',
+            sql="""
 SELECT
   g.id                                                           AS id,
   g.code                                                         AS code,
@@ -85,8 +91,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_grootstedelijkgebied',
-                sql="""
+            view_name='geo_bag_grootstedelijkgebied',
+            sql="""
 SELECT
   gg.id                                                           AS id,
   gg.naam                                                         AS naam,
@@ -99,8 +105,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_ligplaats',
-                sql="""
+            view_name='geo_bag_ligplaats',
+            sql="""
 SELECT
   l.id                              AS id,
   l.geometrie                       AS geometrie,
@@ -122,8 +128,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_openbareruimte',
-                sql="""
+            view_name='geo_bag_openbareruimte',
+            sql="""
 SELECT
   opr.id                                                AS id,
   opr.naam                                              AS display,
@@ -140,8 +146,8 @@ WHERE
             """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_pand',
-                sql="""
+            view_name='geo_bag_pand',
+            sql="""
 SELECT
   p.id                                      AS id,
   p.geometrie                               AS geometrie,
@@ -157,8 +163,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_stadsdeel',
-                sql="""
+            view_name='geo_bag_stadsdeel',
+            sql="""
 SELECT
   s.id                                                AS id,
   s.code                                              AS code,
@@ -172,8 +178,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_standplaats',
-                sql="""
+            view_name='geo_bag_standplaats',
+            sql="""
 SELECT
   s.id                                          AS id,
   s.geometrie                                   AS geometrie,
@@ -195,8 +201,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_unesco',
-                sql="""
+            view_name='geo_bag_unesco',
+            sql="""
 SELECT
   u.id                                             AS id,
   u.naam                                           AS naam,
@@ -209,8 +215,8 @@ WHERE site.name = 'API Domain'
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_verblijfsobject',
-                sql="""
+            view_name='geo_bag_verblijfsobject',
+            sql="""
 SELECT
   v.id                                    AS id,
   v.geometrie                             AS geometrie,
@@ -232,8 +238,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_lki_gemeente',
-                sql="""
+            view_name='geo_lki_gemeente',
+            sql="""
 SELECT
   gemeente AS id,
   gemeente AS gemeentecode,
@@ -255,28 +261,28 @@ FROM brk_kadastraalobject ko, django_site site
 WHERE site.name = 'API Domain'
 """),
         migrate.ManageView(
-                view_name='geo_lki_kadastralegemeente',
-                sql="""
+            view_name='geo_lki_kadastralegemeente',
+            sql="""
 SELECT
   id,
-  id as code,
+  id AS code,
   geometrie
 FROM brk_kadastralegemeente""",
         ),
         migrate.ManageView(
-                view_name='geo_lki_sectie',
-                sql="""
+            view_name='geo_lki_sectie',
+            sql="""
 SELECT
     id,
     id AS volledige_code,
-    sectie as code,
+    sectie AS code,
     geometrie
 FROM brk_kadastralesectie
 """,
         ),
         migrate.ManageView(
-                view_name='geo_wkpb',
-                sql="""
+            view_name='geo_wkpb',
+            sql="""
 SELECT
   bk.id                                            AS id,
   bp.beperkingtype_id                              AS beperkingtype_id,

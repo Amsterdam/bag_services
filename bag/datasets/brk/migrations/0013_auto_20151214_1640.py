@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0012_remove_zakelijkrecht_beperkt_tot_tng'),
     ]

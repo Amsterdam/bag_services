@@ -8,7 +8,6 @@ from geo_views import migrate
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('geo_views', '0003_auto_20160412_1138'),
     ]

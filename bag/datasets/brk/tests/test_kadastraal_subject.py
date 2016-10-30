@@ -3,7 +3,6 @@ from datasets.brk import batch, models
 
 
 class ImportKadastraalSubjectTaskTest(TaskTestCase):
-
     def task(self):
         return batch.ImportKadastraalSubjectTask("diva/brk")
 
@@ -11,7 +10,8 @@ class ImportKadastraalSubjectTaskTest(TaskTestCase):
         self.run_task()
 
         np = models.KadastraalSubject.objects.get(pk='NL.KAD.Persoon.171335763')
-        self.assertEqual(np.type, models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK)
+        self.assertEqual(np.type,
+                         models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK)
         self.assertIsNone(np.beschikkingsbevoegdheid)
         self.assertEqual(np.voornamen, "Mr")
         self.assertEqual(np.voorvoegsels, "")
@@ -41,8 +41,10 @@ class ImportKadastraalSubjectTaskTest(TaskTestCase):
         self.assertEquals(np.woonadres.woonplaats, "AMSTERDAM")
         self.assertIsNone(np.postadres)
 
-        nnp = models.KadastraalSubject.objects.get(pk='NL.KAD.Persoon.398719470')
-        self.assertEqual(nnp.type, models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK)
+        nnp = models.KadastraalSubject.objects.get(
+            pk='NL.KAD.Persoon.398719470')
+        self.assertEqual(nnp.type,
+                         models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK)
         self.assertIsNone(nnp.beschikkingsbevoegdheid)
         self.assertIsNone(nnp.voornamen)
         self.assertIsNone(nnp.voorvoegsels)
@@ -69,4 +71,3 @@ class ImportKadastraalSubjectTaskTest(TaskTestCase):
         self.assertEquals(nnp.woonadres.toevoeging, "A")
         self.assertEquals(nnp.woonadres.postcode, "1382LX")
         self.assertEqual(nnp.woonadres.woonplaats, "WEESP")
-

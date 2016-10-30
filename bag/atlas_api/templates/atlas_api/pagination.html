@@ -3,14 +3,16 @@
         <li><a rel="start" href="{{ first_url }}"><span>&laquo;</span></a></li>
         <li><a rel="previous" href="{{ prev_url }}"><span>&lsaquo;</span></a></li>
     {% else %}
-        <li></li><li></li>
+        <li></li>
+        <li></li>
     {% endif %}
     <li>{{ current_page }}/{{ total }}</li>
     {% if next_url %}
         <li><a rel="next" href="{{ next_url }}"><span>&rsaquo;</span></a></li>
         <li><a rel="last" href="{{ last_url }}"><span>&raquo;</span></a></li>
     {% else %}
-        <li></li><li></li>
+        <li></li>
+        <li></li>
     {% endif %}
 </ul>
 

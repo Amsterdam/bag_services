@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('brk', '0036_merge'),
     ]
@@ -14,7 +13,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='kadastraalobject',
-            options={'ordering': ('kadastrale_gemeente__id', 'sectie', 'perceelnummer', '-indexletter', 'indexnummer')},
+            options={'ordering': (
+            'kadastrale_gemeente__id', 'sectie', 'perceelnummer',
+            '-indexletter', 'indexnummer')},
         ),
         migrations.RenameField(
             model_name='kadastraalobject',

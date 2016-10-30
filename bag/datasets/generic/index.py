@@ -83,7 +83,7 @@ class ImportIndexTask(object):
         numerator = settings.PARTIAL_IMPORT['numerator']
         denominator = settings.PARTIAL_IMPORT['denominator']
 
-        log.info("PART: %s OF %s" % (numerator+1, denominator))
+        log.info("PART: %s OF %s" % (numerator + 1, denominator))
 
         end_part = count = total = qs.count()
         chunk_size = batch_size
@@ -106,7 +106,7 @@ class ImportIndexTask(object):
         for i, start in enumerate(range(start_index, end_part, batch_size)):
             end = min(start + batch_size, end_part)
             t_start = time.time()
-            yield (i+1, total_batches+1, start, end, total, qs[start:end])
+            yield (i + 1, total_batches + 1, start, end, total, qs[start:end])
             log.debug("CHUNK %5s - %-5s  in %.3f seconds" % (
                 start, end, time.time() - t_start))
 
@@ -126,7 +126,6 @@ class ImportIndexTask(object):
         loop_time = elapsed = duration - start_time
 
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
-
             loop_start = time.time()
             total_left = ((total_batches - batch_i) * loop_time) + 1 / 60
 
@@ -192,4 +191,3 @@ class CopyIndexTask(object):
 
         log.debug('Backup index %s to %s ', self.index, self.target)
         helpers.reindex(client, self.index, self.target)
-

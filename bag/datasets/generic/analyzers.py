@@ -6,14 +6,12 @@ that are used throughout.
 import elasticsearch_dsl as es
 from elasticsearch_dsl import analysis, tokenizer
 
-
 orderings = {
     'openbare_ruimte': 10,
     'kadastraal_subject': 25,
     'adres': 50,
     'kadastraal_object': 100
 }
-
 
 ####################################
 #            Filters               #
@@ -31,14 +29,12 @@ synonym_filter = analysis.token_filter(
     ]
 )
 
-
 huisnummer_expand = analysis.token_filter(
     'huisnummer_expand',
     type='word_delimiter',
     generate_numer_parts=True,
     preserve_original=True
 )
-
 
 # Change dash and dot to space
 naam_stripper = analysis.char_filter(
@@ -58,7 +54,6 @@ divider_normalizer = analysis.token_filter(
     pattern='(str\.|\/|-)',
     replacement=' '
 )
-
 
 # Removes ., -, / and space from text
 divider_stripper = analysis.token_filter(
@@ -176,7 +171,6 @@ ngram = es.analyzer(
     filter=['lowercase', ngram_filter]
 )
 
-
 toevoeging = es.analyzer(
     'toevoeging_analyzer',
     tokenizer='keyword',
@@ -202,7 +196,6 @@ kad_obj_nummer = es.analyzer(
         min_gram=1, max_gram=5
     ),
 )
-
 
 kad_sbj_naam = es.analyzer(
     'kad_sbj_naam',

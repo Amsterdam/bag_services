@@ -34,7 +34,8 @@ class BeperkingKadastraalObjectFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=33)
     beperking = factory.SubFactory(BeperkingFactory)
-    kadastraal_object = factory.SubFactory(brk_factories.KadastraalObjectFactory)
+    kadastraal_object = factory.SubFactory(
+        brk_factories.KadastraalObjectFactory)
 
 
 class BroncodeFactory(factory.DjangoModelFactory):

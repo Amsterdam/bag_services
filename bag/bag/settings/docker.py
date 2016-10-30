@@ -74,9 +74,9 @@ LOGGING = {
 
         # Log all unhandled exceptions
         'django.request': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-                'propagate': False,
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }
@@ -101,7 +101,8 @@ ALLOWED_HOSTS = [
 secret_key = os.getenv('DJANGO_SECRET_KEY')
 SECRET_KEY = secret_key if secret_key else SECRET_KEY
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # Generate https links
+SECURE_PROXY_SSL_HEADER = (
+'HTTP_X_FORWARDED_PROTO', 'https')  # Generate https links
 
 CSRF_COOKIE_SECURE = True
 
@@ -133,5 +134,5 @@ OBJECTSTORE = {
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
         'region_name': 'NL',
-        'endpoint_type' : 'internalURL'}
+        'endpoint_type': 'internalURL'}
 }
