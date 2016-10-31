@@ -8,8 +8,8 @@ from datasets.generic.rest import AtlasViewSet
 
 from datasets.generic import rest
 
-from rest_framework import filters
-import django_filters
+from django_filters.rest_framework import filters
+from django_filters.rest_framework.filterset import FilterSet
 
 
 class GemeenteViewSet(AtlasViewSet):
@@ -27,7 +27,8 @@ class GemeenteViewSet(AtlasViewSet):
     De gemeentegrens wordt door de centrale overheid vastgesteld, en door het
     Kadaster vastgelegd.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
 
     ---
 
@@ -136,7 +137,7 @@ class KadastraleSectieViewSet(AtlasViewSet):
     queryset = models.KadastraleSectie.objects.all()
     queryset_detail = (
         models.KadastraleSectie.objects
-        .select_related(
+            .select_related(
             'kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
@@ -212,12 +213,13 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     subjectnummers) bekend zijn bij (de verschillende vestigingen van)
     het Kadaster.
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
     """
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (
         models.KadastraalSubject.objects
-        .select_related(
+            .select_related(
             'rechtsvorm', 'woonadres', 'woonadres__buitenland_land',
             'postadres', 'postadres__buitenland_land'))
 
@@ -256,7 +258,8 @@ class KadastraalObjectViewSet(AtlasViewSet):
     Een kadastraal object een onroerende zaak of een appartementsrecht
     waarvoor bij overdracht of vestiging van rechten
     inschrijving in de [openbare
-    registers](http://wetten.overheid.nl/BWBR0005291/Boek3/Titel1/Afdeling2/Artikel16/)
+    registers]
+    (http://wetten.overheid.nl/BWBR0005291/Boek3/Titel1/Afdeling2/Artikel16/)
     van het Kadaster is vereist.
 
     Een onroerende zaak heeft een kadastrale aanduiding geheel perceel of
@@ -273,7 +276,8 @@ class KadastraalObjectViewSet(AtlasViewSet):
     Nederlands grondgebied.
     (definitie is ontleend aan
 
-    [art. 1 Kadasterwet](http://wetten.overheid.nl/zoeken_op/BWBR0004541/Hoofdstuk1/Artikel1/)).
+    [art. 1 Kadasterwet]
+    (http://wetten.overheid.nl/zoeken_op/BWBR0004541/Hoofdstuk1/Artikel1/)).
 
     Als onderdeel van het Nederlands grondgebied is het een driedimensionaal
     ruimtelijk object.
@@ -308,8 +312,8 @@ class KadastraalObjectViewSet(AtlasViewSet):
     # Appartementencomplex
     Een complex is een object dat beoogt ten behoeve van splitsing in
     appartementsrechten, de in de splitsing
-    betrokken kadastrale percelen (de zogenaamde grondpercelen) administratief samen te voegen. Van een complex
-    worden verder geen gegevens vastgelegd.
+    betrokken kadastrale percelen (de zogenaamde grondpercelen) administratief
+    samen te voegen. Van een complex worden verder geen gegevens vastgelegd.
 
     De kadastrale aanduiding van een complex is een kadastrale aanduiding
     waarvan de index bestaat uit de indexletter
@@ -319,8 +323,9 @@ class KadastraalObjectViewSet(AtlasViewSet):
     appartementsrechten vindt de complexvorming plaats,
     waarbij tevens de kadastrale aanduidingen van de appartementsrechten
     worden aangebracht.
-    Naast de onderlinge relaties worden tevens de relaties gelegd van het complex naar de betreffende kadastrale
-    percelen waarvan de rechten in de splitsing worden betrokken.
+    Naast de onderlinge relaties worden tevens de relaties gelegd van
+    het complex naar de betreffende kadastrale percelen waarvan de rechten
+    in de splitsing worden betrokken.
 
     # Voorlopige Kadastrale grenzen
     Wanneer een gedeelte van een perceel wordt verkocht, of een perceel wordt
@@ -342,13 +347,15 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
     Een uitgebreide beschrijving van de aanleiding en het proces is na te
     lezen in het artikel in het vakblad
-    [Geo-info (PDF, 359 kB)](http://www.amsterdam.nl/publish/pages/559654/12_kadaster_voorlopige_kadastrale_grenzen
-    .pdf).
+    [Geo-info (PDF, 359 kB)]
+    (http://www.amsterdam.nl/publish/pages/559654/12_kadaster_voorlopige_kadastrale_grenzen.pdf).
 
     ## Herkenbaarheid in LKI en Massale Output
 
-    In de leveringen van LKI ([Kadastrale Kaart](http://www.amsterdam.nl/stelselpedia/woordenboek/))
-    ([art. 48 lid 3 Kadasterwet](http://wetten.overheid.nl/BWBR0004541/Hoofdstuk3/Titel1/Artikel48/))
+    In de leveringen van LKI
+    ([Kadastrale Kaart](http://www.amsterdam.nl/stelselpedia/woordenboek/))
+    ([art. 48 lid 3 Kadasterwet]
+    (http://wetten.overheid.nl/BWBR0004541/Hoofdstuk3/Titel1/Artikel48/))
     zijn voorlopige kadastrale grenzen herkenbaar aan het kenmerk ‘wijze van
     inwinning’ met een domeinwaarde 6.
 
@@ -359,7 +366,8 @@ class KadastraalObjectViewSet(AtlasViewSet):
     Deze werkwijze impliceert dat het fenomeen 'deelpercelen' op termijn zal
     verdwijnen.
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-1/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-1/)
     """
 
     queryset = (models.KadastraalObject.objects
@@ -396,7 +404,6 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
 
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
-
     # FIXME can this be faster?
     # FIXME I think there is an index missing somewhere.. not sure
     # take 500ms per object
@@ -406,13 +413,13 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
             'voornaamste_gerechtigde',
             'kadastrale_gemeente',
             'kadastrale_gemeente__gemeente').prefetch_related(
-                'a_percelen',
-                'g_percelen',
-                'aantekeningen',
-                'beperkingen',
-            )
-
+            'a_percelen',
+            'g_percelen',
+            'aantekeningen',
+            'beperkingen',
         )
+
+    )
 
     pagination_class = rest.LimitedHALPagination
 
@@ -420,12 +427,12 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
     serializer_detail_class = serializers.KadastraalObjectDetailExpand
 
 
-class ZakelijkRechtFilter(filters.FilterSet):
+class ZakelijkRechtFilter(FilterSet):
     """
     Filter aantekeningen with better form
     """
-    kadastraal_object = django_filters.CharFilter()
-    kadastraal_subject = django_filters.CharFilter()
+    kadastraal_object = filters.CharFilter()
+    kadastraal_subject = filters.CharFilter()
 
     class Meta:
         model = models.ZakelijkRecht
@@ -457,13 +464,14 @@ class ZakelijkRechtViewSet(AtlasViewSet):
 
     Een Recht kan ook een oudhollandsrecht zijn.
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
     """
     queryset = (
         models.ZakelijkRecht.objects
-        .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
-        .all()
-        .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
+            .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
+            .all()
+            .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
@@ -497,13 +505,13 @@ class ZakelijkRechtViewSet(AtlasViewSet):
             request, *args, **kwargs)
 
 
-class AantekeningenFilter(filters.FilterSet):
+class AantekeningenFilter(FilterSet):
     """
     Filter aantekeningen with better form
     """
     # aard_aantekening = django_filters.CharFilter()
-    opgelegd_door = django_filters.CharFilter()
-    kadastraal_object = django_filters.CharFilter()
+    opgelegd_door = filters.CharFilter()
+    kadastraal_object = filters.CharFilter()
 
     class Meta:
         model = models.Aantekening
@@ -523,15 +531,15 @@ class AantekeningViewSet(AtlasViewSet):
     feit, genoemd in een stuk, dat betrekking heeft op een object en dat
     gevolgen kan hebben voor de uitoefening van rechten op het object.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
     """
     queryset = (models.Aantekening.objects
                 .select_related('aard_aantekening', 'opgelegd_door')
                 .all())
 
     queryset_detail = (
-        models.Aantekening.objects
-        .select_related(
+        models.Aantekening.objects.select_related(
             'aard_aantekening', 'opgelegd_door',
             'kadastraal_object', 'kadastraal_object__sectie',
             'kadastraal_object__kadastrale_gemeente')
