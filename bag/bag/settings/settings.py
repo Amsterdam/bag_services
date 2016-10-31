@@ -150,23 +150,27 @@ ALLOWED_HOSTS = [
     '.service.consul',
 ]
 
-REST_FRAMEWORK = {
-    'PAGE_SIZE': 25,
-    'MAX_PAGINATE_BY': 100,
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+REST_FRAMEWORK = dict(
+    PAGE_SIZE=25,
+    MAX_PAGINATE_BY=100,
+    DEFAULT_AUTHENTICATION_CLASSES=(
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'drf_hal_json.pagination.HalPageNumberPagination',
-    'DEFAULT_PARSER_CLASSES': ('drf_hal_json.parsers.JsonHalParser',),
-    'DEFAULT_RENDERER_CLASSES': (
+    DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
+    DEFAULT_PARSER_CLASSES=(
+        'drf_hal_json.parsers.JsonHalParser',
+    ),
+    DEFAULT_RENDERER_CLASSES=(
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer'
     ),
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
-}
+    DEFAULT_FILTER_BACKENDS=(
+        'django_filters.rest_framework.DjangoFilterBackend',
+    )
+)
 
 # Security
 

@@ -1,17 +1,16 @@
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
-from rest_framework import metadata
+from django_filters.rest_framework.filterset import FilterSet
+from django_filters.rest_framework import filters
 from rest_framework.reverse import reverse
+from rest_framework.metadata import SimpleMetadata
 
 from datasets.generic import rest
 from . import serializers, models
 
-from rest_framework import filters
-import django_filters
 
-
-class ExpansionMetadata(metadata.SimpleMetadata):
+class ExpansionMetadata(SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
         result['parameters'] = dict(
@@ -167,14 +166,14 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
         return obj
 
 
-class NummeraanduidingFilter(filters.FilterSet):
+class NummeraanduidingFilter(FilterSet):
     """
     Filter nummeraanduidingkjes
     """
 
-    verblijfsobject = django_filters.CharFilter()
-    ligplaats = django_filters.CharFilter()
-    standplaats = django_filters.CharFilter()
+    verblijfsobject = filters.CharFilter()
+    ligplaats = filters.CharFilter()
+    standplaats = filters.CharFilter()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -195,7 +194,8 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     zodanig toegekende aanduiding van een verblijfsobject,
     standplaats of ligplaats.
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
 
     metadata_class = ExpansionMetadata
@@ -248,7 +248,8 @@ class PandViewSet(rest.AtlasViewSet):
     direct en duurzaam met de aarde is verbonden en
     betreedbaar en afsluitbaar is.
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
     """
 
     metadata_class = ExpansionMetadata
@@ -294,7 +295,8 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     Een OPENBARE RUIMTE is een door het [bevoegde gemeentelijke orgaan
     als zodanig aangewezen en van een naam
     voorziene
-    [buitenruimte](http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
+    [buitenruimte]
+    (http://www.amsterdam.nl/stelselpedia/bag-index/handboek-inwinnen/openbare-ruimte/)
     die binnen één woonplaats is gelegen.
 
     Als openbare ruimte worden onder meer aangemerkt weg, water,
@@ -303,7 +305,8 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     Bron: [Catalogus BAG (ministerie van VROM, 2009)](
     http://www.kadaster.nl/web/artikel/download/BAG-grondslagen-catalogus.htm).
 
-    [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
+    [Stelselpedia]
+    (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
     """
 
     metadata_class = ExpansionMetadata
@@ -335,7 +338,8 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
     bestaat alleen nog de woonplaats Amsterdam met
     Woonplaatsidentificatie 3594.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
     """
 
     metadata_class = ExpansionMetadata
@@ -373,7 +377,8 @@ class GemeenteViewSet(rest.AtlasViewSet):
     De gemeentegrens wordt door de centrale overheid vastgesteld,
     en door het Kadaster vastgelegd.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
     """
 
     metadata_class = ExpansionMetadata
@@ -403,7 +408,8 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van
     een stadsdeel, ressorterend onder een stadsdeelbestuur.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/)
     """
 
     metadata_class = ExpansionMetadata
@@ -436,7 +442,8 @@ class BuurtViewSet(rest.AtlasViewSet):
     zo veel mogelijk gebaseerd zijn op topografische
     elementen.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/)
     """
 
     metadata_class = ExpansionMetadata
@@ -474,7 +481,8 @@ class BouwblokViewSet(rest.AtlasViewSet):
     en/of waterlopen is of zal zijn ingesloten en waarop tenminste
     één gebouw staat.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
     """
 
     metadata_class = ExpansionMetadata
@@ -510,7 +518,8 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     gemeente, waarvan de grenzen zo veel mogelijk zijn
     gebaseerd op sociaal-geografische kenmerken.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurtcombinatie/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurtcombinatie/)
     """
     metadata_class = ExpansionMetadata
     queryset = models.Buurtcombinatie.objects.all()
@@ -545,7 +554,8 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     gemeente, bewoners, ondernemers, (lokale) partners
     en maatschappelijke organisaties.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/gebiedsgericht/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/gebiedsgericht/)
     """
 
     metadata_class = ExpansionMetadata
@@ -576,7 +586,8 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     Amsterdam, waar de gemeenteraad, het college van
     burgemeester en wethouders of de burgemeester bevoegd is.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
     """
     metadata_class = ExpansionMetadata
     queryset = models.Grootstedelijkgebied.objects.all()
@@ -607,7 +618,8 @@ class UnescoViewSet(rest.AtlasViewSet):
     binnenstad. Het aanwijzen van cultureel erfgoed is
     bedoeld om het beter te kunnen bewaren voor toekomstige generaties.
 
-    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/unesco-werelderfgoed/)
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/unesco-werelderfgoed/)
     """
     metadata_class = ExpansionMetadata
     queryset = models.Unesco.objects.all()
@@ -642,7 +654,6 @@ class BouwblokCodeView(RedirectView):
 
 
 class StadsdeelCodeView(RedirectView):
-
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):

@@ -1660,6 +1660,7 @@ class ImportBagJob(object):
         self.gebieden = os.path.join(diva, 'gebieden')
         self.gebieden_shp = os.path.join(diva, 'gebieden_shp')
 
+
     def tasks(self):
         return [
             ImportAvrTask(self.bag),
