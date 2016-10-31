@@ -477,6 +477,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
+    _gebiedsgerichtwerken = Gebiedsgerichtwerken()
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -503,6 +504,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'buurt',
             '_buurtcombinatie',
             '_stadsdeel',
+            '_gebiedsgerichtwerken',
             '_gemeente',
             '_woonplaats',
         )
@@ -573,6 +575,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
+    _gebiedsgerichtwerken = Gebiedsgerichtwerken()
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -603,6 +606,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
 
             '_buurtcombinatie',
             '_stadsdeel',
+            '_gebiedsgerichtwerken',
             '_gemeente',
             '_woonplaats',
         )
