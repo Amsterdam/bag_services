@@ -134,6 +134,11 @@ def is_postcode_huisnummer(query_string, tokens):
 
 
 def could_be_bouwblok(query_string, tokens):
+    """
+    YM08, YF02, ...
+
+    tokens = ['YM', '02']
+    """
 
     if len(tokens) > 2:
         return False
