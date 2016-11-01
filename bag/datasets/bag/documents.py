@@ -275,8 +275,15 @@ class Nummeraanduiding(es.DocType):
     order = es.Integer()
 
     hoofdadres = es.Boolean()
-    status_code = es.Integer()
-    status_omschrijving = es.String()
+    status = es.Nested({
+        'properties': {
+            'code': es.String(),
+            'omschrijving': es.String()
+        }
+    })
+
+    #status_code = es.Integer()
+    #status_omschrijving = es.String()
 
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
@@ -463,8 +470,10 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.hoofdadres = n.hoofdadres
 
     if n.status:
-        doc.status_code = n.status.code
-        doc.status_omschrijving = n.status.omschrijving
+        doc.status.append({
+            'code': n.status.code,
+            'omschrijving': n.status.omschrijving
+        })
 
     if n.bron:
         doc.bron = n.bron.omschrijving

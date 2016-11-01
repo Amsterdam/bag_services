@@ -204,6 +204,7 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
     type = '01'  # default verblijfsobject
     postcode = '1000AN'  # default postcode..
+    status = factory.SubFactory(StatusFactory)
 
     _openbare_ruimte_naam = factory.LazyAttribute(
         lambda o: o.openbare_ruimte.naam)
