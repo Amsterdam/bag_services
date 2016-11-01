@@ -47,11 +47,11 @@ Importing the latest backup
 
 To import the latest database from acceptance:
 
-    docker-compose exec database update-atlas.sh
+    docker-compose exec database update-db.sh atlas
 
 To import the latest elastic index from acceptance:
 
-	docker-compose exec elasticsearch update-atlas.sh
+	docker-compose exec elasticsearch update-el.sh atlas bag brk nummeraanduiding
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.
