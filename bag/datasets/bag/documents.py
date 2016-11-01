@@ -282,9 +282,6 @@ class Nummeraanduiding(es.DocType):
         }
     })
 
-    #status_code = es.Integer()
-    #status_omschrijving = es.String()
-
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
 
