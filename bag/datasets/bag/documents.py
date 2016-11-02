@@ -155,6 +155,7 @@ class OpenbareRuimte(es.DocType):
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
+
     _display = es.String(index='not_analyzed')
 
     class Meta:

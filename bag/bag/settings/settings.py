@@ -26,6 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 insecure_key = 'insecure'
 
 SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
+
 DEBUG = SECRET_KEY == insecure_key
 
 # Application definition
@@ -68,6 +69,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
 )
 
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,6 +80,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
+
+if DEBUG:
+    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
 ROOT_URLCONF = 'bag.urls'
 
