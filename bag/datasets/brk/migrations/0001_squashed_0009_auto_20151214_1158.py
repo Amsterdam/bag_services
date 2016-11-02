@@ -9,7 +9,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('brk', '0001_initial'), ('brk', '0002_kadastralesectie_sectie'), ('brk', '0003_auto_20151214_0958'), ('brk', '0004_auto_20151214_1005'), ('brk', '0005_auto_20151214_1005'), ('brk', '0006_auto_20151214_1008'), ('brk', '0007_auto_20151214_1009'), ('brk', '0008_auto_20151214_1156'), ('brk', '0009_auto_20151214_1158')]
+    #replaces = [('brk', '0001_initial'), ('brk', '0002_kadastralesectie_sectie'), ('brk', '0003_auto_20151214_0958'), ('brk', '0004_auto_20151214_1005'), ('brk', '0005_auto_20151214_1005'), ('brk', '0006_auto_20151214_1008'), ('brk', '0007_auto_20151214_1009'), ('brk', '0008_auto_20151214_1156'), ('brk', '0009_auto_20151214_1158')]
 
     initial = True
 
