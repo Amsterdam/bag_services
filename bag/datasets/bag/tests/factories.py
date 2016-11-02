@@ -159,6 +159,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
+    status = factory.SubFactory(StatusFactory)
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):

@@ -282,6 +282,14 @@ class Nummeraanduiding(es.DocType):
         }
     })
 
+    vbo_status = es.Nested({
+        'properties': {
+            'code': es.String(),
+            'omschrijving': es.String()
+        }
+    })
+
+
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
 
@@ -470,6 +478,13 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
         doc.status.append({
             'code': n.status.code,
             'omschrijving': n.status.omschrijving
+        })
+
+    # verblijfsobject status
+    if n.adresseerbaar_object and n.adresseerbaar_object.status:
+        doc.vbo_status.append({
+            'code': n.adresseerbaar_object.status.code,
+            'omschrijving': n.adresseerbaar_object.status.omschrijving
         })
 
     if n.bron:
