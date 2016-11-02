@@ -180,13 +180,6 @@ SECURE_BROWSER_XSS_FILTER = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
-# SWAGGER
-
-swag_path = 'api-acc.datapunt.amsterdam.nl/bag/docs'
-
-if DEBUG:
-    swag_path = '127.0.0.1:8000/bag/docs'
-
 SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
     'api_version': '0.1',
@@ -195,6 +188,9 @@ SWAGGER_SETTINGS = {
     'enabled_methods': [
         'get',
     ],
+
+    'USE_SESSION_AUTH': False,
+    'VALIDATOR_URL': None,
 
     'api_key': '',
 
@@ -206,7 +202,7 @@ SWAGGER_SETTINGS = {
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': swag_path,
+    'base_path': 'api-acc.datapunt.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
@@ -228,7 +224,7 @@ OBJECTSTORE = {
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
         'region_name': 'NL',
-        'endpoint_type' : 'internalURL'}
+        'endpoint_type': 'internalURL'}
 }
 
 JWT_AUTH = {
