@@ -115,6 +115,7 @@ def wkpb_schema_view(request):
     return response.Response(generator.get_schema(request=request)) @ api_view()
 
 
+@api_view()
 @renderer_classes(
     [SwaggerUIRenderer, OpenAPIRenderer, renderers.CoreJSONRenderer])
 def postcode_schema_view(request):
@@ -126,10 +127,10 @@ def postcode_schema_view(request):
 
 
 urlpatterns = [
-                  url('^bag/docs/api-docs/bag$', bag_schema_view),
-                  url('^bag/docs/api-docs/gebieden$', gebieden_schema_view),
-                  url('^bag/docs/api-docs/brk$', brk_schema_view),
-                  url('^bag/docs/api-docs/wkpb$', wkpb_schema_view),
-                  url('^bag/docs/api-docs/search$', postcode_schema_view),
+                  url('^bag/docs/api-docs/bag/$', bag_schema_view),
+                  url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
+                  url('^bag/docs/api-docs/brk/$', brk_schema_view),
+                  url('^bag/docs/api-docs/wkpb/$', wkpb_schema_view),
+                  url('^bag/docs/api-docs/search/$', postcode_schema_view),
               ] + [url for pattern_list in grouped_url_patterns.values()
                    for url in pattern_list]
