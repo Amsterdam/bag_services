@@ -7,12 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('brk', '0009_auto_20151214_1158'),
+        ('brk', '0008_auto_20151214_1156'),
     ]
 
     operations = [
-        migrations.RemoveField(
+        migrations.AlterField(
             model_name='kadastraalobject',
-            name='gemeente',
+            name='voornaamste_gerechtigde',
+            field=models.ForeignKey(null=True, to='brk.KadastraalSubject'),
         ),
     ]
