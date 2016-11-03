@@ -469,6 +469,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return self.ligplaats or self.standplaats or self.verblijfsobject
 
     @property
+    def vbo_status(self):
+        a = self.adresseerbaar_object
+        return a.status
+
+    @property
     def buurt(self):
         a = self.adresseerbaar_object
         return a.buurt if a else None
