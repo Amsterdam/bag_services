@@ -145,7 +145,7 @@ gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
 gebieden.register(
     r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
 gebieden.register(
-    r'gebiedsgerichterken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+    r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
 gebieden.register(
     r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
