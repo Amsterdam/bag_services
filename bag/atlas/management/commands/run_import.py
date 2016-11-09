@@ -8,6 +8,8 @@ import datasets.wkpb.batch
 from batch import batch
 from batch.models import JobExecution
 
+from objectstore.objectstore import fetch_importfiles
+
 
 class Command(BaseCommand):
 
@@ -89,6 +91,10 @@ class Command(BaseCommand):
         sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
+
+        # Download files from objectstore to `DIVA_DIR`
+        if options['run-import']:
+            fetch_importfiles()
 
         for ds in sets:
 

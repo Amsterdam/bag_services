@@ -25,7 +25,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 insecure_key = 'insecure'
 
-SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
+SECRET_KEY = 'insecure'
+
 DEBUG = SECRET_KEY == insecure_key
 
 # Application definition
@@ -33,6 +34,20 @@ PARTIAL_IMPORT = dict(
     numerator=0,
     denominator=1
 )
+
+NO_INTERGRATION_TEST = True
+
+OBJECTSTORE = {
+    'auth_version': '2.0',
+    'authurl': 'https://identity.stack.cloudvps.com/v2.0',
+    'user': os.getenv('OBJECTSTORE_USER', 'bag_brk'),
+    'key': os.getenv('OS_PASSWORD', 'insecure'),
+    'tenant_name': 'BGE000081_BAG',
+    'os_options': {
+        'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
+        'region_name': 'NL',
+        'endpoint_type': 'internalURL'}
+}
 
 DATAPUNT_API_URL = os.getenv(
     # note the ending /
@@ -77,6 +92,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 ROOT_URLCONF = 'bag.urls'
@@ -99,13 +115,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bag.wsgi.application'
 
+def _get_docker_host():
+    d_host = os.getenv('DOCKER_HOST', None)
+    if d_host:
+        return re.match(r'tcp://(.*?):\d+', d_host).group(1)
+    return '0.0.0.0'
+
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'atlas'
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'atlas'),
+        'USER': os.getenv('DATABASE_USER', 'atlas'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
+        'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
+        'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
+        'CONN_MAX_AGE': 60,
     }
 }
 
@@ -124,6 +151,8 @@ USE_TZ = True
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
+DIVA_DIR = '/app/diva/'
+
 ELASTIC_INDICES = {
     'BAG': 'bag',
     'BRK': 'brk',
@@ -134,6 +163,10 @@ ELASTIC_INDICES = {
 if TESTING:
     for k, v in ELASTIC_INDICES.items():
         ELASTIC_INDICES[k] += 'test'
+
+ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 BATCH_SETTINGS = dict(
     batch_size=4000

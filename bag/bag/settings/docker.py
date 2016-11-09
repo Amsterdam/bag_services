@@ -135,3 +135,5 @@ OBJECTSTORE = {
         'region_name': 'NL',
         'endpoint_type' : 'internalURL'}
 }
+
+NO_INTERGRATION_TEST = True
