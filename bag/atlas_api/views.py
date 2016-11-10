@@ -539,8 +539,7 @@ class SearchGebiedenViewSet(SearchViewSet):
         # bouwblok
 
         if analyzer.is_bouwblok_prefix():
-            search = bagQ.bouwblok_query(
-                analyzer).to_elasticsearch_object(client)
+            search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
             search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
