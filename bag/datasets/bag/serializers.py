@@ -478,6 +478,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -505,6 +506,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )
@@ -517,6 +519,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     buurt = Buurt()
     buurtcombinatie = Buurtcombinatie()
     gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    grootstedelijkgebied = Grootstedelijkgebied()
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
     woonplaats = Woonplaats()
@@ -558,6 +561,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'buurt',
             'buurtcombinatie',
             'gebiedsgerichtwerken',
+            'grootstedelijkgebied',
             'stadsdeel',
             'woonplaats',
             'bouwblok',
@@ -576,6 +580,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -607,6 +612,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )
@@ -666,6 +672,7 @@ class VerblijfsobjectDetail(
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
@@ -719,6 +726,7 @@ class VerblijfsobjectDetail(
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )

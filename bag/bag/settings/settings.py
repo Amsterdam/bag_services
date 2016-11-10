@@ -16,6 +16,15 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import datetime
 import os
 import sys
+import re
+
+
+def _get_docker_host():
+    d_host = os.getenv('DOCKER_HOST', None)
+    if d_host:
+        return re.match(r'tcp://(.*?):\d+', d_host).group(1)
+    return '0.0.0.0'
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -109,10 +118,16 @@ WSGI_APPLICATION = 'bag.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'atlas'
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'atlas'),
+        'USER': os.getenv('DATABASE_USER', 'atlas'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
+        'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
+        'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
+        'CONN_MAX_AGE': 15,
     }
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -263,6 +278,10 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
-# noinspection PyUnresolvedReferences
 
+ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
+
+# noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

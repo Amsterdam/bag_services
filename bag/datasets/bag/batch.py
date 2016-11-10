@@ -1647,6 +1647,46 @@ class UpdateGebiedenAttributenTask(batch.BasicTask):
             ligplaatsen.update(_gebiedsgerichtwerken=ggw.id)
 
 
+class UpdateGrootstedelijkAttributenTask(batch.BasicTask):
+    """
+    Denormalize grootstedelijk gebieden attributen
+    """
+
+    name = "Denormalize data"
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+        for gsg in models.Grootstedelijkgebied.objects.all():
+            vbos = models.Verblijfsobject.objects.filter(
+                    geometrie__within=gsg.geometrie)
+
+            log.debug('Update Grootstedelijk %s key %s VBO',
+                      gsg.naam, vbos.count())
+
+            vbos.update(_grootstedelijkgebied=gsg.id)
+
+            standplaatsen = models.Standplaats.objects.filter(
+                geometrie__within=gsg.geometrie)
+
+            log.debug('Update Grootstedelijk %s key %s Standplaats',
+                      gsg.naam, standplaatsen.count())
+
+            standplaatsen.update(_grootstedelijkgebied=gsg.id)
+
+            ligplaatsen = models.Ligplaats.objects.filter(
+                geometrie__within=gsg.geometrie)
+
+            log.debug('Update Grootstedelijk %s key %s Ligplaats',
+                      gsg.naam, ligplaatsen.count())
+
+            ligplaatsen.update(_grootstedelijkgebied=gsg.id)
+
+
 class ImportBagJob(object):
     name = "Import BAG"
 
@@ -1697,6 +1737,7 @@ class ImportBagJob(object):
 
             DenormalizeDataTask(),
             UpdateGebiedenAttributenTask(),
+            UpdateGrootstedelijkAttributenTask(),
         ]
 
 

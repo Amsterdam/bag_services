@@ -331,6 +331,29 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
         return "{} ({})".format(self.naam, self.code)
 
 
+class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    id = models.SlugField(max_length=100, primary_key=True)
+    naam = models.CharField(max_length=100)
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.GeoManager()
+
+    class Meta:
+        verbose_name = "Grootstedelijkgebied"
+        verbose_name_plural = "Grootstedelijke gebieden"
+
+    def __str__(self):
+        return "{}".format(self.naam)
+
+
 class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
                        models.Model):
@@ -507,6 +530,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         a = self.adresseerbaar_object
         return a._gebiedsgerichtwerken if a else None
 
+    @property
+    def grootstedelijkgebied(self):
+        a = self.adresseerbaar_object
+        return a._grootstedelijkgebied if a else None
+
 
 class AdresseerbaarObjectMixin(object):
     @property
@@ -548,6 +576,9 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     _gebiedsgerichtwerken = models.ForeignKey(
         Gebiedsgerichtwerken, related_name='ligplaatsen', null=True)
+
+    _grootstedelijkgebied = models.ForeignKey(
+        Grootstedelijkgebied, related_name='ligplaatsen', null=True)
 
     geometrie = geo.PolygonField(null=True, srid=28992)
 
@@ -618,6 +649,9 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     _gebiedsgerichtwerken = models.ForeignKey(
         Gebiedsgerichtwerken, related_name='standplaatsen', null=True)
+
+    _grootstedelijkgebied = models.ForeignKey(
+        Grootstedelijkgebied, related_name='standplaatsen', null=True)
 
     geometrie = geo.PolygonField(null=True, srid=28992)
 
@@ -716,6 +750,9 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     _gebiedsgerichtwerken = models.ForeignKey(
         Gebiedsgerichtwerken, related_name='adressen', null=True)
+
+    _grootstedelijkgebied = models.ForeignKey(
+        Grootstedelijkgebied, related_name='adressen', null=True)
 
     # gedenormaliseerde velden
     _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
@@ -894,29 +931,6 @@ class Buurtcombinatie(
 
     def _gemeente(self):
         return self.stadsdeel.gemeente
-
-
-class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
-    """
-    model for data from shp files
-
-    layer.fields:
-
-    ['NAAM']
-    """
-
-    id = models.SlugField(max_length=100, primary_key=True)
-    naam = models.CharField(max_length=100)
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
-    objects = geo.GeoManager()
-
-    class Meta:
-        verbose_name = "Grootstedelijkgebied"
-        verbose_name_plural = "Grootstedelijke gebieden"
-
-    def __str__(self):
-        return "{}".format(self.naam)
 
 
 class Unesco(mixins.ImportStatusMixin, models.Model):

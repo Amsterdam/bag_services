@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.contrib.gis.geos import Point
 
@@ -10,6 +11,9 @@ BAG = 'diva/bag'
 BAG_WKT = 'diva/bag_wkt'
 GEBIEDEN = 'diva/gebieden'
 GEBIEDEN_SHP = 'diva/gebieden_shp'
+
+
+log = logging.getLogger(__name__)
 
 
 class ImportAvrTest(TaskTestCase):
@@ -534,7 +538,8 @@ class ImportNumTest(TaskTestCase):
         self.assertEquals(n.postcode, '1018DS')
         self.assertEquals(n.document_mutatie, datetime.date(2005, 5, 25))
         self.assertEquals(n.document_nummer, 'GV00000403')
-        self.assertEquals(n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
+        self.assertEquals(
+            n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
         self.assertEquals(n.vervallen, False)
         self.assertIsNone(n.bron)
         self.assertEquals(n.status.code, '16')
@@ -639,7 +644,7 @@ class ImportPndTest(TaskTestCase):
         self.assertEquals(len(imported), 79)
 
 
-class ImportVboPndTask(TaskTestCase):
+class ImportVboPndTaskTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportStsTask(BAG),
@@ -661,11 +666,13 @@ class ImportVboPndTask(TaskTestCase):
         v2 = models.Verblijfsobject.objects.get(pk='03630000716112')
         v3 = models.Verblijfsobject.objects.get(pk='03630000716086')
 
-        self.assertCountEqual([v.id for v in p.verblijfsobjecten.all()], [v1.id, v2.id, v3.id])
+        self.assertCountEqual(
+            [v.id for v in p.verblijfsobjecten.all()],
+            [v1.id, v2.id, v3.id])
         self.assertEqual([p.id for p in v1.panden.all()], [p.id])
 
 
-class UpdateGebiedenTask(TaskTestCase):
+class UpdateGGWGebiedenTaskTest(TaskTestCase):
 
     def requires(self):
         return [
@@ -682,10 +689,15 @@ class UpdateGebiedenTask(TaskTestCase):
 
     def task(self):
         assert models.Verblijfsobject.objects.count() > 0
+        assert models.Gebiedsgerichtwerken.objects.count() > 0
         return batch.UpdateGebiedenAttributenTask()
 
     def test_import(self):
         self.run_task()
+
+        # Gebiedsgerichtwerken coveren de hele stad
+        # dus kan er geen vbo, standplaats, lig_n
+        # zonder dit veld ingevuld.
 
         vb_n = models.Verblijfsobject.objects.filter(
             _gebiedsgerichtwerken__isnull=True)
@@ -700,3 +712,35 @@ class UpdateGebiedenTask(TaskTestCase):
         self.assertTrue(vb_n.count() == 0)
         self.assertTrue(std_n.count() == 0)
         self.assertTrue(lig_n.count() == 0)
+
+
+class UpdateGSGebiedenTaskTest(TaskTestCase):
+
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportStaTask(BAG, BAG_WKT),
+
+            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
+            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
+
+            batch.ImportVboTask(BAG),
+
+            batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP)
+        ]
+
+    def task(self):
+        assert models.Verblijfsobject.objects.count() > 0
+        assert models.Grootstedelijkgebied.objects.count() > 0
+        return batch.UpdateGrootstedelijkAttributenTask()
+
+    def test_import(self):
+        self.run_task()
+
+        # There is at least one vbo in a grootstedelijkgebied
+        vb_n = models.Verblijfsobject.objects.filter(
+            _grootstedelijkgebied__isnull=False)
+
+        # check that a vbo has a GSG code
+        self.assertTrue(vb_n.count() > 0)

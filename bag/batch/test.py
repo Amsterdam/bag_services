@@ -18,7 +18,7 @@ class TaskTestCase(TestCase):
         raise NotImplementedError()
 
     def test_task_attributes(self):
-        if self.__class__ == TaskTestCase:
+        if self.__class__ != TaskTestCase:
             # only run this on subclasses
             return
 

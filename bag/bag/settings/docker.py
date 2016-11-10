@@ -1,4 +1,6 @@
 import re
+import os
+
 from .settings import *
 
 
@@ -17,7 +19,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
         'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
-        'CONN_MAX_AGE': 60,
+        'CONN_MAX_AGE': 30,
     }
 }
 
