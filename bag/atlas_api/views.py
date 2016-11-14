@@ -449,13 +449,16 @@ class SearchViewSet(viewsets.ViewSet):
         """
         return _get_url(request, hit)
 
+    def get_hit_data(self, result, hit):
+        result.update(hit.to_dict())
+
     def normalize_hit(self, hit, request):
         result = OrderedDict()
         result['_links'] = self.get_url(request, hit)
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        result.update(hit.to_dict())
+        self.get_hit_data(result, hit)
 
         return result
 
@@ -609,6 +612,21 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
         # default response search roads
         return q.to_elasticsearch_object(client)
+
+    def get_hit_data(self, result, hit):
+        """
+        Remove attribute fields not needed for enduser
+        """
+        for key, value in hit.to_dict().items():
+            if key.startswith('comp_'):
+                continue
+            if key.endswith('_keyword'):
+                continue
+            if key.endswith('_nen'):
+                continue
+            if key.endswith('_ptt'):
+                continue
+            result[key] = value
 
 
 class SearchPostcodeViewSet(SearchViewSet):
