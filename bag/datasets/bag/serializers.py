@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_gis.fields import GeometryField
 
 from datasets.brk import serializers as brk_serializers
 from datasets.generic import rest
@@ -527,6 +528,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     openbare_ruimte = OpenbareRuimte()
     woonplaats = Woonplaats()
     bouwblok = Bouwblok()
+    _geometrie = GeometryField()
 
     nummeraanduidingidentificatie = serializers.CharField(
         source='landelijk_id')
@@ -568,6 +570,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'stadsdeel',
             'woonplaats',
             'bouwblok',
+            '_geometrie',
         )
 
 

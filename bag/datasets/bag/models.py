@@ -502,6 +502,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return a.buurt if a else None
 
     @property
+    def _geometrie(self):
+        a = self.adresseerbaar_object
+        return a.geometrie if a else None
+
+    @property
     def stadsdeel(self):
         b = self.buurt
         return b.stadsdeel if b else None
