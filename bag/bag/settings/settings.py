@@ -283,5 +283,12 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
+PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
+DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'diva'))
+
+if not os.path.exists(DIVA_DIR):
+    DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
+
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

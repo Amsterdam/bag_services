@@ -174,6 +174,9 @@ class NummeraanduidingFilter(FilterSet):
     verblijfsobject = filters.CharFilter()
     ligplaats = filters.CharFilter()
     standplaats = filters.CharFilter()
+    postcode = filters.CharFilter()
+    huisnummer = filters.CharFilter()
+    huisletter = filters.CharFilter()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -182,6 +185,7 @@ class NummeraanduidingFilter(FilterSet):
             'ligplaats',
             'standplaats',
             'openbare_ruimte',
+            'postcode',
         ]
 
 
