@@ -117,9 +117,6 @@ class BouwblokFactory(factory.DjangoModelFactory):
         fuzzy.FuzzyText(length=2, chars=string.ascii_letters).fuzz(),
         fuzzy.FuzzyText(length=2, chars=string.digits).fuzz(),
     )
-
-    # code = fuzzy.FuzzyText(length=4, chars=string.digits)
-
     buurt = factory.SubFactory(BuurtFactory)
 
 

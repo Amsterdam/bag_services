@@ -1,8 +1,11 @@
 import factory
 import faker
+import string
+
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from factory import fuzzy
 
+from datasets.bag.tests.factories import VerblijfsobjectFactory
 from datasets.generic import kadaster
 from .. import models
 
@@ -113,6 +116,16 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     grootte = fuzzy.FuzzyInteger(low=10, high=1000)
     register9_tekst = fuzzy.FuzzyText(length=50)
     poly_geom = random_poly()
+
+
+class KadastraalObjectVerblijfsobjectRelatieFactory(
+        factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.KadastraalObjectVerblijfsobjectRelatie
+
+    kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
+    verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
 
 
 class AardZakelijkRechtFactory(factory.DjangoModelFactory):

@@ -9,6 +9,10 @@ from rest_framework.metadata import SimpleMetadata
 from datasets.generic import rest
 from . import serializers, models
 
+import logging
+
+LOG = logging.getLogger(__name__)
+
 
 class ExpansionMetadata(SimpleMetadata):
     def determine_metadata(self, request, view):
@@ -178,6 +182,10 @@ class NummeraanduidingFilter(FilterSet):
     huisnummer = filters.CharFilter()
     huisletter = filters.CharFilter()
 
+    pand = filters.MethodFilter(action="pand_filter")
+
+    kadastraal_object = filters.MethodFilter(action="kot_filter")
+
     class Meta:
         model = models.Nummeraanduiding
         fields = [
@@ -186,7 +194,25 @@ class NummeraanduidingFilter(FilterSet):
             'standplaats',
             'openbare_ruimte',
             'postcode',
+            'pand',
+            'kadastraal_object',
         ]
+
+    def pand_filter(self, queryset, value):
+        """
+        """
+        pand = models.Pand.objects.get(landelijk_id=value)
+        ids = pand.verblijfsobjecten.values_list(
+            'adressen__landelijk_id', flat=True)
+        return queryset.filter(landelijk_id__in=ids)
+
+    def kot_filter(self, queryset, value):
+
+        vbos = models.Verblijfsobject.objects.filter(
+            kadastrale_objecten__id=value)
+
+        ids = vbos.values_list('adressen__landelijk_id', flat=True)
+        return queryset.filter(landelijk_id__in=ids)
 
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
@@ -200,6 +226,8 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
 
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
+
+    bag/nummeraanduiding/?pand=0363100012171966
     """
 
     metadata_class = ExpansionMetadata
