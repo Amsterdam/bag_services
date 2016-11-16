@@ -172,7 +172,7 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
     status = Status()
     hoofdadres = serializers.SerializerMethodField()
 
-    adressen = rest.RelatedSummaryField()
+    # adressen = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Verblijfsobject
@@ -183,7 +183,7 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             'id',
             'status',
             'hoofdadres',
-            'adressen',
+            # 'adressen',
         )
 
     def get_hoofdadres(self, obj):
