@@ -184,7 +184,7 @@ class NummeraanduidingFilter(FilterSet):
 
     pand = filters.MethodFilter(action="pand_filter")
 
-    kadastraal_object = filters.MethodFilter(action="kot_filter")
+    kadastraalobject = filters.MethodFilter(action="kot_filter")
 
     class Meta:
         model = models.Nummeraanduiding
@@ -195,7 +195,7 @@ class NummeraanduidingFilter(FilterSet):
             'openbare_ruimte',
             'postcode',
             'pand',
-            'kadastraal_object',
+            'kadastraalobject',
         ]
 
     def pand_filter(self, queryset, value):
@@ -212,6 +212,7 @@ class NummeraanduidingFilter(FilterSet):
             kadastrale_objecten__id=value)
 
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
+
         return queryset.filter(landelijk_id__in=ids)
 
 

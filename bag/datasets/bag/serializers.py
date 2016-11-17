@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from rest_framework_gis.fields import GeometryField
 
 from datasets.brk import serializers as brk_serializers
@@ -744,6 +745,8 @@ class PandDetail(BagMixin, rest.HALSerializer):
     verblijfsobjecten = rest.RelatedSummaryField()
     bouwblok = Bouwblok()
 
+    _adressen = rest.AdresFilterField()
+
     _buurt = Buurt()
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
@@ -774,6 +777,9 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
+
+            '_adressen',
+
             'bouwblok',
 
             'begin_geldigheid',

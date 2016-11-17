@@ -442,6 +442,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
 
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
+    _adressen = rest.AdresFilterField()
     aantekeningen = rest.RelatedSummaryField()
 
     # a_percelen = rest.RelatedSummaryField(source='a_percelen')
@@ -486,6 +487,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'betrokken_bij',
 
             'verblijfsobjecten',
+            '_adressen',
             'rechten',
             'aantekeningen',
             'beperkingen',
