@@ -201,14 +201,14 @@ class NummeraanduidingFilter(FilterSet):
     def pand_filter(self, queryset, value):
         """
         """
-        pand = models.Pand.objects.get(landelijk_id=value)
+        pand = models.Pand.objects.prefetch_related('verblijfsobjecten').get(landelijk_id=value)
         ids = pand.verblijfsobjecten.values_list(
             'adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
 
     def kot_filter(self, queryset, value):
 
-        vbos = models.Verblijfsobject.objects.filter(
+        vbos = models.Verblijfsobject.objects.select_related('adressen').filter(
             kadastrale_objecten__id=value)
 
         ids = vbos.values_list('adressen__landelijk_id', flat=True)

@@ -56,3 +56,13 @@ class Numfilter(APITestCase):
         self.assertEquals(
             self.na.landelijk_id,
             data['results'][0]['landelijk_id'])
+
+    def test_postcode_filter(self):
+        url = '/bag/nummeraanduiding/?postcode={}'
+        response = self.client.get(url.format(self.na.postcode))
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(
+            self.na.landelijk_id,
+            data['results'][0]['landelijk_id'])
