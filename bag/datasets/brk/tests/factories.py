@@ -1,13 +1,13 @@
-import factory
-import faker
-import string
-
+# Packages
 from django.contrib.gis.geos import MultiPolygon, Polygon
+import faker
+import factory
 from factory import fuzzy
-
+# Project
+from .. import models
 from datasets.bag.tests.factories import VerblijfsobjectFactory
 from datasets.generic import kadaster
-from .. import models
+
 
 f = faker.Factory.create(locale='nl_NL')
 
