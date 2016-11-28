@@ -84,7 +84,6 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
             },
         },
         sort_fields=['_score'],
-
         indexes=[BAG],
     )
 

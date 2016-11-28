@@ -422,6 +422,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         ignore_cache = settings.DEBUG
 
+        # log.exception(json.dumps(search.to_dict(), indent=4))
+
         try:
             result = search.execute(ignore_cache=ignore_cache)
         except(TransportError):
