@@ -449,7 +449,7 @@ def from_bouwblok(n: models.Bouwblok):
     doc = Bouwblok(_id=n.id)
     doc.code = n.code
     doc.subtype = 'bouwblok'
-    doc._display = n.code
+    doc._display = '{} (bouwblok)'.format(n.code)
     return doc
 
 
