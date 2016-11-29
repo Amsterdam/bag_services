@@ -176,9 +176,23 @@ wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 
 atlas = AtlasRouter()
 
-# Search related
+# ##########
+# Typeahead
+# ###########
 
-atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
+##
+# Deprecated!! The old all in one typeahead endpoint
+atlas.register(r'typeahead', views.TypeAheadLegacyViewSet, base_name='typeahead')
+
+## The new separate endpoints. Look at the typeahead project
+#  for combined typeahead
+atlas.register(
+    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead')
+atlas.register(
+    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead')
+atlas.register(
+    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead')
+## ##
 
 # Alias voor nummeraanduiding
 atlas.register(

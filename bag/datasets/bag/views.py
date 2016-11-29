@@ -182,9 +182,9 @@ class NummeraanduidingFilter(FilterSet):
     huisnummer = filters.CharFilter()
     huisletter = filters.CharFilter()
 
-    pand = filters.MethodFilter(action="pand_filter")
+    pand = filters.CharFilter(method="pand_filter")
 
-    kadastraalobject = filters.MethodFilter(action="kot_filter")
+    kadastraalobject = filters.CharFilter(method="kot_filter")
 
     class Meta:
         model = models.Nummeraanduiding
