@@ -141,7 +141,7 @@ def _basis_openbare_ruimte_query(
     sort_fields = ['_score', 'naam.keyword']
 
     if useorder:
-        sort_fields = ['order', 'naam']
+        sort_fields = ['order', 'naam.raw']
 
     return ElasticQueryWrapper(
         query={
