@@ -198,7 +198,7 @@ class NummeraanduidingFilter(FilterSet):
             'kadastraalobject',
         ]
 
-    def pand_filter(self, queryset, value):
+    def pand_filter(self, queryset, filter_name, value):
         """
         """
         pand = models.Pand.objects.prefetch_related('verblijfsobjecten').get(landelijk_id=value)
