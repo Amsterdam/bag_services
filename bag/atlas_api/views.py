@@ -125,7 +125,7 @@ def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [Elas
             'query': bagQ.postcode_huisnummer_query,
         },
         {
-            'labels': {'brk', },
+            'labels': {'brk'},
             'test': analyzer.is_kadastraal_object_prefix,
             'query': brkQ.kadastraal_object_query,
         },
@@ -134,11 +134,13 @@ def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [Elas
             'test': analyzer.is_straatnaam_huisnummer_prefix,
             'query': bagQ.straatnaam_huisnummer_query,
         },
+
     ]
 
     default_queries = {
-        'bag': [bagQ.weg_query, bagQ.gebied_query],
+        'bag': [bagQ.weg_query],
         'brk': [brkQ.kadastraal_subject_query],
+        'gebieden': [bagQ.gebied_query],
     }
 
     query_selectors = all_query_selectors if dont_filter else \
@@ -322,7 +324,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return ordered_results
 
-    def abstr_list(self, request, only_show: AbstractSet[str]):
+    def _abstr_list(self, request, only_show: AbstractSet[str]):
         """
         returns result options
         ---
@@ -351,7 +353,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         super().__init__(**kwargs)
 
     def list(self, request):
-        return self.abstr_list(request, {'bag', 'nummeraanduiding'})
+        return self._abstr_list(request, {'bag', 'nummeraanduiding'})
 
 
 class TypeAheadMeetboutenViewSet(TypeaheadViewSet):
@@ -359,7 +361,7 @@ class TypeAheadMeetboutenViewSet(TypeaheadViewSet):
         super().__init__(**kwargs)
 
     def list(self, request):
-        return self.abstr_list(request, {'meetbouten'})
+        return self._abstr_list(request, {'meetbouten'})
 
 
 class TypeAheadBrkViewSet(TypeaheadViewSet):
@@ -367,7 +369,15 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
         super().__init__(**kwargs)
 
     def list(self, request):
-        return self.abstr_list(request, {'brk'})
+        return self._abstr_list(request, {'brk'})
+
+
+class TypeAheadGebiedenViewSet(TypeaheadViewSet):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, {'gebieden'})
 
 
 class TypeAheadLegacyViewSet(TypeaheadViewSet):
@@ -379,7 +389,7 @@ class TypeAheadLegacyViewSet(TypeaheadViewSet):
         super().__init__(**kwargs)
 
     def list(self, request):
-        return self.abstr_list(request, set())
+        return self._abstr_list(request, set())
 
 
 class SearchViewSet(viewsets.ViewSet):
