@@ -605,7 +605,7 @@ def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
 
     d.subtype_id = gg.id
     d.naam = gg.naam
-    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht')
+    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht werken')
     d.g_code = gg.code
     d.centroid = get_centroid(gg.geometrie, 'wgs84')
     d.order = 4
@@ -631,7 +631,7 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
 
     d.subtype_id = gs.id
     d.naam = gs.naam
-    d._display = '{} ({})'.format(gs.naam, d.subtype)
+    d._display = '{} ({})'.format(gs.naam, 'grootstedelijk gebied')
     d.centroid = get_centroid(gs.geometrie, 'wgs84')
     d.order = 2
     return d
