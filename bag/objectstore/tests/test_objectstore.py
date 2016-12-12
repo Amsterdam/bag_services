@@ -13,7 +13,7 @@ class TestObjectstore(TestCase):
     def setUp(self):
         self.objectstore = ObjectStore('BAG')
 
-    @skipIf(settings.NO_INTERGRATION_TEST, 'blabla')
+    @skipIf(settings.NO_INTEGRATION_TEST, 'blabla')
     def test_objects(self):
 
         # clean up old cruft

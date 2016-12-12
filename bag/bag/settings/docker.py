@@ -136,4 +136,4 @@ OBJECTSTORE = {
         'endpoint_type' : 'internalURL'}
 }
 
-NO_INTERGRATION_TEST = True
+NO_INTEGRATION_TEST = True

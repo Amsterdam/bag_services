@@ -35,7 +35,7 @@ PARTIAL_IMPORT = dict(
     denominator=1
 )
 
-NO_INTERGRATION_TEST = True
+NO_INTEGATION_TEST = True
 
 OBJECTSTORE = {
     'auth_version': '2.0',
