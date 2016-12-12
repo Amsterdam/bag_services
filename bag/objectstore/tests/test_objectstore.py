@@ -10,7 +10,7 @@ from ..objectstore import ObjectStore
 
 class TestObjectstore(TestCase):
     def setUp(self):
-        self.objectstore = ObjectStore('BAG')
+        self.objectstore = ObjectStore()
 
     @skipIf(settings.NO_INTEGRATION_TEST, 'blabla')
     @skip('Check auth')
