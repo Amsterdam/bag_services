@@ -16,6 +16,15 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import datetime
 import os
 import sys
+import re
+
+
+def _get_docker_host():
+    d_host = os.getenv('DOCKER_HOST', None)
+    if d_host:
+        return re.match(r'tcp://(.*?):\d+', d_host).group(1)
+    return '0.0.0.0'
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -25,7 +34,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 insecure_key = 'insecure'
 
-SECRET_KEY = 'insecure'
+SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
 
 DEBUG = SECRET_KEY == insecure_key
 
@@ -83,6 +92,7 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
 )
 
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -94,6 +104,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
+
+if DEBUG:
+    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
 ROOT_URLCONF = 'bag.urls'
 
@@ -132,9 +145,10 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
         'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
-        'CONN_MAX_AGE': 60,
+        'CONN_MAX_AGE': 15,
     }
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -183,23 +197,27 @@ ALLOWED_HOSTS = [
     '.service.consul',
 ]
 
-REST_FRAMEWORK = {
-    'PAGE_SIZE': 25,
-    'MAX_PAGINATE_BY': 100,
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+REST_FRAMEWORK = dict(
+    PAGE_SIZE=25,
+    MAX_PAGINATE_BY=100,
+    DEFAULT_AUTHENTICATION_CLASSES=(
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'drf_hal_json.pagination.HalPageNumberPagination',
-    'DEFAULT_PARSER_CLASSES': ('drf_hal_json.parsers.JsonHalParser',),
-    'DEFAULT_RENDERER_CLASSES': (
+    DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
+    DEFAULT_PARSER_CLASSES=(
+        'drf_hal_json.parsers.JsonHalParser',
+    ),
+    DEFAULT_RENDERER_CLASSES=(
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer'
     ),
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
-}
+    DEFAULT_FILTER_BACKENDS=(
+        'django_filters.rest_framework.DjangoFilterBackend',
+    )
+)
 
 # Security
 
@@ -209,13 +227,6 @@ SECURE_BROWSER_XSS_FILTER = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
-# SWAGGER
-
-swag_path = 'api-acc.datapunt.amsterdam.nl/bag/docs'
-
-if DEBUG:
-    swag_path = '127.0.0.1:8000/bag/docs'
-
 SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
     'api_version': '0.1',
@@ -224,6 +235,9 @@ SWAGGER_SETTINGS = {
     'enabled_methods': [
         'get',
     ],
+
+    'USE_SESSION_AUTH': False,
+    'VALIDATOR_URL': None,
 
     'api_key': '',
 
@@ -235,7 +249,7 @@ SWAGGER_SETTINGS = {
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': swag_path,
+    'base_path': 'api-acc.datapunt.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
@@ -246,6 +260,18 @@ SWAGGER_SETTINGS = {
         'title': 'BAG, BRK en WKPB API',
     },
     'doc_expansion': 'list',
+}
+
+OBJECTSTORE = {
+    'auth_version': '2.0',
+    'authurl': 'https://identity.stack.cloudvps.com/v2.0',
+    'user': os.getenv('OBJECTSTORE_USER', 'bag_brk'),
+    'key': os.getenv('OS_PASSWORD', 'insecure'),
+    'tenant_name': 'BGE000081_BAG',
+    'os_options': {
+        'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
+        'region_name': 'NL',
+        'endpoint_type': 'internalURL'}
 }
 
 JWT_AUTH = {
@@ -279,6 +305,17 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
-# noinspection PyUnresolvedReferences
 
+ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
+
+PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
+DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'diva'))
+
+if not os.path.exists(DIVA_DIR):
+    DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
+
+# noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

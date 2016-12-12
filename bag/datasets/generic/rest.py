@@ -96,19 +96,46 @@ class RelatedSummaryField(serializers.Field):
 
     def to_representation(self, value):
         count = value.count()
+
         model_name = value.model.__name__
         mapping = model_name.lower() + "-list"
-
         url = reverse(mapping, request=self.context['request'])
 
         parent_pk = value.instance.pk
         filter_name = list(value.core_filters.keys())[0]
 
-        return dict(
-            count=count,
-            href="{}?{}={}".format(
+        return {
+            'count': count,
+            'href': "{}?{}={}".format(
                 url, filter_name, parent_pk),
-        )
+        }
+
+
+class AdresFilterField(serializers.Field):
+    """
+    For obj get link to addresses
+    """
+
+    def get_attribute(self, obj):
+        return obj
+
+    def to_representation(self, obj):
+
+        model_name = obj.__class__.__name__
+        filterkey = model_name.lower()
+
+        url = reverse(
+            'nummeraanduiding-list', request=self.context['request'])
+
+        if hasattr(obj, 'landelijk_id'):
+            landelijk_id = obj.landelijk_id
+        else:
+            landelijk_id = obj.id
+
+        return {
+            'href': '{}?{}={}'.format(
+                url, filterkey, landelijk_id)
+        }
 
 
 class DisplayField(serializers.Field):

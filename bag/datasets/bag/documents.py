@@ -155,6 +155,7 @@ class OpenbareRuimte(es.DocType):
     order = es.Integer()
 
     subtype = es.String(analyzer=analyzers.subtype)
+
     _display = es.String(index='not_analyzed')
 
     class Meta:
@@ -275,8 +276,20 @@ class Nummeraanduiding(es.DocType):
     order = es.Integer()
 
     hoofdadres = es.Boolean()
-    status_code = es.Integer()
-    status_omschrijving = es.String()
+    status = es.Nested({
+        'properties': {
+            'code': es.String(),
+            'omschrijving': es.String()
+        }
+    })
+
+    vbo_status = es.Nested({
+        'properties': {
+            'code': es.String(),
+            'omschrijving': es.String()
+        }
+    })
+
 
     subtype = es.String(analyzer=analyzers.subtype)
     _display = es.String(index='not_analyzed')
@@ -436,7 +449,7 @@ def from_bouwblok(n: models.Bouwblok):
     doc = Bouwblok(_id=n.id)
     doc.code = n.code
     doc.subtype = 'bouwblok'
-    doc._display = n.code
+    doc._display = '{} (bouwblok)'.format(n.code)
     return doc
 
 
@@ -463,8 +476,17 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.hoofdadres = n.hoofdadres
 
     if n.status:
-        doc.status_code = n.status.code
-        doc.status_omschrijving = n.status.omschrijving
+        doc.status.append({
+            'code': n.status.code,
+            'omschrijving': n.status.omschrijving
+        })
+
+    # verblijfsobject status
+    if n.adresseerbaar_object and n.adresseerbaar_object.status:
+        doc.vbo_status.append({
+            'code': n.adresseerbaar_object.status.code,
+            'omschrijving': n.adresseerbaar_object.status.omschrijving
+        })
 
     if n.bron:
         doc.bron = n.bron.omschrijving
@@ -583,7 +605,7 @@ def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
 
     d.subtype_id = gg.id
     d.naam = gg.naam
-    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht')
+    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht werken')
     d.g_code = gg.code
     d.centroid = get_centroid(gg.geometrie, 'wgs84')
     d.order = 4
@@ -609,7 +631,7 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
 
     d.subtype_id = gs.id
     d.naam = gs.naam
-    d._display = '{} ({})'.format(gs.naam, d.subtype)
+    d._display = '{} ({})'.format(gs.naam, 'grootstedelijk gebied')
     d.centroid = get_centroid(gs.geometrie, 'wgs84')
     d.order = 2
     return d

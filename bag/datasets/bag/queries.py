@@ -77,14 +77,13 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ Create query/aggregation for bouwblok search"""
     return ElasticQueryWrapper(
         query={
-            "match": {
+            "prefix": {
                 # upper, want raw is case-sensitive
                 # "code.raw": analyzer.get_bouwblok().upper(),
                 "code": analyzer.get_bouwblok()
             },
         },
-        sort_fields=['_display'],
-
+        sort_fields=['_score'],
         indexes=[BAG],
     )
 
@@ -140,8 +139,10 @@ def _basis_openbare_ruimte_query(
     _must_not = [{'constant_score': {'query': q}} for q in (must_not or [])]
 
     sort_fields = ['_score', 'naam.keyword']
+
     if useorder:
-        sort_fields = ['order', '_score', 'naam']
+        sort_fields = ['order', 'naam.raw']
+
     return ElasticQueryWrapper(
         query={
             'bool': {

@@ -225,7 +225,7 @@ class QueryAnalyzer(object):
         bouwblok query
         """
         assert self.is_bouwblok_prefix()
-        return self.query
+        return self._cleaned_query
 
     def is_postcode_prefix(self) -> bool:
         """

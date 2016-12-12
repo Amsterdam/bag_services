@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from rest_framework_gis.fields import GeometryField
+
 from datasets.brk import serializers as brk_serializers
 from datasets.generic import rest
 from . import models
@@ -126,7 +128,7 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
 
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
+    vbo_status = Status()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -135,7 +137,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_display',
             'landelijk_id',
             'hoofdadres',
-            'status',
+            'vbo_status',
         )
 
 
@@ -477,6 +479,8 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
+    _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -503,6 +507,8 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'buurt',
             '_buurtcombinatie',
             '_stadsdeel',
+            '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )
@@ -515,10 +521,12 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     buurt = Buurt()
     buurtcombinatie = Buurtcombinatie()
     gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    grootstedelijkgebied = Grootstedelijkgebied()
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
     woonplaats = Woonplaats()
     bouwblok = Bouwblok()
+    _geometrie = GeometryField()
 
     nummeraanduidingidentificatie = serializers.CharField(
         source='landelijk_id')
@@ -556,9 +564,11 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'buurt',
             'buurtcombinatie',
             'gebiedsgerichtwerken',
+            'grootstedelijkgebied',
             'stadsdeel',
             'woonplaats',
             'bouwblok',
+            '_geometrie',
         )
 
 
@@ -573,6 +583,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     _stadsdeel = Stadsdeel()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
+    _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
@@ -603,6 +615,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
 
             '_buurtcombinatie',
             '_stadsdeel',
+            '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )
@@ -662,6 +676,7 @@ class VerblijfsobjectDetail(
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
+    _grootstedelijkgebied = Grootstedelijkgebied()
     _gemeente = Gemeente()
     _woonplaats = Woonplaats()
 
@@ -715,6 +730,7 @@ class VerblijfsobjectDetail(
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
+            '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
         )
@@ -725,6 +741,8 @@ class PandDetail(BagMixin, rest.HALSerializer):
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
     bouwblok = Bouwblok()
+
+    _adressen = rest.AdresFilterField()
 
     _buurt = Buurt()
     _buurtcombinatie = Buurtcombinatie()
@@ -756,6 +774,9 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'pandnummer',
 
             'verblijfsobjecten',
+
+            '_adressen',
+
             'bouwblok',
 
             'begin_geldigheid',

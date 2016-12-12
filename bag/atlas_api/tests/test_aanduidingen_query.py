@@ -38,7 +38,7 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=gracht
         )
 
-        bag_factories.NummeraanduidingFactory.create(
+        cls.anje42F = bag_factories.NummeraanduidingFactory.create(
             huisnummer=42,
             huisletter='F',
             huisnummer_toevoeging='1',
@@ -92,6 +92,24 @@ class SubjectSearchTest(APITestCase):
 
         first = response.data['results'][0]
         self.assertEqual(first['straatnaam'], "Anjeliersstraat")
+
+    def test_straat_vbo_status(self):
+        response = self.client.get(
+            '/atlas/search/adres/', {'q': 'Anjeliersstraat 42 F'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+
+        # exact 1 result
+        self.assertEqual(response.data['count'], 1)
+
+        first = response.data['results'][0]
+
+        vbo_status = self.anje42F.adresseerbaar_object.status
+
+        self.assertEqual(
+            first['vbo_status'][0]['omschrijving'], vbo_status.omschrijving)
 
     def test_gracht_query(self):
         response = self.client.get(

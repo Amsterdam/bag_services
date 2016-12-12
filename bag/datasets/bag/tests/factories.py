@@ -117,9 +117,6 @@ class BouwblokFactory(factory.DjangoModelFactory):
         fuzzy.FuzzyText(length=2, chars=string.ascii_letters).fuzz(),
         fuzzy.FuzzyText(length=2, chars=string.digits).fuzz(),
     )
-
-    # code = fuzzy.FuzzyText(length=4, chars=string.digits)
-
     buurt = factory.SubFactory(BuurtFactory)
 
 
@@ -159,6 +156,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
+    status = factory.SubFactory(StatusFactory)
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):
@@ -204,6 +202,7 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
     type = '01'  # default verblijfsobject
     postcode = '1000AN'  # default postcode..
+    status = factory.SubFactory(StatusFactory)
 
     _openbare_ruimte_naam = factory.LazyAttribute(
         lambda o: o.openbare_ruimte.naam)

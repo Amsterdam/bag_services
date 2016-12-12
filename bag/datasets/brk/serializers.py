@@ -53,26 +53,31 @@ class KadastraleSectie(BrkMixin, rest.HALSerializer):
 class Beschikkingsbevoegdheid(serializers.ModelSerializer):
     class Meta:
         model = models.Beschikkingsbevoegdheid
+        fields = '__all__'
 
 
 class Geslacht(serializers.ModelSerializer):
     class Meta:
         model = models.Geslacht
+        fields = '__all__'
 
 
 class AanduidingNaam(serializers.ModelSerializer):
     class Meta:
         model = models.AanduidingNaam
+        fields = '__all__'
 
 
 class Land(serializers.ModelSerializer):
     class Meta:
         model = models.Land
+        fields = '__all__'
 
 
 class Rechtsvorm(serializers.ModelSerializer):
     class Meta:
         model = models.Rechtsvorm
+        fields = '__all__'
 
 
 class Adres(serializers.ModelSerializer):
@@ -113,16 +118,19 @@ class KadastraalSubject(BrkMixin, rest.HALSerializer):
 class SoortGrootte(serializers.ModelSerializer):
     class Meta:
         model = models.SoortGrootte
+        fields = '__all__'
 
 
 class CultuurCodeOnbebouwd(serializers.ModelSerializer):
     class Meta:
         model = models.CultuurCodeOnbebouwd
+        fields = '__all__'
 
 
 class CultuurCodeBebouwd(serializers.ModelSerializer):
     class Meta:
         model = models.CultuurCodeBebouwd
+        fields = '__all__'
 
 
 class KadastraalObject(BrkMixin, rest.HALSerializer):
@@ -142,11 +150,13 @@ class KadastraalObject(BrkMixin, rest.HALSerializer):
 class AardZakelijkRecht(serializers.ModelSerializer):
     class Meta:
         model = models.AardZakelijkRecht
+        fields = '__all__'
 
 
 class AppartementsrechtsSplitsType(serializers.ModelSerializer):
     class Meta:
         model = models.AppartementsrechtsSplitsType
+        fields = '__all__'
 
 
 class ZakelijkRechtContextMixin:
@@ -197,6 +207,7 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
 class AardAantekening(serializers.ModelSerializer):
     class Meta:
         model = models.AardAantekening
+        fields = '__all__'
 
 
 class Aantekening(BrkMixin, rest.HALSerializer):
@@ -317,7 +328,8 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
         )
 
 
-class ZakelijkRechtDetail(BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
+class ZakelijkRechtDetail(
+        BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
     _display = rest.DisplayField()
     aard_zakelijk_recht = AardZakelijkRecht()
     ontstaan_uit = KadastraalSubject()
@@ -430,6 +442,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
 
     rechten = rest.RelatedSummaryField()
     verblijfsobjecten = rest.RelatedSummaryField()
+    _adressen = rest.AdresFilterField()
     aantekeningen = rest.RelatedSummaryField()
 
     # a_percelen = rest.RelatedSummaryField(source='a_percelen')
@@ -474,6 +487,7 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             'betrokken_bij',
 
             'verblijfsobjecten',
+            '_adressen',
             'rechten',
             'aantekeningen',
             'beperkingen',

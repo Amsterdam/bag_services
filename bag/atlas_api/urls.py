@@ -145,7 +145,7 @@ gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
 gebieden.register(
     r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
 gebieden.register(
-    r'gebiedsgerichterken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
+    r'gebiedsgerichtwerken', datasets.bag.views.GebiedsgerichtwerkenViewSet)
 gebieden.register(
     r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
@@ -176,9 +176,26 @@ wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 
 atlas = AtlasRouter()
 
-# Search related
+# ##########
+# Typeahead
+# ###########
 
-atlas.register(r'typeahead', views.TypeaheadViewSet, base_name='typeahead')
+##
+# Deprecated!! The old all in one typeahead endpoint
+atlas.register(r'typeahead', views.TypeAheadLegacyViewSet, base_name='typeahead')
+
+## The new separate endpoints. Look at the typeahead project
+#  for combined typeahead
+atlas.register(
+    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead')
+atlas.register(
+    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead')
+atlas.register(
+    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead')
+
+atlas.register(
+    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet, base_name='typeahead')
+## ##
 
 # Alias voor nummeraanduiding
 atlas.register(

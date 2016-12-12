@@ -3,6 +3,7 @@ import json
 import logging
 from collections import OrderedDict
 from collections import defaultdict
+from typing import AbstractSet, List
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
@@ -86,7 +87,7 @@ _subtype_mapping = {
 }
 
 
-def select_queries(query_string: str) -> [ElasticQueryWrapper]:
+def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -101,32 +102,49 @@ def select_queries(query_string: str) -> [ElasticQueryWrapper]:
     analyzer = QueryAnalyzer(query_string)
 
     # A collection of regex and the query they generate
-    query_selectors = [
+    dont_filter = len(only_show) == 0
+    all_query_selectors = [
         {
+            'labels': {'bag'},
             'test': analyzer.is_postcode_prefix,
             'query': bagQ.postcode_query,
         },
         {
+            'labels': {'bag'},
             'test': analyzer.is_bouwblok_exact,
             'query': bagQ.bouwblok_query,
         },
         {
+            'labels': {'meetbouten'},
             'test': analyzer.is_meetbout_prefix,
             'query': genQ.meetbout_query,
         },
         {
+            'labels': {'bag', 'nummeraanduiding'},
             'test': analyzer.is_postcode_huisnummer_prefix,
             'query': bagQ.postcode_huisnummer_query,
         },
         {
+            'labels': {'brk'},
             'test': analyzer.is_kadastraal_object_prefix,
             'query': brkQ.kadastraal_object_query,
         },
         {
+            'labels': {'nummeraanduiding'},
             'test': analyzer.is_straatnaam_huisnummer_prefix,
             'query': bagQ.straatnaam_huisnummer_query,
         },
+
     ]
+
+    default_queries = {
+        'bag': [bagQ.weg_query],
+        'brk': [brkQ.kadastraal_subject_query],
+        'gebieden': [bagQ.gebied_query],
+    }
+
+    query_selectors = all_query_selectors if dont_filter else \
+        [a for a in all_query_selectors if not a['labels'].isdisjoint(only_show)]
 
     queries = []
     for s in query_selectors:
@@ -141,11 +159,12 @@ def select_queries(query_string: str) -> [ElasticQueryWrapper]:
     # In which case, defaulting to address/openbare ruimte
     if not queries:
         log.debug("No matches for %s, using defaults", query_string)
-        queries = [
-            bagQ.weg_query,
-            bagQ.gebied_query,
-            brkQ.kadastraal_subject_query,
-        ]
+        if dont_filter:
+            for v in default_queries.values():
+                queries += v
+        else:
+            for category in only_show:
+                queries += default_queries.get(category, [])
 
     return [q(analyzer) for q in queries]
 
@@ -228,10 +247,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-    def autocomplete_queries(self, query):
+    def autocomplete_queries(self, query, only_show: AbstractSet[str] = set()):
         """provide autocomplete suggestions"""
 
-        query_components = select_queries(query)
+        query_components = select_queries(query, only_show)
 
         result_data = []
 
@@ -305,7 +324,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return ordered_results
 
-    def list(self, request):
+    def _abstr_list(self, request, only_show: AbstractSet[str]):
         """
         returns result options
         ---
@@ -323,10 +342,54 @@ class TypeaheadViewSet(viewsets.ViewSet):
         if not query:
             return Response([])
 
-        results = self.autocomplete_queries(query)
+        results = self.autocomplete_queries(query, only_show)
         response = self._order_results(results, request)
 
         return Response(response)
+
+
+class TypeAheadBagViewSet(TypeaheadViewSet):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, {'bag', 'nummeraanduiding'})
+
+
+class TypeAheadMeetboutenViewSet(TypeaheadViewSet):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, {'meetbouten'})
+
+
+class TypeAheadBrkViewSet(TypeaheadViewSet):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, {'brk'})
+
+
+class TypeAheadGebiedenViewSet(TypeaheadViewSet):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, {'gebieden'})
+
+
+class TypeAheadLegacyViewSet(TypeaheadViewSet):
+    """
+    The old typeahead containing all different results at once
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def list(self, request):
+        return self._abstr_list(request, set())
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -422,6 +485,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         ignore_cache = settings.DEBUG
 
+        # log.exception(json.dumps(search.to_dict(), indent=4))
+
         try:
             result = search.execute(ignore_cache=ignore_cache)
         except(TransportError):
@@ -449,13 +514,16 @@ class SearchViewSet(viewsets.ViewSet):
         """
         return _get_url(request, hit)
 
+    def get_hit_data(self, result, hit):
+        result.update(hit.to_dict())
+
     def normalize_hit(self, hit, request):
         result = OrderedDict()
         result['_links'] = self.get_url(request, hit)
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
-        result.update(hit.to_dict())
+        self.get_hit_data(result, hit)
 
         return result
 
@@ -480,7 +548,7 @@ class SearchSubjectViewSet(SearchViewSet):
         """
         Execute search on Subject
         """
-        search = brkQ.kadastraal_subject_query(analyzer)\
+        search = brkQ.kadastraal_subject_query(analyzer) \
             .to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_subject'])
 
@@ -493,7 +561,7 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, client, analyzer: QueryAnalyzer) -> List[Search]:
         """
         Execute search in Objects
         """
@@ -512,7 +580,7 @@ class SearchBouwblokViewSet(SearchViewSet):
 
     url_name = 'search/bouwblok-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, client, analyzer: QueryAnalyzer) -> List[Search]:
         """
         Execute search in Objects
         """
@@ -539,8 +607,7 @@ class SearchGebiedenViewSet(SearchViewSet):
         # bouwblok
 
         if analyzer.is_bouwblok_prefix():
-            search = bagQ.bouwblok_query(
-                analyzer).to_elasticsearch_object(client)
+            search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
             search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
@@ -611,6 +678,21 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         # default response search roads
         return q.to_elasticsearch_object(client)
 
+    def get_hit_data(self, result, hit):
+        """
+        Remove attribute fields not needed for enduser
+        """
+        for key, value in hit.to_dict().items():
+            if key.startswith('comp_'):
+                continue
+            if key.endswith('_keyword'):
+                continue
+            if key.endswith('_nen'):
+                continue
+            if key.endswith('_ptt'):
+                continue
+            result[key] = value
+
 
 class SearchPostcodeViewSet(SearchViewSet):
     """
@@ -635,8 +717,8 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
-            return bagQ.postcode_huisnummer_query(analyzer)\
-                   .to_elasticsearch_object(client)
+            return bagQ.postcode_huisnummer_query(analyzer) \
+                .to_elasticsearch_object(client)
         else:
             return bagQ.weg_query(analyzer).to_elasticsearch_object(client)
 
@@ -652,11 +734,12 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    @staticmethod
+    def search_query(client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
-        return bagQ.postcode_huisnummer_exact_query(analyzer)\
+        return bagQ.postcode_huisnummer_exact_query(analyzer) \
             .to_elasticsearch_object(client)
 
     def list(self, request, *args, **kwargs):

@@ -92,7 +92,7 @@ db-backup:
   links:
     - database:db
   volumes:
-    - ./backups:/tmp/backups
+    - /mnt/dumps:/tmp/backups
   command: >
     bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
             && chmod 600 ~/.pgpass \
@@ -107,7 +107,7 @@ db-backup:
                         -T oauth2*  \
                         -U atlas \
                         -h db -p 5432 \
-                        atlas > /tmp/backups/database.dump"
+                        atlas > /tmp/backups/bag.dump"
 
 el-backup:
   image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch

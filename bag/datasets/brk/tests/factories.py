@@ -1,10 +1,13 @@
-import factory
-import faker
+# Packages
 from django.contrib.gis.geos import MultiPolygon, Polygon
+import faker
+import factory
 from factory import fuzzy
-
-from datasets.generic import kadaster
+# Project
 from .. import models
+from datasets.bag.tests.factories import VerblijfsobjectFactory
+from datasets.generic import kadaster
+
 
 f = faker.Factory.create(locale='nl_NL')
 
@@ -115,6 +118,24 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     poly_geom = random_poly()
 
 
+class KadastraalObjectVerblijfsobjectRelatieFactory(
+        factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.KadastraalObjectVerblijfsobjectRelatie
+
+    kadastraal_object = factory.SubFactory(KadastraalObjectFactory)
+    verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
+
+
+class AardZakelijkRechtFactory(factory.DjangoModelFactory):
+
+    pk = fuzzy.FuzzyText(length=10)
+
+    class Meta:
+        model = models.AardZakelijkRecht
+
+
 class ZakelijkRechtFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.ZakelijkRecht
@@ -125,6 +146,7 @@ class ZakelijkRechtFactory(factory.DjangoModelFactory):
 
     _kadastraal_subject_naam = fuzzy.FuzzyText(length=50)
     kadastraal_object_status = fuzzy.FuzzyText(length=50)
+    aard_zakelijk_recht = factory.SubFactory(AardZakelijkRechtFactory)
 
 
 class AardAantekeningFactory(factory.DjangoModelFactory):
