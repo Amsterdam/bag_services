@@ -92,10 +92,6 @@ class Command(BaseCommand):
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
-        # Download files from objectstore to `DIVA_DIR`
-        if options['run-import']:
-            fetch_importfiles()
-
         for ds in sets:
 
             if options['run-import']:

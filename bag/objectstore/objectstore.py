@@ -1,7 +1,6 @@
 import logging
 import os
 from swiftclient.client import Connection
-from django.conf import settings
 
 log = logging.getLogger(__name__)
 
@@ -9,9 +8,17 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
-data_dir = settings.DIVA_DIR
-bag_connection = Connection(**settings.OBJECTSTORE)
-
+bag_connection = {
+    'auth_version': '2.0',
+    'authurl': 'https://identity.stack.cloudvps.com/v2.0',
+    'user': 'bag_brk',
+    'key': os.getenv('OS_PASSWORD', 'insecure'),
+    'tenant_name': 'BGE000081_BAG',
+    'os_options': {
+        'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
+        'region_name': 'NL',
+        'endpoint_type': 'internalURL'}
+}
 
 def fetch_importfiles():
     """
@@ -109,3 +116,7 @@ class ObjectStore():
 
     def delete_from_objectstore(self, object_name):
         return self.conn.delete_object(self.container, object_name)
+
+if __name__ == "main":
+    # Download files from objectstore
+    fetch_importfiles()

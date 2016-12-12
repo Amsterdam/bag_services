@@ -28,8 +28,6 @@ importer:
   links:
     - database:database
     - elasticsearch:elasticsearch
-  volumes:
-    - /mnt/data/diva_import:/app/diva
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
@@ -38,6 +36,7 @@ importer:
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py migrate \
+            && python objectstore/objectstore.py \      # fetch files from objectstore
             && python manage.py run_import --no-index \
             && python manage.py elastic_indices --delete"
 
