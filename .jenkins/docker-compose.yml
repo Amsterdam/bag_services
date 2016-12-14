@@ -29,6 +29,7 @@ importer:
   links:
     - database:database
     - elasticsearch:elasticsearch
+  user: root
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
