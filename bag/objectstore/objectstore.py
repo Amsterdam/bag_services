@@ -11,8 +11,6 @@ logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
 assert os.getenv('OS_PASSWORD_BAG')
 
-assert os.getenv('OS_PASSWORD_BAG')
-
 os_connect = {
     'auth_version': '2.0',
     'authurl': 'https://identity.stack.cloudvps.com/v2.0',
