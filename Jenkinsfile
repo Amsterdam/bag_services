@@ -26,11 +26,7 @@ node {
     stage('Test') {
         tryStep "test", {
             sh "docker-compose -p bag -f .jenkins/docker-compose.yml build"
-
-            withCredentials([[$class: 'StringBinding', credentialsId: 'OS_PASSWORD_BAG', variable: 'OS_PASSWORD_BAG']]) {
-            sh "docker-compose -p bag -f .jenkins/docker-compose.yml build && " +
             sh "docker-compose -p bag -f .jenkins/docker-compose.yml run -u root --rm tests"
-        }
         }, {
             sh "docker-compose -p bag -f .jenkins/docker-compose.yml down"
         }
