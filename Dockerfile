@@ -28,3 +28,5 @@ USER datapunt
 COPY bag /app/
 CMD /app/docker-entrypoint.sh
 
+ARG OS_PASSWORD_BAG
+ENV OS_PASSWORD_BAG=$OS_PASSWORD_BAG
