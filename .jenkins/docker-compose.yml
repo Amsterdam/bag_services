@@ -20,7 +20,7 @@ tests:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
-    OS_PASSWORD_BAG:
+    OS_PASSWORD_BAG: insecure
     METADATA_URL: ""
   command: bash -c "/app/docker-wait.sh && python manage.py test"
 
@@ -33,7 +33,7 @@ importer:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
-    OS_PASSWORD_BAG:
+    OS_PASSWORD_BAG: insecure
     METADATA_URL: "${METADATA_URL}"
   command: >
     bash -c "/app/docker-wait.sh \
