@@ -6,7 +6,7 @@ set -u
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -f ${DIR}/docker-compose.yml $*;
+	docker-compose -f ${DIR}/docker-compose_acc.yml $*;
 }
 
 trap 'dc kill ; dc rm -f' EXIT
