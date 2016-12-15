@@ -36,6 +36,11 @@ def health(request):
             "Elasticsearch connectivity failed",
             content_type="text/plain", status=500)
 
+    if settings.DEBUG:
+        return HttpResponse(
+            "Bag running in DEBUG MODE",
+            content_type="text/plain", status=500)
+
     # check wkpd
 
     return HttpResponse(
@@ -45,7 +50,7 @@ def health(request):
 def check_data(request):
     # check bag
     try:
-        assert Verblijfsobject.objects.count() > 10
+        assert Verblijfsobject.objects.count() > 10000
     except:
         log.exception("No BAG data found")
         return HttpResponse(
