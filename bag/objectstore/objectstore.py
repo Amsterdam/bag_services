@@ -61,7 +61,7 @@ def select_last_for_key(seq, key=lambda x: x):
         if key(value) not in d:
             d[key(value)] = (value[-1], '_'.join(value))
         else:
-            if value[-1][0] < d[key(value)][0]:
+            if value[-1] > d[key(value)][0]:
                 d[key(value)] = (value[-1], '_'.join(value))
     return d
 
@@ -88,7 +88,8 @@ def fetch_diva_files():
 
                 r = [file_name.split('_') for file_name in folder_files]
                 data = sorted(r, key=lambda x: x[-1])
-                files_to_download = [file[1] for k, file in select_last_for_key(data, key=lambda x: x[0]).items()]
+                keyfunc = lambda x: x[0]+x[1] if folder == 'brk_ascii' else lambda x: x[0]
+                files_to_download = [file[1] for k, file in select_last_for_key(data, key=keyfunc).items()]
                 dir = os.path.join(DIVA_DIR, folder)
                 os.makedirs(dir, exist_ok=True)
 
