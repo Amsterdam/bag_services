@@ -58,7 +58,7 @@ def select_last_created_files(seq, key_func=split_first):
     """
     Select the last file, based on the date in the filename
     :param seq:
-    :param key:
+    :param key_func:
     :return:
     """
     my_files = [(key_func(c), c) for c in seq]
@@ -101,7 +101,7 @@ def fetch_diva_files():
 
                 keyfunc = concat_first_two if folder == 'brk_ascii' else split_first
                 files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
-                mapped_folder = folder_mapping['folder']
+                mapped_folder = folder_mapping[folder]
                 dir = os.path.join(DIVA_DIR, mapped_folder)
                 os.makedirs(dir, exist_ok=True)
 
