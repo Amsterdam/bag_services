@@ -89,7 +89,7 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
-DIVA_DIR = '/app/diva/'
+DIVA_DIR = '/app/data/'
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
