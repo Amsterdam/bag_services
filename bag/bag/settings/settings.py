@@ -117,12 +117,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bag.wsgi.application'
 
-def _get_docker_host():
-    d_host = os.getenv('DOCKER_HOST', None)
-    if d_host:
-        return re.match(r'tcp://(.*?):\d+', d_host).group(1)
-    return '0.0.0.0'
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
@@ -153,8 +147,6 @@ USE_L10N = True
 USE_TZ = True
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
-
-DIVA_DIR = '/app/diva/'
 
 ELASTIC_INDICES = {
     'BAG': 'bag',
@@ -300,7 +292,7 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
-DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
+DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))

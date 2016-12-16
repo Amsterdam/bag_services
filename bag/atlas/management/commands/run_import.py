@@ -1,18 +1,15 @@
 import sys
+
 from django.core.management import BaseCommand, call_command
 
 import datasets.bag.batch
 import datasets.brk.batch
 import datasets.wkpb.batch
-
 from batch import batch
 from batch.models import JobExecution
 
-from objectstore.objectstore import fetch_importfiles
-
 
 class Command(BaseCommand):
-
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     imports = dict(
@@ -88,7 +85,7 @@ class Command(BaseCommand):
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 sys.exit(1)
 
-        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
+        sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
