@@ -1,6 +1,5 @@
 import logging
 import os
-
 from swiftclient.client import Connection
 
 logging.basicConfig(level=logging.DEBUG)
@@ -27,7 +26,7 @@ os_connect = {
 
 # zet in data directory laat diva voor test data.
 # in settings een verschil maken
-DIVA_DIR = 'data/'
+DIVA_DIR = '/app/data'
 
 
 def get_full_container_list(conn, container, **kwargs):
@@ -48,22 +47,29 @@ def get_full_container_list(conn, container, **kwargs):
 
     return seed
 
+def split_first(lst):
+    return lst.split('_')[0]
 
-def select_last_for_key(seq, key=lambda x: x):
+def concat_first_two(lst):
+    res = lst.split('_')
+    return res[0]+res[1]
+
+def select_last_created_files(seq, key_func=split_first):
     """
     Select the last file, based on the date in the filename
     :param seq:
     :param key:
     :return:
     """
-    d = {}
-    for value in seq:
-        if key(value) not in d:
-            d[key(value)] = (value[-1], '_'.join(value))
-        else:
-            if value[-1] > d[key(value)][0]:
-                d[key(value)] = (value[-1], '_'.join(value))
-    return d
+    my_files = [(key_func(c), c) for c in seq]
+    key = ''
+    res = {}
+    for f in my_files:
+        if key != f[0]:
+            key = f[0]
+        res[key] = f[1]
+    return sorted([k for c, k in res.items()])
+
 
 def fetch_diva_files():
     """
@@ -86,10 +92,8 @@ def fetch_diva_files():
                         if (file_name.split('.')[-1] in ['UVA2', 'csv']):
                             folder_files.append(file_name)
 
-                r = [file_name.split('_') for file_name in folder_files]
-                data = sorted(r, key=lambda x: x[-1])
-                keyfunc = lambda x: x[0]+x[1] if folder == 'brk_ascii' else lambda x: x[0]
-                files_to_download = [file[1] for k, file in select_last_for_key(data, key=keyfunc).items()]
+                keyfunc = concat_first_two if folder == 'brk_ascii' else split_first
+                files_to_download = select_last_created_files(sorted(folder_files), key=keyfunc)
                 dir = os.path.join(DIVA_DIR, folder)
                 os.makedirs(dir, exist_ok=True)
 
