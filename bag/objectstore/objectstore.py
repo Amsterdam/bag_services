@@ -77,11 +77,18 @@ def fetch_diva_files():
     totdat de zips gerealiseerd zijn alleen de .csvs en .uva2s
     :return:
     """
+    folder_mapping = {
+        'bag_actueel': 'bag',
+        'gebieden_ascii': 'gebieden',
+        'brk_ascii': 'brk',
+        'bag_wkt': 'bag_wkt',
+    }
+
     store = ObjectStore()
     for container in store.get_containers():
         container_name = container['name']
         if container_name == 'Diva':
-            folders_to_download = ['bag_actueel', 'brk_ascii', 'gebieden_ascii']
+            folders_to_download = ['bag_actueel', 'brk_ascii', 'gebieden_ascii', 'bag_wkt']
             for folder in folders_to_download:
                 log.info("import files from {}".format(folder))
                 folder_files = []
@@ -94,14 +101,16 @@ def fetch_diva_files():
 
                 keyfunc = concat_first_two if folder == 'brk_ascii' else split_first
                 files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
-                dir = os.path.join(DIVA_DIR, folder)
+                mapped_folder = folder_mapping['folder']
+                dir = os.path.join(DIVA_DIR, mapped_folder)
                 os.makedirs(dir, exist_ok=True)
 
                 for file_name in files_to_download:
-                    log.info("Create file {} in {}".format(file_name, folder))
-                    newfile = open('{}/{}/{}'.format(DIVA_DIR, folder, file_name), 'wb')
+                    log.info("Create file {} in {}".format(file_name, mapped_folder))
+                    newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
                     newfile.write(store.get_store_object(container, '{}/{}'.format(folder, file_name)))
                     newfile.close()
+
 
 
 class ObjectStore():
