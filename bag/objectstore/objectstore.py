@@ -102,7 +102,7 @@ def fetch_diva_folder(container_name, folder, file_types=None):
     """
     log.info("import files from {}".format(folder))
     folder_files = []
-    for file_object in get_full_container_list(container_name, prefix=folder):
+    for file_object in get_full_container_list(get_container_by_name(container_name), prefix=folder):
         if file_object['content_type'] != 'application/directory':
             path = file_object['name'].split('/')
             file_name = path[-1]
