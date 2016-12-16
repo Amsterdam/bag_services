@@ -93,7 +93,7 @@ def fetch_diva_files():
                             folder_files.append(file_name)
 
                 keyfunc = concat_first_two if folder == 'brk_ascii' else split_first
-                files_to_download = select_last_created_files(sorted(folder_files), key=keyfunc)
+                files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
                 dir = os.path.join(DIVA_DIR, folder)
                 os.makedirs(dir, exist_ok=True)
 
