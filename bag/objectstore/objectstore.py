@@ -24,19 +24,18 @@ os_connect = {
         'region_name': 'NL',
     }
 }
+conn = Connection(**os_connect)
 
 # zet in data directory laat diva voor test data.
 # in settings een verschil maken
 DIVA_DIR = '/app/data'
 
 
-def get_full_container_list(conn, container, **kwargs):
+def get_full_container_list(container, **kwargs):
     limit = 10000
     kwargs['limit'] = limit
     page = []
-
     seed = []
-
     _, page = conn.get_container(container, **kwargs)
     seed.extend(page)
 
@@ -45,8 +44,13 @@ def get_full_container_list(conn, container, **kwargs):
         kwargs['marker'] = seed[-1]['name']
         _, page = conn.get_container(container, **kwargs)
         seed.extend(page)
-
     return seed
+
+
+def get_container_by_name(name):
+    for _, c in conn.get_account():
+        if c['name'] == name:
+            return c
 
 
 def split_first(lst):
@@ -58,6 +62,15 @@ def concat_first_two(lst):
     "returns the concatenated first and second element after splitting string on '_'"
     res = lst.split('_')
     return res[0] + res[1]
+
+
+folder_mapping = {
+    'bag_actueel': ('bag', split_first),
+    'gebieden_ascii': ('gebieden', split_first),
+    'brk_ascii': ('brk', concat_first_two),
+    'bag_wkt': ('bag_wkt', split_first),
+    'gebieden_shp': ('gebieden_shp', lambda x: x),
+}
 
 
 def select_last_created_files(seq, key_func=split_first):
@@ -72,26 +85,24 @@ def select_last_created_files(seq, key_func=split_first):
     return sorted([k for c, k in latest_in_group.items()])
 
 
-def fetch_diva_folder(store, container_name, folder, file_types=None):
+def download_diva_file(container_name, mapped_folder, folder, file_name):
+    log.info("Create file {} in {}".format(file_name, mapped_folder))
+    newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
+    newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[0])
+    newfile.close()
+
+
+def fetch_diva_folder(container_name, folder, file_types=None):
     """
     fetch files from folder in an objectstore container
-    :param store:  The object store
     :param container_name:
     :param folder:
     :param file_types: a list of file_types / if None all files are downloaded
     :return:
     """
-    folder_mapping = {
-        'bag_actueel': ('bag', split_first),
-        'gebieden_ascii': ('gebieden', split_first),
-        'brk_ascii': ('brk', concat_first_two),
-        'bag_wkt': ('bag_wkt', split_first),
-        'gebieden_shp': ('gebieden_shp', lambda x: x),
-    }
-
     log.info("import files from {}".format(folder))
     folder_files = []
-    for file_object in store._get_full_container_list(container_name, [], prefix=folder):
+    for file_object in get_full_container_list(container_name, prefix=folder):
         if file_object['content_type'] != 'application/directory':
             path = file_object['name'].split('/')
             file_name = path[-1]
@@ -107,10 +118,7 @@ def fetch_diva_folder(store, container_name, folder, file_types=None):
     os.makedirs(dir, exist_ok=True)
 
     for file_name in files_to_download:
-        log.info("Create file {} in {}".format(file_name, mapped_folder))
-        newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
-        newfile.write(store.get_store_object(container_name, '{}/{}'.format(folder, file_name)))
-        newfile.close()
+        download_diva_file(container_name, mapped_folder, folder, file_name)
 
 
 def fetch_diva_files():
@@ -119,56 +127,11 @@ def fetch_diva_files():
     totdat de zips gerealiseerd zijn alleen de .csvs en .uva2s
     :return:
     """
-    store = ObjectStore()
     container_name = 'Diva'
     folders_to_download = ['bag_actueel', 'brk_ascii',
                            'bag_wkt', 'gebieden_ascii', 'gebieden_shp']
     for folder in folders_to_download:
-        fetch_diva_folder(store, container_name, folder, file_types=['UVA2', 'csv'])
-
-
-class ObjectStore():
-    RESP_LIMIT = 10000  # serverside limit of the response
-
-    def __init__(self):
-        self.conn = Connection(**os_connect)
-
-    def get_containers(self):
-        _, containers = self.conn.get_account()
-        return containers
-
-    def get_container_by_name(self, name):
-        for c in self.get_containers():
-            if c['name'] == name:
-                return c
-
-    def get_store_object(self, container_name, file_name):
-        """
-        Returns the object store
-        :param container_name:
-        :param file_name
-        :return:
-        """
-        return self.conn.get_object(container_name, file_name)[1]
-
-    def _get_full_container_list(self, container, seed, **kwargs):
-        kwargs['limit'] = self.RESP_LIMIT
-        if len(seed):
-            kwargs['marker'] = seed[-1]['name']
-
-        _, page = self.conn.get_container(container, **kwargs)
-        seed.extend(page)
-        # geen cercursie AUB.
-        return seed if len(page) < self.RESP_LIMIT else \
-            self._get_full_container_list(container, seed, **kwargs)
-
-    def put_to_objectstore(
-            self, container, object_name, object_content, content_type):
-        return self.conn.put_object(
-            container, object_name, contents=object_content, content_type=content_type)
-
-    def delete_from_objectstore(self, container, object_name):
-        return self.conn.delete_object(container, object_name)
+        fetch_diva_folder(container_name, folder, file_types=['UVA2', 'csv'])
 
 
 if __name__ == "__main__":
