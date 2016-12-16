@@ -5,13 +5,9 @@ from unittest import skipIf, skip
 from django.conf import settings
 from django.test import TestCase
 
-from ..objectstore import ObjectStore
 
 
 class TestObjectstore(TestCase):
-    def setUp(self):
-        self.objectstore = ObjectStore()
-
     @skipIf(settings.NO_INTEGRATION_TEST, 'blabla')
     @skip('Check auth')
     def test_objects(self):
