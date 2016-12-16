@@ -300,7 +300,7 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
-DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'diva'))
+DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
