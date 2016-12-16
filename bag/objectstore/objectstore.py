@@ -62,9 +62,12 @@ def get_all(lst):
 
 folder_mapping = {
     'bag_actueel': ('bag', split_first, ['UVA2', 'csv']),
+    'bag_sleutel': ('bag', split_first, ['dat']),
     'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
     'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
+    'brk_shp': ('brk_shp', get_all, ['dbf','prj','shp','shx']),
     'bag_wkt': ('bag_wkt', split_first, ['UVA2', 'csv']),
+    'bag_geometrie': ('bag_wkt', concat_first_two, ['dat']),
     'gebieden_shp': ('gebieden_shp', get_all, ['dbf','prj','shp','shx']),
 }
 
@@ -124,8 +127,7 @@ def fetch_diva_files():
     :return:
     """
     container_name = 'Diva'
-    folders_to_download = ['bag_actueel', 'brk_ascii',
-                           'bag_wkt', 'gebieden_ascii', 'gebieden_shp']
+    folders_to_download = sorted(folder_mapping.keys())
     for folder in folders_to_download:
         fetch_diva_folder(container_name, folder)
 
