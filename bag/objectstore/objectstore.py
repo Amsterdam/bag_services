@@ -1,5 +1,6 @@
 import logging
 import os
+
 from swiftclient.client import Connection
 
 logging.basicConfig(level=logging.DEBUG)
@@ -47,28 +48,69 @@ def get_full_container_list(conn, container, **kwargs):
 
     return seed
 
+
 def split_first(lst):
+    "returns the first element after splitting string on '_'"
     return lst.split('_')[0]
 
+
 def concat_first_two(lst):
+    "returns the concatenated first and second element after splitting string on '_'"
     res = lst.split('_')
-    return res[0]+res[1]
+    return res[0] + res[1]
+
 
 def select_last_created_files(seq, key_func=split_first):
     """
-    Select the last file, based on the date in the filename
+    select the last file
     :param seq:
     :param key_func:
     :return:
     """
-    my_files = [(key_func(c), c) for c in seq]
-    key = ''
-    res = {}
-    for f in my_files:
-        if key != f[0]:
-            key = f[0]
-        res[key] = f[1]
-    return sorted([k for c, k in res.items()])
+    my_files = [(key_func(c), c) for c in sorted(seq)]
+    latest_in_group = {f[0]: f[1] for f in my_files}
+    return sorted([k for c, k in latest_in_group.items()])
+
+
+def fetch_diva_folder(store, container_name, folder, file_types=None):
+    """
+    fetch files from folder in an objectstore container
+    :param store:  The object store
+    :param container_name:
+    :param folder:
+    :param file_types: a list of file_types / if None all files are downloaded
+    :return:
+    """
+    folder_mapping = {
+        'bag_actueel': ('bag', split_first),
+        'gebieden_ascii': ('gebieden', split_first),
+        'brk_ascii': ('brk', concat_first_two),
+        'bag_wkt': ('bag_wkt', split_first),
+        'gebieden_shp': ('gebieden_shp', lambda x: x),
+    }
+
+    log.info("import files from {}".format(folder))
+    folder_files = []
+    for file_object in store._get_full_container_list(container_name, [], prefix=folder):
+        if file_object['content_type'] != 'application/directory':
+            path = file_object['name'].split('/')
+            file_name = path[-1]
+            if file_types:
+                if (file_name.split('.')[-1] in file_types):
+                    folder_files.append(file_name)
+            else:
+                folder_files.append(file_name)
+
+    mapped_folder, keyfunc = folder_mapping[folder]
+    files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
+    dir = os.path.join(DIVA_DIR, mapped_folder)
+    os.makedirs(dir, exist_ok=True)
+
+    for file_name in files_to_download:
+        log.info("Create file {} in {}".format(file_name, mapped_folder))
+        newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
+        newfile.write(store.get_store_object(container_name, '{}/{}'.format(folder, file_name)))
+        newfile.close()
 
 
 def fetch_diva_files():
@@ -77,40 +119,12 @@ def fetch_diva_files():
     totdat de zips gerealiseerd zijn alleen de .csvs en .uva2s
     :return:
     """
-    folder_mapping = {
-        'bag_actueel': 'bag',
-        'gebieden_ascii': 'gebieden',
-        'brk_ascii': 'brk',
-        'bag_wkt': 'bag_wkt',
-    }
-
     store = ObjectStore()
-    for container in store.get_containers():
-        container_name = container['name']
-        if container_name == 'Diva':
-            folders_to_download = ['bag_actueel', 'brk_ascii', 'gebieden_ascii', 'bag_wkt']
-            for folder in folders_to_download:
-                log.info("import files from {}".format(folder))
-                folder_files = []
-                for file_object in store._get_full_container_list(container_name, [], prefix=folder):
-                    if file_object['content_type'] != 'application/directory':
-                        path = file_object['name'].split('/')
-                        file_name = path[-1]
-                        if (file_name.split('.')[-1] in ['UVA2', 'csv']):
-                            folder_files.append(file_name)
-
-                keyfunc = concat_first_two if folder == 'brk_ascii' else split_first
-                files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
-                mapped_folder = folder_mapping[folder]
-                dir = os.path.join(DIVA_DIR, mapped_folder)
-                os.makedirs(dir, exist_ok=True)
-
-                for file_name in files_to_download:
-                    log.info("Create file {} in {}".format(file_name, mapped_folder))
-                    newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
-                    newfile.write(store.get_store_object(container, '{}/{}'.format(folder, file_name)))
-                    newfile.close()
-
+    container_name = 'Diva'
+    folders_to_download = ['bag_actueel', 'brk_ascii',
+                           'bag_wkt', 'gebieden_ascii', 'gebieden_shp']
+    for folder in folders_to_download:
+        fetch_diva_folder(store, container_name, folder, file_types=['UVA2', 'csv'])
 
 
 class ObjectStore():
@@ -123,14 +137,19 @@ class ObjectStore():
         _, containers = self.conn.get_account()
         return containers
 
-    def get_store_object(self, container, file_name):
+    def get_container_by_name(self, name):
+        for c in self.get_containers():
+            if c['name'] == name:
+                return c
+
+    def get_store_object(self, container_name, file_name):
         """
         Returns the object store
-        :param container:
+        :param container_name:
         :param file_name
         :return:
         """
-        return self.conn.get_object(container['name'], file_name)[1]
+        return self.conn.get_object(container_name, file_name)[1]
 
     def _get_full_container_list(self, container, seed, **kwargs):
         kwargs['limit'] = self.RESP_LIMIT
