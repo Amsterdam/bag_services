@@ -31,26 +31,20 @@ conn = Connection(**os_connect)
 DIVA_DIR = '/app/data'
 
 
-def get_full_container_list(container, **kwargs):
+def get_full_container_list(container_name, **kwargs):
     limit = 10000
     kwargs['limit'] = limit
     page = []
     seed = []
-    _, page = conn.get_container(container, **kwargs)
+    _, page = conn.get_container(container_name, **kwargs)
     seed.extend(page)
 
     while len(page) == limit:
         # keep getting pages..
         kwargs['marker'] = seed[-1]['name']
-        _, page = conn.get_container(container, **kwargs)
+        _, page = conn.get_container(container_name, **kwargs)
         seed.extend(page)
     return seed
-
-
-def get_container_by_name(name):
-    for _, c in conn.get_account():
-        if c['name'] == name:
-            return c
 
 
 def split_first(lst):
@@ -63,13 +57,15 @@ def concat_first_two(lst):
     res = lst.split('_')
     return res[0] + res[1]
 
+def get_all(lst):
+    return lst
 
 folder_mapping = {
-    'bag_actueel': ('bag', split_first),
-    'gebieden_ascii': ('gebieden', split_first),
-    'brk_ascii': ('brk', concat_first_two),
-    'bag_wkt': ('bag_wkt', split_first),
-    'gebieden_shp': ('gebieden_shp', lambda x: x),
+    'bag_actueel': ('bag', split_first, ['UVA2', 'csv']),
+    'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
+    'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
+    'bag_wkt': ('bag_wkt', split_first, ['UVA2', 'csv']),
+    'gebieden_shp': ('gebieden_shp', get_all, ['dbf','prj','shp','shx']),
 }
 
 
@@ -88,21 +84,22 @@ def select_last_created_files(seq, key_func=split_first):
 def download_diva_file(container_name, mapped_folder, folder, file_name):
     log.info("Create file {} in {}".format(file_name, mapped_folder))
     newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
-    newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[0])
+    # import ipdb;ipdb.set_trace()
+    newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[1])
     newfile.close()
 
 
-def fetch_diva_folder(container_name, folder, file_types=None):
+def fetch_diva_folder(container_name, folder):
     """
     fetch files from folder in an objectstore container
     :param container_name:
     :param folder:
-    :param file_types: a list of file_types / if None all files are downloaded
     :return:
     """
     log.info("import files from {}".format(folder))
     folder_files = []
-    for file_object in get_full_container_list(get_container_by_name(container_name), prefix=folder):
+    mapped_folder, keyfunc, file_types = folder_mapping[folder]
+    for file_object in get_full_container_list(container_name, prefix=folder):
         if file_object['content_type'] != 'application/directory':
             path = file_object['name'].split('/')
             file_name = path[-1]
@@ -112,7 +109,6 @@ def fetch_diva_folder(container_name, folder, file_types=None):
             else:
                 folder_files.append(file_name)
 
-    mapped_folder, keyfunc = folder_mapping[folder]
     files_to_download = select_last_created_files(sorted(folder_files), key_func=keyfunc)
     dir = os.path.join(DIVA_DIR, mapped_folder)
     os.makedirs(dir, exist_ok=True)
@@ -131,7 +127,7 @@ def fetch_diva_files():
     folders_to_download = ['bag_actueel', 'brk_ascii',
                            'bag_wkt', 'gebieden_ascii', 'gebieden_shp']
     for folder in folders_to_download:
-        fetch_diva_folder(container_name, folder, file_types=['UVA2', 'csv'])
+        fetch_diva_folder(container_name, folder)
 
 
 if __name__ == "__main__":
