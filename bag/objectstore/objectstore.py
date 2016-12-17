@@ -57,18 +57,27 @@ def concat_first_two(lst):
     res = lst.split('_')
     return res[0] + res[1]
 
+
 def get_all(lst):
     return lst
 
+"""
+Originele mappen gebruikt door import
+bag, bag_wkt, beperkingen, bgt_beta, brk, brk_shp
+gebieden, gebieden_shp, kbk10, kbk50, meetbouten
+milieuthemas, nap, parkeren
+"""
 folder_mapping = {
     'bag_actueel': ('bag', split_first, ['UVA2']),
     'bag_sleutel': ('bag', split_first, ['dat']),
-    'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
-    'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
-    'brk_shp': ('brk_shp', get_all, ['dbf','prj','shp','shx']),
     'bag_wkt': ('bag_wkt', split_first, ['UVA2', 'csv']),
+    'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
+    'brk_shp': ('brk_shp', get_all, ['dbf', 'prj', 'shp', 'shx']),
+    'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
+    'gebieden_shp': ('gebieden_shp', get_all, ['dbf', 'prj', 'shp', 'shx']),
     'bag_geometrie': ('bag_wkt', concat_first_two, ['dat']),
-    'gebieden_shp': ('gebieden_shp', get_all, ['dbf','prj','shp','shx']),
+    'wkpb_beperkingen': ('beperkingen', get_all, ['dat']),
+    'nap': ('nap', get_all, ['dat'])
 }
 
 
