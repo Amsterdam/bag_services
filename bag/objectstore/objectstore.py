@@ -61,7 +61,7 @@ def get_all(lst):
     return lst
 
 folder_mapping = {
-    'bag_actueel': ('bag', split_first, ['UVA2', 'csv']),
+    'bag_actueel': ('bag', split_first, ['UVA2']),
     'bag_sleutel': ('bag', split_first, ['dat']),
     'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
     'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
