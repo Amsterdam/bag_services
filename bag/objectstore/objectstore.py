@@ -51,6 +51,13 @@ def split_first(lst):
     "returns the first element after splitting string on '_'"
     return lst.split('_')[0]
 
+def split_second(lst):
+    "returns the first element after splitting string on '_'"
+    return lst.split('_')[1]
+
+
+def split_prefix(lst):
+    return '_'.join(lst.split('_')[:-1])
 
 def concat_first_two(lst):
     "returns the concatenated first and second element after splitting string on '_'"
@@ -71,13 +78,12 @@ folder_mapping = {
     'bag_actueel': ('bag', split_first, ['UVA2']),
     'bag_sleutel': ('bag', split_first, ['dat']),
     'bag_wkt': ('bag_wkt', split_first, ['UVA2', 'csv']),
-    'brk_ascii': ('brk', concat_first_two, ['UVA2', 'csv']),
+    'brk_ascii': ('brk', split_prefix, ['csv']),
     'brk_shp': ('brk_shp', get_all, ['dbf', 'prj', 'shp', 'shx']),
     'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
     'gebieden_shp': ('gebieden_shp', get_all, ['dbf', 'prj', 'shp', 'shx']),
     'bag_geometrie': ('bag_wkt', concat_first_two, ['dat']),
     'wkpb_beperkingen': ('beperkingen', get_all, ['dat']),
-    'nap': ('nap', get_all, ['dat'])
 }
 
 
@@ -96,7 +102,6 @@ def select_last_created_files(seq, key_func=split_first):
 def download_diva_file(container_name, mapped_folder, folder, file_name):
     log.info("Create file {} in {}".format(file_name, mapped_folder))
     newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
-    # import ipdb;ipdb.set_trace()
     newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[1])
     newfile.close()
 
