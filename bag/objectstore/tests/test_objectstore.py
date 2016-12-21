@@ -5,14 +5,28 @@ from unittest import skipIf, skip
 from django.conf import settings
 from django.test import TestCase
 
+from objectstore import objectstore
+
 
 class TestObjectstore(TestCase):
+    def test_split_first(self):
+        self.assertEqual("FRST", objectstore.split_first("FRST_File_Name.typ"))
+
+    def test_split_second(self):
+        self.assertEqual("File", objectstore.split_second("FRST_File_Name.typ"))
+
+    def test_split_prefix(self):
+        self.assertEqual("FRST_File", objectstore.split_prefix("FRST_File_Name.typ"))
+
+    def test_concat_first_two(self):
+        self.assertEqual("FRSTFile", objectstore.concat_first_two("FRST_File_Name.typ"))
+
     @skipIf(settings.NO_INTEGRATION_TEST, 'blabla')
     @skip('Check auth')
     def test_objects(self):
 
         # clean up old cruft
-        stored_objects = self.objectstore._get_full_container_list([])
+        stored_objects = objectstore.get_full_container_list()
         for ob in stored_objects:
             if ob['name'].startswith('bagtest/'):
                 self.objectstore.delete_from_objectstore(ob['name'])

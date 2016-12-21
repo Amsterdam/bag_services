@@ -51,13 +51,16 @@ def split_first(lst):
     "returns the first element after splitting string on '_'"
     return lst.split('_')[0]
 
+
 def split_second(lst):
     "returns the first element after splitting string on '_'"
     return lst.split('_')[1]
 
 
 def split_prefix(lst):
+    "splits of all but the last"
     return '_'.join(lst.split('_')[:-1])
+
 
 def concat_first_two(lst):
     "returns the concatenated first and second element after splitting string on '_'"
@@ -68,16 +71,16 @@ def concat_first_two(lst):
 def get_all(lst):
     return lst
 
+
 """
 Originele mappen gebruikt door import
-bag, bag_wkt, beperkingen, bgt_beta, brk, brk_shp
-gebieden, gebieden_shp, kbk10, kbk50, meetbouten
-milieuthemas, nap, parkeren
+bag, bag_wkt, beperkingen, brk, brk_shp
+gebieden, gebieden_shp, kbk10, kbk50
 """
 folder_mapping = {
     'bag_actueel': ('bag', split_first, ['UVA2']),
     'bag_sleutel': ('bag', split_first, ['dat']),
-    'bag_wkt': ('bag_wkt', split_first, ['UVA2', 'csv']),
+    'bag_wkt': ('bag_wkt', split_first, None),
     'brk_ascii': ('brk', split_prefix, ['csv']),
     'brk_shp': ('brk_shp', get_all, ['dbf', 'prj', 'shp', 'shx']),
     'gebieden_ascii': ('gebieden', split_first, ['UVA2', 'csv']),
@@ -100,6 +103,14 @@ def select_last_created_files(seq, key_func=split_first):
 
 
 def download_diva_file(container_name, mapped_folder, folder, file_name):
+    """
+    Download a diva file
+    :param container_name:
+    :param mapped_folder: the foldername where file is written to
+    :param folder: foldername in O/S
+    :param file_name:
+    :return:
+    """
     log.info("Create file {} in {}".format(file_name, mapped_folder))
     newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
     newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[1])
