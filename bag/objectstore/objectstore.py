@@ -32,6 +32,12 @@ DIVA_DIR = '/app/data'
 
 
 def get_full_container_list(container_name, **kwargs):
+    """
+    Return a listing of filenames in container `container_name`
+    :param container_name:
+    :param kwargs:
+    :return:
+    """
     limit = 10000
     kwargs['limit'] = limit
     page = []
@@ -45,6 +51,29 @@ def get_full_container_list(container_name, **kwargs):
         _, page = conn.get_container(container_name, **kwargs)
         seed.extend(page)
     return seed
+
+
+def put_to_objectstore(container, object_name, object_content, content_type):
+    """
+    Put `object_content` of type `content_type` with name `object_name` in container
+    :param container: container name
+    :param object_name:
+    :param object_content:
+    :param content_type:
+    :return:
+    """
+    return conn.put_object(
+        container, object_name, contents=object_content, content_type=content_type)
+
+
+def delete_from_objectstore(container, object_name):
+    """
+    remove file `object_name` fronm `container`
+    :param container: Container name
+    :param object_name:
+    :return:
+    """
+    return conn.delete_object(container, object_name)
 
 
 def split_first(lst):
