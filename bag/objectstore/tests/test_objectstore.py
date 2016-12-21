@@ -42,7 +42,7 @@ class TestObjectstore(TestCase):
         self.assertEqual('gebieden_shp', objectstore.folder_mapping['gebieden_shp'][0])
         self.assertEqual('beperkingen', objectstore.folder_mapping['wkpb_beperkingen'][0])
 
-    @skipIf(settings.NO_INTEGRATION_TEST, 'blabla')
+    @skipIf(settings.NO_INTEGRATION_TEST, 'Pass integration tests')
     def test_objects(self):
 
         container_name = 'Diva'
@@ -116,7 +116,6 @@ class TestObjectstore(TestCase):
                           'BRK_GHI_20160801.ext',
                           'BRK_JKL_20160901.ext',
                           'BRK_MNO_20161001.ext'], res)
-
 
     def test_select_last_created_files_all(self):
 

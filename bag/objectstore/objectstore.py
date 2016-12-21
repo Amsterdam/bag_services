@@ -1,5 +1,6 @@
 import logging
 import os
+from functools import lru_cache
 
 from swiftclient.client import Connection
 
@@ -10,8 +11,6 @@ log = logging.getLogger(__name__)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("swiftclient").setLevel(logging.WARNING)
-
-assert os.getenv('OS_PASSWORD_BAG')
 
 os_connect = {
     'auth_version': '2.0',
@@ -24,11 +23,16 @@ os_connect = {
         'region_name': 'NL',
     }
 }
-conn = Connection(**os_connect)
 
 # zet in data directory laat diva voor test data.
 # in settings een verschil maken
 DIVA_DIR = '/app/data'
+
+
+@lru_cache(maxsize=None)
+def get_conn():
+    assert os.getenv('OS_PASSWORD_BAG')
+    return Connection(**os_connect)
 
 
 def get_full_container_list(container_name, **kwargs):
@@ -42,13 +46,13 @@ def get_full_container_list(container_name, **kwargs):
     kwargs['limit'] = limit
     page = []
     seed = []
-    _, page = conn.get_container(container_name, **kwargs)
+    _, page = get_conn().get_container(container_name, **kwargs)
     seed.extend(page)
 
     while len(page) == limit:
         # keep getting pages..
         kwargs['marker'] = seed[-1]['name']
-        _, page = conn.get_container(container_name, **kwargs)
+        _, page = get_conn().get_container(container_name, **kwargs)
         seed.extend(page)
     return seed
 
@@ -62,7 +66,7 @@ def put_to_objectstore(container, object_name, object_content, content_type):
     :param content_type:
     :return:
     """
-    return conn.put_object(
+    return get_conn().put_object(
         container, object_name, contents=object_content, content_type=content_type)
 
 
@@ -73,7 +77,7 @@ def delete_from_objectstore(container, object_name):
     :param object_name:
     :return:
     """
-    return conn.delete_object(container, object_name)
+    return get_conn().delete_object(container, object_name)
 
 
 def split_first(lst):
@@ -142,7 +146,7 @@ def download_diva_file(container_name, mapped_folder, folder, file_name):
     """
     log.info("Create file {} in {}".format(file_name, mapped_folder))
     newfile = open('{}/{}/{}'.format(DIVA_DIR, mapped_folder, file_name), 'wb')
-    newfile.write(conn.get_object(container_name, '{}/{}'.format(folder, file_name))[1])
+    newfile.write(get_conn().get_object(container_name, '{}/{}'.format(folder, file_name))[1])
     newfile.close()
 
 
