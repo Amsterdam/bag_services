@@ -16,7 +16,7 @@ os_connect = {
     'auth_version': '2.0',
     'authurl': 'https://identity.stack.cloudvps.com/v2.0',
     'user': 'bag_brk',
-    'key': os.getenv('OS_PASSWORD_BAG', 'insecure'),
+    'key': os.getenv('BAG_OBJECTSTORE_PASSWORD', 'insecure'),
     'tenant_name': 'BGE000081_BAG',
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
@@ -31,7 +31,7 @@ DIVA_DIR = '/app/data'
 
 @lru_cache(maxsize=None)
 def get_conn():
-    assert os.getenv('OS_PASSWORD_BAG')
+    assert os.getenv('BAG_OBJECTSTORE_PASSWORD')
     return Connection(**os_connect)
 
 
