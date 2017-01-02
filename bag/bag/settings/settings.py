@@ -25,7 +25,7 @@ def _get_docker_host():
         return re.match(r'tcp://(.*?):\d+', d_host).group(1)
     return '0.0.0.0'
 
-NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST')
+NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
