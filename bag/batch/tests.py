@@ -16,7 +16,7 @@ class FailingTask(object):
     name = "failing"
 
     def execute(self):
-        raise Exception("Oops")
+        raise Exception()
 
 
 class FailedJob(object):
