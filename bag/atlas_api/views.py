@@ -647,7 +647,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
 
-    [/search/adres/?q=silodam 340](https://api.datapunt.amsterdam.nl/search/adres/?q=silodam 340)
+    [/search/adres/?q=silodam 340](https://api.datapunt.amsterdam.nl/atlas/search/adres/?q=silodam 340)
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -701,7 +701,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     voorbeeld:
 
-    [/search/postcode/?q=1013AW](https://api.datapunt.amsterdam.nl/search/postcode/?q=1013AW)
+    [/search/postcode/?q=1013AW](https://api.datapunt.amsterdam.nl/atlas/search/postcode/?q=1013AW)
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als

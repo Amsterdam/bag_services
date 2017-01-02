@@ -85,7 +85,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -204,8 +203,6 @@ REST_FRAMEWORK = dict(
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
-# CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
 SWAGGER_SETTINGS = {
@@ -247,7 +244,7 @@ OBJECTSTORE = {
     'auth_version': '2.0',
     'authurl': 'https://identity.stack.cloudvps.com/v2.0',
     'user': os.getenv('OBJECTSTORE_USER', 'bag_brk'),
-    'key': os.getenv('OS_PASSWORD', 'insecure'),
+    'key': os.getenv('BAG_OBJECTSTORE_PASSWORD', 'insecure'),
     'tenant_name': 'BGE000081_BAG',
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',

@@ -89,7 +89,7 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
-DIVA_DIR = '/app/diva/'
+DIVA_DIR = '/app/data/'
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -104,8 +104,6 @@ secret_key = os.getenv('DJANGO_SECRET_KEY')
 SECRET_KEY = secret_key if secret_key else SECRET_KEY
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # Generate https links
-
-CSRF_COOKIE_SECURE = True
 
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
@@ -130,12 +128,13 @@ OBJECTSTORE = {
     'auth_version': '2.0',
     'authurl': 'https://identity.stack.cloudvps.com/v2.0',
     'user': os.getenv('OBJECTSTORE_USER', 'bag_brk'),
-    'key': os.getenv('OS_PASSWORD', 'insecure'),
+    'key': os.getenv('BAG_OBJECTSTORE_PASSWORD', 'insecure'),
     'tenant_name': 'BGE000081_BAG',
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
         'region_name': 'NL',
-        'endpoint_type' : 'internalURL'}
+        'endpoint_type': 'internalURL'
+    }
 }
 
 NO_INTEGRATION_TEST = True

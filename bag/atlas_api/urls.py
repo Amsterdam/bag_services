@@ -192,7 +192,6 @@ atlas.register(
     r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead')
 atlas.register(
     r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead')
-
 atlas.register(
     r'typeahead/gebieden', views.TypeAheadGebiedenViewSet, base_name='typeahead')
 ## ##
