@@ -13,8 +13,6 @@ elasticsearch:
   ports:
     - "9200:9200"
     - "9300:9300"
-  #volumes:
-  #  - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
 atlas:
   build: .
@@ -26,3 +24,4 @@ atlas:
   environment:
     DATABASE_NAME: atlas
     DATABASE_PASSWORD: insecure
+    BAG_OBJECTSTORE_PASSWORD: insecure
