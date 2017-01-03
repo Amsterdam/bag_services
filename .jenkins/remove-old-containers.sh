@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-##
+set -u
+set -e
+
 echo "clean up old dockers";
 docker rm $(docker ps -qa);
 echo "clean up completed";
