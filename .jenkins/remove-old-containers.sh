@@ -8,7 +8,7 @@ for container_id in $(docker ps -a --filter status=exited -q);do docker rm $cont
 echo "clean up completed";
 
 echo "clean up old images";
-docker rmi $(docker images -q);
+docker rmi -f $(docker images -q);
 echo "clean up images completed";
 
 echo "clean up old volumes";
