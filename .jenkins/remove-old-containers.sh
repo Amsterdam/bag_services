@@ -4,7 +4,7 @@ set -u
 set -e
 
 echo "clean up old dockers";
-docker rm $(docker ps -qa);
+for container_id in $(docker ps -a --filter status=exited -q);do docker rm $container_id;done
 echo "clean up completed";
 
 echo "clean up old images";
