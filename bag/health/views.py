@@ -36,15 +36,15 @@ def health(request):
             "Elasticsearch connectivity failed",
             content_type="text/plain", status=500)
 
+    # check debug
     if settings.DEBUG:
+        log.exception("Debug mode not allowed in production")
         return HttpResponse(
-            "Bag running in DEBUG MODE",
+            "Debug mode not allowed in production",
             content_type="text/plain", status=500)
 
-    # check wkpd
-
     return HttpResponse(
-        "Connectivity OK", content_type='text/plain', status=200)
+        "Health OK", content_type='text/plain', status=200)
 
 
 def check_data(request):
