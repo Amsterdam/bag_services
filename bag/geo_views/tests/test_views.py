@@ -195,6 +195,9 @@ class ViewsTest(TestCase):
         s = brk_factories.KadastraleSectieFactory.create()
         row = self.get_row('geo_lki_sectie')
         self.assertEqual(row["id"], s.id)
+        self.assertEqual(row["volledige_code"], "{} {}".format(
+                                                    s.kadastrale_gemeente_id,
+                                                    s.sectie))
         self.assertIn("geometrie", row)
         self.assertEqual(row["code"], s.sectie)
 

@@ -268,7 +268,7 @@ FROM brk_kadastralegemeente""",
                 sql="""
 SELECT
     id,
-    id AS volledige_code,
+    CONCAT(kadastrale_gemeente_id, ' ', sectie) AS volledige_code,
     sectie as code,
     geometrie
 FROM brk_kadastralesectie
