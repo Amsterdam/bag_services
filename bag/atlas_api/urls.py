@@ -110,20 +110,36 @@ class WkpbRouter(routers.DefaultRouter):
         return WKPB.as_view()
 
 
-class AtlasRouter(routers.DefaultRouter):
+class TypeAheadRouter(routers.DefaultRouter):
     """
-    Specifieke functionaliteit voor de Atlas API.
+    Specifieke functionaliteit voor de Atlas typeahead API.
     """
 
     def get_api_root_view(self, **kwargs):
         view = super().get_api_root_view(**kwargs)
         cls = view.cls
 
-        class Atlas(cls):
+        class Typeahead(cls):
             pass
 
-        Atlas.__doc__ = self.__doc__
-        return Atlas.as_view()
+        Typeahead.__doc__ = self.__doc__
+        return Typeahead.as_view()
+
+
+class AtlasSearchRouter(routers.DefaultRouter):
+    """
+    Specifieke functionaliteit voor de Atlas search API.
+    """
+
+    def get_api_root_view(self, **kwargs):
+        view = super().get_api_root_view(**kwargs)
+        cls = view.cls
+
+        class Search(cls):
+            pass
+
+        Search.__doc__ = self.__doc__
+        return Search.as_view()
 
 
 bag = BagRouter()
@@ -174,54 +190,62 @@ wkpb.register(r'beperking', datasets.wkpb.views.BeperkingView)
 wkpb.register(r'brondocument', datasets.wkpb.views.BrondocumentView)
 wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 
-atlas = AtlasRouter()
+# ##########
+# Typeahead
+# ###########
+typeahead = TypeAheadRouter()
+
+##
+# Deprecated!! The old all in one typeahead endpoint
+typeahead.register(r'typeahead', views.TypeAheadLegacyViewSet,
+                   base_name='typeahead')
+
+## The new separate endpoints. Look at the typeahead project
+#  for combined typeahead
+typeahead.register(
+    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
+typeahead.register(
+    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
+typeahead.register(
+    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet,
+    base_name='typeahead/meetbouten')
+typeahead.register(
+    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet,
+    base_name='typeahead/gebieden')
+## ##
+
 
 # ##########
 # Typeahead
 # ###########
-
-##
-# Deprecated!! The old all in one typeahead endpoint
-atlas.register(r'typeahead', views.TypeAheadLegacyViewSet, base_name='typeahead')
-
-## The new separate endpoints. Look at the typeahead project
-#  for combined typeahead
-atlas.register(
-    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
-atlas.register(
-    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
-atlas.register(
-    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead/meetbouten')
-atlas.register(
-    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet, base_name='typeahead/gebieden')
-## ##
+bag_search = AtlasSearchRouter()
 
 # Alias voor nummeraanduiding
-atlas.register(
+bag_search.register(
     r'search/adres',
     views.SearchNummeraanduidingViewSet, base_name='search/adres')
-atlas.register(
+bag_search.register(
     r'search/bouwblok',
     views.SearchBouwblokViewSet, base_name='search/bouwblok')
 
-atlas.register(
+bag_search.register(
     r'search/gebied',
     views.SearchGebiedenViewSet, base_name='search/gebied')
 
-atlas.register(
+bag_search.register(
     r'search/kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
-atlas.register(
+bag_search.register(
     r'search/postcode',
     views.SearchPostcodeViewSet, base_name='search/postcode')
-atlas.register(
+bag_search.register(
     r'search/kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
-atlas.register(
+bag_search.register(
     r'search/kadastraalobject',
     views.SearchObjectViewSet, base_name='search/kadastraalobject')
 
-atlas.register(
+bag_search.register(
     r'search/openbareruimte',
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
 
