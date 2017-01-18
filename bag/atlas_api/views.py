@@ -520,10 +520,13 @@ class SearchViewSet(viewsets.ViewSet):
     def normalize_hit(self, hit, request):
         result = OrderedDict()
         result['_links'] = self.get_url(request, hit)
+        if 'order' in hit:
+            del(hit['order'])
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
         self.get_hit_data(result, hit)
+
 
         return result
 

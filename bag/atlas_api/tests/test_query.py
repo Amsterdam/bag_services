@@ -170,9 +170,9 @@ class QueryTest(APITestCase):
         # not due to elk scoring it could happen 228 B, scores better
         # then 228 A
         adres = response.data['results'][0]['adres']
-        self.assertTrue(
-            adres.startswith("Rozenstraat 228")
-        )
+        self.assertTrue(adres.startswith("Rozenstraat 228"))
+        self.assertFalse(expr='order' in response.data['results'][0],
+                         msg='Order data should be stripped from result')
 
     def test_postcode_exact(self):
         response = self.client.get(
