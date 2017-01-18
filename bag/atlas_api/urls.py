@@ -187,13 +187,13 @@ atlas.register(r'typeahead', views.TypeAheadLegacyViewSet, base_name='typeahead'
 ## The new separate endpoints. Look at the typeahead project
 #  for combined typeahead
 atlas.register(
-    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead')
+    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
 atlas.register(
-    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead')
+    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
 atlas.register(
-    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead')
+    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet, base_name='typeahead/meetbouten')
 atlas.register(
-    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet, base_name='typeahead')
+    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet, base_name='typeahead/gebieden')
 ## ##
 
 # Alias voor nummeraanduiding
