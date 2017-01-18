@@ -66,7 +66,8 @@ grouped_url_patterns = {
     ],
 
     'typeahead_and_search_patterns': [
-        url(r'^atlas/', include(atlas_api.urls.typeahead.urls)),
+        url(r'^atlas/typeahead/', include(atlas_api.urls.typeahead.urls)),
+        url(r'^atlas/search/', include(atlas_api.urls.bag_search.urls)),
     ],
 }
 

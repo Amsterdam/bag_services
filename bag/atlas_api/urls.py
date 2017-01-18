@@ -197,20 +197,20 @@ typeahead = TypeAheadRouter()
 
 ##
 # Deprecated!! The old all in one typeahead endpoint
-typeahead.register(r'typeahead', views.TypeAheadLegacyViewSet,
-                   base_name='typeahead')
+# typeahead.register(r'typeahead', views.TypeAheadLegacyViewSet,
+#                    base_name='typeahead')
 
 ## The new separate endpoints. Look at the typeahead project
 #  for combined typeahead
 typeahead.register(
-    r'typeahead/bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
+    r'bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
 typeahead.register(
-    r'typeahead/brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
+    r'brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
 typeahead.register(
-    r'typeahead/meetbouten', views.TypeAheadMeetboutenViewSet,
+    r'meetbouten', views.TypeAheadMeetboutenViewSet,
     base_name='typeahead/meetbouten')
 typeahead.register(
-    r'typeahead/gebieden', views.TypeAheadGebiedenViewSet,
+    r'gebieden', views.TypeAheadGebiedenViewSet,
     base_name='typeahead/gebieden')
 ## ##
 
@@ -222,32 +222,30 @@ bag_search = AtlasSearchRouter()
 
 # Alias voor nummeraanduiding
 bag_search.register(
-    r'search/adres',
+    r'adres',
     views.SearchNummeraanduidingViewSet, base_name='search/adres')
 bag_search.register(
-    r'search/bouwblok',
+    r'bouwblok',
     views.SearchBouwblokViewSet, base_name='search/bouwblok')
-
 bag_search.register(
-    r'search/gebied',
+    r'gebied',
     views.SearchGebiedenViewSet, base_name='search/gebied')
-
 bag_search.register(
-    r'search/kadastraalsubject',
+    r'kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
 bag_search.register(
-    r'search/postcode',
+    r'postcode',
     views.SearchPostcodeViewSet, base_name='search/postcode')
 bag_search.register(
-    r'search/kadastraalsubject',
+    r'kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
 bag_search.register(
-    r'search/kadastraalobject',
+    r'kadastraalobject',
     views.SearchObjectViewSet, base_name='search/kadastraalobject')
-
 bag_search.register(
-    r'search/openbareruimte',
+    r'openbareruimte',
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
+
 
 search = SearchRouter()
 
