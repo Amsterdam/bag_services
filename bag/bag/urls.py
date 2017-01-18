@@ -65,8 +65,11 @@ grouped_url_patterns = {
         url(r'^search/', include(atlas_api.urls.search.urls)),
     ],
 
-    'typeahead_and_search_patterns': [
+    'typeahead_patterns': [
         url(r'^atlas/typeahead/', include(atlas_api.urls.typeahead.urls)),
+    ],
+
+    'search_patterns': [
         url(r'^atlas/search/', include(atlas_api.urls.bag_search.urls)),
     ],
 }
@@ -113,7 +116,7 @@ def wkpb_schema_view(request):
         title='WKPB API',
         patterns=grouped_url_patterns['beperkingen_patterns']
     )
-    return response.Response(generator.get_schema(request=request)) @ api_view()
+    return response.Response(generator.get_schema(request=request))
 
 
 @api_view()
@@ -127,11 +130,35 @@ def postcode_schema_view(request):
     return response.Response(generator.get_schema(request=request))
 
 
+@api_view()
+@renderer_classes(
+    [SwaggerUIRenderer, OpenAPIRenderer, renderers.CoreJSONRenderer])
+def typeahead_schema_view(request):
+    generator = schemas.SchemaGenerator(
+        title='Typeahead APIs',
+        patterns=grouped_url_patterns['typeahead_patterns']
+    )
+    return response.Response(generator.get_schema(request=request))
+
+
+@api_view()
+@renderer_classes(
+    [SwaggerUIRenderer, OpenAPIRenderer, renderers.CoreJSONRenderer])
+def search_schema_view(request):
+    generator = schemas.SchemaGenerator(
+        title='Search APIs',
+        patterns=grouped_url_patterns['search_patterns']
+    )
+    return response.Response(generator.get_schema(request=request))
+
+
 urlpatterns = [
                   url('^bag/docs/api-docs/bag/$', bag_schema_view),
                   url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
                   url('^bag/docs/api-docs/brk/$', brk_schema_view),
                   url('^bag/docs/api-docs/wkpb/$', wkpb_schema_view),
-                  url('^bag/docs/api-docs/search/$', postcode_schema_view),
+                  url('^bag/docs/api-docs/pcsearch/$', postcode_schema_view),
+                  url('^bag/docs/api-docs/search/$', search_schema_view),
+                  url('^bag/docs/api-docs/typeahead/$', typeahead_schema_view),
               ] + [url for pattern_list in grouped_url_patterns.values()
                    for url in pattern_list]
