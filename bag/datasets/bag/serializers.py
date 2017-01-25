@@ -528,6 +528,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     woonplaats = Woonplaats()
     bouwblok = Bouwblok()
     _geometrie = GeometryField()
+    afstand = rest.DistanceGeometryField()
 
     nummeraanduidingidentificatie = serializers.CharField(
         source='landelijk_id')
@@ -570,6 +571,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'woonplaats',
             'bouwblok',
             '_geometrie',
+            'afstand',
         )
 
 

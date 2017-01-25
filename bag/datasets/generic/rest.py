@@ -1,11 +1,10 @@
 # Python
 from collections import OrderedDict
 import json
-
 # Packages
+from django.contrib.gis.measure import D
 from rest_framework import renderers, serializers
 from rest_framework import pagination, response, viewsets, filters
-
 from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
 from rest_framework_extensions.mixins import DetailSerializerMixin
@@ -165,3 +164,20 @@ class MultipleGeometryField(serializers.Field):
         if value:
             res = json.loads(value.geojson)
         return res
+
+
+class DistanceGeometryField(serializers.Field):
+
+    read_only = True
+
+    def get_attribute(self, obj):
+        # If there is no distance returning None
+        if hasattr(obj, 'afstand'):
+            return obj.afstand
+        return None
+
+    def to_representation(self, value):
+        try:
+            return value.m
+        except AttributeError:
+            return None
