@@ -178,9 +178,10 @@ class NummeraanduidingFilter(FilterSet):
     verblijfsobject = filters.CharFilter()
     ligplaats = filters.CharFilter()
     standplaats = filters.CharFilter()
-    postcode = filters.CharFilter()
+    postcode = filters.CharFilter(method="postcode_filter")
     huisnummer = filters.CharFilter()
     huisletter = filters.CharFilter()
+    openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
 
     pand = filters.CharFilter(method="pand_filter")
 
@@ -214,6 +215,24 @@ class NummeraanduidingFilter(FilterSet):
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
 
         return queryset.filter(landelijk_id__in=ids)
+
+    def postcode_filter(self, queryset, filter_name, value):
+        """
+        Support for incomplete postcode
+        """
+        if len(value) < 6:
+            return queryset.filter(postcode__istartswith=value)
+        else:
+            return queryset.filter(postcode__iexact=value)
+
+    def openbare_ruimte_filter(self, queryset, filter_name, value):
+        """
+        Support for either openbareruimte id or name
+        """
+        if value.isdigit():
+            return queryset.filter(openbare_ruimte_id=value)
+        else:
+            return queryset.filter(openbare_ruimte__naam__icontains=value)
 
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
