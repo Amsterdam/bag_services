@@ -1,3 +1,4 @@
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.gis.measure import D
 from django.db.models import Prefetch, Q
@@ -242,11 +243,13 @@ class NummeraanduidingFilter(FilterSet):
             point = Point(x, y, srid=28992)
         else:
             point = Point(x, y, srid=4326).transform(28992, clone=True)
-        return queryset.filter(
-            Q(verblijfsobject__geometrie__dwithin=(point, D(m=radius))) |
-            Q(ligplaats__geometrie__dwithin=(point, D(m=radius))) |
-            Q(standplaats__geometrie__dwithin=(point, D(m=radius)))
-        )
+        # Creating one big queryset
+        verblijfsobjecten = queryset.filter(verblijfsobject__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('verblijfsobject__geometrie', point))
+        ligplaatsen = queryset.filter(ligplaats__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('ligplaats__geometrie', point))
+        standplaatsen = queryset.filter(standplaats__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('standplaats__geometrie', point))
+        results = verblijfsobjecten | ligplaatsen | standplaatsen
+
+        return results.order_by('afstand')
 
     def pand_filter(self, queryset, filter_name, value):
         """
@@ -298,6 +301,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
     filter_class = NummeraanduidingFilter
+    detailed_keyword = 'detailed'
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -310,6 +314,13 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
         """
 
         return super().retrieve(
+            request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        # Checking if a detailed response is required
+        if (request.GET.get(self.detailed_keyword, False)):
+            self.serializer_class = self.serializer_detail_class
+        return super().list(
             request, *args, **kwargs)
 
     def get_object(self):
