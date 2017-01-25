@@ -232,8 +232,7 @@ class NummeraanduidingFilter(FilterSet):
         try:
             x, y, radius = value.split(',')
         except ValueError:
-            print ('Value Error!', value)
-            return queryset
+            return queryset.none()
         # Converting , to . and then to float
         x = float(x)
         y = float(y)

@@ -167,17 +167,28 @@ class MultipleGeometryField(serializers.Field):
 
 
 class DistanceGeometryField(serializers.Field):
-
+    """
+    A gemoetry field that represents distance. It expects the
+    value to be of type Distance
+    https://docs.djangoproject.com/en/1.10/ref/contrib/gis/measure/#django.contrib.gis.measure.Distance
+    """
     read_only = True
+    source = 'afstand'
+    unit = 'm'
+
+    def __init__(self, *args, **kwargs):
+        """
+        Allow overwriting of the unit
+        """
+        self.unit = kwargs.get('unit', self.unit)
+        super(DistanceGeometryField, self).__init__(*args, **kwargs)
 
     def get_attribute(self, obj):
         # If there is no distance returning None
-        if hasattr(obj, 'afstand'):
-            return obj.afstand
-        return None
+        return getattr(obj, self.source, None)
 
     def to_representation(self, value):
         try:
-            return value.m
+            return getattr(value, 'm')
         except AttributeError:
             return None

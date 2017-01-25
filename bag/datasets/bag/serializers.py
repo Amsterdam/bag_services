@@ -535,6 +535,21 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
 
     sleutelverzendend = serializers.CharField(source='id')
 
+    def to_representation(self, instance):
+            """
+            Removes the afstand field if it is None
+            """
+            representation = super(NummeraanduidingDetail, self).to_representation(instance)
+            if representation['afstand'] is None:
+                try:
+                    representation.pop('afstand')
+                except KeyError:
+                    # Ignore missing key -- a child serializer could inherit a "to_representation" method
+                    # from its parent serializer that applies to a field not present on
+                    # the child serializer.
+                    pass
+            return representation
+
     class Meta:
         model = models.Nummeraanduiding
         fields = (
