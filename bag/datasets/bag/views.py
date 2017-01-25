@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.gis.measure import D
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
@@ -182,6 +184,7 @@ class NummeraanduidingFilter(FilterSet):
     huisnummer = filters.CharFilter()
     huisletter = filters.CharFilter()
     openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
+    locatie = filters.CharFilter(method="locatie_filter")
 
     pand = filters.CharFilter(method="pand_filter")
 
@@ -198,23 +201,6 @@ class NummeraanduidingFilter(FilterSet):
             'pand',
             'kadastraalobject',
         ]
-
-    def pand_filter(self, queryset, filter_name, value):
-        """
-        """
-        pand = models.Pand.objects.prefetch_related('verblijfsobjecten').get(landelijk_id=value)
-        ids = pand.verblijfsobjecten.values_list(
-            'adressen__landelijk_id', flat=True)
-        return queryset.filter(landelijk_id__in=ids)
-
-    def kot_filter(self, queryset, filter_name, value):
-
-        vbos = models.Verblijfsobject.objects.select_related('adressen').filter(
-            kadastrale_objecten__id=value)
-
-        ids = vbos.values_list('adressen__landelijk_id', flat=True)
-
-        return queryset.filter(landelijk_id__in=ids)
 
     def postcode_filter(self, queryset, filter_name, value):
         """
@@ -233,6 +219,47 @@ class NummeraanduidingFilter(FilterSet):
             return queryset.filter(openbare_ruimte_id=value)
         else:
             return queryset.filter(openbare_ruimte__naam__icontains=value)
+
+    def locatie_filter(self, queryset, filter_name, value):
+        """
+        Filter based on the geolocation. This filter actually
+        expect 3 numerical values: x, y and radius
+        The value given is broken up by ';' and coverterd
+        to the value tuple
+        """
+        srid = 4326
+        try:
+            x, y, radius = value.split(',')
+        except ValueError:
+            print ('Value Error!', value)
+            return queryset
+        # Converting , to . and then to float
+        x = float(x)
+        y = float(y)
+        radius = int(radius)
+        # Checking if the given coords are in RD, otherwise converting
+        if y > 10:
+            point = Point(x, y, srid=28992)
+        else:
+            point = Point(x, y, srid=4326).transform(28992, clone=True)
+        return queryset.filter(verblijfsobject__geometrie__dwithin=(point, D(m=radius)))
+
+    def pand_filter(self, queryset, filter_name, value):
+        """
+        """
+        pand = models.Pand.objects.prefetch_related('verblijfsobjecten').get(landelijk_id=value)
+        ids = pand.verblijfsobjecten.values_list(
+            'adressen__landelijk_id', flat=True)
+        return queryset.filter(landelijk_id__in=ids)
+
+    def kot_filter(self, queryset, filter_name, value):
+
+        vbos = models.Verblijfsobject.objects.select_related('adressen').filter(
+            kadastrale_objecten__id=value)
+
+        ids = vbos.values_list('adressen__landelijk_id', flat=True)
+
+        return queryset.filter(landelijk_id__in=ids)
 
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
