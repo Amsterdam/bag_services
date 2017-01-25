@@ -253,6 +253,7 @@ class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'naam',
+            'vollcode',
         )
 
 
