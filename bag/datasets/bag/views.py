@@ -1,6 +1,6 @@
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.contrib.gis.measure import D
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
 from django_filters.rest_framework.filterset import FilterSet
@@ -242,7 +242,11 @@ class NummeraanduidingFilter(FilterSet):
             point = Point(x, y, srid=28992)
         else:
             point = Point(x, y, srid=4326).transform(28992, clone=True)
-        return queryset.filter(verblijfsobject__geometrie__dwithin=(point, D(m=radius)))
+        return queryset.filter(
+            Q(verblijfsobject__geometrie__dwithin=(point, D(m=radius))) |
+            Q(ligplaats__geometrie__dwithin=(point, D(m=radius))) |
+            Q(standplaats__geometrie__dwithin=(point, D(m=radius)))
+        )
 
     def pand_filter(self, queryset, filter_name, value):
         """
