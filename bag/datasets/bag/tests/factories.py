@@ -1,9 +1,11 @@
+# Python
 import string
-
+# Packages
+from django.contrib.gis.geos import Point
 import factory
 import faker
 from factory import fuzzy
-
+# Project
 from .. import models
 
 f = faker.Factory.create(locale='nl_NL')
@@ -157,6 +159,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
     status = factory.SubFactory(StatusFactory)
+    geometrie = Point(1000, 1000, srid=28992)  # Defaulting to 1000, 1000
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):
