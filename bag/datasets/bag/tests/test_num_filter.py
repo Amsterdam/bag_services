@@ -1,17 +1,15 @@
 # Python
 import logging
-# Packages
+
 from rest_framework.test import APITestCase
-# Project
+
 from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
-
 
 LOG = logging.getLogger(__name__)
 
 
 class Numfilter(APITestCase):
-
     def setUp(self):
         self.vbo = bag_factories.VerblijfsobjectFactory.create()
         self.na = bag_factories.NummeraanduidingFactory.create()
@@ -23,13 +21,12 @@ class Numfilter(APITestCase):
 
         self.kot = brk_factories.KadastraalObjectFactory()
 
-        self.kot_vbo = (
-            brk_factories
-            .KadastraalObjectVerblijfsobjectRelatieFactory
-            .create(
-                kadastraal_object=self.kot,
-                verblijfsobject=self.vbo
-            ))
+        self.kot_vbo = \
+            (brk_factories.KadastraalObjectVerblijfsobjectRelatieFactory
+            .create(kadastraal_object=self.kot,
+                    verblijfsobject=self.vbo
+                    )
+             )
 
         # add adres to vbo
         self.vbo.adressen.add(self.na)
