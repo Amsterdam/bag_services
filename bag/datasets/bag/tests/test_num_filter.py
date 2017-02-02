@@ -1,6 +1,7 @@
 # Python
 import logging
 # Packages
+from django.contrib.gis.geos import Point
 from rest_framework.test import APITestCase
 # Project
 from datasets.bag.tests import factories as bag_factories
@@ -13,10 +14,10 @@ LOG = logging.getLogger(__name__)
 class Numfilter(APITestCase):
 
     def setUp(self):
-        self.vbo = bag_factories.VerblijfsobjectFactory.create()
+        self.vbo = bag_factories.VerblijfsobjectFactory.create(geometrie=Point(1000, 1000, srid=28992))
         self.na = bag_factories.NummeraanduidingFactory.create()
         self.pand = bag_factories.PandFactory.create()
-
+        self.bad_na = bag_factories.NummeraanduidingFactory.create(postcode='2000ZZ')
         self.pand_vbo = bag_factories.VerblijfsobjectPandRelatie.create(
             pand=self.pand,
             verblijfsobject=self.vbo)
@@ -75,6 +76,9 @@ class Numfilter(APITestCase):
         self.assertEquals(
             self.na.landelijk_id,
             data['results'][0]['landelijk_id'])
+        self.assertEquals(
+            len(data['results']), 1
+        )
 
     def test_openbare_ruimte_filter(self):
         url = f'/bag/nummeraanduiding/?openbare_ruimte={self.na.openbare_ruimte.naam[:5]}'
