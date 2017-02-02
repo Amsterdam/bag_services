@@ -2,7 +2,6 @@
 from collections import OrderedDict
 import json
 # Packages
-from django.contrib.gis.measure import D
 from rest_framework import renderers, serializers
 from rest_framework import pagination, response, viewsets, filters
 from rest_framework.reverse import reverse
@@ -168,7 +167,7 @@ class MultipleGeometryField(serializers.Field):
 
 class DistanceGeometryField(serializers.Field):
     """
-    A gemoetry field that represents distance. It expects the
+    A geometry field that represents distance. It expects the
     value to be of type Distance
     https://docs.djangoproject.com/en/1.10/ref/contrib/gis/measure/#django.contrib.gis.measure.Distance
     """

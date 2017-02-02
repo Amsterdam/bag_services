@@ -225,7 +225,7 @@ class NummeraanduidingFilter(FilterSet):
         """
         Filter based on the geolocation. This filter actually
         expect 3 numerical values: x, y and radius
-        The value given is broken up by ';' and coverterd
+        The value given is broken up by ',' and coverterd
         to the value tuple
         """
         srid = 4326
@@ -243,9 +243,15 @@ class NummeraanduidingFilter(FilterSet):
         else:
             point = Point(x, y, srid=4326).transform(28992, clone=True)
         # Creating one big queryset
-        verblijfsobjecten = queryset.filter(verblijfsobject__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('verblijfsobject__geometrie', point))
-        ligplaatsen = queryset.filter(ligplaats__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('ligplaats__geometrie', point))
-        standplaatsen = queryset.filter(standplaats__geometrie__dwithin=(point, D(m=radius))).annotate(afstand=Distance('standplaats__geometrie', point))
+        verblijfsobjecten = queryset.filter(
+                verblijfsobject__geometrie__dwithin=(point, D(m=radius))
+            ).annotate(afstand=Distance('verblijfsobject__geometrie', point))
+        ligplaatsen = queryset.filter(
+                ligplaats__geometrie__dwithin=(point, D(m=radius))
+            ).annotate(afstand=Distance('ligplaats__geometrie', point))
+        standplaatsen = queryset.filter(
+                standplaats__geometrie__dwithin=(point, D(m=radius))
+            ).annotate(afstand=Distance('standplaats__geometrie', point))
         results = verblijfsobjecten | ligplaatsen | standplaatsen
 
         return results.order_by('afstand')
@@ -317,7 +323,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
 
     def list(self, request, *args, **kwargs):
         # Checking if a detailed response is required
-        if (request.GET.get(self.detailed_keyword, False)):
+        if request.GET.get(self.detailed_keyword, False):
             self.serializer_class = self.serializer_detail_class
         return super().list(
             request, *args, **kwargs)
