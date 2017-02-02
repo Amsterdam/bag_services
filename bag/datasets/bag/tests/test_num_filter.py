@@ -12,10 +12,10 @@ LOG = logging.getLogger(__name__)
 
 class Numfilter(APITestCase):
     def setUp(self):
-        self.vbo = bag_factories.VerblijfsobjectFactory.create(geometrie=Point(1000, 1000, srid=28992))
         self.na = bag_factories.NummeraanduidingFactory.create()
+
+        self.vbo = bag_factories.VerblijfsobjectFactory.create(geometrie=Point(1000, 1000, srid=28992))
         self.pand = bag_factories.PandFactory.create()
-        self.bad_na = bag_factories.NummeraanduidingFactory.create(postcode='2000ZZ')
         self.pand_vbo = bag_factories.VerblijfsobjectPandRelatie.create(
             pand=self.pand,
             verblijfsobject=self.vbo)
@@ -32,8 +32,11 @@ class Numfilter(APITestCase):
         # add adres to vbo
         self.vbo.adressen.add(self.na)
 
+        # Creating an extra Nummeraanduiding. this should be expanded to a full item
+        self.bad_na = bag_factories.NummeraanduidingFactory.create(postcode='2000ZZ')
+
     def test_kot_filter(self):
-        url = f'/bag/nummeraanduiding/?kadastraal_object={self.kot.id}'
+        url = f'/bag/nummeraanduiding/?kadastraalobject={self.kot.id}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)

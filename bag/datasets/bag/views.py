@@ -265,12 +265,10 @@ class NummeraanduidingFilter(FilterSet):
         return queryset.filter(landelijk_id__in=ids)
 
     def kot_filter(self, queryset, filter_name, value):
-
+        """Filter based on the kadastral object"""
         vbos = models.Verblijfsobject.objects.select_related('adressen').filter(
             kadastrale_objecten__id=value)
-
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
-
         return queryset.filter(landelijk_id__in=ids)
 
 
