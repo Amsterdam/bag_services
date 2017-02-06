@@ -24,7 +24,7 @@ echo "Starting Elastic importers"
 dc up -d importer_el1 importer_el2 importer_el3
 
 echo "Waiting for importers to complete"
-import_status=$(docker wait jenkins_importer_el1_1 jenkins_importer_el2_1 jenkins_importer_el3_1)
+import_status=$(docker wait jenkinsimport_importer_el1_1 jenkinsimport_importer_el2_1 jenkinsimport_importer_el3_1)
 [[ "$import_status" == *"1"* ]] && echo "Elastic Import Error. 1 or more workers failed" && exit 1
 
 echo "Running backups"
