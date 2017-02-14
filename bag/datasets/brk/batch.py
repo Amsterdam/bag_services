@@ -593,7 +593,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         self.vbo.clear()
 
     def process(self):
-        rels = uva2.process_csv(self.path, "BRK_brk-bag", self.process_row)
+        rels = uva2.process_csv(self.path, "BRK_BRK-BAG", self.process_row)
         models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(rels, batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
