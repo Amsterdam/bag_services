@@ -898,7 +898,6 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
             self.id = '{pid}_{vid}'.format(pid=self.pand_id,
                                            vid=self.verblijfsobject_id)
 
-
     def __str__(self):
         return "Pand-Verblijfsobject({}-{})".format(
             self.pand_id, self.verblijfsobject_id)
