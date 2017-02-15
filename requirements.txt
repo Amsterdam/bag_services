@@ -42,5 +42,4 @@ urllib3==1.19.1
 python-keystoneclient==3.8.0
 
 PyJWT==1.4.2
-datapunt-authorization-levels==0.1.0
 datapunt-authorization-django==0.1.0

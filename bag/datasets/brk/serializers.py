@@ -1,4 +1,4 @@
-import authorization_levels
+from authorization_django import levels as authorization_levels
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse

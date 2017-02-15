@@ -90,7 +90,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'tokenmiddleware.authorization_middleware',
+    'authorization_django.authorization_middleware',
 )
 
 if DEBUG:
