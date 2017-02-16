@@ -892,7 +892,8 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Verblijfsobject-Pand relaties"
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(VerblijfsobjectPandRelatie, self).__init__(*args, **kwargs)
+
         if self.pand_id and self.verblijfsobject_id:
             self.id = '{pid}_{vid}'.format(pid=self.pand_id,
                                            vid=self.verblijfsobject_id)
