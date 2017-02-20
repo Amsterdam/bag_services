@@ -62,8 +62,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
 
-    'oauth2_provider',
-
     'batch',
     'atlas',
 
@@ -85,8 +83,6 @@ INSTALLED_APPS = (
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -181,9 +177,7 @@ REST_FRAMEWORK = dict(
     PAGE_SIZE=25,
     MAX_PAGINATE_BY=100,
     DEFAULT_AUTHENTICATION_CLASSES=(
-        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
     DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
     DEFAULT_PARSER_CLASSES=(
@@ -200,7 +194,7 @@ REST_FRAMEWORK = dict(
 
 # Security
 
-JWT_SECRET_KEY = os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret')
+JWT_SECRET_KEY = os.getenv('JWT_SHARED_SECRET_KEY')
 JWT_ALGORITHM = 'HS256'
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -270,7 +264,7 @@ JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
         'rest_framework_jwt.utils.jwt_response_payload_handler',
 
-    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret'),
+    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY'),
     'JWT_ALGORITHM': 'HS256',
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
