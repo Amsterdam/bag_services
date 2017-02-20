@@ -1,12 +1,12 @@
 import time
-from unittest import mock
 
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from authorization_django import levels as authorization_levels
-from django.test import override_settings
+from django.conf import settings
 import jwt
+from rest_framework_jwt.settings import api_settings
 from rest_framework.test import APITestCase
 
 from .. import models
@@ -16,7 +16,6 @@ from . import factories
 class SensitiveDetailsJwtTestCase(APITestCase):
 
     def setUp(self):
-        from django.conf import settings
         # OLD STYLE AUTH
         permission = Permission.objects.get(
             content_type=ContentType.objects.get_for_model(models.KadastraalSubject),
@@ -35,11 +34,11 @@ class SensitiveDetailsJwtTestCase(APITestCase):
         now = int(time.time())
 
         token_default = jwt.encode(
-            {'authz': authorization_levels.LEVEL_DEFAULT, 'iat': now, 'exp': now+600, 'username': 'anonymous'}, key, algorithm=algorithm)
+            {'authz': authorization_levels.LEVEL_DEFAULT, 'iat': now, 'exp': now+600}, key, algorithm=algorithm)
         token_employee = jwt.encode(
-            {'authz': authorization_levels.LEVEL_EMPLOYEE, 'iat': now, 'exp': now+600, 'username': 'anonymous'}, key, algorithm=algorithm)
+            {'authz': authorization_levels.LEVEL_EMPLOYEE, 'iat': now, 'exp': now+600}, key, algorithm=algorithm)
         token_employee_plus = jwt.encode(
-            {'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS, 'iat': now, 'exp': now+600, 'username': 'anonymous'}, key, algorithm=algorithm)
+            {'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS, 'iat': now, 'exp': now+600}, key, algorithm=algorithm)
 
         self.token_default = str(token_default, 'utf-8')
         self.token_employee = str(token_employee, 'utf-8')
@@ -60,7 +59,6 @@ class SensitiveDetailsJwtTestCase(APITestCase):
         )
 
     def get_token(self, user):
-        from rest_framework_jwt.settings import api_settings
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
