@@ -207,9 +207,6 @@ typeahead.register(
 typeahead.register(
     r'brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
 typeahead.register(
-    r'meetbouten', views.TypeAheadMeetboutenViewSet,
-    base_name='typeahead/meetbouten')
-typeahead.register(
     r'gebieden', views.TypeAheadGebiedenViewSet,
     base_name='typeahead/gebieden')
 ## ##

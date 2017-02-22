@@ -289,7 +289,7 @@ DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
-    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR, "\n")
 
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

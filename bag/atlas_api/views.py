@@ -356,14 +356,6 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
 
 
-class TypeAheadMeetboutenViewSet(TypeaheadViewSet):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def list(self, request):
-        return self._abstr_list(request, {'meetbouten'})
-
-
 class TypeAheadBrkViewSet(TypeaheadViewSet):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
