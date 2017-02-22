@@ -32,8 +32,6 @@ grouped_url_patterns = {
         url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(),
             name='job-detail'),
         url(r'^admin/', include(admin.site.urls)),
-        url(r'^oauth/',
-            include('oauth2_provider.urls', namespace='oauth2_provider')),
         url(r'^status/', include('health.urls', namespace='health')),
     ],
 

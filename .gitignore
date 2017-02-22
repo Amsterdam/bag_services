@@ -1,13 +1,21 @@
+# Python bytecode
 *.pyc
-*.pyo
+**/__pycache__
+
+# Pytest
+.cache
+
+# IntelliJ
 .idea
+
+# Other..?
 *.iml
 batch.log
-.env
-**/__pycache__
 .jenkins/backups/
 reports/
 .DS_Store
 
+# PyDev (Eclipse)
 .project
 .pydevproject
+.settings

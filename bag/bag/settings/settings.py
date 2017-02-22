@@ -62,8 +62,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
 
-    'oauth2_provider',
-
     'batch',
     'atlas',
 
@@ -82,19 +80,17 @@ INSTALLED_APPS = (
 )
 
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'authorization_django.authorization_middleware',
 )
 
 if DEBUG:
-    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
 ROOT_URLCONF = 'bag.urls'
 
@@ -182,9 +178,6 @@ REST_FRAMEWORK = dict(
     MAX_PAGINATE_BY=100,
     DEFAULT_AUTHENTICATION_CLASSES=(
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ),
     DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
     DEFAULT_PARSER_CLASSES=(
@@ -196,10 +189,13 @@ REST_FRAMEWORK = dict(
     ),
     DEFAULT_FILTER_BACKENDS=(
         'django_filters.rest_framework.DjangoFilterBackend',
-    )
+    ),
 )
 
 # Security
+
+JWT_SECRET_KEY = os.getenv('JWT_SHARED_SECRET_KEY')
+JWT_ALGORITHM = 'HS256'
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -268,7 +264,7 @@ JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER':
         'rest_framework_jwt.utils.jwt_response_payload_handler',
 
-    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret'),
+    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY'),
     'JWT_ALGORITHM': 'HS256',
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
@@ -293,7 +289,7 @@ DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
-    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR)
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR, "\n")
 
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check

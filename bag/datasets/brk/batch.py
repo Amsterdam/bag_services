@@ -564,15 +564,17 @@ class ImportAantekeningTask(batch.BasicTask):
 
         return atk_id, models.Aantekening(
                 pk=atk_id,
-                aard_aantekening=self.get_aard_aantekening(row['ATG_AARDAANTEKENING_CODE'],
-                                                           row['ATG_AARDAANTEKENING_OMS']),
+                aard_aantekening=self.get_aard_aantekening(
+                    row['ATG_AARDAANTEKENING_CODE'],
+                    row['ATG_AARDAANTEKENING_OMS']),
                 omschrijving=row['ATG_OMSCHRIJVING'],
                 kadastraal_object_id=kot_id,
                 opgelegd_door_id=kst_id,
         )
 
     def get_aard_aantekening(self, code, omschrijving):
-        return _get_related(code, omschrijving, self.aard_aantekening, models.AardAantekening)
+        return _get_related(code, omschrijving,
+                            self.aard_aantekening, models.AardAantekening)
 
 
 class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
@@ -585,16 +587,19 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         self.vbo = set()
 
     def before(self):
-        self.kot = set(models.KadastraalObject.objects.values_list("id", flat=True))
-        self.vbo = set(bag.Verblijfsobject.objects.values_list("id", flat=True))
+        self.kot = set(
+            models.KadastraalObject.objects.values_list("id", flat=True))
+        self.vbo = set(
+            bag.Verblijfsobject.objects.values_list("id", flat=True))
 
     def after(self):
         self.kot.clear()
         self.vbo.clear()
 
     def process(self):
-        rels = uva2.process_csv(self.path, "BRK_brk-bag", self.process_row)
-        models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(rels, batch_size=database.BATCH_SIZE)
+        rels = uva2.process_csv(self.path, "BRK_BRK_BAG", self.process_row)
+        models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(
+            rels, batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
         kot_id = row['BRK_KOT_ID']

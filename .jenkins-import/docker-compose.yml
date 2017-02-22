@@ -11,19 +11,6 @@ elasticsearch:
   user: root
   command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
-tests:
-  build: ..
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
-    DATABASE_PASSWORD: insecure
-    BAG_OBJECTSTORE_PASSWORD:
-    METADATA_URL: ""
-  command: bash -c "/app/docker-wait.sh && python manage.py test"
-
 importer:
   image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
   links:
@@ -48,8 +35,6 @@ importer_el1:
   links:
     - database:database
     - elasticsearch:elasticsearch
-  volumes:
-    - /mnt/data/diva_import:/app/diva
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
@@ -64,8 +49,6 @@ importer_el2:
   links:
     - database:database
     - elasticsearch:elasticsearch
-  volumes:
-    - /mnt/data/diva_import:/app/diva
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
@@ -79,8 +62,6 @@ importer_el3:
   links:
     - database:database
     - elasticsearch:elasticsearch
-  volumes:
-    - /mnt/data/diva_import:/app/diva
   environment:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
@@ -94,7 +75,7 @@ db-backup:
   links:
     - database:db
   volumes:
-    - /mnt/dumps:/tmp/backups
+    - ./backups:/tmp/backups
   command: >
     bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
             && chmod 600 ~/.pgpass \
@@ -109,7 +90,7 @@ db-backup:
                         -T oauth2*  \
                         -U atlas \
                         -h db -p 5432 \
-                        atlas > /tmp/backups/bag.dump"
+                        atlas > /tmp/backups/database.dump"
 
 el-backup:
   image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
@@ -122,10 +103,3 @@ el-backup:
     bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
             && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' \
             && chown -R 997:997 /tmp/backups"
-
-web-static:
-  build: ..
-  user: root
-  volumes:
-    - /mnt/data/static/:/static/
-  command: python manage.py collectstatic --noinput
