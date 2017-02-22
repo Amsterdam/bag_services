@@ -46,7 +46,7 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 ],
             },
         },
-        indexes=[BAG, NUMMERAANDUIDING],
+        indexes=[NUMMERAANDUIDING],
         sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
     )
 
