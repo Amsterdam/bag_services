@@ -13,25 +13,6 @@ class QueryAnalyzerTest(TestCase):
             analyzed_query = QueryAnalyzer(query)
             self.assertFalse(method(analyzed_query), "{} should be {}".format(query, name))
 
-    def test_is_meetbout_prefix(self):
-        self._check(QueryAnalyzer.is_meetbout_prefix,
-                    "meetbout prefix",
-                    true_cases=[
-                        '10234',
-                        '102345',
-                        '1023456',
-                        '10234568',
-                    ],
-                    false_cases=[
-                        '10',
-                        '101',
-                        '1014',
-                        '101S2334',
-                        '1O122334',
-                        '102A4568 AKJS',
-                        '102A4568 AKJS',
-                    ])
-
     def test_is_kadastraal_object(self):
         self._check(QueryAnalyzer.is_kadastraal_object_prefix,
                     "kadastraal object prefix",

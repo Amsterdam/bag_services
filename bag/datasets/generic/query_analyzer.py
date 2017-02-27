@@ -116,16 +116,6 @@ class QueryAnalyzer(object):
                 self._huisnummer_index = i + 1
                 break
 
-    def is_meetbout_prefix(self) -> bool:
-        """
-        Returns True if this query could refer to a meetbout.
-        """
-        if self._token_count != 1:
-            return False
-
-        meetbout = self._tokens[0]
-        return meetbout.isdigit() and (5 <= len(meetbout) <= 8)
-
     def is_kadastraal_object_prefix(self) -> bool:
         """
         Returns True if this query could refer to a kadastraal object.

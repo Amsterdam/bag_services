@@ -51,8 +51,7 @@ _autocomplete_group_sizes = {
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
-    'Bouwblok': 5,
-    'Meetbouten': 5,
+    'Bouwblok': 5
 }
 
 _autocomplete_group_order = [
@@ -61,8 +60,7 @@ _autocomplete_group_order = [
     'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
-    'Bouwblok',
-    'Meetbouten',
+    'Bouwblok'
 ]
 
 _subtype_mapping = {
@@ -83,7 +81,6 @@ _subtype_mapping = {
     'overig gebouwd object': 'Gebieden',
     'buurt': 'Gebieden',
     'bouwblok': 'Bouwblok',
-    'meetbout': 'Meetbouten',
 }
 
 
@@ -113,11 +110,6 @@ def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [Elas
             'labels': {'bag'},
             'test': analyzer.is_bouwblok_exact,
             'query': bagQ.bouwblok_query,
-        },
-        {
-            'labels': {'meetbouten'},
-            'test': analyzer.is_meetbout_prefix,
-            'query': genQ.meetbout_query,
         },
         {
             'labels': {'bag', 'nummeraanduiding'},
@@ -238,7 +230,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
     to have unexpected results
 
     We use many datasets by trying to guess about the input
-    - adresses, public spaces, bouwblok, meetbouten
+    - adresses, public spaces, bouwblok
 
     """
     metadata_class = QueryMetadata

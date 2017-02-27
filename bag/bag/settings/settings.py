@@ -147,7 +147,6 @@ ELASTIC_INDICES = {
     'BAG': 'bag',
     'BRK': 'brk',
     'NUMMERAANDUIDING': 'nummeraanduiding',
-    'MEETBOUTEN': 'meetbouten',
 }
 
 if TESTING:

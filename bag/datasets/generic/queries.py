@@ -66,18 +66,3 @@ class ElasticQueryWrapper(object):
         search = search[0:size]
 
         return search
-
-
-def meetbout_query(analyzer: QueryAnalyzer):
-    """
-    Main 'One size fits all' search query used
-    """
-    return ElasticQueryWrapper(
-        query={
-            "prefix": {
-                "meetboutnummer": analyzer.query,
-            }
-        },
-        sort_fields=["_display"],
-        indexes=['meetbouten'],
-    )
