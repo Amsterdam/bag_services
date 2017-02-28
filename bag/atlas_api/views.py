@@ -176,13 +176,6 @@ def _get_url(request, hit):
             view_name=_details[doc_type],
             kwargs={'pk': id}, request=request)
 
-    if doc_type == 'meetbout':
-        return {
-            'self': {
-                'href': '/meetbouten/meetbout/{}'.format(id)
-            }
-        }
-
     # hit must have subtype
     assert hit.subtype
 
