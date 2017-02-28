@@ -3,4 +3,4 @@
 set -u   # crash on missing env variables
 set -e   # stop on any error
 
-yes yes | python manage.py migrate--verbosity 3
+yes yes | python manage.py migrate --verbosity 3
