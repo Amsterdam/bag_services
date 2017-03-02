@@ -1,11 +1,9 @@
 from django.db.migrations.operations.base import Operation
 
-
 view_history = dict()
 
 
 class ManageView(Operation):
-
     reversible = True
 
     def __init__(self, view_name, sql):
@@ -34,21 +32,19 @@ class ManageView(Operation):
         return history[-1]
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
-        schema_editor.execute("DROP VIEW IF EXISTS {}".format(self.view_name))
-        schema_editor.execute("CREATE VIEW {} AS {}".format(self.view_name, self.sql))
+        schema_editor.execute(f'DROP VIEW IF EXISTS {self.view_name}')
+        schema_editor.execute(f'CREATE VIEW {self.view_name} AS {self.sql}')
 
-    def database_backwards(self, app_label, schema_editor, from_state, to_state):
-        schema_editor.execute("DROP VIEW IF EXISTS {}".format(self.view_name))
+    def database_backwards(self, app_label, schema_editor, from_state,
+                           to_state):
+        schema_editor.execute(f'DROP VIEW IF EXISTS {self.view_name}')
         previous = self.pop_previous_sql(app_label)
 
         if previous:
-            schema_editor.execute("CREATE VIEW {} AS {}".format(self.view_name, previous))
+            schema_editor.execute(f'CREATE VIEW {self.view_name} AS {previous}')
 
     def state_forwards(self, app_label, state):
         self.push_history(app_label)
 
     def describe(self):
         return "Create view {}".format(self.view_name)
-
-
-

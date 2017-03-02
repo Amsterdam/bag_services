@@ -1,17 +1,15 @@
-from django.core.management import BaseCommand
+import time
 
 from django.conf import settings
+from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
 import datasets.wkpb.batch
-
 from batch import batch
-import time
 
 
 class Command(BaseCommand):
-
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     indexes = {
@@ -86,7 +84,7 @@ class Command(BaseCommand):
             default=0,
             help='Build X/Y parts 1/3, 2/3, 3/3')
 
-    def set_partial_config(self, sets, options):
+    def set_partial_config(options):
         """
         Do partial configuration
         """
@@ -96,7 +94,7 @@ class Command(BaseCommand):
             numerator = int(numerator) - 1
             denominator = int(denominator)
 
-            assert(numerator < denominator)
+            assert (numerator < denominator)
 
             settings.PARTIAL_IMPORT['numerator'] = numerator
             settings.PARTIAL_IMPORT['denominator'] = denominator
@@ -112,11 +110,11 @@ class Command(BaseCommand):
                 self.stderr.write("Unkown dataset: {}".format(ds))
                 return
 
-        sets = [ds for ds in self.ordered if ds in dataset]     # enforce order
+        sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
 
         self.stdout.write("Working on {}".format(", ".join(sets)))
 
-        self.set_partial_config(sets, options)
+        self.set_partial_config(options)
 
         for ds in sets:
 
