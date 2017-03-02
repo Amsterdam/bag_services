@@ -11,7 +11,7 @@ class Command(BaseCommand):
         for table_info in tables:
             if table_info.type == 'v' and table_info.name[0:4] == 'geo_':
                 try:
-                    cursor.execute(f'DROP TABLE {table_info.name}_mat')
+                    cursor.execute(f'DROP TABLE IF EXISTS {table_info.name}_mat')
                 except ProgrammingError:
                     pass
 
