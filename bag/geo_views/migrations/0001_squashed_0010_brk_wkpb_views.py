@@ -29,7 +29,7 @@ SELECT
   bb.code                                             AS code,
   bb.geometrie                                        AS geometrie,
   bb.code                                             AS display,
-  'gebieden/bouwblok'                                 AS type,
+  'gebieden/bouwblok'::TEXT                           AS type,
   site.domain || 'gebieden/bouwblok/' || bb.id || '/' AS uri
 FROM
   bag_bouwblok bb
@@ -48,7 +48,7 @@ SELECT
   b.naam                                          AS naam,
   b.geometrie                                     AS geometrie,
   b.naam                                          AS display,
-  'gebieden/buurt'                                AS type,
+  'gebieden/buurt'::TEXT                          AS type,
   site.domain || 'gebieden/buurt/' || b.id || '/' AS uri
 FROM bag_buurt b, django_site site
 WHERE site.name = 'API Domain'
@@ -63,7 +63,7 @@ SELECT
   bc.naam                                                    AS naam,
   bc.geometrie                                               AS geometrie,
   bc.naam                                                    AS display,
-  'gebieden/buurtcombinatie'                                 AS type,
+  'gebieden/buurtcombinatie'::TEXT                           AS type,
   site.domain || 'gebieden/buurtcombinatie/' || bc.id || '/' AS uri
 FROM bag_buurtcombinatie bc, django_site site
 WHERE site.name = 'API Domain'
@@ -78,7 +78,7 @@ SELECT
   g.naam                                                         AS naam,
   g.geometrie                                                    AS geometrie,
   g.naam                                                         AS display,
-  'gebieden/gebiedsgerichtwerken'                                AS type,
+  'gebieden/gebiedsgerichtwerken'::TEXT                          AS type,
   site.domain || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
 FROM bag_gebiedsgerichtwerken g, django_site site
 WHERE site.name = 'API Domain'
@@ -92,7 +92,7 @@ SELECT
   gg.naam                                                         AS naam,
   gg.geometrie                                                    AS geometrie,
   gg.naam                                                         AS display,
-  'gebieden/grootstedelijkgebied'                                 AS type,
+  'gebieden/grootstedelijkgebied'::TEXT                           AS type,
   site.domain || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
 FROM bag_grootstedelijkgebied gg, django_site site
 WHERE site.name = 'API Domain'
@@ -104,7 +104,7 @@ WHERE site.name = 'API Domain'
 SELECT
   l.id                              AS id,
   l.geometrie                       AS geometrie,
-  'bag/ligplaats'                   AS type,
+  'bag/ligplaats'::TEXT             AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
@@ -129,7 +129,7 @@ SELECT
   opr.naam                                              AS display,
   opr.type                                              AS opr_type,
   opr.geometrie                                         AS geometrie,
-  'bag/openbareruimte'                                  AS type,
+  'bag/openbareruimte'::TEXT                            AS type,
   site.domain || 'bag/openbareruimte/' || opr.id || '/' AS uri
 FROM
   bag_openbareruimte opr
@@ -146,7 +146,7 @@ SELECT
   p.id                                      AS id,
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
-  'bag/pand'                                AS type,
+  'bag/pand'::TEXT                          AS type,
   site.domain || 'bag/pand/' || p.id || '/' AS uri
 FROM
   bag_pand p
@@ -165,7 +165,7 @@ SELECT
   s.naam                                              AS naam,
   s.geometrie                                         AS geometrie,
   s.naam                                              AS display,
-  'gebieden/stadsdeel'                                AS type,
+  'gebieden/stadsdeel'::TEXT                          AS type,
   site.domain || 'gebieden/stadsdeel/' || s.id || '/' AS uri
 FROM bag_stadsdeel s, django_site site
 WHERE site.name = 'API Domain'
@@ -177,7 +177,7 @@ WHERE site.name = 'API Domain'
 SELECT
   s.id                                          AS id,
   s.geometrie                                   AS geometrie,
-  'bag/standplaats'                             AS type,
+  'bag/standplaats'::TEXT                       AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE(' ' || NULLIF(n.huisnummer_toevoeging, ''), '')
@@ -202,7 +202,7 @@ SELECT
   u.naam                                           AS naam,
   u.geometrie                                      AS geometrie,
   u.naam                                           AS display,
-  'gebieden/unesco'                                AS type,
+  'gebieden/unesco'::TEXT                          AS type,
   site.domain || 'gebieden/unesco/' || u.id || '/' AS uri
 FROM bag_unesco u, django_site site
 WHERE site.name = 'API Domain'
@@ -214,7 +214,7 @@ WHERE site.name = 'API Domain'
 SELECT
   v.id                                    AS id,
   v.geometrie                             AS geometrie,
-  'bag/verblijfsobject'                   AS type,
+  'bag/verblijfsobject'::TEXT             AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
@@ -249,7 +249,7 @@ SELECT
   ko.perceelnummer                                          AS perceelnummer,
   ko.geometrie                                              AS geometrie,
   ko.aanduiding                                             AS display,
-  'kadaster/kadastraal_object'                              AS type,
+  'kadaster/kadastraal_object'::TEXT                        AS type,
   site.domain || 'brk/object/' || ko.id || '/' AS uri
 FROM brk_kadastraalobject ko, django_site site
 WHERE site.name = 'API Domain'
@@ -282,7 +282,7 @@ SELECT
   bp.beperkingtype_id                              AS beperkingtype_id,
   ko.geometrie                                     AS geometrie,
   bc.omschrijving                                  AS display,
-  'wkpb/beperking'                                 AS type,
+  'wkpb/beperking'::TEXT                           AS type,
   site.domain || 'wkpb/beperking/' || bp.id || '/' AS uri
 FROM
   wkpb_beperkingkadastraalobject bk

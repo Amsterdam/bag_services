@@ -31,7 +31,7 @@ SELECT
         ELSE '??'
   END                                                   AS opr_type,
   opr.geometrie                                         AS geometrie,
-  'bag/openbareruimte'                                  AS type,
+  'bag/openbareruimte'::TEXT                            AS type,
   site.domain || 'bag/openbareruimte/' || opr.id || '/' AS uri
 FROM
   bag_openbareruimte opr

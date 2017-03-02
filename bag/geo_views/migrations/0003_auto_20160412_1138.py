@@ -21,7 +21,7 @@ SELECT
   ko.perceelnummer                                          AS perceelnummer,
   coalesce(ko.point_geom, ko.poly_geom)                     AS geometrie,
   ko.aanduiding                                             AS display,
-  'kadaster/kadastraal_object'                              AS type,
+  'kadaster/kadastraal_object'::TEXT                        AS type,
   site.domain || 'brk/object/' || ko.id || '/' AS uri
 FROM brk_kadastraalobject ko, django_site site
 WHERE site.name = 'API Domain'
@@ -32,7 +32,7 @@ SELECT
   bp.beperkingtype_id                              AS beperkingtype_id,
   coalesce(ko.point_geom, ko.poly_geom)            AS geometrie,
   bc.omschrijving                                  AS display,
-  'wkpb/beperking'                                 AS type,
+  'wkpb/beperking'::TEXT                           AS type,
   site.domain || 'wkpb/beperking/' || bp.id || '/' AS uri
 FROM
   wkpb_beperkingkadastraalobject bk

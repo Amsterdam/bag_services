@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
-from django.db import connection
 from django.db import ProgrammingError
+from django.db import connection
 
 
 class Command(BaseCommand):
@@ -11,25 +11,18 @@ class Command(BaseCommand):
         for table_info in tables:
             if table_info.type == 'v' and table_info.name[0:4] == 'geo_':
                 try:
-                    cursor.execute('DROP TABLE {}_mat'.format(table_info.name))
+                    cursor.execute(f'DROP TABLE {table_info.name}_mat')
                 except ProgrammingError:
                     pass
 
-                cursor.execute('CREATE TABLE {}_mat AS SELECT * FROM {}'.format(
-                    table_info.name,
-                    table_info.name,
-                ))
-
-                cursor.execute('CREATE INDEX {}_idx ON {}_mat USING GIST(geometrie)'.format(
-                    table_info.name,
-                    table_info.name,
-                ))
-
-                cursor.execute('CLUSTER {}_idx ON {}_mat'.format(
-                    table_info.name,
-                    table_info.name,
-                ))
-
-                cursor.execute('VACUUM ANALYZE {}_mat'.format(table_info.name))
-
-                self.stdout.write('created geotable {}_mat'.format(table_info.name))
+                cursor.execute(
+                    f'CREATE TABLE {table_info.name}_mat '
+                    f'AS SELECT * FROM {table_info.name}')
+                cursor.execute(
+                    f'CREATE INDEX {table_info.name}_idx '
+                    f'ON {table_info.name}_mat USING GIST(geometrie)')
+                cursor.execute(
+                    f'CLUSTER {table_info.name}_idx '
+                    f'ON {table_info.name}_mat')
+                cursor.execute(f'VACUUM ANALYZE {table_info.name}_mat')
+                self.stdout.write(f'Created geotable {table_info.name}_mat\n')

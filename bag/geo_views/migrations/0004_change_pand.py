@@ -21,7 +21,7 @@ SELECT
   p.id                                      AS id,
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
-  'bag/pand'                                AS type,
+  'bag/pand'::TEXT                          AS type,
   site.domain || 'bag/pand/' || p.id || '/' AS uri
 FROM
   bag_pand p

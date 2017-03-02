@@ -50,7 +50,7 @@ SELECT
   g.naam                                                         AS naam,
   g.geometrie                                                    AS geometrie,
   g.naam                                                         AS display,
-  'gebieden/gebiedsgerichtwerken'                                AS type,
+  'gebieden/gebiedsgerichtwerken'::TEXT                          AS type,
   site.domain || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
 FROM bag_gebiedsgerichtwerken g, django_site site
 WHERE site.name = 'API Domain'
@@ -64,7 +64,7 @@ SELECT
   gg.naam                                                         AS naam,
   gg.geometrie                                                    AS geometrie,
   gg.naam                                                         AS display,
-  'gebieden/grootstedelijkgebied'                                 AS type,
+  'gebieden/grootstedelijkgebied'::TEXT                           AS type,
   site.domain || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
 FROM bag_grootstedelijkgebied gg, django_site site
 WHERE site.name = 'API Domain'
@@ -78,7 +78,7 @@ SELECT
   u.naam                                           AS naam,
   u.geometrie                                      AS geometrie,
   u.naam                                           AS display,
-  'gebieden/unesco'                                AS type,
+  'gebieden/unesco'::TEXT                          AS type,
   site.domain || 'gebieden/unesco/' || u.id || '/' AS uri
 FROM bag_unesco u, django_site site
 WHERE site.name = 'API Domain'
