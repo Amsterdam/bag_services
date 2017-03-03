@@ -84,7 +84,7 @@ class Command(BaseCommand):
             default=0,
             help='Build X/Y parts 1/3, 2/3, 3/3')
 
-    def set_partial_config(options):
+    def set_partial_config(self, options):
         """
         Do partial configuration
         """
