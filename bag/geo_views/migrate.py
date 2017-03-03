@@ -63,6 +63,6 @@ class ManageView(Operation):
         if prefix and self.view_name.startswith(prefix):
             statement = f"""CREATE INDEX {viewname}_mat_idx
                             ON {viewname}_mat
-                            USING  GIST ('geometrie')"""
+                            USING  GIST (geometrie)"""
 
             schema_editor.execute(statement)
