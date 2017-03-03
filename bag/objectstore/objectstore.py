@@ -243,8 +243,8 @@ zip_age_limits = {
   'BAGACTUEEL.zip': 5,
   'BAGGEOMETRIE.zip': 5,
   'BAGLSLEUTEL.zip': 5,
-  'BRKASCII.zip': 5,
-  'BRKSHAPE.zip': 5,
+  'BRKASCII.zip': 10,
+  'BRKSHAPE.zip': 10,
   'WKPB.zip': 5,
 }
 
