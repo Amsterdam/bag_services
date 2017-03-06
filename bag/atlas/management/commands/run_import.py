@@ -100,6 +100,3 @@ class Command(BaseCommand):
                 for job_class in self.indexes[ds]:
                     result = batch.execute(job_class())
                     self.act_on_result(result)
-
-        # Geosearch uses the materialized views
-        call_command('create_geo_tables')
