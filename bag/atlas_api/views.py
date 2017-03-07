@@ -15,12 +15,14 @@ from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+from authorization_django import levels as authorization_levels
+
 from datasets.bag import queries as bagQ
 from datasets.brk import queries as brkQ
-from datasets.generic import queries as genQ
 from datasets.generic import rest
 from datasets.generic.queries import ElasticQueryWrapper
 from datasets.generic.query_analyzer import QueryAnalyzer
+
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +86,9 @@ _subtype_mapping = {
 }
 
 
-def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
+def select_queries(
+        query_string: str,
+        only_show: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -136,7 +140,8 @@ def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [Elas
     }
 
     query_selectors = all_query_selectors if dont_filter else \
-        [a for a in all_query_selectors if not a['labels'].isdisjoint(only_show)]
+        [a for a in all_query_selectors
+         if not a['labels'].isdisjoint(only_show)]
 
     queries = []
     for s in query_selectors:
@@ -251,7 +256,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except:
-                log.exception('FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
+                log.exception('FAILED ELK SEARCH: %s',
+                              json.dumps(search.to_dict()))
                 continue
 
             # Get the datas!
@@ -390,6 +396,7 @@ class SearchViewSet(viewsets.ViewSet):
         """
         Add paging links for result set to response object
         """
+
         # make query url friendly again
         url_query = quote(query)
         # Finding link to self via reverse url search
@@ -417,6 +424,9 @@ class SearchViewSet(viewsets.ViewSet):
             response['_links']['prev']['href'] = "{}?q={}&page={}".format(
                 followup_url, url_query, page - 1)
 
+    def is_authorized_for(self, request):
+        return True
+
     def list(self, request, *args, **kwargs):
         """
         Create a response list
@@ -432,6 +442,9 @@ class SearchViewSet(viewsets.ViewSet):
         """
 
         if 'q' not in request.query_params:
+            return Response([])
+
+        if not self.is_authorized_for(request):
             return Response([])
 
         page = 1
@@ -504,7 +517,6 @@ class SearchViewSet(viewsets.ViewSet):
         result['dataset'] = hit.meta.index
         self.get_hit_data(result, hit)
 
-
         return result
 
 
@@ -524,12 +536,27 @@ class SearchSubjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalsubject-list'
 
+    def is_authorized_for(self, request):
+        """
+        Check if we can have authorization levels
+        """
+        # check if we are authenticated
+        authorized = (
+            request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+            request.user.has_perm('brk.view_sensitive_details'))
+
+        return authorized
+
     def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search on Subject
         """
+
+        # authorized only!
         search = brkQ.kadastraal_subject_query(analyzer) \
             .to_elasticsearch_object(client)
+
         return search.filter('terms', subtype=['kadastraal_subject'])
 
 
@@ -548,7 +575,8 @@ class SearchObjectViewSet(SearchViewSet):
         if not analyzer.is_kadastraal_object_prefix():
             return []
 
-        search = brkQ.kadastraal_object_query(analyzer).to_elasticsearch_object(client)
+        search_q = brkQ.kadastraal_object_query(analyzer)
+        search = search_q.to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_object'])
 
 
@@ -567,7 +595,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         if not analyzer.is_bouwblok_prefix():
             return []
 
-        search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
+        search_q = bagQ.bouwblok_query(analyzer)
+        search = search_q.to_elasticsearch_object(client)
+
         return search.filter('terms', subtype=['bouwblok'])
 
 

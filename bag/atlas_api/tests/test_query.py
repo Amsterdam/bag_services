@@ -1,4 +1,3 @@
-import unittest
 
 from django.conf import settings
 
@@ -141,14 +140,13 @@ class QueryTest(APITestCase):
             response.data['results'][0]['subtype'], "water")
 
     def test_search_subject_api(self):
+        """
+        We are not authorized. should fail
+        """
         response = self.client.get(
             "/atlas/search/kadastraalsubject/", {'q': "kikker"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-
-        self.assertEqual(
-            response.data['results'][0]['naam'], "Kermet de Kikker")
+        self.assertNotIn('results', response.data)
 
     def test_search_bouwblok_api(self):
         response = self.client.get(
