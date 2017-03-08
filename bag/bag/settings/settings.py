@@ -15,15 +15,16 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import datetime
 import os
-import sys
 import re
+import sys
 
 
-def _get_docker_host():
+def get_docker_host():
     d_host = os.getenv('DOCKER_HOST', None)
     if d_host:
         return re.match(r'tcp://(.*?):\d+', d_host).group(1)
     return '0.0.0.0'
+
 
 NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
 
@@ -79,7 +80,6 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
 )
 
-
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -121,12 +121,11 @@ DATABASES = {
         'NAME': os.getenv('DATABASE_NAME', 'atlas'),
         'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', _get_docker_host()),
+        'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', get_docker_host()),
         'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
-        'CONN_MAX_AGE': 15,
+        'CONN_MAX_AGE': 30,
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -154,7 +153,7 @@ if TESTING:
         ELASTIC_INDICES[k] += 'test'
 
 ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
-    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', get_docker_host()),
     os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 BATCH_SETTINGS = dict(
@@ -168,6 +167,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '.localdomain',
     '.datapunt.amsterdam.nl',
+    'bag-api.service.consul',
     '.amsterdam.nl',
     '.service.consul',
 ]
@@ -248,26 +248,17 @@ OBJECTSTORE = {
     'os_options': {
         'tenant_id': '4f2f4b6342444c84b3580584587cfd18',
         'region_name': 'NL',
-        'endpoint_type': 'internalURL'}
+        'endpoint_type': 'internalURL'
+    }
 }
 
 JWT_AUTH = {
-    'JWT_ENCODE_HANDLER':
-        'rest_framework_jwt.utils.jwt_encode_handler',
-
-    'JWT_DECODE_HANDLER':
-        'rest_framework_jwt.utils.jwt_decode_handler',
-
-    'JWT_PAYLOAD_HANDLER':
-        'rest_framework_jwt.utils.jwt_payload_handler',
-
-    'JWT_PAYLOAD_GET_USER_ID_HANDLER':
-        'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
-
-    'JWT_RESPONSE_PAYLOAD_HANDLER':
-        'rest_framework_jwt.utils.jwt_response_payload_handler',
-
-    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY'),
+    'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
+    'JWT_DECODE_HANDLER': 'rest_framework_jwt.utils.jwt_decode_handler',
+    'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
+    'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler',
+    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret'),
     'JWT_ALGORITHM': 'HS256',
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
@@ -275,24 +266,18 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
-
     'JWT_ALLOW_REFRESH': False,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
-
-
-ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
-    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', _get_docker_host()),
-    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
-    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder", DIVA_DIR, "\n")
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder",
+          DIVA_DIR, "\n")
 
 # noinspection PyUnresolvedReferences
 from .checks import *  # used for ./manage.py check
