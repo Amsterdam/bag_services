@@ -194,6 +194,10 @@ REST_FRAMEWORK = dict(
 # Security
 
 JWT_SECRET_KEY = os.getenv('JWT_SHARED_SECRET_KEY')
+
+if not JWT_SECRET_KEY:
+    raise ValueError('JWT_SHARED_SECRET_KEY not set')
+
 JWT_ALGORITHM = 'HS256'
 
 SECURE_CONTENT_TYPE_NOSNIFF = True

@@ -1,6 +1,5 @@
 # Python
 import logging
-import time
 from unittest import skip
 # Packages
 from django.conf import settings
@@ -24,6 +23,7 @@ class ObjectSearchTest(APITestCase):
         amsterdam = brk_factories.GemeenteFactory(
             gemeente='Amsterdam'
         )
+
         kada_amsterdam = brk_factories.KadastraleGemeenteFactory(
             pk='ACD00',
             gemeente=amsterdam
@@ -60,3 +60,12 @@ class ObjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         print("\n", response.data, "\n")
         self.assertIn("10000", str(response.data))
+
+    def test_match_object_typeahead(self):
+        response = self.client.get(
+            '/atlas/typeahead/brk/',
+            dict(q="ACD00"))
+
+        print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))

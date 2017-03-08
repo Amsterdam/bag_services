@@ -12,7 +12,7 @@ from pathlib import Path
 from swiftclient.client import Connection
 
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 log = logging.getLogger(__name__)
 

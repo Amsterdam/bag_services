@@ -15,12 +15,14 @@ from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from datasets.bag import queries as bagQ
-from datasets.brk import queries as brkQ
-from datasets.generic import queries as genQ
+from authorization_django import levels as authorization_levels
+
+from datasets.bag import queries as bagQ  # noqa
+from datasets.brk import queries as brkQ  # noqa
 from datasets.generic import rest
 from datasets.generic.queries import ElasticQueryWrapper
 from datasets.generic.query_analyzer import QueryAnalyzer
+
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +86,107 @@ _subtype_mapping = {
 }
 
 
-def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
+# A collection of regex and the query they generate
+all_query_selectors = [
+    {
+        'labels': {'bag'},
+        'test': 'is_postcode_prefix',
+        'query': bagQ.postcode_query,
+    },
+    {
+        'labels': {'bag'},
+        'test': 'is_bouwblok_prefix',
+        'query': bagQ.bouwblok_query,
+    },
+    {
+        'labels': {'bag', 'nummeraanduiding'},
+        'test': 'is_postcode_huisnummer_prefix',
+        'query': bagQ.postcode_huisnummer_query,
+    },
+    {
+        'labels': {'brk'},
+        'test': 'is_kadastraal_object_prefix',
+        'query': brkQ.kadastraal_object_query,
+    },
+    {
+        'labels': {'nummeraanduiding'},
+        'test': 'is_straatnaam_huisnummer_prefix',
+        'query': bagQ.straatnaam_huisnummer_query,
+    },
+]
+
+default_queries = {
+    'bag': [bagQ.weg_query],
+    'gebieden': [bagQ.gebied_query],
+}
+
+
+def make_new_selection(q_select, query_selectors):
+    """
+    Given selection of wanted datasources (brk, bag..)
+    filter queries
+    """
+    if not q_select:
+        return query_selectors
+
+    new_selection = []
+    for a in all_query_selectors:
+        # check if we selected this query
+        if a['labels'] & q_select:
+            new_selection.append(a)
+
+    return new_selection
+
+
+def collect_queries(query_selectors, analyzer):
+    """
+    Given a selection of possible queries
+    decide by using the analyzer if the
+    typed in content / querystring could possibly be valid
+
+    example stoepjpe != postcode so we do not need to
+    do a elastic search.
+    """
+
+    queries = []
+
+    for option in query_selectors:
+        # call the test function on analyzer
+        test_function = getattr(analyzer, option['test'])
+        if not test_function():
+            continue
+
+        log.debug('Matched %s for query <%s>', option['test'], analyzer.query)
+
+        queries.append(option['query'])
+
+    return queries
+
+
+def find_default_queries(q_select):
+    """
+    return the default queries.
+    filter by selected queries if set
+    """
+    queries = []
+
+    # return all defaults
+    if not q_select:
+        for v in default_queries.values():
+            queries += v
+        return queries
+
+    # return filtered default queries
+    for category in q_select:
+        queries += default_queries.get(category, [])
+
+    return queries
+
+
+def select_queries(
+        query_string: str,
+        analyzer: QueryAnalyzer,
+        q_select: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -92,71 +194,24 @@ def select_queries(query_string: str, only_show: AbstractSet[str] = ()) -> [Elas
 
     Returns a list of queries that should be used
     """
+
     # Too little information to search on
     if len(query_string) < 2:
         return []
 
-    analyzer = QueryAnalyzer(query_string)
+    query_selectors = list(all_query_selectors)
 
-    # A collection of regex and the query they generate
-    dont_filter = len(only_show) == 0
-    all_query_selectors = [
-        {
-            'labels': {'bag'},
-            'test': analyzer.is_postcode_prefix,
-            'query': bagQ.postcode_query,
-        },
-        {
-            'labels': {'bag'},
-            'test': analyzer.is_bouwblok_exact,
-            'query': bagQ.bouwblok_query,
-        },
-        {
-            'labels': {'bag', 'nummeraanduiding'},
-            'test': analyzer.is_postcode_huisnummer_prefix,
-            'query': bagQ.postcode_huisnummer_query,
-        },
-        {
-            'labels': {'brk'},
-            'test': analyzer.is_kadastraal_object_prefix,
-            'query': brkQ.kadastraal_object_query,
-        },
-        {
-            'labels': {'nummeraanduiding'},
-            'test': analyzer.is_straatnaam_huisnummer_prefix,
-            'query': bagQ.straatnaam_huisnummer_query,
-        },
+    # check which queries we want to do.
+    query_selectors = make_new_selection(q_select, query_selectors)
 
-    ]
-
-    default_queries = {
-        'bag': [bagQ.weg_query],
-        'brk': [brkQ.kadastraal_subject_query],
-        'gebieden': [bagQ.gebied_query],
-    }
-
-    query_selectors = all_query_selectors if dont_filter else \
-        [a for a in all_query_selectors if not a['labels'].isdisjoint(only_show)]
-
-    queries = []
-    for s in query_selectors:
-        f = s['test']
-        if f():
-            log.debug('Matched %s for query <%s>', f.__name__, query_string)
-            # beperk tot 1 query. Voor nu in elk geval.
-            queries = [s['query']]
-            break
+    # check which queries make sense to do
+    queries = collect_queries(query_selectors, analyzer)
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
         log.debug("No matches for %s, using defaults", query_string)
-        if dont_filter:
-            for v in default_queries.values():
-                queries += v
-        else:
-            for category in only_show:
-                queries += default_queries.get(category, [])
+        queries = find_default_queries(q_select)
 
     return [q(analyzer) for q in queries]
 
@@ -232,10 +287,28 @@ class TypeaheadViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-    def autocomplete_queries(self, query, only_show: AbstractSet[str] = set()):
+    def authorized_queries(self, request, analyzer):
+        """
+        Overide this method with custom authorization for your
+        data
+        """
+        return []
+
+    def autocomplete_queries(
+            self, request, query, q_select: AbstractSet[str] = set()):
         """provide autocomplete suggestions"""
 
-        query_components = select_queries(query, only_show)
+        # get the relevant queries
+
+        analyzer = QueryAnalyzer(query)
+
+        query_components = select_queries(query, analyzer, q_select)
+
+        authorized_queries = self.authorized_queries(request, analyzer)
+        # if you are authorized to look for names
+        # add the query
+        if authorized_queries:
+            query_components.extend(authorized_queries)
 
         result_data = []
 
@@ -251,7 +324,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except:
-                log.exception('FAILED ELK SEARCH: %s', json.dumps(search.to_dict()))
+                log.debug('FAILED ELK SEARCH: %s',
+                          json.dumps(search.to_dict()))
                 continue
 
             # Get the datas!
@@ -309,7 +383,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return ordered_results
 
-    def _abstr_list(self, request, only_show: AbstractSet[str]):
+    def _abstr_list(self, request, q_select: AbstractSet[str]):
         """
         returns result options
         ---
@@ -320,14 +394,16 @@ class TypeaheadViewSet(viewsets.ViewSet):
               type: string
               paramType: query
         """
+
         if 'q' not in request.query_params:
             return Response([])
 
         query = request.query_params['q']
+
         if not query:
             return Response([])
 
-        results = self.autocomplete_queries(query, only_show)
+        results = self.autocomplete_queries(request, query, q_select)
         response = self._order_results(results, request)
 
         return Response(response)
@@ -344,6 +420,18 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
 class TypeAheadBrkViewSet(TypeaheadViewSet):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def authorized_queries(self, request, analyzer):
+
+        authorized = (
+            request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+            request.user.has_perm('brk.view_sensitive_details'))
+
+        if authorized:
+            return [brkQ.kadastraal_subject_query(analyzer)]
+
+        return []
 
     def list(self, request):
         return self._abstr_list(request, {'brk'})
@@ -390,6 +478,7 @@ class SearchViewSet(viewsets.ViewSet):
         """
         Add paging links for result set to response object
         """
+
         # make query url friendly again
         url_query = quote(query)
         # Finding link to self via reverse url search
@@ -417,6 +506,9 @@ class SearchViewSet(viewsets.ViewSet):
             response['_links']['prev']['href'] = "{}?q={}&page={}".format(
                 followup_url, url_query, page - 1)
 
+    def is_authorized_for(self, request):
+        return True
+
     def list(self, request, *args, **kwargs):
         """
         Create a response list
@@ -432,6 +524,9 @@ class SearchViewSet(viewsets.ViewSet):
         """
 
         if 'q' not in request.query_params:
+            return Response([])
+
+        if not self.is_authorized_for(request):
             return Response([])
 
         page = 1
@@ -467,8 +562,8 @@ class SearchViewSet(viewsets.ViewSet):
         try:
             result = search.execute(ignore_cache=ignore_cache)
         except(TransportError):
-            log.exception("Could not execute search query " + query)
-            log.exception(json.dumps(search.to_dict(), indent=4))
+            log.debug("Could not execute search query " + query)
+            log.debug(json.dumps(search.to_dict(), indent=4))
             # Todo fix this
             # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([])
@@ -504,7 +599,6 @@ class SearchViewSet(viewsets.ViewSet):
         result['dataset'] = hit.meta.index
         self.get_hit_data(result, hit)
 
-
         return result
 
 
@@ -524,12 +618,27 @@ class SearchSubjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalsubject-list'
 
+    def is_authorized_for(self, request):
+        """
+        Check if we can have authorization levels
+        """
+        # check if we are authorized
+        authorized = (
+            request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+            request.user.has_perm('brk.view_sensitive_details'))
+
+        return authorized
+
     def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search on Subject
         """
+
+        # authorized only!
         search = brkQ.kadastraal_subject_query(analyzer) \
             .to_elasticsearch_object(client)
+
         return search.filter('terms', subtype=['kadastraal_subject'])
 
 
@@ -548,7 +657,8 @@ class SearchObjectViewSet(SearchViewSet):
         if not analyzer.is_kadastraal_object_prefix():
             return []
 
-        search = brkQ.kadastraal_object_query(analyzer).to_elasticsearch_object(client)
+        search_q = brkQ.kadastraal_object_query(analyzer)
+        search = search_q.to_elasticsearch_object(client)
         return search.filter('terms', subtype=['kadastraal_object'])
 
 
@@ -567,7 +677,9 @@ class SearchBouwblokViewSet(SearchViewSet):
         if not analyzer.is_bouwblok_prefix():
             return []
 
-        search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
+        search_q = bagQ.bouwblok_query(analyzer)
+        search = search_q.to_elasticsearch_object(client)
+
         return search.filter('terms', subtype=['bouwblok'])
 
 
@@ -587,7 +699,8 @@ class SearchGebiedenViewSet(SearchViewSet):
         # bouwblok
 
         if analyzer.is_bouwblok_prefix():
-            search = bagQ.bouwblok_query(analyzer).to_elasticsearch_object(client)
+            search = bagQ.bouwblok_query(analyzer)
+            search = search.to_elasticsearch_object(client)
             search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
@@ -627,7 +740,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
 
-    [/search/adres/?q=silodam 340](https://api.datapunt.amsterdam.nl/atlas/search/adres/?q=silodam 340)
+    [/search/adres/?q=silodam 340](https://api.datapunt.amsterdam.nl/atlas/search/adres/?q=silodam 340)  # noqa
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als

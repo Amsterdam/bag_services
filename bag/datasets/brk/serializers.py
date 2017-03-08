@@ -164,12 +164,18 @@ class AppartementsrechtsSplitsType(serializers.ModelSerializer):
 class ZakelijkRechtContextMixin:
 
     def get_contextual_subject_href(self, instance, request):
-        subject_natuurlijk = instance.kadastraal_subject.type == instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK
+        subject_natuurlijk = \
+            instance.kadastraal_subject.type ==  \
+            instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK
 
-        authorized = request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE_PLUS) or request.user.has_perm('brk.view_sensitive_details')
+        authorized = (request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+            request.user.has_perm('brk.view_sensitive_details'))
 
         if subject_natuurlijk and not authorized:
-            return reverse('zakelijkrecht-subject', args=(instance.id,), request=request)
+            return reverse(
+                'zakelijkrecht-subject',
+                args=(instance.id,), request=request)
 
         return reverse(
             'kadastraalsubject-detail',
@@ -192,7 +198,9 @@ class ZakelijkRecht(BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context['request']
-        data['subject_href'] = self.get_contextual_subject_href(instance, request)
+        data['subject_href'] = \
+            self.get_contextual_subject_href(instance, request)
+
         if 'kadastraal_subject' in request.query_params:
             data['_display'] = instance.directional_name(direction='object')
         else:
@@ -426,7 +434,9 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
         request = self.context['request']
         subject_natuurlijk = instance.type == instance.SUBJECT_TYPE_NATUURLIJK
 
-        authorized = request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE_PLUS) or request.user.has_perm('brk.view_sensitive_details')
+        authorized = (request.is_authorized_for(
+            authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+            request.user.has_perm('brk.view_sensitive_details'))
 
         if subject_natuurlijk and not authorized:
             return {

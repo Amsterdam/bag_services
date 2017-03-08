@@ -132,6 +132,7 @@ class QueryAnalyzer(object):
         """
         letters = self._tokens[0]
         cijfers = self._tokens[1]
+
         if len(letters) != 3:
             return False
         if len(cijfers) != 2:

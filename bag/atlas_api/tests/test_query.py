@@ -1,4 +1,3 @@
-import unittest
 
 from django.conf import settings
 
@@ -20,6 +19,9 @@ class QueryTest(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+
+        bag_factories.StadsdeelFactory(
+            naam='Centrum')
 
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
@@ -141,14 +143,13 @@ class QueryTest(APITestCase):
             response.data['results'][0]['subtype'], "water")
 
     def test_search_subject_api(self):
+        """
+        We are not authorized. should fail
+        """
         response = self.client.get(
             "/atlas/search/kadastraalsubject/", {'q': "kikker"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-
-        self.assertEqual(
-            response.data['results'][0]['naam'], "Kermet de Kikker")
+        self.assertNotIn('results', response.data)
 
     def test_search_bouwblok_api(self):
         response = self.client.get(
@@ -200,7 +201,48 @@ class QueryTest(APITestCase):
             "/search/postcode/", {'q': "1016 SZ"})
         self.assertEqual(response.status_code, 200)
 
-        # not due to elk scoring it could happen 228 B, scores better
-        # then 228 A
+        # we should get openbare ruimte
         self.assertNotIn('adres', response.data)
 
+    # /typeahead/logica
+
+    # /atlas/typeahead/gebieden/
+    # /atlas/typeahead/brk/
+    # /atlas/typeahead/bag/
+    def test_typeahead_gebied(self):
+        response = self.client.get(
+            "/atlas/typeahead/gebieden/", {'q': "Centrum"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Centrum', str(response.data))
+
+    def test_typeahead_bag_postcode(self):
+        response = self.client.get(
+            "/atlas/typeahead/bag/", {'q': "1016 SZ"})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn('Rozenstraat', str(response.data))
+
+    def test_typeahead_bag_adres(self):
+        response = self.client.get(
+            "/atlas/typeahead/bag/", {'q': "Rozenstraat 228"})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn('Rozenstraat 228', str(response.data))
+
+    def test_typeahead_subject(self):
+        """
+        We are not authorized. should fail
+        """
+        response = self.client.get(
+            "/atlas/typeahead/brk/", {'q': "kikker"})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertNotIn('kikker', str(response.data))
+
+    def test_bouwblok_typeahead(self):
+
+        response = self.client.get(
+            "/atlas/typeahead/bag/", {'q': "RN35"})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("RN35", str(response.data))
