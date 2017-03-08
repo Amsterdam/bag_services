@@ -147,3 +147,23 @@ class SubjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertNotIn("Kermet de Kikker", str(response.data))
+
+    def test_match_typeahead_subject_authorized(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='JWT {}'.format(self.token_authorized))
+
+        response = self.client.get(
+            '/atlas/typeahead/brk/',
+            {'q': 'Stephan Preeker'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Stephan Jacob Preeker", str(response.data))
+
+    def test_match_typeahead_subject_not_authorized(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='JWT {}'.format(self.token_not_authorized))
+
+        response = self.client.get(
+            '/atlas/typeahead/brk/',
+            {'q': 'Stephan Preeker'})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Stephan Jacob Preeker", str(response.data))
