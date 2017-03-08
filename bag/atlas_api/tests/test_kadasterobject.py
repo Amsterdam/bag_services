@@ -21,7 +21,7 @@ class ObjectSearchTest(APITestCase):
         super().setUpClass()
 
         amsterdam = brk_factories.GemeenteFactory(
-            gemeente='Amsterdam'
+            gemeente='amsterdam',
         )
 
         kada_amsterdam = brk_factories.KadastraleGemeenteFactory(
@@ -29,10 +29,15 @@ class ObjectSearchTest(APITestCase):
             gemeente=amsterdam
         )
 
+        sectie = brk_factories.KadastraleSectieFactory(
+            sectie='s'
+        )
+
         brk_factories.KadastraalObjectFactory(
             kadastrale_gemeente=kada_amsterdam,
             perceelnummer=10000,  # must be 5 long!
             indexletter='A',
+            sectie=sectie,
         )
 
         brk_factories.KadastraalObjectFactory(
@@ -53,12 +58,11 @@ class ObjectSearchTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
 
-    @skip('This test needs to be looked into')
+    # @skip('This test needs to be looked into')
     def test_match_perceelnummer(self):
         response = self.client.get(
-            '/atlas/search/kadastraalobject/', {'q': 'Amsterdam S'})
+            '/atlas/search/kadastraalobject/', {'q': 'Amsterdam s 10000'})
         self.assertEqual(response.status_code, 200)
-        print("\n", response.data, "\n")
         self.assertIn("10000", str(response.data))
 
     def test_match_object_typeahead(self):
@@ -66,6 +70,5 @@ class ObjectSearchTest(APITestCase):
             '/atlas/typeahead/brk/',
             dict(q="ACD00"))
 
-        print(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
