@@ -15,7 +15,15 @@ class RandomShitTest(APITestCase):
         """
         random stuff that crashes search / inspired by ein smoke tests
         """
-        self.bomb_endpoint('/atlas/typeahead/')
+
+        typeahead_endpoints = [
+            '/atlas/typeahead/bag/',
+            '/atlas/typeahead/brk/',
+            '/atlas/typeahead/gebieden/',
+        ]
+
+        for url in typeahead_endpoints:
+            self.bomb_endpoint(url)
 
     def test_random_shit_endpoints(self):
         """
