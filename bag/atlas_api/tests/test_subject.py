@@ -67,19 +67,20 @@ class SubjectSearchTest(APITestCase):
         self.token_not_authorized = self.get_token(self.not_authorized)
 
         # NEW STYLE AUTH
-        key, algorithm = settings.JWT_SECRET_KEY, settings.JWT_ALGORITHM
+        key = settings.DATAPUNT_AUTHZ['JWT_SECRET_KEY']
+        algorithm = settings.DATAPUNT_AUTHZ['JWT_ALGORITHM']
 
         now = int(time.time())
 
         token_default = jwt.encode({
             'authz': authorization_levels.LEVEL_DEFAULT,
-            'iat': now, 'exp': now+600}, key, algorithm=algorithm)
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
         token_employee = jwt.encode({
             'authz': authorization_levels.LEVEL_EMPLOYEE,
-            'iat': now, 'exp': now+600}, key, algorithm=algorithm)
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
         token_employee_plus = jwt.encode({
             'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS,
-            'iat': now, 'exp': now+600}, key, algorithm=algorithm)
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
 
         self.token_default = str(token_default, 'utf-8')
         self.token_employee = str(token_employee, 'utf-8')
