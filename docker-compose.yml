@@ -25,4 +25,4 @@ atlas:
     DATABASE_NAME: atlas
     DATABASE_PASSWORD: insecure
     BAG_OBJECTSTORE_PASSWORD: insecure
-    JWT_SHARED_SECRET_KEY: insecure
+    JWT_SHARED_SECRET_KEY: atleast16characters
