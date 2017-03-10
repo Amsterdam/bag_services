@@ -48,7 +48,7 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/nap:${env.BUILD_NUMBER}")
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
             }
