@@ -391,12 +391,7 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
-                return serializers.KadastraalObject
-
-            return serializers.KadastraalObjectPublic
+            return serializers.KadastraalObject
 
         elif self.action == 'retrieve':
 
