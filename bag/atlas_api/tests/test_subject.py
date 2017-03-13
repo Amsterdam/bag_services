@@ -13,8 +13,8 @@ from rest_framework_jwt.settings import api_settings
 from authorization_django import levels as authorization_levels
 
 from batch import batch
-import datasets.bag.batch
 import datasets.brk.batch
+
 from datasets.brk.tests import factories as brk_factories
 
 
