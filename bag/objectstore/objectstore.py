@@ -239,7 +239,7 @@ def unzip_data(zips_mapper):
 
 zip_age_limits = {
   'GEBASCII.zip': 5,
-  'GEBSHAPE.zip': 50,
+  'GEBSHAPE.zip': 80,
   'BAGACTUEEL.zip': 5,
   'BAGGEOMETRIE.zip': 5,
   'BAGLSLEUTEL.zip': 5,
