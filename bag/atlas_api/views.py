@@ -1,4 +1,9 @@
-# Python
+"""
+Typeahead bag, brk
+
+Search    bag, brk
+"""
+
 import json
 import logging
 from collections import OrderedDict
@@ -417,21 +422,45 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
 
 
+def authorized_subject_queries(request, analyzer):
+    """
+    Decide if which query we can execute
+
+    public - no subjects
+    employ - non natural subjects / nietnatuurlijk
+    plus   - all subjects
+    """
+
+    authorized = (
+        request.is_authorized_for(
+            authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+        request.user.has_perm('brk.view_sensitive_details'))
+
+    # EMPLOYEE PLUS
+    if authorized:
+        print('employee plus size!')
+        return [brkQ.kadastraal_subject_query(analyzer)]
+
+    # EMPLOYEE
+    employee = authorization_levels.LEVEL_EMPLOYEE
+    niet_natuurlijk = brkQ.kadastraal_subject_nietnatuurlijk_query
+    authorized = request.is_authorized_for(employee)
+
+    if authorized:
+        print('employee')
+        return [niet_natuurlijk(analyzer)]
+
+    # NOT AUTHORIZED / PUBLIC
+    return []
+
+
 class TypeAheadBrkViewSet(TypeaheadViewSet):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def authorized_queries(self, request, analyzer):
-
-        authorized = (
-            request.is_authorized_for(
-                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
-            request.user.has_perm('brk.view_sensitive_details'))
-
-        if authorized:
-            return [brkQ.kadastraal_subject_query(analyzer)]
-
-        return []
+        return authorized_subject_queries(request, analyzer)
 
     def list(self, request):
         return self._abstr_list(request, {'brk'})
@@ -467,7 +496,7 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, elk_client, analyzer: QueryAnalyzer) -> Search:
         """
         Construct the search query that is executed by this view set.
         """
@@ -506,9 +535,6 @@ class SearchViewSet(viewsets.ViewSet):
             response['_links']['prev']['href'] = "{}?q={}&page={}".format(
                 followup_url, url_query, page - 1)
 
-    def is_authorized_for(self, request):
-        return True
-
     def list(self, request, *args, **kwargs):
         """
         Create a response list
@@ -526,9 +552,6 @@ class SearchViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        if not self.is_authorized_for(request):
-            return Response([])
-
         page = 1
         if 'page' in request.query_params:
             # limit search results pageing in elastic is slow
@@ -542,13 +565,14 @@ class SearchViewSet(viewsets.ViewSet):
         query = request.query_params['q']
         analyzer = QueryAnalyzer(query)
 
-        client = Elasticsearch(
+        elk_client = Elasticsearch(
             settings.ELASTIC_SEARCH_HOSTS,
             raise_on_error=True
         )
 
         # get the result from elastic
-        elk_query = self.search_query(client, analyzer)
+        elk_query = self.search_query(request, elk_client, analyzer)
+
         search = elk_query[start:end]
 
         if not search:
@@ -618,28 +642,21 @@ class SearchSubjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalsubject-list'
 
-    def is_authorized_for(self, request):
-        """
-        Check if we can have authorization levels
-        """
-        # check if we are authorized
-        authorized = (
-            request.is_authorized_for(
-                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
-            request.user.has_perm('brk.view_sensitive_details'))
-
-        return authorized
-
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search on Subject
         """
 
-        # authorized only!
-        search = brkQ.kadastraal_subject_query(analyzer) \
-            .to_elasticsearch_object(client)
+        querylist = authorized_subject_queries(request, analyzer)
 
-        return search.filter('terms', subtype=['kadastraal_subject'])
+        if not querylist:
+            return []
+
+        # authorized only!
+        search = querylist[0].to_elasticsearch_object(elk_client)
+
+        return search
 
 
 class SearchObjectViewSet(SearchViewSet):
@@ -650,7 +667,8 @@ class SearchObjectViewSet(SearchViewSet):
 
     url_name = 'search/kadastraalobject-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> List[Search]:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> List[Search]:
         """
         Execute search in Objects
         """
@@ -658,8 +676,8 @@ class SearchObjectViewSet(SearchViewSet):
             return []
 
         search_q = brkQ.kadastraal_object_query(analyzer)
-        search = search_q.to_elasticsearch_object(client)
-        return search.filter('terms', subtype=['kadastraal_object'])
+        search = search_q.to_elasticsearch_object(elk_client)
+        return search
 
 
 class SearchBouwblokViewSet(SearchViewSet):
@@ -670,7 +688,8 @@ class SearchBouwblokViewSet(SearchViewSet):
 
     url_name = 'search/bouwblok-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> List[Search]:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> List[Search]:
         """
         Execute search in Objects
         """
@@ -678,7 +697,7 @@ class SearchBouwblokViewSet(SearchViewSet):
             return []
 
         search_q = bagQ.bouwblok_query(analyzer)
-        search = search_q.to_elasticsearch_object(client)
+        search = search_q.to_elasticsearch_object(elk_client)
 
         return search.filter('terms', subtype=['bouwblok'])
 
@@ -691,7 +710,8 @@ class SearchGebiedenViewSet(SearchViewSet):
 
     url_name = 'search/gebied-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
@@ -700,12 +720,12 @@ class SearchGebiedenViewSet(SearchViewSet):
 
         if analyzer.is_bouwblok_prefix():
             search = bagQ.bouwblok_query(analyzer)
-            search = search.to_elasticsearch_object(client)
+            search = search.to_elasticsearch_object(elk_client)
             search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
             search = bagQ.gebied_query(
-                analyzer).to_elasticsearch_object(client)
+                analyzer).to_elasticsearch_object(elk_client)
 
         return search
 
@@ -727,12 +747,13 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     url_name = 'search/openbareruimte-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
         search_data = bagQ.openbare_ruimte_query(analyzer)
-        return search_data.to_elasticsearch_object(client)
+        return search_data.to_elasticsearch_object(elk_client)
 
 
 class SearchNummeraanduidingViewSet(SearchViewSet):
@@ -753,7 +774,8 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     url_name = 'search/adres-list'
     custom_sort = True
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
@@ -769,7 +791,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             q = bagQ.straatnaam_query(analyzer)
 
         # default response search roads
-        return q.to_elasticsearch_object(client)
+        return q.to_elasticsearch_object(elk_client)
 
     def get_hit_data(self, result, hit):
         """
@@ -806,14 +828,16 @@ class SearchPostcodeViewSet(SearchViewSet):
     """
     url_name = 'search/postcode-list'
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
             return bagQ.postcode_huisnummer_query(analyzer) \
-                .to_elasticsearch_object(client)
+                .to_elasticsearch_object(elk_client)
         else:
-            return bagQ.weg_query(analyzer).to_elasticsearch_object(client)
+            search = bagQ.weg_query(analyzer)
+            return search.to_elasticsearch_object(elk_client)
 
 
 class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
@@ -828,12 +852,12 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
 
     @staticmethod
-    def search_query(client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(request, elk_client, analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
         return bagQ.postcode_huisnummer_exact_query(analyzer) \
-            .to_elasticsearch_object(client)
+            .to_elasticsearch_object(elk_client)
 
     def list(self, request, *args, **kwargs):
         """
