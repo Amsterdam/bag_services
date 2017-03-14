@@ -85,7 +85,6 @@ class LimitedHALPagination(HALPagination):
 
 
 class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
-
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
     filter_backends = (filters.DjangoFilterBackend,)

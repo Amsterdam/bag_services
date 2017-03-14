@@ -1,14 +1,14 @@
 # Python
 import logging
+from unittest import skip
 # Packages
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from rest_framework.test import APITestCase
 # Project
 from batch import batch
-
+import datasets.bag.batch
 import datasets.brk.batch
-
 from datasets.brk.tests import factories as brk_factories
 
 log = logging.getLogger('search')
