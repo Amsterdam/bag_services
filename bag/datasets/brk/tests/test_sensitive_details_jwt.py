@@ -1,19 +1,21 @@
-import time
+"""
+Test sensitive detauls Kadaster.  personen en eigendommen
+worden niet meer gevonden zonder in te loggen.
+"""
 
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 
-from authorization_django import levels as authorization_levels
-from django.conf import settings
-import jwt
 from rest_framework_jwt.settings import api_settings
 from rest_framework.test import APITestCase
 
 from .. import models
 from . import factories
 
+from datasets.generic.tests.authorization import AuthorizationSetup
 
-class SensitiveDetailsJwtTestCase(APITestCase):
+
+class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
     def setUp(self):
         # OLD STYLE AUTH
@@ -31,25 +33,8 @@ class SensitiveDetailsJwtTestCase(APITestCase):
         self.token_authorized = self.get_token(self.authorized)
         self.token_not_authorized = self.get_token(self.not_authorized)
 
-        # NEW STYLE AUTH
-        key = settings.DATAPUNT_AUTHZ['JWT_SECRET_KEY']
-        algorithm = settings.DATAPUNT_AUTHZ['JWT_ALGORITHM']
-
-        now = int(time.time())
-
-        token_default = jwt.encode({
-            'authz': authorization_levels.LEVEL_DEFAULT,
-            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
-        token_employee = jwt.encode({
-            'authz': authorization_levels.LEVEL_EMPLOYEE,
-            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
-        token_employee_plus = jwt.encode({
-            'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS,
-            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
-
-        self.token_default = str(token_default, 'utf-8')
-        self.token_employee = str(token_employee, 'utf-8')
-        self.token_employee_plus = str(token_employee_plus, 'utf-8')
+        # NEW STYLe AUTH
+        self.setUpAuthorization()
 
         sectie = factories.KadastraleSectieFactory(
             sectie='s'
