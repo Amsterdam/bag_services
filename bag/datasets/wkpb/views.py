@@ -3,8 +3,6 @@ from django.db.models import Prefetch
 from . import models, serializers
 from datasets.generic.rest import AtlasViewSet
 
-from authorization_django import levels as authorization_levels
-
 
 class BroncodeView(AtlasViewSet):
     """
@@ -64,7 +62,6 @@ class BeperkingView(AtlasViewSet):
         .select_related('beperkingtype')
     )
     template_name = "wkpb/beperking.html"
-
     filter_fields = ('kadastrale_objecten__id', 'verblijfsobjecten__id')
 
     def retrieve(self, request, *args, **kwargs):
@@ -94,18 +91,6 @@ class BrondocumentView(AtlasViewSet):
 
     queryset = models.Brondocument.objects.all()
     filter_fields = ('bron', 'beperking', )
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return serializers.Brondocument
-
-        elif self.action == 'retrieve':
-
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
-                return serializers.BrondocumentDetail
-
-            return serializers.BrondocumentDetailPublic
 
     def retrieve(self, request, *args, **kwargs):
         """
