@@ -438,7 +438,6 @@ def authorized_subject_queries(request, analyzer):
 
     # EMPLOYEE PLUS
     if authorized:
-        print('employee plus size!')
         return [brkQ.kadastraal_subject_query(analyzer)]
 
     # EMPLOYEE
@@ -447,7 +446,6 @@ def authorized_subject_queries(request, analyzer):
     authorized = request.is_authorized_for(employee)
 
     if authorized:
-        print('employee')
         return [niet_natuurlijk(analyzer)]
 
     # NOT AUTHORIZED / PUBLIC
@@ -496,7 +494,7 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
-    def search_query(self, elk_client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client, analyzer: QueryAnalyzer) -> Search:
         """
         Construct the search query that is executed by this view set.
         """
@@ -890,7 +888,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
-        search = self.search_query(client, analyzer)
+        search = self.search_query(request, client, analyzer)
         response = search.execute(ignore_cache=ignore_cache)
 
         # Getting the first response.
