@@ -12,7 +12,6 @@ from pathlib import Path
 from swiftclient.client import Connection
 
 
-# logging.basicConfig(level=logging.DEBUG)
 
 log = logging.getLogger(__name__)
 
@@ -134,6 +133,7 @@ def delete_old_zips(container_name, zips_mapper):
                 zippath = zipobject['name']
                 log.debug('PURGE: %s', zippath)
                 delete_from_objectstore(container_name, zippath)
+
 
 
 """
@@ -258,12 +258,38 @@ def check_age(zip_created, file_key, file_object):
     delta = now - zip_created
     log.debug('AGE: %2d days', delta.days)
     source_name = file_object['name']
+
     log.debug('%s_%s' % (zip_created.strftime('%Y%m%d'), file_key))
 
     for key, agelimit in zip_age_limits.items():
         if file_key.endswith(key):
             if zip_age_limits[key] < delta.days:
-                raise ValueError(f'Zip delivery is late! {source_name}')
+                raise ValueError(
+                    f"""
+
+        Zip delivery is late!
+
+        {key} age: {delta.days}  max_age: {zip_age_limits[key]}
+
+        from {source_name}
+
+                    """)
+
+
+def validate_age(zips_mapper):
+    """
+    Check if the files we want to import are not to old!
+    """
+    log.debug('validating age..')
+
+    for zipkey, zipfiles in zips_mapper.items():
+
+        # this is the file we want to import
+        age, importsource = zipfiles[0]
+
+        check_age(age, zipkey, importsource)
+
+        log.debug('OK: %s %s', age, zipkey)
 
 
 def fetch_diva_zips(container_name, zipfolder):
@@ -289,20 +315,23 @@ def fetch_diva_zips(container_name, zipfolder):
         if not file_name.endswith('.zip'):
             continue
 
+        # not of interest for bag / brk
         exclude = ['BRT', 'NAP', 'MBT']
 
         if any(REGTYPE in file_name for REGTYPE in exclude):
             continue
 
         dt = parser.parse(file_object['last_modified'])
-        file_key = "".join(file_name.split('_')[1:])
 
-        check_age(dt, file_key, file_object)
+        file_key = "".join(file_name.split('_')[1:])
 
         zips_mapper.setdefault(file_key, []).append((dt, file_object))
 
     download_zips(container_name, zips_mapper)
     delete_old_zips(container_name, zips_mapper)
+
+    validate_age(zips_mapper)
+
     unzip_data(zips_mapper)
 
 
@@ -312,6 +341,7 @@ def fetch_diva_files():
     totdat de zips gerealiseerd zijn alleen de .csvs en .uva2s
     :return:
     """
+    logging.basicConfig(level=logging.DEBUG)
     # creat folders where files are expected.
     create_target_directories()
     # download the exceptions not in zip files
