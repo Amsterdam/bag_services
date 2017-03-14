@@ -11,6 +11,8 @@ from datasets.generic import rest
 from django_filters.rest_framework import filters
 from django_filters.rest_framework.filterset import FilterSet
 
+from authorization_django import levels as authorization_levels
+
 
 class GemeenteViewSet(AtlasViewSet):
     """
@@ -136,8 +138,7 @@ class KadastraleSectieViewSet(AtlasViewSet):
     """
     queryset = models.KadastraleSectie.objects.all()
     queryset_detail = (
-        models.KadastraleSectie.objects
-            .select_related(
+        models.KadastraleSectie.objects.select_related(
             'kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
@@ -218,8 +219,7 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     """
     queryset = models.KadastraalSubject.objects.all()
     queryset_detail = (
-        models.KadastraalSubject.objects
-            .select_related(
+        models.KadastraalSubject.objects.select_related(
             'rechtsvorm', 'woonadres', 'woonadres__buitenland_land',
             'postadres', 'postadres__buitenland_land'))
 
@@ -382,12 +382,24 @@ class KadastraalObjectViewSet(AtlasViewSet):
             'voornaamste_gerechtigde',
         )
     )
-    serializer_class = serializers.KadastraalObject
-    serializer_detail_class = serializers.KadastraalObjectDetail
+
     filter_fields = (
         'verblijfsobjecten__id', 'beperkingen__id',
         'a_percelen__id', 'g_percelen__id')
+
     lookup_value_regex = '[^/]+'
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.KadastraalObject
+
+        elif self.action == 'retrieve':
+
+            if self.request.is_authorized_for(
+                    authorization_levels.LEVEL_EMPLOYEE):
+                return serializers.KadastraalObjectDetail
+
+            return serializers.KadastraalObjectDetailPublic
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -404,9 +416,7 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
 
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
-    # FIXME can this be faster?
-    # FIXME I think there is an index missing somewhere.. not sure
-    # take 500ms per object
+
     queryset = (
         models.KadastraalObject.objects.select_related(
             'sectie',
@@ -423,8 +433,18 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
 
     pagination_class = rest.LimitedHALPagination
 
-    serializer_class = serializers.KadastraalObjectDetailExpand
-    serializer_detail_class = serializers.KadastraalObjectDetailExpand
+    def get_serializer_class(self):
+        if self.action == 'list':
+            if self.request.is_authorized_for(
+                    authorization_levels.LEVEL_EMPLOYEE):
+                return serializers.KadastraalObjectDetailExpand
+            return serializers.KadastraalObjectDetailExpandPublic
+
+        elif self.action == 'retrieve':
+            if self.request.is_authorized_for(
+                    authorization_levels.LEVEL_EMPLOYEE):
+                return serializers.KadastraalObjectDetailExpand
+            return serializers.KadastraalObjectDetailExpandPublic
 
 
 class ZakelijkRechtFilter(FilterSet):
@@ -468,10 +488,13 @@ class ZakelijkRechtViewSet(AtlasViewSet):
     (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-7/)
     """
     queryset = (
-        models.ZakelijkRecht.objects
-            .select_related('aard_zakelijk_recht', 'kadastraal_subject', )
-            .all()
-            .order_by('aard_zakelijk_recht__code', '_kadastraal_subject_naam'))
+        models.ZakelijkRecht.objects.select_related(
+            'aard_zakelijk_recht',
+            'kadastraal_subject')
+        .all()
+        .order_by(
+            'aard_zakelijk_recht__code',
+            '_kadastraal_subject_naam'))
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 

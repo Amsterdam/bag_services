@@ -374,7 +374,8 @@ class ZakelijkRechtDetail(
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['subject_href'] = self.get_contextual_subject_href(instance, self.context['request'])
+        data['subject_href'] = self.get_contextual_subject_href(
+            instance, self.context['request'])
 
         return data
 
@@ -432,6 +433,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
         data = super().to_representation(instance)
 
         request = self.context['request']
+
         subject_natuurlijk = instance.type == instance.SUBJECT_TYPE_NATUURLIJK
 
         authorized = (request.is_authorized_for(
@@ -511,9 +513,79 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
         )
 
 
+class KadastraalObjectDetailPublic(BrkMixin, rest.HALSerializer):
+    """
+    Public version kadastraal object
+
+    Forbidden fields:
+
+    koopsom, koopjaar, cultuur (on)bebouwd, rechten en aantekeningen
+
+    https://dokuwiki.datapunt.amsterdam.nl/doku.php?id=start:aa:datarestricties&s[]=restricties # noqa
+    """
+    _display = rest.DisplayField()
+    aanduiding = serializers.CharField(source='get_aanduiding_spaties')
+    objectnummer = serializers.CharField(source='perceelnummer')
+    kadastrale_gemeente = KadastraleGemeente()
+    sectie = KadastraleSectie()
+    soort_grootte = SoortGrootte()
+
+    verblijfsobjecten = rest.RelatedSummaryField()
+    _adressen = rest.AdresFilterField()
+
+    # a_percelen = rest.RelatedSummaryField(source='a_percelen')
+    betrokken_bij = rest.RelatedSummaryField(source='a_percelen')
+
+    # g_percelen = rest.RelatedSummaryField(source='g_percelen')
+    ontstaan_uit = rest.RelatedSummaryField(source='g_percelen')
+
+    beperkingen = rest.RelatedSummaryField()
+    geometrie = rest.MultipleGeometryField()
+
+    class Meta:
+        model = models.KadastraalObject
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aanduiding',
+            'kadastrale_gemeente',
+            'sectie',
+            'objectnummer',
+            'indexletter',
+            'indexnummer',
+            'soort_grootte',
+            'grootte',
+            'meer_objecten',
+
+            'register9_tekst',
+            'status_code',
+            'toestandsdatum',
+            'voorlopige_kadastrale_grens',
+            'in_onderzoek',
+
+            'geometrie',
+
+            'ontstaan_uit',
+            'betrokken_bij',
+
+            'verblijfsobjecten',
+            '_adressen',
+            'beperkingen',
+        )
+
+
 class KadastraalObjectDetailExpand(KadastraalObjectDetail):
     rechten = ZakelijkRechtDetail(many=True)
     aantekeningen = Aantekening(many=True)
+
+    ontstaan_uit = KadastraalObject(source='g_percelen', many=True)
+    betrokken_bij = KadastraalObject(source='a_percelen', many=True)
+
+    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
+
+
+class KadastraalObjectDetailExpandPublic(KadastraalObjectDetailPublic):
 
     ontstaan_uit = KadastraalObject(source='g_percelen', many=True)
     betrokken_bij = KadastraalObject(source='a_percelen', many=True)
