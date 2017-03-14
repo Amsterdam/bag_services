@@ -166,7 +166,6 @@ gebieden.register(
     r'grootstedelijkgebied', datasets.bag.views.GrootstedelijkgebiedViewSet)
 gebieden.register(r'unesco', datasets.bag.views.UnescoViewSet)
 
-
 brk = BrkRouter()
 brk.register(r'gemeente', datasets.brk.views.GemeenteViewSet)
 
@@ -176,14 +175,12 @@ brk.register(
 brk.register(r'kadastrale-sectie', datasets.brk.views.KadastraleSectieViewSet)
 brk.register(r'subject', datasets.brk.views.KadastraalSubjectViewSet)
 
-
 brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
 
-brk.register(
-    r'object-expand',
-    datasets.brk.views.KadastraalObjectViewSetExpand,
-    base_name='object-expand',
-)
+brk.register(r'object-expand',
+             datasets.brk.views.KadastraalObjectViewSetExpand,
+             base_name='object-expand',
+             )
 
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
@@ -203,9 +200,8 @@ typeahead = TypeAheadRouter()
 # typeahead.register(r'typeahead', views.TypeAheadLegacyViewSet,
 #                    base_name='typeahead')
 
-# The new separate endpoints. Look at the typeahead project
-# for combined typeahead
-
+## The new separate endpoints. Look at the typeahead project
+#  for combined typeahead
 typeahead.register(
     r'bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
 typeahead.register(
@@ -213,6 +209,7 @@ typeahead.register(
 typeahead.register(
     r'gebieden', views.TypeAheadGebiedenViewSet,
     base_name='typeahead/gebieden')
+## ##
 
 
 # ##########

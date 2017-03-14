@@ -95,26 +95,6 @@ class BrondocumentDetail(rest.HALSerializer):
         )
 
 
-class BrondocumentDetailPublic(rest.HALSerializer):
-    _display = rest.DisplayField()
-    beperking = Beperking()
-    bron = Broncode()
-
-    class Meta:
-        model = models.Brondocument
-        fields = (
-            '_links',
-            '_display',
-            'inschrijfnummer',
-            'bron',
-            'inschrijfnummer',
-            'persoonsgegevens_afschermen',
-            'soort_besluit',
-            # 'url',  # not allowed..
-            'beperking'
-        )
-
-
 class BeperkingDetail(rest.HALSerializer):
     _display = rest.DisplayField()
     beperkingtype = Beperkingcode()

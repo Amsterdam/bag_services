@@ -1,21 +1,19 @@
-"""
-Test sensitive detauls Kadaster.  personen en eigendommen
-worden niet meer gevonden zonder in te loggen.
-"""
+import time
 
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 
+from authorization_django import levels as authorization_levels
+from django.conf import settings
+import jwt
 from rest_framework_jwt.settings import api_settings
 from rest_framework.test import APITestCase
 
 from .. import models
 from . import factories
 
-from datasets.generic.tests.authorization import AuthorizationSetup
 
-
-class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
+class SensitiveDetailsJwtTestCase(APITestCase):
 
     def setUp(self):
         # OLD STYLE AUTH
@@ -33,29 +31,27 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         self.token_authorized = self.get_token(self.authorized)
         self.token_not_authorized = self.get_token(self.not_authorized)
 
-        # NEW STYLe AUTH
-        self.setUpAuthorization()
+        # NEW STYLE AUTH
+        key = settings.DATAPUNT_AUTHZ['JWT_SECRET_KEY']
+        algorithm = settings.DATAPUNT_AUTHZ['JWT_ALGORITHM']
 
-        sectie = factories.KadastraleSectieFactory(
-            sectie='s'
-        )
+        now = int(time.time())
 
-        amsterdam = factories.GemeenteFactory(
-            gemeente='amsterdam',
-        )
+        token_default = jwt.encode({
+            'authz': authorization_levels.LEVEL_DEFAULT,
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
+        token_employee = jwt.encode({
+            'authz': authorization_levels.LEVEL_EMPLOYEE,
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
+        token_employee_plus = jwt.encode({
+            'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS,
+            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
 
-        kada_amsterdam = factories.KadastraleGemeenteFactory(
-            pk='ACD00',
-            gemeente=amsterdam
-        )
+        self.token_default = str(token_default, 'utf-8')
+        self.token_employee = str(token_employee, 'utf-8')
+        self.token_employee_plus = str(token_employee_plus, 'utf-8')
 
-        self.kot = factories.KadastraalObjectFactory.create(
-            kadastrale_gemeente=kada_amsterdam,
-            perceelnummer=10000,  # must be 5 long!
-            indexletter='A',
-            sectie=sectie,
-        )
-
+        self.kot = factories.KadastraalObjectFactory.create()
         self.natuurlijk = factories.NatuurlijkPersoonFactory.create()
         self.niet_natuurlijk = factories.NietNatuurlijkPersoonFactory.create()
 
@@ -68,15 +64,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             kadastraal_object=self.kot,
             kadastraal_subject=self.niet_natuurlijk
         )
-
-        self.not_public_fields = [
-            'koopsom', 'koopjaar',
-            'cultuurcode_onbebouwd',
-            'cultuurcode_bebouwd',
-            'rechten',
-            'aantekeningen',
-
-        ]
 
     def get_token(self, user):
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -250,57 +237,3 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
         obj = response['results'][0]
         self.assertTrue(self.kot.aanduiding in obj['_display'])
-
-    def test_match_kot_object_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='JWT {}'.format(self.token_employee))
-
-        response = self.client.get(f'/brk/object/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
-
-    def test_match_kot_object_public(self):
-        response = self.client.get(f'/brk/object/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are *NOT* in response
-        for field in self.not_public_fields:
-            self.assertNotIn(field, data)
-
-    def test_match_kot_object_expand_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='JWT {}'.format(self.token_employee))
-
-        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
-
-    def test_match_kot_object__expandpublic(self):
-        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are *NOT* in response
-        for field in self.not_public_fields:
-            self.assertNotIn(field, data)
