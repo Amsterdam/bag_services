@@ -1,9 +1,28 @@
+"""
+Module Contains logic to get the latest most up to date
+files to import in the BAG / BRK / WKPB database
+
+Goal is to assure we load Datapunt with accurate and current data
+
+checks:
+
+   check AGE of filenames
+     - we do not work with old data
+   check filename changes
+     - we do not work of old files because new files are renamed
+
+We download specific zip files:
+
+Unzip target data in to empty new location and start
+import proces.
+
+
+"""
 import logging
 import os
 
 import datetime
 import zipfile
-
 
 from dateutil import parser
 from functools import lru_cache
