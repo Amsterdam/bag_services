@@ -152,7 +152,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         self.rechtsvorm.clear()
 
     def process(self):
-        subjects = uva2.process_csv(self.path, 'BRK_kadastraal_Subject', self.process_subject)
+        subjects = uva2.process_csv(self.path, 'BRK_kadastraal_subject', self.process_subject)
 
         models.Adres.objects.bulk_create(self.adressen.values(), batch_size=database.BATCH_SIZE)
         models.KadastraalSubject.objects.bulk_create(subjects, batch_size=database.BATCH_SIZE)
