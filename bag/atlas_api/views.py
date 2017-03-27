@@ -417,6 +417,35 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
 
 
+def authorized_subject_queries(request, analyzer):
+    """
+    Decide if which query we can execute
+
+    public - no subjects
+    employ - non natural subjects / nietnatuurlijk
+    plus   - all subjects
+    """
+
+    authorized = (
+        request.is_authorized_for(
+            authorization_levels.LEVEL_EMPLOYEE_PLUS) or
+        request.user.has_perm('brk.view_sensitive_details'))
+
+    # EMPLOYEE PLUS
+    if authorized:
+        return [brkQ.kadastraal_subject_query(analyzer)]
+
+    # EMPLOYEE
+    employee = authorization_levels.LEVEL_EMPLOYEE
+    niet_natuurlijk = brkQ.kadastraal_subject_nietnatuurlijk_query
+    authorized = request.is_authorized_for(employee)
+
+    if authorized:
+        return [niet_natuurlijk(analyzer)]
+
+    # NOT AUTHORIZED / PUBLIC
+    return []
+
 class TypeAheadBrkViewSet(TypeaheadViewSet):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -465,9 +494,9 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
     page_size = 100
     url_name = 'search-list'
-    page_limit = 10
+    
+    def search_query(self, request, elk_client, analyzer: QueryAnalyzer) -> Search:
 
-    def search_query(self, client, analyzer: QueryAnalyzer) -> Search:
         """
         Construct the search query that is executed by this view set.
         """
@@ -866,7 +895,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
         # Ignoring cache in case debug is on
         ignore_cache = settings.DEBUG
-        search = self.search_query(client, analyzer)
+        search = self.search_query(request, client, analyzer)
         response = search.execute(ignore_cache=ignore_cache)
 
         # Getting the first response.
