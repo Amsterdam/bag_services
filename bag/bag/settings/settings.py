@@ -223,7 +223,7 @@ SWAGGER_SETTINGS = {
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': 'api-acc.datapunt.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',
+    'base_path': 'api-acc.datapunt.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
@@ -253,8 +253,8 @@ JWT_AUTH = {
     'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
     'JWT_DECODE_HANDLER': 'rest_framework_jwt.utils.jwt_decode_handler',
     'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
-    'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
-    'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler',
+    'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',   # noqa
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler',              # noqa
     'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret'),
     'JWT_ALGORITHM': 'HS256',
     'JWT_VERIFY': True,
@@ -269,12 +269,13 @@ JWT_AUTH = {
 }
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
+
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
-    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset onder",
+    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset",
           DIVA_DIR, "\n")
 
 # noinspection PyUnresolvedReferences
-from .checks import *  # used for ./manage.py check
+from .checks import *  # used for ./manage.py check  # noqa

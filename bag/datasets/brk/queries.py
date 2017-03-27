@@ -10,8 +10,7 @@
 import logging
 
 from django.conf import settings
-
-from elasticsearch_dsl import Q
+from elasticsearch_dsl import Q, A
 
 from datasets.generic.queries import ElasticQueryWrapper
 from datasets.generic.query_analyzer import QueryAnalyzer
@@ -37,9 +36,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     if kot_query.is_empty():
         return ElasticQueryWrapper(query=None)
 
-    must = [
-        Q('term', subtype='kadastraal_object'),
-    ]
+    must = []
 
     if kot_query.gemeente_code:
         must.append({'term': {'gemeente_code': kot_query.gemeente_code}})
@@ -52,22 +49,18 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 
     if kot_query.object_nummer and int(kot_query.object_nummer):
         if kot_query.object_nummer_is_exact():
-            must.append({
-                'term': {'objectnummer.int': int(kot_query.object_nummer)}})
+            must.append({'term': {'objectnummer.int': int(kot_query.object_nummer)}})
         else:
-            must.append({
-                'prefix': {'objectnummer.raw': int(kot_query.object_nummer)}})
+            must.append({'prefix': {'objectnummer.raw': int(kot_query.object_nummer)}})
 
     if kot_query.index_letter:
         must.append(Q('term', indexletter=kot_query.index_letter))
 
     if kot_query.index_nummer and int(kot_query.index_nummer):
         if kot_query.index_nummer_is_exact():
-            must.append({
-                'term': {'indexnummer.int': int(kot_query.index_nummer)}})
+            must.append({'term': {'indexnummer.int': int(kot_query.index_nummer)}})
         else:
-            must.append({
-                'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
+            must.append({'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
 
     return ElasticQueryWrapper(
         query=Q('bool', must=must),
@@ -80,50 +73,12 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """Create query/aggregation for kadaster subject search"""
     return ElasticQueryWrapper(
         query=Q(
-            'bool',
-            should=[
-                Q(
-                    'multi_match',
-                    # match "stephan preeker" with "stephan jacob preeker"
-                    slop=12,
-                    max_expansions=12,
-                    query=analyzer.query,
-                    type='phrase_prefix',
-                    fields=["naam"]),
-            ],
-            must=[
-                Q('term', subtype='kadastraal_subject'),
-            ]
-        ),
-        sort_fields=['naam.raw'],
-        indexes=[BRK],
-    )
-
-
-def kadastraal_subject_nietnatuurlijk_query(
-        analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
-    """
-    Create query/aggregation for kadaster subject search
-
-    EXCLUDING natuurlijkepersonen
-    """
-    return ElasticQueryWrapper(
-        query=Q(
-            'bool',
-            should=[
-                Q(
-                    'multi_match',
-                    slop=12,
-                    max_expansions=12,
-                    query=analyzer.query,
-                    type='phrase_prefix',
-                    fields=["naam"]),
-            ],
-
-            must=[
-                Q('term', natuurlijk_persoon=False),
-                Q('term', subtype='kadastraal_subject'),
-            ]
+            'multi_match',
+            slop=12,  # match "stephan preeker" with "stephan jacob preeker"
+            max_expansions=12,
+            query=analyzer.query,
+            type='phrase_prefix',
+            fields=["naam"]
         ),
         sort_fields=['naam.raw'],
         indexes=[BRK],
