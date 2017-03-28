@@ -1,6 +1,7 @@
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.status import HTTP_404_NOT_FOUND
 
 from datasets.brk import models, serializers, custom_serializers
 
@@ -246,9 +247,11 @@ class KadastraalSubjectViewSet(AtlasViewSet):
         serializer: serializers.KadastraalSubjectDetail
 
         """
+        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+            return super().retrieve(request, *args, **kwargs)
 
-        return super().retrieve(
-            request, *args, **kwargs)
+        return Response(status=HTTP_404_NOT_FOUND)
+
 
 
 class KadastraalObjectViewSet(AtlasViewSet):

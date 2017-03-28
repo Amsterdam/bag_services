@@ -3,16 +3,10 @@ Test sensitive detauls Kadaster.  personen en eigendommen
 worden niet meer gevonden zonder in te loggen.
 """
 
-from django.contrib.auth.models import User, Permission
-from django.contrib.contenttypes.models import ContentType
-
-from rest_framework_jwt.settings import api_settings
 from rest_framework.test import APITestCase
 
-from .. import models
-from . import factories
-
 from datasets.generic.tests.authorization import AuthorizationSetup
+from . import factories
 
 
 class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
@@ -63,32 +57,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             'aantekeningen',
 
         ]
-
-    def test_niet_ingelogd_geen_details_in_natuurlijk_persoon_json(self):
-        response = self.client.get('/brk/subject/{}/'.format(
-            self.natuurlijk.pk)).data
-
-        self.assertNotIn('rechten', response)
-        self.assertNotIn('woonadres', response)
-        self.assertNotIn('postadres', response)
-
-    def test_niet_ingelogd_wel_details_in_niet_natuurlijk_persoon_json(self):
-        response = self.client.get('/brk/subject/{}/'.format(
-            self.niet_natuurlijk.pk)).data
-
-        self.assertIn('rechten', response)
-        self.assertIn('woonadres', response)
-        self.assertIn('postadres', response)
-
-    def test_ingelogd_niet_geautoriseerd_geen_details_in_natuurlijk(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(
-            self.token_default))
-        response = self.client.get('/brk/subject/{}/'.format(
-            self.natuurlijk.pk)).data
-
-        self.assertNotIn('rechten', response)
-        self.assertNotIn('woonadres', response)
-        self.assertNotIn('postadres', response)
 
     def test_ingelogd_wel_geautoriseed_wel_details_in_np_json_nieuw(self):
         self.client.credentials(
@@ -223,3 +191,19 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         # check if authorized fields are *NOT* in response
         for field in self.not_public_fields:
             self.assertNotIn(field, data)
+
+    def test_niet_ingelogd_ziet_geen_niet_natuurlijk_persoon_json(self):
+        response = self.client.get('/brk/subject/{}/'.format(self.niet_natuurlijk.pk))
+        self.assertEqual(response.status_code, 404)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(self.token_default))
+        response = self.client.get('/brk/subject/{}/'.format(self.niet_natuurlijk.pk))
+        self.assertEqual(response.status_code, 404)
+
+    def test_niet_geautoriseerd_krijgt_geen_natuurlijk_persoon(self):
+        response = self.client.get('/brk/subject/{}/'.format(self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 404)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(self.token_default))
+        response = self.client.get('/brk/subject/{}/'.format(self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 404)
