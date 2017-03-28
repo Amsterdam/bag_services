@@ -37,7 +37,6 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/object',
         'brk/object-expand',
 
-        'brk/subject',
         'brk/zakelijk-recht',
         'brk/aantekening',
     ]
