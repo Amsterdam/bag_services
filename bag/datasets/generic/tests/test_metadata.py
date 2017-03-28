@@ -9,7 +9,7 @@ class MetadataTest(TestCase, metadata.UpdateDatasetMixin):
     diva = 'diva/'
 
     #def setUp(self):
-    #    metadata.METADATA_URL = 'https://api.datapunt.amsterdam.nl/metadata/'
+    #    metadata.METADATA_URL = 'https://api.data.amsterdam.nl/metadata/'
     #    self.dataset_id = 'test-acc'
 
     #def tear_down(self):
