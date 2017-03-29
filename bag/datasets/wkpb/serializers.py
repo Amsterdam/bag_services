@@ -39,6 +39,28 @@ class Brondocument(rest.HALSerializer):
         return obj.bron.omschrijving if obj.bron else None
 
 
+class BrondocumentPublic(rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    bevoegd_orgaan = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Brondocument
+        fields = (
+            '_links',
+            '_display',
+            # 'url',
+            'inschrijfnummer',
+            'documentnaam',
+            'soort_besluit',
+            'persoonsgegevens_afschermen',
+            'bevoegd_orgaan',
+        )
+
+    def get_bevoegd_orgaan(self, obj):
+        return obj.bron.omschrijving if obj.bron else None
+
+
 class Beperkingcode(serializers.ModelSerializer):
     class Meta:
         model = models.Beperkingcode
@@ -105,12 +127,12 @@ class BrondocumentDetailPublic(rest.HALSerializer):
         fields = (
             '_links',
             '_display',
+            #  'url',           # not allowed..
             'inschrijfnummer',
             'bron',
             'inschrijfnummer',
             'persoonsgegevens_afschermen',
             'soort_besluit',
-            # 'url',  # not allowed..
             'beperking'
         )
 

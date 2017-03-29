@@ -97,14 +97,16 @@ class BrondocumentView(AtlasViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return serializers.Brondocument
+            medewerker = authorization_levels.LEVEL_EMPLOYEE
+            if self.request.is_authorized_for(medewerker):
+                return serializers.Brondocument
+
+            return serializers.BrondocumentPublic
 
         elif self.action == 'retrieve':
-
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
+            medewerker = authorization_levels.LEVEL_EMPLOYEE
+            if self.request.is_authorized_for(medewerker):
                 return serializers.BrondocumentDetail
-
             return serializers.BrondocumentDetailPublic
 
     def retrieve(self, request, *args, **kwargs):
