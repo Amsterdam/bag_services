@@ -223,7 +223,7 @@ SWAGGER_SETTINGS = {
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': 'api-acc.data.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
+    'base_path': 'acc.api.data.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',

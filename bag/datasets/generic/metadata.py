@@ -13,7 +13,7 @@ class UpdateDatasetMixin(object):
     """
     Mixin to update metadata API from import scripts.
 
-    It will call the api-acc or api domain based on hostname.
+    It will call the acc.api or api domain based on hostname.
 
     usage:
 
