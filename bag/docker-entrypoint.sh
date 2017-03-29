@@ -17,4 +17,4 @@ echo Collecting static files
 yes yes | python manage.py collectstatic
 
 # run uwsgi
-exec uwsgi --ini /app/uwsgi.ini
+exec uwsgi
