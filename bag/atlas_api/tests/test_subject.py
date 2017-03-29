@@ -84,6 +84,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'Stephan Preeker'})
+
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 

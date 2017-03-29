@@ -492,6 +492,7 @@ class SearchViewSet(viewsets.ViewSet):
     metadata_class = QueryMetadata
     page_size = 100
     url_name = 'search-list'
+    page_limit = 10
 
     def search_query(self, request,
                      elk_client, analyzer: QueryAnalyzer) -> Search:
@@ -849,8 +850,8 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
 
     metadata_class = QueryMetadata
 
-    @staticmethod
-    def search_query(request, elk_client, analyzer: QueryAnalyzer) -> Search:
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
