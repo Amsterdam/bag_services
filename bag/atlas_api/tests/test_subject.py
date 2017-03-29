@@ -1,9 +1,4 @@
-from django.contrib.auth.models import User, Permission
-from django.contrib.contenttypes.models import ContentType
-
 from rest_framework.test import APITestCase
-
-from rest_framework_jwt.settings import api_settings
 
 from batch import batch
 import datasets.brk.batch
@@ -164,6 +159,14 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
 
+        # no natuurlijk subject search
+        response = self.client.get(
+            '/atlas/typeahead/brk/',
+            {'q': 'Stephan Preeker'})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Stephan Jacob Preeker", str(response.data))
+
+        # but other subjects yes.
         response = self.client.get(
             '/atlas/typeahead/brk/', {'q': 'stoeptegel'})
 
