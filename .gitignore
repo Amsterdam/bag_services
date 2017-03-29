@@ -19,3 +19,6 @@ reports/
 .project
 .pydevproject
 .settings
+
+# venv
+.venv
