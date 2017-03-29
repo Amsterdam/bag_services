@@ -6,10 +6,14 @@ from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
+from datasets.generic.tests.authorization import AuthorizationSetup
 
-class BrowseDatasetsTestCase(APITestCase):
+
+class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     """
     Verifies that browsing the API works correctly.
+
+    We use employee authorization which should be able to see every endpoint
     """
     datasets = [
         'bag/ligplaats',
@@ -37,6 +41,7 @@ class BrowseDatasetsTestCase(APITestCase):
         'brk/object',
         'brk/object-expand',
 
+        'brk/subject',
         'brk/zakelijk-recht',
         'brk/aantekening',
     ]
@@ -63,6 +68,11 @@ class BrowseDatasetsTestCase(APITestCase):
         brk_factories.KadastraalSubjectFactory.create()
         brk_factories.ZakelijkRechtFactory.create()
         brk_factories.AantekeningFactory.create()
+
+        self.setUpAuthorization()
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
 
     def valid_response(self, url, response):
         """
