@@ -22,8 +22,8 @@ from rest_framework.reverse import reverse
 
 from authorization_django import levels as authorization_levels
 
-from datasets.bag import queries as bagQ  # noqa
-from datasets.brk import queries as brkQ  # noqa
+from datasets.bag import queries as bag_qs  # noqa
+from datasets.brk import queries as brk_qs  # noqa
 from datasets.generic import rest
 from datasets.generic.queries import ElasticQueryWrapper
 from datasets.generic.query_analyzer import QueryAnalyzer
@@ -96,33 +96,33 @@ all_query_selectors = [
     {
         'labels': {'bag'},
         'test': 'is_postcode_prefix',
-        'query': bagQ.postcode_query,
+        'query': bag_qs.postcode_query,
     },
     {
         'labels': {'bag'},
         'test': 'is_bouwblok_prefix',
-        'query': bagQ.bouwblok_query,
+        'query': bag_qs.bouwblok_query,
     },
     {
         'labels': {'bag', 'nummeraanduiding'},
         'test': 'is_postcode_huisnummer_prefix',
-        'query': bagQ.postcode_huisnummer_query,
+        'query': bag_qs.postcode_huisnummer_query,
     },
     {
         'labels': {'brk'},
         'test': 'is_kadastraal_object_prefix',
-        'query': brkQ.kadastraal_object_query,
+        'query': brk_qs.kadastraal_object_query,
     },
     {
         'labels': {'nummeraanduiding'},
         'test': 'is_straatnaam_huisnummer_prefix',
-        'query': bagQ.straatnaam_huisnummer_query,
+        'query': bag_qs.straatnaam_huisnummer_query,
     },
 ]
 
 default_queries = {
-    'bag': [bagQ.weg_query],
-    'gebieden': [bagQ.gebied_query],
+    'bag': [bag_qs.weg_query],
+    'gebieden': [bag_qs.gebied_query],
 }
 
 
@@ -431,18 +431,16 @@ def authorized_subject_queries(request, analyzer):
     plus   - all subjects
     """
 
-    authorized = (
-        request.is_authorized_for(
-            authorization_levels.LEVEL_EMPLOYEE_PLUS) or
-        request.user.has_perm('brk.view_sensitive_details'))
+    plus_user = authorization_levels.LEVEL_EMPLOYEE_PLUS
+    authorized = (request.is_authorized_for(plus_user))
 
     # EMPLOYEE PLUS
     if authorized:
-        return [brkQ.kadastraal_subject_query(analyzer)]
+        return [brk_qs.kadastraal_subject_query(analyzer)]
 
     # EMPLOYEE
     employee = authorization_levels.LEVEL_EMPLOYEE
-    niet_natuurlijk = brkQ.kadastraal_subject_nietnatuurlijk_query
+    niet_natuurlijk = brk_qs.kadastraal_subject_nietnatuurlijk_query
     authorized = request.is_authorized_for(employee)
 
     if authorized:
@@ -674,7 +672,7 @@ class SearchObjectViewSet(SearchViewSet):
         if not analyzer.is_kadastraal_object_prefix():
             return []
 
-        search_q = brkQ.kadastraal_object_query(analyzer)
+        search_q = brk_qs.kadastraal_object_query(analyzer)
         search = search_q.to_elasticsearch_object(elk_client)
         return search
 
@@ -695,7 +693,7 @@ class SearchBouwblokViewSet(SearchViewSet):
         if not analyzer.is_bouwblok_prefix():
             return []
 
-        search_q = bagQ.bouwblok_query(analyzer)
+        search_q = bag_qs.bouwblok_query(analyzer)
         search = search_q.to_elasticsearch_object(elk_client)
 
         return search.filter('terms', subtype=['bouwblok'])
@@ -718,12 +716,12 @@ class SearchGebiedenViewSet(SearchViewSet):
         # bouwblok
 
         if analyzer.is_bouwblok_prefix():
-            search = bagQ.bouwblok_query(analyzer)
+            search = bag_qs.bouwblok_query(analyzer)
             search = search.to_elasticsearch_object(elk_client)
             search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
-            search = bagQ.gebied_query(
+            search = bag_qs.gebied_query(
                 analyzer).to_elasticsearch_object(elk_client)
 
         return search
@@ -751,7 +749,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        search_data = bagQ.openbare_ruimte_query(analyzer)
+        search_data = bag_qs.openbare_ruimte_query(analyzer)
         return search_data.to_elasticsearch_object(elk_client)
 
 
@@ -781,13 +779,13 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
         q = None
 
         if analyzer.is_postcode_huisnummer_prefix():
-            q = bagQ.postcode_huisnummer_query(analyzer)
+            q = bag_qs.postcode_huisnummer_query(analyzer)
 
         elif analyzer.is_straatnaam_huisnummer_prefix():
-            q = bagQ.straatnaam_huisnummer_query(analyzer)
+            q = bag_qs.straatnaam_huisnummer_query(analyzer)
 
         if not q:
-            q = bagQ.straatnaam_query(analyzer)
+            q = bag_qs.straatnaam_query(analyzer)
 
         # default response search roads
         return q.to_elasticsearch_object(elk_client)
@@ -832,10 +830,10 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
-            return bagQ.postcode_huisnummer_query(analyzer) \
+            return bag_qs.postcode_huisnummer_query(analyzer) \
                 .to_elasticsearch_object(elk_client)
         else:
-            search = bagQ.weg_query(analyzer)
+            search = bag_qs.weg_query(analyzer)
             return search.to_elasticsearch_object(elk_client)
 
 
@@ -855,7 +853,7 @@ class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
         """
         Execute search in Objects
         """
-        return bagQ.postcode_huisnummer_exact_query(analyzer) \
+        return bag_qs.postcode_huisnummer_exact_query(analyzer) \
             .to_elasticsearch_object(elk_client)
 
     def list(self, request, *args, **kwargs):

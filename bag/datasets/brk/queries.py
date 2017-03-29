@@ -81,7 +81,7 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query=Q(
             'bool',
-            should=[
+            must=[
                 Q(
                     'multi_match',
                     # match "stephan preeker" with "stephan jacob preeker"
@@ -89,9 +89,8 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                     max_expansions=12,
                     query=analyzer.query,
                     type='phrase_prefix',
-                    fields=["naam"]),
-            ],
-            must=[
+                    fields=["naam"]
+                ),
                 Q('term', subtype='kadastraal_subject'),
             ]
         ),
@@ -110,17 +109,15 @@ def kadastraal_subject_nietnatuurlijk_query(
     return ElasticQueryWrapper(
         query=Q(
             'bool',
-            should=[
+            must=[
                 Q(
                     'multi_match',
                     slop=12,
                     max_expansions=12,
                     query=analyzer.query,
                     type='phrase_prefix',
-                    fields=["naam"]),
-            ],
-
-            must=[
+                    fields=["naam"]
+                ),
                 Q('term', natuurlijk_persoon=False),
                 Q('term', subtype='kadastraal_subject'),
             ]
