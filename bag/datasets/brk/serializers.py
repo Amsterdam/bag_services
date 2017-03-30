@@ -168,9 +168,8 @@ class ZakelijkRechtContextMixin:
             instance.kadastraal_subject.type ==  \
             instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK
 
-        authorized = (request.is_authorized_for(
-                authorization_levels.LEVEL_EMPLOYEE_PLUS) or
-            request.user.has_perm('brk.view_sensitive_details'))
+        plus_user = authorization_levels.LEVEL_EMPLOYEE_PLUS
+        authorized = request.is_authorized_for(plus_user)
 
         if subject_natuurlijk and not authorized:
             return reverse(
@@ -372,20 +371,43 @@ class ZakelijkRechtDetail(
             'app_rechtsplitstype',
         )
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['subject_href'] = self.get_contextual_subject_href(
-            instance, self.context['request'])
 
-        return data
+class ZakelijkRechtDetailPublic(
+        BrkMixin, rest.HALSerializer, ZakelijkRechtContextMixin):
+    _display = rest.DisplayField()
+    aard_zakelijk_recht = AardZakelijkRecht()
+    # ontstaan_uit = KadastraalSubject()
+    # betrokken_bij = KadastraalSubject()
+    kadastraal_object = KadastraalObject()
+    # kadastraal_subject = KadastraalSubject()
+    app_rechtsplitstype = AppartementsrechtsSplitsType()
+
+    class Meta:
+        model = models.ZakelijkRecht
+        fields = (
+            '_links',
+            '_display',
+            'id',
+            'aard_zakelijk_recht',
+            'aard_zakelijk_recht_akr',
+
+            # 'ontstaan_uit',
+            # 'betrokken_bij',
+
+            'teller',
+            'noemer',
+
+            'kadastraal_object',
+            # 'kadastraal_subject',
+
+            'kadastraal_object_status',
+
+            'app_rechtsplitstype',
+        )
 
 
 class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
     rechten = rest.RelatedSummaryField()
-
-    allowed_anonymous = {
-        '_links', '_display',
-        'id', 'volledige_naam', 'is_natuurlijk_persoon'}
 
     class Meta:
         model = models.KadastraalSubject
@@ -426,25 +448,26 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
             'postadres',
 
             'aantekeningen',
-            'rechten',
+            'rechten',        # employee NOT OK for natuurlijk
         )
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
+    def to_representation(self, subject):
+        """
+        Remove 'rechten' if not plus user
+        """
+        data = super().to_representation(subject)
 
+        if subject.type == subject.SUBJECT_TYPE_NIET_NATUURLIJK:
+            return data
+
+        # check if we are authorized voor natuurlijke personen
         request = self.context['request']
+        plus = authorization_levels.LEVEL_EMPLOYEE_PLUS
+        if request.is_authorized_for(plus):
+            return data
 
-        subject_natuurlijk = instance.type == instance.SUBJECT_TYPE_NATUURLIJK
-
-        authorized = (request.is_authorized_for(
-            authorization_levels.LEVEL_EMPLOYEE_PLUS) or
-            request.user.has_perm('brk.view_sensitive_details'))
-
-        if subject_natuurlijk and not authorized:
-            return {
-                f: data[f] for f in
-                self.fields.keys() if f in self.allowed_anonymous
-            }
+        # We are employee and should not see 'rechten' / eigendommen
+        data.pop('rechten')
 
         return data
 

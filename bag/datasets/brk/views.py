@@ -1,7 +1,8 @@
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.status import HTTP_404_NOT_FOUND
+
+from rest_framework.status import HTTP_401_UNAUTHORIZED
 
 from datasets.brk import models, serializers, custom_serializers
 
@@ -125,30 +126,18 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     serializer_detail_class = serializers.KadastraalSubjectDetail
     lookup_value_regex = '[^/]+'
 
+    # NOTE in serializer there is MORE authorization code!!
+
     def list(self, request, *args, **kwargs):
-        """
-        list results
-
-        ---
-        """
-
-        return super().list(
-            request, *args, **kwargs)
+        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+            return super().list(request, *args, **kwargs)
+        return Response(status=HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        serializer: serializers.KadastraalSubjectDetail
-
-        """
         if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
             return super().retrieve(request, *args, **kwargs)
 
-        return Response(status=HTTP_404_NOT_FOUND)
-
+        return Response(status=HTTP_401_UNAUTHORIZED)
 
 
 class KadastraalObjectViewSet(AtlasViewSet):
@@ -381,37 +370,62 @@ class ZakelijkRechtViewSet(AtlasViewSet):
         .order_by(
             'aard_zakelijk_recht__code',
             '_kadastraal_subject_naam'))
+
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
     filter_class = ZakelijkRechtFilter
 
-    # filter_fields = (
-    #    'kadastraal_subject', 'kadastraal_object', 'verblijfsobjecten__id')
-
     lookup_value_regex = '[^/]+'
+
+    def get_queryset(self):
+        """
+        Depending on authorisation return subjects
+
+        only plus users can see natuurlijke personen
+        """
+
+        # plus = authorization_levels.LEVEL_EMPLOYEE_PLUS
+        # if self.request.is_authorized_for(plus):
+        #    return self.queryset
+
+        # find all items but not natuurlijke personen
+        employee = authorization_levels.LEVEL_EMPLOYEE
+        if self.request.is_authorized_for(employee):
+            return self.queryset
+            # return self.queryset .filter(
+            #    kadastraal_subject__statutaire_naam__isnull=False)
+
+        # return empty qs
+        return self.queryset.none()
+        # we should not get here..
 
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
+
+        employee = authorization_levels.LEVEL_EMPLOYEE
+
+        if not self.request.is_authorized_for(employee):
+            return Response(status=HTTP_401_UNAUTHORIZED)
+
         zakelijk_recht = self.get_object()
         subject = zakelijk_recht.kadastraal_subject
+
         serializer = serializers.KadastraalSubjectDetailWithPersonalData(
             instance=subject, context=dict(request=request)
         )
         return Response(serializer.data)
 
+    def list(self, request, *args, **kwargs):
+        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+            return super().list(request, *args, **kwargs)
+        return Response(status=HTTP_401_UNAUTHORIZED)
+
     def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
+        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+            return super().retrieve(request, *args, **kwargs)
 
-        ---
-
-        serializer: serializers.ZakelijkRechtDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+        return Response(status=HTTP_401_UNAUTHORIZED)
 
 
 class AantekeningenFilter(FilterSet):
@@ -491,4 +505,22 @@ class KadastraalObjectWkpbView(RetrieveAPIView):
             'voornaamste_gerechtigde',
         )
     )
-    serializer_class = custom_serializers.KadastraalObjectDetailWkpb
+
+    def get_serializer_class(self):
+            return serializers.KadastraalObject
+
+            if self.request.is_authorized_for(
+                    authorization_levels.LEVEL_EMPLOYEE_PLUS):
+                return custom_serializers.KadastraalObjectDetailWkpb
+
+            if self.request.is_authorized_for(
+                    authorization_levels.LEVEL_EMPLOYEE):
+                return custom_serializers.KadastraalObjectDetailWkpbEmployee
+
+            # return serializers.KadastraalObjectDetailPublic
+
+    def retrieve(self, request, *args, **kwargs):
+        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+            return super().retrieve(request, *args, **kwargs)
+
+        return Response(status=HTTP_401_UNAUTHORIZED)

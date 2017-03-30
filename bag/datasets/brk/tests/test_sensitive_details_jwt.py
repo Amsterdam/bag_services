@@ -84,33 +84,53 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
         response = self.client.get(
             '/brk/zakelijk-recht/{}/'.format(
-                self.recht_niet_natuurlijk.pk)).data
+                self.recht_niet_natuurlijk.pk))
 
-        subj = response['kadastraal_subject']
-        self.assertEqual(
-            subj['_links']['self']['href'],
-            'http://testserver/brk/subject/{}/'.format(self.niet_natuurlijk.pk)
-        )
+        self.assertEqual(response.status_code, 401)
+
+        # print(response)
+
+        # data = response.data
+
+        # subj = data['kadastraal_subject']
+
+        # self.assertEqual(
+        #    subj['_links']['self']['href'],
+        #    'http://testserver/brk/subject/{}/'.format(self.niet_natuurlijk.pk)
+        # )
 
     def test_uitgelogd_zakelijk_recht_natuurlijk_subresource(self):
+
         response = self.client.get(
             '/brk/zakelijk-recht/{}/'.format(
-                self.recht_natuurlijk.pk)).data
+                self.recht_natuurlijk.pk))
 
-        subj = response['kadastraal_subject']
-        self.assertEqual(
-            subj['_links']['self']['href'],
-            'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
-        )
+        self.assertEqual(response.status_code, 401)
+
+        # print(response)
+
+        # subj = response.data['kadastraal_subject']
+
+        # self.assertEqual(
+        #    subj['_links']['self']['href'],
+        #    'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
+        # )
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+
         response = self.client.get(
             '/brk/zakelijk-recht/{}/subject/'.format(
-                self.recht_natuurlijk.pk)).data
+                self.recht_natuurlijk.pk))
 
-        self.assertIn('woonadres', response)
-        self.assertIn('postadres', response)
-        self.assertNotIn('rechten', response)
+        data = response.data
+
+        self.assertIn('woonadres', data)
+        self.assertIn('postadres', data)
+
+        self.assertNotIn('rechten', data)
 
     def test_directional_name_subject_nieuw(self):
         self.client.credentials(
@@ -193,17 +213,42 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_niet_ingelogd_ziet_geen_niet_natuurlijk_persoon_json(self):
-        response = self.client.get('/brk/subject/{}/'.format(self.niet_natuurlijk.pk))
-        self.assertEqual(response.status_code, 404)
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.niet_natuurlijk.pk))
 
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(self.token_default))
-        response = self.client.get('/brk/subject/{}/'.format(self.niet_natuurlijk.pk))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 401)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token_default}')
+
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.niet_natuurlijk.pk))
+
+        self.assertEqual(response.status_code, 401)
 
     def test_niet_geautoriseerd_krijgt_geen_natuurlijk_persoon(self):
-        response = self.client.get('/brk/subject/{}/'.format(self.natuurlijk.pk))
-        self.assertEqual(response.status_code, 404)
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 401)
 
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(self.token_default))
-        response = self.client.get('/brk/subject/{}/'.format(self.natuurlijk.pk))
-        self.assertEqual(response.status_code, 404)
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token_default}')
+
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 401)
+
+    def test_niet_geautoriseerd_natuurlijk_persoon_zonder_rechten(self):
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.natuurlijk.pk))
+
+        self.assertEqual(response.status_code, 401)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token_employee}')
+
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertNotIn('rechten', str(response.data))
