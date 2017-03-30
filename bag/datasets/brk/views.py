@@ -41,61 +41,6 @@ class GemeenteViewSet(AtlasViewSet):
     serializer_detail_class = serializers.GemeenteDetail
     lookup_value_regex = '[^/]+'
 
-    def list(self, request, *args, **kwargs):
-        """
-        list results
-
-        ---
-        type:
-          _links:
-            required: true
-            description: paginate links
-            type: links
-          count:
-            required: true
-            type: integer
-          results:
-            required: true
-            type: array
-            items:
-              required: true
-              type: gemeenten
-        """
-
-        return super().list(
-            request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        type:
-          _links:
-            required: true
-            description: link naar self
-            type: links
-          gemeente:
-            required: true
-            description: officiële naam
-            type: string
-          geometrie:
-            required: true
-            description: De RD geo-coordinaten
-            type: object
-          dataset:
-            required: true
-            description: officiele data-bron
-            type: string
-
-        serializer: serializers.GemeenteDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class KadastraleGemeenteViewSet(AtlasViewSet):
     """
@@ -145,61 +90,6 @@ class KadastraleSectieViewSet(AtlasViewSet):
     serializer_detail_class = serializers.KadastraleSectieDetail
     filter_fields = ('kadastrale_gemeente',)
 
-    def list(self, request, *args, **kwargs):
-        """
-        list results
-
-        ---
-        type:
-          _links:
-            required: true
-            description: paginate links
-            type: links
-          count:
-            required: true
-            type: integer
-          results:
-            required: true
-            type: array
-            items:
-              required: true
-              type: kadastersectie
-        """
-
-        return super().list(
-            request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        type:
-          _links:
-            required: true
-            description: link naar self
-            type: links
-          gemeente:
-            required: true
-            description: officiële naam
-            type: string
-          geometrie:
-            required: true
-            description: De RD geo-coordinaten
-            type: object
-          dataset:
-            required: true
-            description: officiele data-bron
-            type: string
-
-        serializer: serializers.GemeenteDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class KadastraalSubjectViewSet(AtlasViewSet):
     """
@@ -217,8 +107,15 @@ class KadastraalSubjectViewSet(AtlasViewSet):
 
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
+
+    Authorizatie:
+
+    public   - none
+    employee - alleen niet natuurlijk
+    plus     - mag alles zien
     """
     queryset = models.KadastraalSubject.objects.all()
+
     queryset_detail = (
         models.KadastraalSubject.objects.select_related(
             'rechtsvorm', 'woonadres', 'woonadres__buitenland_land',
@@ -404,19 +301,6 @@ class KadastraalObjectViewSet(AtlasViewSet):
 
             return serializers.KadastraalObjectDetailPublic
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        serializer: serializers.KadastraalObjectDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
 
@@ -426,12 +310,11 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
             'voornaamste_gerechtigde',
             'kadastrale_gemeente',
             'kadastrale_gemeente__gemeente').prefetch_related(
-            'a_percelen',
-            'g_percelen',
-            'aantekeningen',
-            'beperkingen',
-        )
-
+                'a_percelen',
+                'g_percelen',
+                'aantekeningen',
+                'beperkingen',
+            )
     )
 
     pagination_class = rest.LimitedHALPagination
@@ -593,6 +476,13 @@ class AantekeningViewSet(AtlasViewSet):
 
 
 class KadastraalObjectWkpbView(RetrieveAPIView):
+    """
+    Kadastraal object met extra wkpb informatie
+
+    not publiek
+    employee zonder rechten
+    plus - all
+    """
     queryset = (
         models.KadastraalObject.objects.select_related(
             'sectie',

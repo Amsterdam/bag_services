@@ -1,7 +1,7 @@
 from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.geos import GEOSGeometry, Point
+from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
 from django_filters.rest_framework.filterset import FilterSet
@@ -99,19 +99,6 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Standplaats
     filter_fields = ('buurt',)
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve StandplaatsDetail
-
-        ---
-
-        serializer: serializers.LigplaatsDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
     """
@@ -151,17 +138,6 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
         'panden__id',
         'panden__landelijk_id',
         'buurt',)
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve VerblijfsobjectDetail
-
-        ---
-
-        serializer: serializers.VerblijfsobjectDetail
-
-        """
-        return super().retrieve(request, *args, **kwargs)
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -228,7 +204,6 @@ class NummeraanduidingFilter(FilterSet):
         The value given is broken up by ',' and coverterd
         to the value tuple
         """
-        srid = 4326
         try:
             x, y, radius = value.split(',')
         except ValueError:
@@ -259,14 +234,16 @@ class NummeraanduidingFilter(FilterSet):
     def pand_filter(self, queryset, filter_name, value):
         """
         """
-        pand = models.Pand.objects.prefetch_related('verblijfsobjecten').get(landelijk_id=value)
+        m_po = models.Pand.objects
+        pand = m_po.prefetch_related('verblijfsobjecten').get(landelijk_id=value)   # noqa
         ids = pand.verblijfsobjecten.values_list(
             'adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
 
     def kot_filter(self, queryset, filter_name, value):
         """Filter based on the kadastral object"""
-        vbos = models.Verblijfsobject.objects.select_related('adressen').filter(
+        m_vbo = models.Verblijfsobject.objects
+        vbos = m_vbo.select_related('adressen').filter(
             kadastrale_objecten__id=value)
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
@@ -305,19 +282,6 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Nummeraanduiding
     filter_class = NummeraanduidingFilter
     detailed_keyword = 'detailed'
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve NummeraanduidingDetail
-
-        ---
-
-        serializer: serializers.NummeraanduidingDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
         # Checking if a detailed response is required
@@ -362,19 +326,6 @@ class PandViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Pand
     filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve PandDetail
-
-        ---
-
-        serializer: serializers.PandDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
     def get_object(self):
         pk = self.kwargs['pk']
         if pk and len(pk) == 16:
@@ -410,19 +361,6 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     queryset = models.OpenbareRuimte.objects.all()
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve OpenbareRuimteDetail
-
-        ---
-
-        serializer: serializers.OpenbareRuimteDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
@@ -627,19 +565,6 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
     filter_fields = ('stadsdeel',)
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BuurtcombinatieDetail
-
-        ---
-
-        serializer: serializers.BuurtcombinatieDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):

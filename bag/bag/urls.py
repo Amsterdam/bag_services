@@ -50,6 +50,7 @@ grouped_url_patterns = {
 
     'brk_patterns': [
         url(r'^brk/', include(atlas_api.urls.brk.urls)),
+
         url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
             datasets.brk.views.KadastraalObjectWkpbView.as_view(),
             name='brk-object-wkpb'),

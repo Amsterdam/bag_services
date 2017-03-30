@@ -13,7 +13,8 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     """
     Verifies that browsing the API works correctly.
 
-    We use employee authorization which should be able to see every endpoint
+    We use employee plus authorization which should be able
+    to see every endpoint
     """
     datasets = [
         'bag/ligplaats',
@@ -72,7 +73,7 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         self.setUpAuthorization()
 
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
 
     def valid_response(self, url, response):
         """
