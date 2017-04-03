@@ -75,8 +75,6 @@ class HALSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_url(self, obj, view_name, request, format):
 
-        print('geturl', obj)
-
         landelijk_id = getattr(obj, 'landelijk_id', None)
         obj_pk = obj.pk
 
