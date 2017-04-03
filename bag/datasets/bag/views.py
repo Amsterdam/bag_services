@@ -72,6 +72,15 @@ class LigplaatsViewSet(rest.AtlasViewSet):
         return super().retrieve(
             request, *args, **kwargs)
 
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 16:
+            obj = get_object_or_404(models.Ligplaats, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.Ligplaats, pk=pk)
+
+        return obj
+
 
 class StandplaatsViewSet(rest.AtlasViewSet):
     """
@@ -98,6 +107,15 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
     filter_fields = ('buurt',)
+
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 16:
+            obj = get_object_or_404(models.Standplaats, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.Standplaats, pk=pk)
+
+        return obj
 
 
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
@@ -362,6 +380,15 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
 
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 16:
+            obj = get_object_or_404(models.OpenbareRuimte, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.OpenbareRuimte, pk=pk)
+
+        return obj
+
 
 class WoonplaatsViewSet(rest.AtlasViewSet):
     """
@@ -394,6 +421,15 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 
         return super().retrieve(
             request, *args, **kwargs)
+
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) <= 4:
+            obj = get_object_or_404(models.Woonplaats, landelijk_id=pk)
+        else:
+            obj = get_object_or_404(models.Woonplaats, pk=pk)
+
+        return obj
 
 
 # gebieden

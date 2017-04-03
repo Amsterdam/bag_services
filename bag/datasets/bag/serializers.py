@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
 from rest_framework_gis.fields import GeometryField
+# from rest_framework.reverse import reverse
 
 from datasets.brk import serializers as brk_serializers
 from datasets.generic import rest
+
 from . import models
 
 
@@ -169,6 +171,7 @@ class Standplaats(BagMixin, rest.HALSerializer):
 
 
 class Verblijfsobject(BagMixin, rest.HALSerializer):
+
     _display = rest.DisplayField()
     status = Status()
     hoofdadres = serializers.SerializerMethodField()
@@ -183,6 +186,7 @@ class Verblijfsobject(BagMixin, rest.HALSerializer):
             'status',
             'hoofdadres',
         )
+        lookup_field = 'landelijk_id'
 
     def get_hoofdadres(self, obj):
         return True if obj.hoofdadres else None
@@ -539,13 +543,16 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             """
             Removes the afstand field if it is None
             """
-            representation = super(NummeraanduidingDetail, self).to_representation(instance)
+            obj = super(NummeraanduidingDetail, self)
+            representation = obj.to_representation(instance)
             if representation['afstand'] is None:
                 try:
                     representation.pop('afstand')
                 except KeyError:
-                    # Ignore missing key -- a child serializer could inherit a "to_representation" method
-                    # from its parent serializer that applies to a field not present on
+                    # Ignore missing key -- a child serializer could
+                    # inherit a "to_representation" method
+                    # from its parent serializer that applies to a
+                    # field not present on
                     # the child serializer.
                     pass
             return representation

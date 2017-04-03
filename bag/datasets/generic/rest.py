@@ -13,6 +13,7 @@ FORMATS = [dict(format=r.format, type=r.media_type) for r in DEFAULT_RENDERERS]
 
 
 def get_links(view_name, kwargs=None, request=None):
+
     result = OrderedDict([
         ('self', dict(
             href=reverse(view_name, kwargs=kwargs, request=request)
@@ -30,6 +31,10 @@ class DataSetSerializerMixin(object):
 
 
 class LinksField(serializers.HyperlinkedIdentityField):
+
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'pk'
+
     def to_representation(self, value):
         request = self.context.get('request')
 
@@ -41,10 +46,50 @@ class LinksField(serializers.HyperlinkedIdentityField):
 
         return result
 
+    def get_url(self, obj, view_name, request, format):
+        """
+        Given an object, return the URL that hyperlinks to the object.
+
+        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`
+        attributes are not configured to correctly match the URL conf.
+        """
+        # Unsaved objects will not yet have a valid URL.
+        if hasattr(obj, 'pk') and obj.pk in (None, ''):
+            return None
+
+        if hasattr(obj, 'landelijk_id'):
+            self.lookup_field = 'landelijk_id'
+
+        lookup_value = getattr(obj, self.lookup_field)
+        kwargs = {self.lookup_url_kwarg: lookup_value}
+        return self.reverse(
+            view_name, kwargs=kwargs, request=request, format=format)
+
 
 class HALSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Use landelijk ids if possible
+    """
     url_field_name = '_links'
     serializer_url_field = LinksField
+
+    def get_url(self, obj, view_name, request, format):
+
+        print('geturl', obj)
+
+        landelijk_id = getattr(obj, 'landelijk_id', None)
+        obj_pk = obj.pk
+
+        # prefer landeljk id usage
+        if landelijk_id:
+            obj_pk = landelijk_id
+
+        url_kwargs = {
+            'pk': obj_pk
+        }
+
+        return reverse(
+            view_name, kwargs=url_kwargs, request=request, format=format)
 
 
 class HALPagination(pagination.PageNumberPagination):
@@ -100,7 +145,13 @@ class RelatedSummaryField(serializers.Field):
         mapping = model_name.lower() + "-list"
         url = reverse(mapping, request=self.context['request'])
 
+        landelijk_id = getattr(value.instance, 'landelijk_id', None)
         parent_pk = value.instance.pk
+
+        # prefer landeljk id usage
+        if landelijk_id:
+            parent_pk = landelijk_id
+
         filter_name = list(value.core_filters.keys())[0]
 
         return {

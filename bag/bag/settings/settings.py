@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import datetime
 import os
 import re
 import sys
@@ -53,9 +52,9 @@ DATAPUNT_API_URL = os.getenv(
     'DATAPUNT_API_URL', 'https://api.datapunt.amsterdam.nl/')
 
 INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
 
     'django.contrib.staticfiles',
     'django_extensions',
@@ -78,11 +77,8 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'authorization_django.authorization_middleware',
 )
 
@@ -172,9 +168,7 @@ ALLOWED_HOSTS = [
 REST_FRAMEWORK = dict(
     PAGE_SIZE=25,
     MAX_PAGINATE_BY=100,
-    DEFAULT_AUTHENTICATION_CLASSES=(
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-    ),
+
     DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
     DEFAULT_PARSER_CLASSES=(
         'drf_hal_json.parsers.JsonHalParser',
@@ -215,7 +209,6 @@ SWAGGER_SETTINGS = {
     'is_authenticated': False,
     'is_superuser': False,
 
-    'unauthenticated_user': 'django.contrib.auth.models.AnonymousUser',
     'permission_denied_handler': None,
     'resource_access_handler': None,
 
@@ -244,25 +237,6 @@ OBJECTSTORE = {
         'region_name': 'NL',
         'endpoint_type': 'internalURL'
     }
-}
-
-JWT_AUTH = {
-    'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
-    'JWT_DECODE_HANDLER': 'rest_framework_jwt.utils.jwt_decode_handler',
-    'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
-    'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',   # noqa
-    'JWT_RESPONSE_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_response_payload_handler',              # noqa
-    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY', 'some_shared_secret'),
-    'JWT_ALGORITHM': 'HS256',
-    'JWT_VERIFY': True,
-    'JWT_VERIFY_EXPIRATION': True,
-    'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
-    'JWT_AUDIENCE': None,
-    'JWT_ISSUER': None,
-    'JWT_ALLOW_REFRESH': False,
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    'JWT_AUTH_HEADER_PREFIX': 'JWT',
 }
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
