@@ -50,7 +50,7 @@ NO_INTEGATION_TEST = True
 
 DATAPUNT_API_URL = os.getenv(
     # note the ending /
-    'DATAPUNT_API_URL', 'https://api.datapunt.amsterdam.nl/')
+    'DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -166,7 +166,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '.localdomain',
-    '.datapunt.amsterdam.nl',
+    '.data.amsterdam.nl',
     'bag-api.service.consul',
     '.amsterdam.nl',
     '.service.consul',
@@ -223,7 +223,7 @@ SWAGGER_SETTINGS = {
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': 'api-acc.datapunt.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
+    'base_path': 'acc.api.data.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
