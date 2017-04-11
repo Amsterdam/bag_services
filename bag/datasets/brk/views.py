@@ -1,6 +1,5 @@
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveAPIView
 
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
@@ -489,7 +488,7 @@ class AantekeningViewSet(AtlasViewSet):
             request, *args, **kwargs)
 
 
-class KadastraalObjectWkpbView(RetrieveAPIView):
+class KadastraalObjectWkpbView(AtlasViewSet):
     """
     Kadastraal object met extra wkpb informatie
 

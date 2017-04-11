@@ -1,4 +1,3 @@
-
 import time
 import jwt
 
@@ -33,8 +32,8 @@ class AuthorizationSetup(object):
 
         """
         # NEW STYLE AUTH
-        key = settings.JWT_AUTH['JWT_SECRET_KEY']
-        algorithm = settings.JWT_AUTH['JWT_ALGORITHM']
+        key = settings.DATAPUNT_AUTHZ['JWT_SECRET_KEY']
+        algorithm = settings.DATAPUNT_AUTHZ['JWT_ALGORITHM']
 
         now = int(time.time())
 
