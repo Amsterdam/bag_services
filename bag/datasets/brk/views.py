@@ -58,19 +58,6 @@ class KadastraleGemeenteViewSet(AtlasViewSet):
     serializer_detail_class = serializers.KadastraleGemeenteDetail
     lookup_value_regex = '[^/]+'
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        response_serializer: serializers.KadastraleGemeenteDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class KadastraleSectieViewSet(AtlasViewSet):
     """
@@ -108,7 +95,7 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-0/)
 
-    Authorizatie:
+    Authorisatie:
 
     public   - none
     employee - alleen niet natuurlijk

@@ -652,6 +652,7 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
 
 
 class VerblijfsobjectDetailMixin(object):
+
     def get_gebruiksdoel(self, obj):
         return dict(
             code=obj.gebruiksdoel_code,

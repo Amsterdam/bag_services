@@ -397,6 +397,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     ligplaats = models.ForeignKey(
         'Ligplaats', null=True, related_name='adressen')
+
     standplaats = models.ForeignKey(
         'Standplaats', null=True, related_name='adressen')
 
@@ -879,7 +880,7 @@ class Pand(
 
     @property
     def _gemeente(self):
-        return self._stadsdeel.gemeente if self._stadsdeel else None
+        return self._buurt.gemeente if self._buurt else None
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):

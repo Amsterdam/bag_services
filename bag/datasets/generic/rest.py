@@ -146,11 +146,11 @@ class RelatedSummaryField(serializers.Field):
         landelijk_id = getattr(value.instance, 'landelijk_id', None)
         parent_pk = value.instance.pk
 
+        filter_name = list(value.core_filters.keys())[0]
+
         # prefer landeljk id usage
         if landelijk_id:
             parent_pk = landelijk_id
-
-        filter_name = list(value.core_filters.keys())[0]
 
         return {
             'count': count,

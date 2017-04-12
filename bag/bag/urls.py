@@ -15,23 +15,17 @@ Including another URLconf
 """
 
 from django.conf.urls import url, include
-from django.contrib import admin
 from rest_framework import renderers, schemas, response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework_swagger.renderers import OpenAPIRenderer
 from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 import atlas_api.urls
-import batch.views as b_views
 import datasets.bag.views
 import datasets.brk.views
 
 grouped_url_patterns = {
     'base_patterns': [
-        url(r'^jobs/?$', b_views.JobListView.as_view(), name='job-list'),
-        url(r'^jobs/(?P<pk>.*)$', b_views.JobDetailView.as_view(),
-            name='job-detail'),
-        url(r'^admin/', include(admin.site.urls)),
         url(r'^status/', include('health.urls', namespace='health')),
     ],
 
