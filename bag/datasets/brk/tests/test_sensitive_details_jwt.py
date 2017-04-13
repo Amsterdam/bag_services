@@ -88,17 +88,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
         self.assertEqual(response.status_code, 401)
 
-        # print(response)
-
-        # data = response.data
-
-        # subj = data['kadastraal_subject']
-
-        # self.assertEqual(
-        #    subj['_links']['self']['href'],
-        #    'http://testserver/brk/subject/{}/'.format(self.niet_natuurlijk.pk)
-        # )
-
     def test_uitgelogd_zakelijk_recht_natuurlijk_subresource(self):
 
         response = self.client.get(
@@ -106,15 +95,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
                 self.recht_natuurlijk.pk))
 
         self.assertEqual(response.status_code, 401)
-
-        # print(response)
-
-        # subj = response.data['kadastraal_subject']
-
-        # self.assertEqual(
-        #    subj['_links']['self']['href'],
-        #    'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
-        # )
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
 
