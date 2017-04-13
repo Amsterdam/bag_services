@@ -191,7 +191,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         for field in self.not_public_fields:
             self.assertNotIn(field, data)
 
-    def test_match_kot_object_wkpb_expand_authorized(self):
+    def test_match_kot_object_wkpb_authorized(self):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
 
