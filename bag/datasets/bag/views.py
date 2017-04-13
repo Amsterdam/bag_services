@@ -303,7 +303,6 @@ class NummeraanduidingFilter(FilterSet):
         if len(value) == 16:
             return queryset.filter(ligplaats__landelijk_id=value)
         else:
-            print(queryset.filter(ligplaats__id=value))
             return queryset.filter(ligplaats__id=value)
 
     def standplaats_filter(self, queryset, filter_name, value):

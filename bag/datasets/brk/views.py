@@ -464,19 +464,6 @@ class AantekeningViewSet(AtlasViewSet):
 
     lookup_value_regex = '[^/]+'
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve results
-
-        ---
-
-        serializer: serializers.AantekeningDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class KadastraalObjectWkpbView(AtlasViewSet):
     """
@@ -496,20 +483,12 @@ class KadastraalObjectWkpbView(AtlasViewSet):
     )
 
     def get_serializer_class(self):
-            return serializers.KadastraalObject
+        if self.request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE_PLUS):
+            return custom_serializers.KadastraalObjectDetailWkpb
 
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE_PLUS):
-                return custom_serializers.KadastraalObjectDetailWkpb
+        if self.request.is_authorized_for(
+                authorization_levels.LEVEL_EMPLOYEE):
+            return custom_serializers.KadastraalObjectDetailWkpbEmployee
 
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
-                return custom_serializers.KadastraalObjectDetailWkpbEmployee
-
-            # return serializers.KadastraalObjectDetailPublic
-
-    def retrieve(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
-            return super().retrieve(request, *args, **kwargs)
-
-        return Response(status=HTTP_401_UNAUTHORIZED)
+        return serializers.KadastraalObjectDetailPublic
