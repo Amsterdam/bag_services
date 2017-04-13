@@ -259,8 +259,11 @@ class KadastraalObjectViewSet(AtlasViewSet):
     )
 
     filter_fields = (
-        'verblijfsobjecten__id', 'beperkingen__id',
-        'a_percelen__id', 'g_percelen__id')
+        'verblijfsobjecten__id',
+        'verblijfsobjecten__landelijk_id',
+        'beperkingen__id',
+        'a_percelen__id',
+        'g_percelen__id')
 
     lookup_value_regex = '[^/]+'
 
@@ -318,7 +321,7 @@ class ZakelijkRechtFilter(FilterSet):
     class Meta:
         model = models.ZakelijkRecht
         fields = [
-            'verblijfsobjecten__id',
+            'verblijfsobjecten__landelijk_id',
             'kadastraal_object',
             'kadastraal_subject',
         ]

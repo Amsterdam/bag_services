@@ -390,7 +390,10 @@ class PandViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
+    filter_fields = (
+        'verblijfsobjecten__id',
+        'verblijfsobjecten__landelijk_id',
+        'bouwblok',)
 
     def get_object(self):
         pk = self.kwargs['pk']
