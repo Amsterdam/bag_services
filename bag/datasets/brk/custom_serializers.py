@@ -62,7 +62,7 @@ class KadastraalObjectDetailWkpb(brk_serializers.BrkMixin, rest.HALSerializer):
         )
 
 
-class KadastraalObjectDetailWkpbEmployee(KadastraalObjectDetailWkpb):
+class KadastraalObjectDetailWkpbPublic(KadastraalObjectDetailWkpb):
     """
     Serializer used in custom wkpb endpoint
     """
@@ -71,8 +71,8 @@ class KadastraalObjectDetailWkpbEmployee(KadastraalObjectDetailWkpb):
     kadastrale_gemeente = brk_serializers.KadastraleGemeente()
     sectie = brk_serializers.KadastraleSectie()
     soort_grootte = brk_serializers.SoortGrootte()
-    cultuurcode_onbebouwd = brk_serializers.CultuurCodeOnbebouwd()
-    cultuurcode_bebouwd = brk_serializers.CultuurCodeBebouwd()
+    # cultuurcode_onbebouwd = brk_serializers.CultuurCodeOnbebouwd()
+    # cultuurcode_bebouwd = brk_serializers.CultuurCodeBebouwd()
 
     # rechten = brk_serializers.ZakelijkRecht(many=True)
     verblijfsobjecten = Verblijfsobject(many=True)
@@ -95,12 +95,12 @@ class KadastraalObjectDetailWkpbEmployee(KadastraalObjectDetailWkpb):
             'indexnummer',
             'soort_grootte',
             'grootte',
-            'koopsom',
-            'koopsom_valuta_code',
-            'koopjaar',
+            # 'koopsom',
+            # 'koopsom_valuta_code',
+            # 'koopjaar',
             'meer_objecten',
-            'cultuurcode_onbebouwd',
-            'cultuurcode_bebouwd',
+            # 'cultuurcode_onbebouwd',
+            # 'cultuurcode_bebouwd',
 
             'register9_tekst',
             'status_code',
@@ -112,6 +112,6 @@ class KadastraalObjectDetailWkpbEmployee(KadastraalObjectDetailWkpb):
             'a_percelen',
             'verblijfsobjecten',
             # 'rechten',
-            'aantekeningen',
+            # 'aantekeningen',
             'beperkingen',
         )

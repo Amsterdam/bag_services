@@ -489,6 +489,6 @@ class KadastraalObjectWkpbView(AtlasViewSet):
 
         if self.request.is_authorized_for(
                 authorization_levels.LEVEL_EMPLOYEE):
-            return custom_serializers.KadastraalObjectDetailWkpbEmployee
+            return custom_serializers.KadastraalObjectDetailWkpb
 
-        return serializers.KadastraalObjectDetailPublic
+        return custom_serializers.KadastraalObjectDetailWkpbPublic

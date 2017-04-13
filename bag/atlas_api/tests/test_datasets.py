@@ -72,6 +72,9 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
 
         self.setUpAuthorization()
 
+        self.makesuperuser()
+
+    def makesuperuser(self):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
 
