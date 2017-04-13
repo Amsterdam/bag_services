@@ -55,7 +55,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             'cultuurcode_bebouwd',
             'rechten',
             'aantekeningen',
-
         ]
 
     def test_ingelogd_wel_geautoriseed_wel_details_in_np_json_nieuw(self):
@@ -182,6 +181,33 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
     def test_match_kot_object__expandpublic(self):
         response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))
+
+        data = str(response.data)
+
+        # check if authorized fields are *NOT* in response
+        for field in self.not_public_fields:
+            self.assertNotIn(field, data)
+
+    def test_match_kot_object_wkpb_expand_authorized(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+
+        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))
+
+        data = str(response.data)
+
+        # check if authorized fields are in response
+        for field in self.not_public_fields:
+            self.assertIn(field, data)
+
+    def test_match_kot_object__wkpb_public(self):
+        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
