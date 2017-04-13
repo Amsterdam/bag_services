@@ -880,7 +880,7 @@ class Pand(
 
     @property
     def _gemeente(self):
-        return self._buurt.gemeente if self._buurt else None
+        return self._stadsdeel.gemeente if self._stadsdeel else None
 
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
