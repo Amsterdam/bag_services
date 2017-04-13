@@ -397,6 +397,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     ligplaats = models.ForeignKey(
         'Ligplaats', null=True, related_name='adressen')
+
     standplaats = models.ForeignKey(
         'Standplaats', null=True, related_name='adressen')
 

@@ -160,7 +160,9 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
     status = factory.SubFactory(StatusFactory)
-    geometrie = Point(randint(1, 100), randint(1, 100), srid=28992)  # Defaulting to 1000, 1000
+    geometrie = Point(
+        # Defaulting to 1000, 1000
+        randint(1, 100), randint(1, 100), srid=28992)
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):

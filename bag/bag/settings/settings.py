@@ -184,7 +184,8 @@ REST_FRAMEWORK = dict(
 
 # Security
 DATAPUNT_AUTHZ = {
-    'JWT_SECRET_KEY': os.getenv('JWT_SHARED_SECRET_KEY'),
+    'JWT_SECRET_KEY': os.getenv(
+        'JWT_SHARED_SECRET_KEY', 'insecureeeeeeeeeeeeeee'),
     'JWT_ALGORITHM': 'HS256'
 }
 

@@ -118,6 +118,31 @@ class StandplaatsViewSet(rest.AtlasViewSet):
         return obj
 
 
+class VerblijfsobjectFilter(FilterSet):
+
+    pand = filters.CharFilter(method="pand_filter")
+    pand__id = filters.CharFilter(method="pand_filter")
+    pand__landelijk_id = filters.CharFilter(method="pand_filter")
+
+    class Meta:
+        model = models.Verblijfsobject
+
+        fields = (
+            'kadastrale_objecten__id',
+            'pand',
+            'panden__id',
+            'panden__landelijk_id',
+            'buurt',
+        )
+
+    def pand_filter(self, queryset, filter_name, value):
+
+        if len(value) == 16:
+            return queryset.filter(panden__landelijk_id=value)
+        else:
+            return queryset.filter(panden__id=value)
+
+
 class VerblijfsobjectViewSet(rest.AtlasViewSet):
     """
     Verblijfsobject
@@ -151,11 +176,8 @@ class VerblijfsobjectViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
-    filter_fields = (
-        'kadastrale_objecten__id',
-        'panden__id',
-        'panden__landelijk_id',
-        'buurt',)
+
+    filter_class = VerblijfsobjectFilter
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -172,9 +194,10 @@ class NummeraanduidingFilter(FilterSet):
     Filter nummeraanduidingkjes
     """
 
-    verblijfsobject = filters.CharFilter()
-    ligplaats = filters.CharFilter()
-    standplaats = filters.CharFilter()
+    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    ligplaats = filters.CharFilter(method="ligplaats_filter")
+    standplaats = filters.CharFilter(method="standplaats_filter")
+
     postcode = filters.CharFilter(method="postcode_filter")
     huisnummer = filters.CharFilter()
     huisletter = filters.CharFilter()
@@ -266,6 +289,31 @@ class NummeraanduidingFilter(FilterSet):
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
 
+    def vbo_filter(self, queryset, filter_name, value):
+        """Filter based on verblijfsobject"""
+
+        if len(value) == 16:
+            return queryset.filter(verblijfsobject__landelijk_id=value)
+        else:
+            return queryset.filter(verblijfsobject__id=value)
+
+    def ligplaats_filter(self, queryset, filter_name, value):
+        """Filter based on ligplaats"""
+
+        if len(value) == 16:
+            return queryset.filter(ligplaats__landelijk_id=value)
+        else:
+            print(queryset.filter(ligplaats__id=value))
+            return queryset.filter(ligplaats__id=value)
+
+    def standplaats_filter(self, queryset, filter_name, value):
+        """Filter based on standplaats"""
+
+        if len(value) == 16:
+            return queryset.filter(standplaats__landelijk_id=value)
+        else:
+            return queryset.filter(standplaats__id=value)
+
 
 class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
@@ -342,7 +390,10 @@ class PandViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
-    filter_fields = ('verblijfsobjecten__id', 'bouwblok',)
+    filter_fields = (
+        'verblijfsobjecten__id',
+        'verblijfsobjecten__landelijk_id',
+        'bouwblok',)
 
     def get_object(self):
         pk = self.kwargs['pk']
