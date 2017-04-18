@@ -257,7 +257,7 @@ class NummeraanduidingFilter(FilterSet):
         if y > 10:
             point = Point(x, y, srid=28992)
         else:
-            point = Point(x, y, srid=4326).transform(28992, clone=True)
+            point = Point(y, x, srid=4326).transform(28992, clone=True)
         # Creating one big queryset
         verblijfsobjecten = queryset.filter(
                 verblijfsobject__geometrie__dwithin=(point, D(m=radius))

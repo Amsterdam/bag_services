@@ -19,7 +19,8 @@ class Numfilter(APITestCase):
         )
 
         self.vbo = bag_factories.VerblijfsobjectFactory.create(
-            geometrie=Point(1000, 1000, srid=28992))
+            geometrie=Point(121849.65, 487303.93, srid=28992))
+            # (52.3726097, 4.9004161)
 
         self.ligplaats = bag_factories.LigplaatsFactory.create()
 
@@ -149,7 +150,18 @@ class Numfilter(APITestCase):
             data['results'][0]['landelijk_id'])
 
     def test_location_filter(self):
-        url = '/bag/nummeraanduiding/?locatie=1000,1000,10'
+
+        url = '/bag/nummeraanduiding/?locatie=121849,487303,20'
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(
+            self.num.landelijk_id,
+            data['results'][0]['landelijk_id'])
+
+    def test_location_filter(self):
+        url = '/bag/nummeraanduiding/?locatie=52.3726097,4.9004161,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
