@@ -155,7 +155,7 @@ class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
         verbose_name_plural = "Stadsdelen"
 
     def __str__(self):
-        return self.naam
+        return f"{self.naam} ({self.code})"
 
 
 class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
