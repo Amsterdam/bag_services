@@ -65,7 +65,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
         verbose_name_plural = "Beperkingen"
 
     def __str__(self):
-        return f"{self.inschrijfnummer} (self.beperkingtype.omschrijving)"
+        return f"{self.inschrijfnummer} ({self.beperkingtype.omschrijving})"
 
 
 class Brondocument(mixins.ImportStatusMixin, models.Model):
