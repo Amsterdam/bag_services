@@ -100,6 +100,6 @@ el-backup:
     - ./backups/elasticsearch:/tmp/backups
   user: root
   command: >
-    bash -c "chmod -R 777 /tmp/backups \
-            && curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
-            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }'"
+    bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
+            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' \
+            && chmod -R 777 /tmp/backups"
