@@ -266,7 +266,7 @@ FROM brk_kadastralesectie
         ),
         migrate.ManageView(
                 view_name='geo_wkpb',
-                sql="""
+                sql=f"""
 SELECT
   bk.id                                            AS id,
   bp.beperkingtype_id                              AS beperkingtype_id,
