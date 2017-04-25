@@ -24,8 +24,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrate.ManageView(
-                view_name='geo_bag_bouwblok',
-                sql=f"""
+            view_name='geo_bag_bouwblok',
+            sql=f"""
 SELECT
   bb.id                                               AS id,
   bb.code                                             AS code,
@@ -38,8 +38,8 @@ FROM
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_buurt',
-                sql=f"""
+            view_name='geo_bag_buurt',
+            sql=f"""
 SELECT
   b.id                                            AS id,
   b.code                                          AS code,
@@ -52,8 +52,8 @@ FROM bag_buurt b
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_buurtcombinatie',
-                sql=f"""
+            view_name='geo_bag_buurtcombinatie',
+            sql=f"""
 SELECT
   bc.id                                                      AS id,
   bc.vollcode                                                AS vollcode,
@@ -66,8 +66,8 @@ FROM bag_buurtcombinatie bc
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_gebiedsgerichtwerken',
-                sql=f"""
+            view_name='geo_bag_gebiedsgerichtwerken',
+            sql=f"""
 SELECT
   g.id                                                           AS id,
   g.code                                                         AS code,
@@ -80,8 +80,8 @@ FROM bag_gebiedsgerichtwerken g
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_grootstedelijkgebied',
-                sql=f"""
+            view_name='geo_bag_grootstedelijkgebied',
+            sql=f"""
 SELECT
   gg.id                                                           AS id,
   gg.naam                                                         AS naam,
@@ -117,7 +117,7 @@ WHERE
             view_name='geo_bag_openbareruimte',
             sql=f"""
 SELECT
-  opr.id                                                AS id,
+  opr.landelijk_id                                      AS id,
   opr.naam                                              AS display,
   CASE opr.type
     WHEN '01' THEN 'Weg'
@@ -137,10 +137,10 @@ FROM
                 """),
 
         migrate.ManageView(
-                view_name='geo_bag_pand',
-                sql=f"""
+            view_name='geo_bag_pand',
+            sql=f"""
 SELECT
-  p.id                                      AS id,
+  p.landelijk_id                            AS id,
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
   'bag/pand'::TEXT                          AS type,
@@ -150,8 +150,8 @@ FROM
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_stadsdeel',
-                sql=f"""
+            view_name='geo_bag_stadsdeel',
+            sql=f"""
 SELECT
   s.id                                                AS id,
   s.code                                              AS code,
@@ -164,10 +164,10 @@ FROM bag_stadsdeel s
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_standplaats',
-                sql=f"""
+            view_name='geo_bag_standplaats',
+            sql=f"""
 SELECT
-  s.id                                          AS id,
+  s.landelijk_id                                AS id,
   s.geometrie                                   AS geometrie,
   'bag/standplaats'::TEXT                       AS type,
   (o.naam || ' '
@@ -184,8 +184,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_unesco',
-                sql=f"""
+            view_name='geo_bag_unesco',
+            sql=f"""
 SELECT
   u.id                                             AS id,
   u.naam                                           AS naam,
@@ -197,10 +197,10 @@ FROM bag_unesco u
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_verblijfsobject',
-                sql=f"""
+            view_name='geo_bag_verblijfsobject',
+            sql=f"""
 SELECT
-  v.id                                    AS id,
+  v.landelijk_id                          AS id,
   v.geometrie                             AS geometrie,
   'bag/verblijfsobject'::TEXT             AS type,
   (o.naam || ' '
@@ -217,8 +217,8 @@ WHERE
 """,
         ),
         migrate.ManageView(
-                view_name='geo_lki_gemeente',
-                sql="""
+            view_name='geo_lki_gemeente',
+            sql="""
 SELECT
   gemeente AS id,
   gemeente AS gemeentecode,
@@ -229,8 +229,8 @@ FROM brk_gemeente
         ),
 
         migrate.ManageView(
-                view_name='geo_lki_kadastraalobject',
-                sql=f"""
+            view_name='geo_lki_kadastraalobject',
+            sql=f"""
 SELECT
   ko.id                                                     AS id,
   ko.aanduiding                                             AS volledige_code,
@@ -245,8 +245,8 @@ FROM brk_kadastraalobject ko
 
 
         migrate.ManageView(
-                view_name='geo_lki_kadastralegemeente',
-                sql="""
+            view_name='geo_lki_kadastralegemeente',
+            sql="""
 SELECT
   id,
   id as code,
@@ -254,8 +254,8 @@ SELECT
 FROM brk_kadastralegemeente""",
         ),
         migrate.ManageView(
-                view_name='geo_lki_sectie',
-                sql="""
+            view_name='geo_lki_sectie',
+            sql="""
 SELECT
     id,
     CONCAT(kadastrale_gemeente_id, ' ', sectie) AS volledige_code,
@@ -265,8 +265,8 @@ FROM brk_kadastralesectie
 """,
         ),
         migrate.ManageView(
-                view_name='geo_wkpb',
-                sql=f"""
+            view_name='geo_wkpb',
+            sql=f"""
 SELECT
   bk.id                                            AS id,
   bp.beperkingtype_id                              AS beperkingtype_id,
