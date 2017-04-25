@@ -29,14 +29,14 @@ class ViewsTest(TestCase):
             hoofdadres=True,
         )
         row = self.get_row('geo_bag_ligplaats')
-        self.assertEqual(row['id'], l.id)
+        self.assertEqual(row['id'], l.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(
             row['display'].split()[0], l.hoofdadres.adres().split()[0])
         self.assertEqual(row['type'], 'bag/ligplaats')
         self.assertEqual(
             row['uri'],
-            '{}bag/ligplaats/{}/'.format(URL, l.id))
+            '{}bag/ligplaats/{}/'.format(URL, l.landelijk_id))
 
     def test_bag_openbareruimte(self):
 
@@ -60,13 +60,13 @@ class ViewsTest(TestCase):
             hoofdadres=True,
         )
         row = self.get_row('geo_bag_standplaats')
-        self.assertEqual(row['id'], s.id)
+        self.assertEqual(row['id'], s.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], s.hoofdadres.adres().split()[0])
         self.assertEqual(row["type"], 'bag/standplaats')
         self.assertIn(
-            row["uri"], '{}bag/standplaats/{}/'.format(URL, s.id))
+            row["uri"], '{}bag/standplaats/{}/'.format(URL, s.landelijk_id))
 
     def test_bag_verblijfsobject(self):
         v = bag_factories.VerblijfsobjectFactory.create()
@@ -75,22 +75,23 @@ class ViewsTest(TestCase):
             hoofdadres=True,
         )
         row = self.get_row('geo_bag_verblijfsobject')
-        self.assertEqual(row["id"], v.id)
+        self.assertEqual(row["id"], v.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], v.hoofdadres.adres().split()[0])
         self.assertEqual(row['type'], 'bag/verblijfsobject')
         self.assertEqual(
-            row['uri'], '{}bag/verblijfsobject/{}/'.format(URL, v.id))
+            row['uri'], f'{URL}bag/verblijfsobject/{v.landelijk_id}/')
 
     def test_bag_pand(self):
         p = bag_factories.PandFactory.create()
         row = self.get_row('geo_bag_pand')
-        self.assertEqual(row['id'], p.id)
+        self.assertEqual(row['id'], p.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], p.landelijk_id)
         self.assertEqual(row['type'], 'bag/pand')
-        self.assertIn(row['uri'], '{}bag/pand/{}/'.format(URL, p.id))
+        self.assertIn(
+            row['uri'], '{}bag/pand/{}/'.format(URL, p.landelijk_id))
 
     def test_bag_bouwblok(self):
         bb = bag_factories.BouwblokFactory.create()

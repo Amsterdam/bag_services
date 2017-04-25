@@ -57,8 +57,7 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         bag_factories.VerblijfsobjectFactory.create()
         bag_factories.PandFactory.create()
         bag_factories.NummeraanduidingFactory.create()
-        bag_factories.GemeenteFactory.create(
-            naam='Amsterdam')
+        bag_factories.GemeenteFactory.create()
 
         bag_factories.WoonplaatsFactory.create()
         bag_factories.StadsdeelFactory.create()
@@ -139,20 +138,22 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     def test_links_in_details(self):
         for url in self.datasets:
 
-            print(f'\n\n {url} \n\n')
+            # print(f'\n\n {url} \n\n')
 
             response = self.client.get('/{}/'.format(url))
 
             url = response.data['results'][0]['_links']['self']['href']
+
             detail = self.client.get(url)
 
             self.valid_response(url, detail)
 
             self.assertIn('_display', detail.data)
 
-            self.test_all_href(url, detail.data)
+            if url:
+                self.find_all_href(url, detail.data)
 
-    def test_all_href(self, parent, data):
+    def find_all_href(self, parent, data):
 
         data = [data]
 
@@ -163,12 +164,11 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
                 if isinstance(value, dict):
                     data.append(value)
                 if key == 'href':
-                    print('test', value)
+                    # print('test', value)
                     result = self.client.get(value)
-                    print(result.status_code)
+                    # print(result.status_code)
                     LOG.debug('test obj %s url %s', parent, value)
-                    # self.valid_response(value, result)
-                    # print
+                    self.valid_response(value, result)
 
     def test_lists_html(self):
         for url in self.datasets:

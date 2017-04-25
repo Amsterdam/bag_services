@@ -103,7 +103,7 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                 AS display,
- '{URL}' || 'bag/ligplaats/' || l.id || '/' AS uri
+ '{URL}' || 'bag/ligplaats/' || l.landelijk_id || '/' AS uri
 
 FROM bag_ligplaats l
   LEFT JOIN bag_nummeraanduiding n ON n.ligplaats_id = l.id
@@ -144,7 +144,7 @@ SELECT
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
   'bag/pand'::TEXT                          AS type,
-  '{URL}' || 'bag/pand/' || p.id || '/'       AS uri
+  '{URL}' || 'bag/pand/' || p.landelijk_id || '/'       AS uri
 FROM
   bag_pand p
 """,
@@ -174,7 +174,7 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE(' ' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                             AS display,
- '{URL}' || 'bag/standplaats/' || s.id || '/' AS uri
+ '{URL}' || 'bag/standplaats/' || s.landelijk_id || '/' AS uri
 
 FROM bag_standplaats s
   LEFT JOIN bag_nummeraanduiding n ON n.standplaats_id = s.id
@@ -207,7 +207,7 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                       AS display,
-  '{URL}' || 'bag/verblijfsobject/' || v.id || '/' AS uri
+  '{URL}' || 'bag/verblijfsobject/' || v.landelijk_id || '/' AS uri
 
 FROM bag_verblijfsobject v
   LEFT JOIN bag_nummeraanduiding n ON n.verblijfsobject_id = v.id
