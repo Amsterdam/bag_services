@@ -23,6 +23,7 @@ importer:
     DATABASE_PASSWORD: insecure
     BAG_OBJECTSTORE_PASSWORD:
     METADATA_URL: "${METADATA_URL}"
+    DATAPUNT_API_URL: ${DATAPUNT_API_URL:-https://api.datapunt.amsterdam.nl/}
   command: >
     bash -c "/app/docker-wait.sh \
             && python objectstore/objectstore.py \
@@ -39,6 +40,7 @@ importer_el1:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
+    DATAPUNT_API_URL: ${DATAPUNT_API_URL:-https://api.datapunt.amsterdam.nl/}
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py elastic_indices gebieden wkpb --build \
@@ -53,6 +55,7 @@ importer_el2:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
+    DATAPUNT_API_URL: ${DATAPUNT_API_URL:-https://api.datapunt.amsterdam.nl/}
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py elastic_indices bag brk --partial=2/3 --build"
@@ -66,6 +69,7 @@ importer_el3:
     DATABASE_NAME: atlas
     DATABASE_USER: atlas
     DATABASE_PASSWORD: insecure
+    DATAPUNT_API_URL: ${DATAPUNT_API_URL:-https://api.datapunt.amsterdam.nl/}
   command: >
     bash -c "/app/docker-wait.sh \
             && python manage.py elastic_indices bag brk --partial=3/3 --build"
