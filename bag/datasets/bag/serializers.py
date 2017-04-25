@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from collections import OrderedDict
 
 from rest_framework_gis.fields import GeometryField
-# from rest_framework.reverse import reverse
+
+from rest_framework.reverse import reverse
 
 from datasets.brk import serializers as brk_serializers
 from datasets.generic import rest
@@ -72,6 +74,7 @@ class Toegang(serializers.ModelSerializer):
 
 
 class Woonplaats(BagMixin, rest.HALSerializer):
+
     _display = rest.DisplayField()
 
     class Meta:
@@ -83,14 +86,31 @@ class Woonplaats(BagMixin, rest.HALSerializer):
         )
 
 
-class Gemeente(BagMixin, rest.HALSerializer):
+class BRKGemeenteLink(rest.LinksField):
+
+    def get_url(self, obj, view_name, request, format):
+
+        url_kwargs = {
+            'pk': obj.naam
+        }
+
+        return reverse(
+            view_name, kwargs=url_kwargs, request=request, format=format)
+
+
+class Gemeente(BagMixin, serializers.HyperlinkedModelSerializer):
+
+    url_field_name = '_links'
+    serializer_url_field = BRKGemeenteLink
+
     _display = rest.DisplayField()
 
     class Meta:
         model = models.Gemeente
         fields = (
-            '_links',
             '_display',
+            '_links',
+            'naam',
             'code',
         )
 
@@ -540,22 +560,22 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     sleutelverzendend = serializers.CharField(source='id')
 
     def to_representation(self, instance):
-            """
-            Removes the afstand field if it is None
-            """
-            obj = super(NummeraanduidingDetail, self)
-            representation = obj.to_representation(instance)
-            if representation['afstand'] is None:
-                try:
-                    representation.pop('afstand')
-                except KeyError:
-                    # Ignore missing key -- a child serializer could
-                    # inherit a "to_representation" method
-                    # from its parent serializer that applies to a
-                    # field not present on
-                    # the child serializer.
-                    pass
-            return representation
+        """
+        Removes the afstand field if it is None
+        """
+        obj = super(NummeraanduidingDetail, self)
+        representation = obj.to_representation(instance)
+        if representation['afstand'] is None:
+            try:
+                representation.pop('afstand')
+            except KeyError:
+                # Ignore missing key -- a child serializer could
+                # inherit a "to_representation" method
+                # from its parent serializer that applies to a
+                # field not present on
+                # the child serializer.
+                pass
+        return representation
 
     class Meta:
         model = models.Nummeraanduiding

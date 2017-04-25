@@ -83,6 +83,10 @@ class Toegang(
 
 
 class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
+    """
+    Burgelijke gemeenten
+    """
+
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=40)
@@ -938,7 +942,8 @@ class Buurtcombinatie(
         return "{} ({})".format(self.naam, self.code)
 
     def _gemeente(self):
-        return self.stadsdeel.gemeente
+        if self.stadsdeel:
+            return self.stadsdeel.gemeente
 
 
 class Unesco(mixins.ImportStatusMixin, models.Model):

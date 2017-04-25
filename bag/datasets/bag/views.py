@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
@@ -12,7 +14,6 @@ from rest_framework.metadata import SimpleMetadata
 from datasets.generic import rest
 from . import serializers, models
 
-import logging
 
 LOG = logging.getLogger(__name__)
 
@@ -57,20 +58,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
-    filter_fields = ('buurt',)
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve LigplaatsDetail
-
-        ---
-
-        serializer: serializers.LigplaatsDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+    filter_fields = ('buurt', 'landelijk_id')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -106,7 +94,10 @@ class StandplaatsViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
-    filter_fields = ('buurt',)
+    filter_fields = (
+        'buurt',
+        'landelijk_id'
+    )
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -130,6 +121,7 @@ class VerblijfsobjectFilter(FilterSet):
         fields = (
             'kadastrale_objecten__id',
             'pand',
+            'landelijk_id',
             'panden__id',
             'panden__landelijk_id',
             'buurt',
@@ -214,31 +206,30 @@ class NummeraanduidingFilter(FilterSet):
             'verblijfsobject',
             'ligplaats',
             'standplaats',
+            'landelijk_id',
             'openbare_ruimte',
             'postcode',
             'pand',
             'kadastraalobject',
         ]
 
-    def postcode_filter(self, queryset, filter_name, value):
+    def postcode_filter(self, queryset, _filter_name, value):
         """
         Support for incomplete postcode
         """
         if len(value) < 6:
             return queryset.filter(postcode__istartswith=value)
-        else:
-            return queryset.filter(postcode__iexact=value)
+        return queryset.filter(postcode__iexact=value)
 
-    def openbare_ruimte_filter(self, queryset, filter_name, value):
+    def openbare_ruimte_filter(self, queryset, _filter_name, value):
         """
         Support for either openbareruimte id or name
         """
         if value.isdigit():
             return queryset.filter(openbare_ruimte_id=value)
-        else:
-            return queryset.filter(openbare_ruimte__naam__icontains=value)
+        return queryset.filter(openbare_ruimte__naam__icontains=value)
 
-    def locatie_filter(self, queryset, filter_name, value):
+    def locatie_filter(self, queryset, _filter_name, value):
         """
         Filter based on the geolocation. This filter actually
         expect 3 numerical values: x, y and radius
@@ -260,20 +251,21 @@ class NummeraanduidingFilter(FilterSet):
             point = Point(y, x, srid=4326).transform(28992, clone=True)
         # Creating one big queryset
         verblijfsobjecten = queryset.filter(
-                verblijfsobject__geometrie__dwithin=(point, D(m=radius))
-            ).annotate(afstand=Distance('verblijfsobject__geometrie', point))
+            verblijfsobject__geometrie__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('verblijfsobject__geometrie', point))
         ligplaatsen = queryset.filter(
-                ligplaats__geometrie__dwithin=(point, D(m=radius))
-            ).annotate(afstand=Distance('ligplaats__geometrie', point))
+            ligplaats__geometrie__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('ligplaats__geometrie', point))
         standplaatsen = queryset.filter(
-                standplaats__geometrie__dwithin=(point, D(m=radius))
-            ).annotate(afstand=Distance('standplaats__geometrie', point))
+            standplaats__geometrie__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('standplaats__geometrie', point))
         results = verblijfsobjecten | ligplaatsen | standplaatsen
 
         return results.order_by('afstand')
 
-    def pand_filter(self, queryset, filter_name, value):
+    def pand_filter(self, queryset, _filter_name, value):
         """
+        Filter using a pand landelijk id
         """
         m_po = models.Pand.objects
         pand = m_po.prefetch_related('verblijfsobjecten').get(landelijk_id=value)   # noqa
@@ -281,7 +273,7 @@ class NummeraanduidingFilter(FilterSet):
             'adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
 
-    def kot_filter(self, queryset, filter_name, value):
+    def kot_filter(self, queryset, _filter_name, value):
         """Filter based on the kadastral object"""
         m_vbo = models.Verblijfsobject.objects
         vbos = m_vbo.select_related('adressen').filter(
@@ -289,7 +281,7 @@ class NummeraanduidingFilter(FilterSet):
         ids = vbos.values_list('adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
 
-    def vbo_filter(self, queryset, filter_name, value):
+    def vbo_filter(self, queryset, _filter_name, value):
         """Filter based on verblijfsobject"""
 
         if len(value) == 16:
@@ -297,7 +289,7 @@ class NummeraanduidingFilter(FilterSet):
         else:
             return queryset.filter(verblijfsobject__id=value)
 
-    def ligplaats_filter(self, queryset, filter_name, value):
+    def ligplaats_filter(self, queryset, _filter_name, value):
         """Filter based on ligplaats"""
 
         if len(value) == 16:
@@ -305,7 +297,7 @@ class NummeraanduidingFilter(FilterSet):
         else:
             return queryset.filter(ligplaats__id=value)
 
-    def standplaats_filter(self, queryset, filter_name, value):
+    def standplaats_filter(self, queryset, _filter_name, value):
         """Filter based on standplaats"""
 
         if len(value) == 16:
@@ -352,8 +344,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
         # Checking if a detailed response is required
         if request.GET.get(self.detailed_keyword, False):
             self.serializer_class = self.serializer_detail_class
-        return super().list(
-            request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -389,9 +380,11 @@ class PandViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
+
     filter_fields = (
         'verblijfsobjecten__id',
         'verblijfsobjecten__landelijk_id',
+        'landelijk_id',
         'bouwblok',)
 
     def get_object(self):
@@ -423,12 +416,14 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
 
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
-    """
+    """  # noqa
 
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.all()
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
+
+    filter_fields = ('landelijk_id', 'naam', 'code', 'type')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -450,27 +445,18 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
     bestaat alleen nog de woonplaats Amsterdam met
     Woonplaatsidentificatie 3594.
 
-    [Stelselpedia]
-    (https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)
-    """
+    [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)   # noqa
+    """  # noqa
 
     metadata_class = ExpansionMetadata
     queryset = models.Woonplaats.objects.all()
     serializer_detail_class = serializers.WoonplaatsDetail
     serializer_class = serializers.Woonplaats
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve WoonplaatsDetail
-
-        ---
-
-        serializer: serializers.WoonplaatsDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+    filter_fields = (
+        'naam',
+        'landelijk_id',
+    )
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -483,43 +469,31 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 
 
 # gebieden
-class GemeenteViewSet(rest.AtlasViewSet):
-    """
-    Gemeente
 
-    Een gemeente is een afgebakend gedeelte van het grondgebied
-    van Nederland, ingesteld op basis van artikel 123 van
-    de Grondwet.
-
-    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en
-    is onderdeel van de staat. Zij staat onder bestuur van
-    een raad, een burgemeester en wethouders.
-
-    De gemeentegrens wordt door de centrale overheid vastgesteld,
-    en door het Kadaster vastgelegd.
-
-    [Stelselpedia]
-    (https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
-    """
-
-    metadata_class = ExpansionMetadata
-    queryset = models.Gemeente.objects.all()
-    serializer_detail_class = serializers.GemeenteDetail
-    serializer_class = serializers.Gemeente
-    template_name = "gebieden/gemeente.html"
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve Gemeente Detail
-
-        ---
-
-        serializer: serializers.GemeenteDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+#class GemeenteViewSet(rest.AtlasViewSet):
+#    """
+#    Gemeente
+#
+#    Een gemeente is een afgebakend gedeelte van het grondgebied
+#    van Nederland, ingesteld op basis van artikel 123 van
+#    de Grondwet.
+#
+#    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en
+#    is onderdeel van de staat. Zij staat onder bestuur van
+#    een raad, een burgemeester en wethouders.
+#
+#    De gemeentegrens wordt door de centrale overheid vastgesteld,
+#    en door het Kadaster vastgelegd.
+#
+#    [Stelselpedia]
+#    (https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
+#    """
+#
+#    metadata_class = ExpansionMetadata
+#    queryset = models.Gemeente.objects.all()
+#    serializer_detail_class = serializers.GemeenteDetail
+#    serializer_class = serializers.Gemeente
+#    template_name = "gebieden/gemeente.html"
 
 
 class StadsdeelViewSet(rest.AtlasViewSet):
@@ -540,19 +514,6 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     )
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve StadsdeelDetail
-
-        ---
-
-        serializer: serializers.StadsdeelDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class BuurtViewSet(rest.AtlasViewSet):
@@ -577,19 +538,6 @@ class BuurtViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
     filter_fields = ('stadsdeel', 'buurtcombinatie')
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BuurtDetail
-
-        ---
-
-        serializer: serializers.BuurtDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class BouwblokViewSet(rest.AtlasViewSet):
@@ -672,19 +620,6 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Gebiedsgerichtwerken
     filter_fields = ('stadsdeel',)
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve GebiedsgerichtwerkenDetail
-
-        ---
-
-        serializer: serializers.GebiedsgerichtwerkenDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
-
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     """
@@ -701,19 +636,6 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     queryset = models.Grootstedelijkgebied.objects.all()
     serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve GrootstedelijkgebiedDetail
-
-        ---
-
-        serializer: serializers.GrootstedelijkgebiedDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class UnescoViewSet(rest.AtlasViewSet):
@@ -733,19 +655,6 @@ class UnescoViewSet(rest.AtlasViewSet):
     queryset = models.Unesco.objects.all()
     serializer_detail_class = serializers.UnescoDetail
     serializer_class = serializers.Unesco
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve UnescoDetail
-
-        ---
-
-        serializer: serializers.UnescoDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
 
 
 class BouwblokCodeView(RedirectView):
