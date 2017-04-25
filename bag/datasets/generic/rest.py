@@ -38,15 +38,17 @@ class LinksField(serializers.HyperlinkedIdentityField):
     def to_representation(self, value):
         request = self.context.get('request')
 
-        result = OrderedDict([
-            ('self', {
-                'href': self.get_url(value, self.view_name, request, None)}
-             ),
-        ])
+        result = OrderedDict(
+            [
+                ('self', {
+                    'href': self.get_url(value, self.view_name, request, None)
+                }),
+            ]
+        )
 
         return result
 
-    def get_url(self, obj, view_name, request, format):
+    def get_url(self, obj, view_name, request, _format):
         """
         Given an object, return the URL that hyperlinks to the object.
 
@@ -63,7 +65,7 @@ class LinksField(serializers.HyperlinkedIdentityField):
         lookup_value = getattr(obj, self.lookup_field)
         kwargs = {self.lookup_url_kwarg: lookup_value}
         return self.reverse(
-            view_name, kwargs=kwargs, request=request, format=format)
+            view_name, kwargs=kwargs, request=request, format=_format)
 
 
 class HALSerializer(serializers.HyperlinkedModelSerializer):
@@ -73,7 +75,7 @@ class HALSerializer(serializers.HyperlinkedModelSerializer):
     url_field_name = '_links'
     serializer_url_field = LinksField
 
-    def get_url(self, obj, view_name, request, format):
+    def get_url(self, obj, view_name, request, _format):
 
         landelijk_id = getattr(obj, 'landelijk_id', None)
         obj_pk = obj.pk
@@ -87,7 +89,7 @@ class HALSerializer(serializers.HyperlinkedModelSerializer):
         }
 
         return reverse(
-            view_name, kwargs=url_kwargs, request=request, format=format)
+            view_name, kwargs=url_kwargs, request=request, format=_format)
 
 
 class HALPagination(pagination.PageNumberPagination):

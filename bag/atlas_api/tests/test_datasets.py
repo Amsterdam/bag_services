@@ -8,6 +8,10 @@ from datasets.wkpb.tests import factories as wkpb_factories
 
 from datasets.generic.tests.authorization import AuthorizationSetup
 
+import logging
+
+LOG = logging.getLogger(__name__)
+
 
 class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     """
@@ -53,7 +57,9 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         bag_factories.VerblijfsobjectFactory.create()
         bag_factories.PandFactory.create()
         bag_factories.NummeraanduidingFactory.create()
-        bag_factories.GemeenteFactory.create()
+        bag_factories.GemeenteFactory.create(
+            naam='Amsterdam')
+
         bag_factories.WoonplaatsFactory.create()
         bag_factories.StadsdeelFactory.create()
         bag_factories.BuurtFactory.create()
@@ -62,8 +68,11 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         wkpb_factories.BeperkingKadastraalObjectFactory.create()
         wkpb_factories.BrondocumentFactory.create()
 
-        brk_factories.GemeenteFactory.create()
+        brk_factories.GemeenteFactory.create(
+            gemeente='Amsterdam')
+
         brk_factories.KadastraleGemeenteFactory.create()
+
         brk_factories.KadastraleSectieFactory.create()
         brk_factories.KadastraalObjectFactory.create()
         brk_factories.KadastraalSubjectFactory.create()
@@ -126,6 +135,40 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
             self.valid_response(url, detail)
 
             self.assertIn('_display', detail.data)
+
+    def test_links_in_details(self):
+        for url in self.datasets:
+
+            print(f'\n\n {url} \n\n')
+
+            response = self.client.get('/{}/'.format(url))
+
+            url = response.data['results'][0]['_links']['self']['href']
+            detail = self.client.get(url)
+
+            self.valid_response(url, detail)
+
+            self.assertIn('_display', detail.data)
+
+            self.test_all_href(url, detail.data)
+
+    def test_all_href(self, parent, data):
+
+        data = [data]
+
+        while data:
+            item = data.pop()
+            for key, value in item.items():
+                # print(key)
+                if isinstance(value, dict):
+                    data.append(value)
+                if key == 'href':
+                    print('test', value)
+                    result = self.client.get(value)
+                    print(result.status_code)
+                    LOG.debug('test obj %s url %s', parent, value)
+                    # self.valid_response(value, result)
+                    # print
 
     def test_lists_html(self):
         for url in self.datasets:

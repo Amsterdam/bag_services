@@ -93,10 +93,10 @@ FROM bag_grootstedelijkgebied gg
 """,
         ),
         migrate.ManageView(
-                view_name='geo_bag_ligplaats',
-                sql=f"""
+            view_name='geo_bag_ligplaats',
+            sql=f"""
 SELECT
-  l.id                              AS id,
+  l.landelijk_id                    AS id,
   l.geometrie                       AS geometrie,
   'bag/ligplaats'::TEXT             AS type,
   (o.naam || ' '
