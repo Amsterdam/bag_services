@@ -7,8 +7,7 @@ ENV BAG_OBJECTSTORE_PASSWORD=$BAG_OBJECTSTORE_PASSWORD
 
 EXPOSE 8080
 
-RUN apt-get update \
-	&& apt-get install -y \
+RUN apt-get install -y \
 		gdal-bin \
 		libgeos-dev \
 		netcat \
