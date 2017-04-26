@@ -112,8 +112,8 @@ class StandplaatsViewSet(rest.AtlasViewSet):
 class VerblijfsobjectFilter(FilterSet):
 
     pand = filters.CharFilter(method="pand_filter")
-    pand__id = filters.CharFilter(method="pand_filter")
-    pand__landelijk_id = filters.CharFilter(method="pand_filter")
+    panden__id = filters.CharFilter(method="pand_filter")
+    panden__landelijk_id = filters.CharFilter(method="pand_filter")
 
     class Meta:
         model = models.Verblijfsobject
@@ -226,6 +226,9 @@ class NummeraanduidingFilter(FilterSet):
         Support for either openbareruimte id or name
         """
         if value.isdigit():
+            if len(value) == 16:
+                return queryset.filter(
+                    openbare_ruimte__landelijk_id=value)
             return queryset.filter(openbare_ruimte_id=value)
         return queryset.filter(openbare_ruimte__naam__icontains=value)
 
@@ -356,6 +359,35 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
         return obj
 
 
+class PandenFilter(FilterSet):
+    """
+    Filter panden met landelijke ids
+    """
+
+    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter")
+
+    class Meta:
+        model = models.Pand
+
+        fields = (
+            'verblijfsobject',
+            'verblijfsobjecten__id',
+            'verblijfsobjecten__landelijk_id',
+            'landelijk_id',
+            'bouwblok',
+        )
+
+    def vbo_filter(self, queryset, _filter_name, value):
+        """Filter based on verblijfsobject"""
+
+        if len(value) == 16:
+            return queryset.filter(verblijfsobjecten__landelijk_id=value)
+        else:
+            return queryset.filter(verblijfsobjecten__id=value)
+
+
+
 class PandViewSet(rest.AtlasViewSet):
     """
     Pand
@@ -381,11 +413,7 @@ class PandViewSet(rest.AtlasViewSet):
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
 
-    filter_fields = (
-        'verblijfsobjecten__id',
-        'verblijfsobjecten__landelijk_id',
-        'landelijk_id',
-        'bouwblok',)
+    filter_class = PandenFilter
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -470,7 +498,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 
 # gebieden
 
-#class GemeenteViewSet(rest.AtlasViewSet):
+# class GemeenteViewSet(rest.AtlasViewSet):
 #    """
 #    Gemeente
 #
@@ -618,7 +646,8 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     queryset = models.Gebiedsgerichtwerken.objects.all()
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
-    filter_fields = ('stadsdeel',)
+
+    filter_fields = ('stadsdeel__id', 'stadsdeel')
 
 
 class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):

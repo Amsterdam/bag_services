@@ -118,6 +118,17 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     poly_geom = random_poly()
 
 
+class APerceelGPerceelRelatieFactory(factory.DjangoModelFactory):
+
+    class Meta:
+        model = models.APerceelGPerceelRelatie
+
+    pk = fuzzy.FuzzyText(length=60)
+
+    a_perceel = factory.SubFactory(KadastraalObjectFactory)
+    g_perceel = factory.SubFactory(KadastraalObjectFactory)
+
+
 class KadastraalObjectVerblijfsobjectRelatieFactory(
         factory.DjangoModelFactory):
 

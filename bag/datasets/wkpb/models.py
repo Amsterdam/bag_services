@@ -60,7 +60,7 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
         through='BeperkingVerblijfsobject',
         related_name='beperkingen')
 
-    class Meta:
+    class Meta(object):
         verbose_name = "Beperking"
         verbose_name_plural = "Beperkingen"
 
@@ -106,9 +106,9 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     kadastraal_object = models.ForeignKey(brk.KadastraalObject)
 
     def __str__(self):
-        return "{}-{}-{}".format(
-            self.beperking_id, self.kadastraal_object_id,
-            self.kadastraal_object_akr_id)
+        return "{}-{}".format(
+            self.beperking_id,
+            self.kadastraal_object_id)
 
 
 class BeperkingVerblijfsobject(models.Model):

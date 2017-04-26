@@ -6,7 +6,11 @@ from django.contrib.gis.geos import Point
 import factory
 import faker
 from factory import fuzzy
+
+# from datasets.brk.tests import factories as brkfactory
+
 # Project
+
 from .. import models
 
 f = faker.Factory.create(locale='nl_NL')
@@ -95,6 +99,7 @@ class StadsdeelFactory(factory.DjangoModelFactory):
         django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
+    naam = fuzzy.FuzzyText(length=10)
     code = fuzzy.FuzzyText(length=3, chars=string.digits)
     gemeente = factory.SubFactory(GemeenteFactory)
 
