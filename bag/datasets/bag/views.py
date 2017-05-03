@@ -498,6 +498,9 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 
 # gebieden
 
+# Gemeente dataset zit in Kadaster. Deze is dus niet meer nodig
+# als view maar wel in de import.
+
 # class GemeenteViewSet(rest.AtlasViewSet):
 #    """
 #    Gemeente
