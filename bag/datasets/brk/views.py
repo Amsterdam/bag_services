@@ -148,9 +148,6 @@ class KadastraalObjectFilter(FilterSet):
 
     def vbo_filter(self, queryset, _filter_name, value):
 
-        print("wooppie")
-        print(value)
-
         if len(value) == 16:
             return queryset.filter(verblijfsobjecten__landelijk_id=value)
 

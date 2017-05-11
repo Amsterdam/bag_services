@@ -1,3 +1,4 @@
+
 import logging
 import json
 
@@ -222,8 +223,6 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     def test_links_in_details(self):
         for url in self.datasets:
 
-            # print(f'\n {url} \n')
-
             response = self.client.get('/{}/'.format(url))
 
             url = response.data['results'][0]['_links']['self']['href']
@@ -248,7 +247,6 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
             item = data.pop()
 
             for key, value in item.items():
-                # print(key)
                 if isinstance(value, dict):
                     data.append(value)
                 if key == 'href':
@@ -266,7 +264,6 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
 
         self.assertEqual(result.status_code, 200, url)
         LOG.debug('test url %s', url)
-        print('url %s', url)
         self.valid_response(url, result)
         if 'count' in result.data:
             pdata = pretty_data(result.data)
