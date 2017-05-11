@@ -1,13 +1,16 @@
 from datetime import date
 
 import factory
-import faker
 from factory import fuzzy
 
-f = faker.Factory.create(locale='nl_NL')
+import faker
+
+from datasets.brk.tests import factories as brk_factories
+from datasets.bag.tests import factories as bag_factories
 
 from .. import models
-from datasets.brk.tests import factories as brk_factories
+
+f = faker.Factory.create(locale='nl_NL')
 
 
 class BeperkingCodeFactory(factory.DjangoModelFactory):
@@ -34,7 +37,16 @@ class BeperkingKadastraalObjectFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=33)
     beperking = factory.SubFactory(BeperkingFactory)
-    kadastraal_object = factory.SubFactory(brk_factories.KadastraalObjectFactory)
+    kadastraal_object = factory.SubFactory(
+        brk_factories.KadastraalObjectFactory)
+
+
+class BeperkingVerblijfsobjectFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.BeperkingVerblijfsobject
+
+    beperking = factory.SubFactory(BeperkingFactory)
+    verblijfsobject = factory.SubFactory(bag_factories.VerblijfsobjectFactory)
 
 
 class BroncodeFactory(factory.DjangoModelFactory):

@@ -152,8 +152,8 @@ class RelatedSummaryField(serializers.Field):
 
         # prefer landeljk id usage
         if landelijk_id:
-            if not filter_name.endswith('__id'):
-                parent_pk = landelijk_id
+            # if not filter_name.endswith('__id'):
+            parent_pk = landelijk_id
 
         return {
             'count': count,

@@ -3,6 +3,9 @@ from django.db.models import Prefetch
 from . import models, serializers
 from datasets.generic.rest import AtlasViewSet
 
+from django_filters.rest_framework.filterset import FilterSet
+from django_filters.rest_framework import filters
+
 from authorization_django import levels as authorization_levels
 
 
@@ -19,18 +22,33 @@ class BroncodeView(AtlasViewSet):
     queryset = models.Broncode.objects.all()
     template_name = "wkpb/broncode.html"
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BroncodeDetail
 
-        ---
+class BeperkingFilter(FilterSet):
+    """
+    Filter beperkingen op verblijfsobject of kadadstrale objecten
+    """
 
-        serializer: serializers.BroncodeDetail
+    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    verblijfsobject__id = filters.CharFilter(method="vbo_filter")
+    verblijfsobject__landelijk_id = filters.CharFilter(method="vbo_filter")
 
-        """
+    class Meta(object):
+        model = models.Beperking
 
-        return super().retrieve(
-            request, *args, **kwargs)
+        fields = (
+            'verblijfsobject__id',
+            'verblijfsobject__landelijk_id',
+            'verblijfsobject',
+            'kadastrale_objecten__id',
+            'beperkingtype',
+            'inschrijfnummer',
+        )
+
+    def vbo_filter(self, queryset, _filter_name, value):
+
+        if len(value) == 16:
+            return queryset.filter(verblijfsobject__landelijk_id=value)
+        return queryset.filter(verblijfsobject__id=value)
 
 
 class BeperkingView(AtlasViewSet):
@@ -65,20 +83,7 @@ class BeperkingView(AtlasViewSet):
     )
     template_name = "wkpb/beperking.html"
 
-    filter_fields = ('kadastrale_objecten__id', 'verblijfsobjecten__id')
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BeperkingDetail
-
-        ---
-
-        serializer: serializers.BeperkingDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+    filter_class = BeperkingFilter
 
 
 class BrondocumentView(AtlasViewSet):

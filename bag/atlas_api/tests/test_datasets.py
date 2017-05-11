@@ -1,3 +1,7 @@
+
+import logging
+import json
+
 # Packages
 from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
@@ -8,9 +12,12 @@ from datasets.wkpb.tests import factories as wkpb_factories
 
 from datasets.generic.tests.authorization import AuthorizationSetup
 
-import logging
 
 LOG = logging.getLogger(__name__)
+
+
+def pretty_data(data):
+    return json.dumps(data, indent=4, sort_keys=True)
 
 
 class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
@@ -52,31 +59,109 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     ]
 
     def setUp(self):
-        bag_factories.LigplaatsFactory.create()
-        bag_factories.StandplaatsFactory.create()
-        bag_factories.VerblijfsobjectFactory.create()
-        bag_factories.PandFactory.create()
-        bag_factories.NummeraanduidingFactory.create()
+        """
+        This create a graph of objects that point to
+        each others with nice working links
+
+        This is done to test the generated
+        links and properly
+
+        """
+
+        # gebieden
+        stadsdeel = bag_factories.StadsdeelFactory.create()
+
+        bag_factories.GebiedsgerichtwerkenFactory.create(
+            stadsdeel=stadsdeel
+        )
+
+        bc = bag_factories.BuurtcombinatieFactory.create(
+            stadsdeel=stadsdeel,
+        )
+
+        buurt = bag_factories.BuurtFactory.create(
+            stadsdeel=stadsdeel,
+            buurtcombinatie=bc
+        )
+
+        bag_factories.BouwblokFactory.create(
+            buurt=buurt
+        )
+
+        ligplaats = bag_factories.LigplaatsFactory.create(
+            buurt=buurt
+        )
+        standplaats = bag_factories.StandplaatsFactory.create(
+            buurt=buurt
+        )
+        vbo = bag_factories.VerblijfsobjectFactory.create(
+            buurt=buurt
+        )
+        pand = bag_factories.PandFactory.create()
+
+        opr = bag_factories.OpenbareRuimteFactory()
+
+        bag_factories.VerblijfsobjectPandRelatie(
+            pand=pand,
+            verblijfsobject=vbo
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            ligplaats=ligplaats,
+            standplaats=standplaats,
+            verblijfsobject=vbo,
+            openbare_ruimte=opr,
+        )
+
         bag_factories.GemeenteFactory.create()
 
         bag_factories.WoonplaatsFactory.create()
-        bag_factories.StadsdeelFactory.create()
-        bag_factories.BuurtFactory.create()
-        bag_factories.BouwblokFactory.create()
 
-        wkpb_factories.BeperkingKadastraalObjectFactory.create()
-        wkpb_factories.BrondocumentFactory.create()
+        kot_gem = brk_factories.KadastraleGemeenteFactory.create()
+
+        kot_sectie = brk_factories.KadastraleSectieFactory.create(
+            kadastrale_gemeente=kot_gem
+        )
+
+        kot = brk_factories.KadastraalObjectFactory.create(
+            kadastrale_gemeente=kot_gem,
+            sectie=kot_sectie
+        )
+
+        brk_factories.APerceelGPerceelRelatieFactory.create(
+            a_perceel=kot,
+            g_perceel=kot,
+        )
+
+        beperking = wkpb_factories.BeperkingFactory()
+
+        wkpb_factories.BeperkingKadastraalObjectFactory.create(
+            beperking=beperking,
+            kadastraal_object=kot
+        )
+
+        wkpb_factories.BrondocumentFactory.create(
+            beperking=beperking
+        )
 
         brk_factories.GemeenteFactory.create(
-            gemeente='Amsterdam')
+            gemeente='Amsterdam'
+        )
+        brk_factories.KadastraalObjectVerblijfsobjectRelatieFactory(
+            kadastraal_object=kot,
+            verblijfsobject=vbo
+        )
 
-        brk_factories.KadastraleGemeenteFactory.create()
+        sub = brk_factories.KadastraalSubjectFactory.create()
 
-        brk_factories.KadastraleSectieFactory.create()
-        brk_factories.KadastraalObjectFactory.create()
-        brk_factories.KadastraalSubjectFactory.create()
-        brk_factories.ZakelijkRechtFactory.create()
-        brk_factories.AantekeningFactory.create()
+        brk_factories.ZakelijkRechtFactory.create(
+            kadastraal_object=kot,
+            kadastraal_subject=sub
+        )
+        brk_factories.AantekeningFactory.create(
+            kadastraal_object=kot,
+            opgelegd_door=sub
+        )
 
         self.setUpAuthorization()
 
@@ -138,8 +223,6 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
     def test_links_in_details(self):
         for url in self.datasets:
 
-            # print(f'\n\n {url} \n\n')
-
             response = self.client.get('/{}/'.format(url))
 
             url = response.data['results'][0]['_links']['self']['href']
@@ -151,24 +234,43 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
             self.assertIn('_display', detail.data)
 
             if url:
-                self.find_all_href(url, detail.data)
+                self.find_all_href(detail.data)
 
-    def find_all_href(self, parent, data):
+    def find_all_href(self, data):
 
         data = [data]
 
+        tested_urls = set()
+        jsondata = pretty_data(data)
+
         while data:
             item = data.pop()
+
             for key, value in item.items():
-                # print(key)
                 if isinstance(value, dict):
                     data.append(value)
                 if key == 'href':
-                    # print('test', value)
-                    result = self.client.get(value)
-                    # print(result.status_code)
-                    LOG.debug('test obj %s url %s', parent, value)
-                    self.valid_response(value, result)
+                    url = value
+                    self.item_href_checks(url, tested_urls, jsondata)
+
+    def item_href_checks(self, url, tested_urls, jsondata):
+
+        if url in tested_urls:
+            return
+
+        tested_urls.add(url)
+
+        result = self.client.get(url)
+
+        self.assertEqual(result.status_code, 200, url)
+        LOG.debug('test url %s', url)
+        self.valid_response(url, result)
+        if 'count' in result.data:
+            pdata = pretty_data(result.data)
+
+            self.assertNotEqual(
+                result.data['count'], 0,
+                f'\n\n {jsondata} \n\n {pdata} \n\n')
 
     def test_lists_html(self):
         for url in self.datasets:

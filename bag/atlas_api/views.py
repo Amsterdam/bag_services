@@ -604,6 +604,7 @@ class SearchViewSet(viewsets.ViewSet):
 
     def get_url(self, request, hit):
         """
+        For each hit determine its resource url
         """
         return _get_url(request, hit)
 
@@ -618,6 +619,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         result['type'] = hit.meta.doc_type
         result['dataset'] = hit.meta.index
+
         self.get_hit_data(result, hit)
 
         return result

@@ -319,6 +319,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=4, primary_key=True)
     code = models.CharField(max_length=4)
     naam = models.CharField(max_length=100)
+
     stadsdeel = models.ForeignKey(
         Stadsdeel, related_name='gebiedsgerichtwerken')
 

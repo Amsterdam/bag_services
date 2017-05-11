@@ -268,12 +268,12 @@ FROM brk_kadastralesectie
             view_name='geo_wkpb',
             sql=f"""
 SELECT
-  bk.id                                            AS id,
-  bp.beperkingtype_id                              AS beperkingtype_id,
-  coalesce(ko.point_geom, ko.poly_geom)            AS geometrie,
-  bc.omschrijving                                  AS display,
-  'wkpb/beperking'::TEXT                           AS type,
-  '{URL}' || 'wkpb/beperking/' || bp.id || '/' AS uri
+  bk.id                                                 AS id,
+  bp.beperkingtype_id                                   AS beperkingtype_id,
+  coalesce(ko.point_geom, ko.poly_geom)                 AS geometrie,
+  bp.inschrijfnummer || ' (' ||  bc.omschrijving || ')' AS display,
+  'wkpb/beperking'::TEXT                                AS type,
+  '{URL}' || 'wkpb/beperking/' || bp.id || '/'          AS uri
 FROM
   wkpb_beperkingkadastraalobject bk
   LEFT JOIN wkpb_beperking bp ON bp.id = bk.beperking_id

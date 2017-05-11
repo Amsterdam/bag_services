@@ -126,6 +126,34 @@ class KadastraalSubjectViewSet(AtlasViewSet):
         return Response(status=HTTP_401_UNAUTHORIZED)
 
 
+class KadastraalObjectFilter(FilterSet):
+    """
+    Filter also capable of dealing with landelijk_ids
+    """
+
+    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter")
+    verblijfsobjecten__landelijk_id = filters.CharFilter(method="vbo_filter")
+
+    class Meta(object):
+        model = models.KadastraalObject
+
+        fields = (
+            'verblijfsobject',
+            'verblijfsobjecten__id',
+            'verblijfsobjecten__landelijk_id',
+            'beperkingen__id',
+            'a_percelen__id',
+            'g_percelen__id')
+
+    def vbo_filter(self, queryset, _filter_name, value):
+
+        if len(value) == 16:
+            return queryset.filter(verblijfsobjecten__landelijk_id=value)
+
+        return queryset.filter(verblijfsobjecten__id=value)
+
+
 class KadastraalObjectViewSet(AtlasViewSet):
     """
     Kadastraal object
@@ -258,12 +286,7 @@ class KadastraalObjectViewSet(AtlasViewSet):
         )
     )
 
-    filter_fields = (
-        'verblijfsobjecten__id',
-        'verblijfsobjecten__landelijk_id',
-        'beperkingen__id',
-        'a_percelen__id',
-        'g_percelen__id')
+    filter_class = KadastraalObjectFilter
 
     lookup_value_regex = '[^/]+'
 
@@ -294,6 +317,8 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
                 'beperkingen',
             )
     )
+
+    filter_class = KadastraalObjectFilter
 
     pagination_class = rest.LimitedHALPagination
 
