@@ -153,6 +153,8 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.stadsdelen.clear()
         self.update_metadata_uva2(self.bag_path, 'SDL')
 
+        validate_geometry(models.Stadsdeel)
+
     def process(self):
         self.stadsdelen = dict(
             uva2.process_uva2(self.bag_path, "SDL", self.process_row))
@@ -233,6 +235,7 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurten.clear()
         self.buurtcombinaties.clear()
         self.update_metadata_uva2(self.uva_path, 'BRT')
+        validate_geometry(models.Buurt)
 
     def process(self):
         self.buurten = dict(
@@ -317,6 +320,8 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurten.clear()
         self.bouwblokken.clear()
         self.update_metadata_uva2(self.uva_path, 'BBK')
+
+        validate_geometry(models.Bouwblok)
 
     def process(self):
         self.bouwblokken = dict(
@@ -447,6 +452,8 @@ class ImportOprTask(batch.BasicTask):
         self.landelijke_ids.clear()
         self.openbare_ruimtes.clear()
 
+        validate_geometry(models.OpenbareRuimte)
+
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
         self.openbare_ruimtes = dict(
@@ -572,6 +579,8 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.nummeraanduidingen.clear()
 
         self.update_metadata_uva2(self.path, 'NUM')
+
+        validate_geometry(models.Nummeraanduiding)
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
@@ -838,6 +847,8 @@ class ImportStaTask(batch.BasicTask):
         self.buurten.clear()
         self.standplaatsen.clear()
 
+        validate_geometry(models.Standplaats)
+
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "STA")
         self.standplaatsen = dict(uva2.process_uva2(self.bag_path, "STA", self.process_row))
@@ -940,6 +951,8 @@ class ImportVboTask(batch.BasicTask):
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
+
+        validate_geometry(models.Verblijfsobject)
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
@@ -1389,6 +1402,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
 
     def after(self):
         self.stadsdelen.clear()
+        validate_geometry(models.Buurtcombinatie)
 
     def process(self):
         bcs = geo.process_shp(
@@ -1415,6 +1429,22 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         )
 
 
+def validate_geometry(model):
+    """
+    given model validdate geometry of crash.
+    """
+    invalid = model.objects.filter(
+        geometrie__isvalid=False)
+
+    count = invalid.count()
+
+    if count:
+        log.error(model)
+        log.error([o.id for o in invalid])
+
+    assert count == 0
+
+
 class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
     """
     layer.fields:
@@ -1434,7 +1464,11 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             models.Stadsdeel.objects.values_list("code", "pk"))
 
     def after(self):
+        """
+        Validate geometry
+        """
         self.stadsdelen.clear()
+        validate_geometry(models.Gebiedsgerichtwerken)
 
     def process(self):
         ggws = geo.process_shp(
@@ -1476,7 +1510,10 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         pass
 
     def after(self):
-        pass
+        """
+        Validate geometry
+        """
+        validate_geometry(models.Grootstedelijkgebied)
 
     def process(self):
         ggbs = geo.process_shp(
@@ -1511,7 +1548,10 @@ class ImportUnescoTask(batch.BasicTask):
         pass
 
     def after(self):
-        pass
+        """
+        Validate geometry
+        """
+        validate_geometry(models.Unesco)
 
     def process(self):
         unesco = geo.process_shp(
@@ -1529,7 +1569,7 @@ class ImportUnescoTask(batch.BasicTask):
 
 
 class DenormalizeDataTask(batch.BasicTask):
-    name = "Denormalize data"
+    name = "Denormalize BAG vbo / standplaats / ligplaats data"
 
     def before(self):
         pass
@@ -1538,8 +1578,7 @@ class DenormalizeDataTask(batch.BasicTask):
         pass
 
     def process(self):
-        with connection.cursor() as c:
-            c.execute("""
+        update_vbo_sql = """
 UPDATE bag_verblijfsobject vbo
 SET _openbare_ruimte_naam = t.naam,
   _huisnummer             = t.huisnummer,
@@ -1557,9 +1596,14 @@ FROM (
        WHERE num.hoofdadres
      ) t
 WHERE vbo.id = t.vbo_id;
-            """)
+        """
 
-            c.execute("""
+        log.debug(update_vbo_sql)
+
+        with connection.cursor() as c:
+            c.execute(update_vbo_sql)
+
+            update_ligplaats_sql = """
 UPDATE bag_ligplaats lig
 SET _openbare_ruimte_naam = t.naam,
   _huisnummer             = t.huisnummer,
@@ -1577,9 +1621,12 @@ FROM (
        WHERE num.hoofdadres AND num.ligplaats_id IS NOT NULL
      ) t
 WHERE lig.id = t.lig_id;
-            """)
+            """
+            log.debug(update_ligplaats_sql)
 
-            c.execute("""
+            c.execute(update_ligplaats_sql)
+
+            update_standplaats_sql = """
 UPDATE bag_standplaats sta
 SET _openbare_ruimte_naam = t.naam,
   _huisnummer             = t.huisnummer,
@@ -1597,14 +1644,20 @@ FROM (
        WHERE num.hoofdadres AND num.standplaats_id IS NOT NULL
      ) t
 WHERE sta.id = t.sta_id;
-            """)
+            """
 
-            c.execute("""
+            log.debug(update_standplaats_sql)
+            c.execute(update_standplaats_sql)
+
+            update_nummeraanduiding_sql = """
 UPDATE bag_nummeraanduiding num
 SET _openbare_ruimte_naam = opr.naam
 FROM bag_openbareruimte opr
 WHERE opr.id = num.openbare_ruimte_id
-            """)
+            """
+
+            log.debug(update_nummeraanduiding_sql)
+            c.execute(update_nummeraanduiding_sql)
 
 
 class UpdateGebiedenAttributenTask(batch.BasicTask):
@@ -1612,7 +1665,7 @@ class UpdateGebiedenAttributenTask(batch.BasicTask):
     Denormalize gebieden attributen
     """
 
-    name = "Denormalize data"
+    name = "Denormalize gebiedsgericht werken data"
 
     def before(self):
         pass
@@ -1652,7 +1705,7 @@ class UpdateGrootstedelijkAttributenTask(batch.BasicTask):
     Denormalize grootstedelijk gebieden attributen
     """
 
-    name = "Denormalize data"
+    name = "Denormalize grootstedelijke gebieden data"
 
     def before(self):
         pass
