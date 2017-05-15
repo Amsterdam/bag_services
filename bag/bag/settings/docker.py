@@ -33,7 +33,7 @@ LOGGING = {
         # Debug all batch jobs
         'batch': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
         },
 
