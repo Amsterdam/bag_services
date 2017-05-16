@@ -452,17 +452,20 @@ class ImportOprTask(batch.BasicTask):
         self.landelijke_ids.clear()
         self.openbare_ruimtes.clear()
 
-        validate_geometry(models.OpenbareRuimte)
-
     def process(self):
+
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
         self.openbare_ruimtes = dict(
             uva2.process_uva2(self.path, "OPR", self.process_row))
+
         geo.process_wkt(
             self.wkt_path, "BAG_OPENBARERUIMTE_GEOMETRIE.dat",
             self.process_wkt_row)
+
         models.OpenbareRuimte.objects.bulk_create(
             self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
+
+        validate_geometry(models.OpenbareRuimte)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -579,8 +582,6 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.nummeraanduidingen.clear()
 
         self.update_metadata_uva2(self.path, 'NUM')
-
-        validate_geometry(models.Nummeraanduiding)
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
@@ -952,23 +953,27 @@ class ImportVboTask(batch.BasicTask):
         self.statussen.clear()
         self.buurten.clear()
 
-        validate_geometry(models.Verblijfsobject)
-
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
 
+        validate_geometry(models.Verblijfsobject)
+
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
             return
 
-        if not uva2.geldige_relaties(r, 'VBOAVR', 'VBOOVR', 'VBOBRN', 'VBOEGM', 'VBOFNG', 'VBOGBK', 'VBOLOC', 'VBOLGG', 'VBOMNT',
-                                     'VBOTGG', 'VBOOVR', 'VBOSTS', 'VBOBRT'):
+        if not uva2.geldige_relaties(
+                r, 'VBOAVR', 'VBOOVR', 'VBOBRN', 'VBOEGM',
+                'VBOFNG', 'VBOGBK', 'VBOLOC', 'VBOLGG',
+                'VBOMNT', 'VBOTGG', 'VBOOVR', 'VBOSTS',
+                'VBOBRT'):
             return
 
         x = r['X-Coordinaat']
         y = r['Y-Coordinaat']
+
         if x and y:
             geo = Point(int(x), int(y))
         else:
@@ -1429,6 +1434,34 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         )
 
 
+def log_details_wrong_geometry(model):
+    """
+    log details of wrong geometry.
+    postgres has function for that.
+    easy debugging..
+    """
+
+    table = model._meta.db_table
+
+    explain_error_sql = f"""
+
+    SELECT id, reason(ST_IsValidDetail(geometrie)),
+               ST_AsText(location(ST_IsValidDetail(geometrie))) as location
+    FROM {table}
+    WHERE ST_IsValid(geometrie) = false;
+    """
+
+    with connection.cursor() as c:
+        c.execute(explain_error_sql)
+
+        row = c.fetchone()
+
+        log.error(f'\n\n!!! WRONG GEOMETRY in {table} !!!\n\n')
+        while row is not None:
+            log.error(f'id: {row[0]} : {row[1]} : {row[2]}')
+            row = c.fetchone()
+
+
 def validate_geometry(model):
     """
     given model validdate geometry of crash.
@@ -1441,7 +1474,10 @@ def validate_geometry(model):
     if count:
         log.error(model)
         log.error([o.id for o in invalid])
+        # print out details of wrong geometry. postgres has function for that.
+        log_details_wrong_geometry(model)
 
+    # crash if any errors.
     assert count == 0
 
 

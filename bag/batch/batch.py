@@ -15,15 +15,8 @@ def execute(job):
 
     job_execution = JobExecution.objects.create(name=job.name)
 
-    try:
-        for t in job.tasks():
-            _execute_task(job_execution, t)
-    except:
-        log.exception("Job failed: %s", job.name)
-        job_execution.date_finished = timezone.now()
-        job_execution.status = JobExecution.STATUS_FAILED
-        job_execution.save()
-        return job_execution
+    for t in job.tasks():
+        _execute_task(job_execution, t)
 
     log.info("Finished job: %s", job.name)
     job_execution.date_finished = timezone.now()
@@ -34,30 +27,19 @@ def execute(job):
 
 
 def _execute_task(job_execution, task):
+
     if callable(task):
         task_name = task.__name__
         execute_func = task
-        tear_down = None
     else:
         task_name = getattr(task, "name", "no name specified")
         execute_func = task.execute
-        tear_down = getattr(task, "tear_down", None)
 
     log.debug("Starting task: %s", task_name)
-    task_execution = TaskExecution.objects.create(job=job_execution, name=task_name, date_started=timezone.now())
+    task_execution = TaskExecution.objects.create(
+        job=job_execution, name=task_name, date_started=timezone.now())
 
-    try:
-        execute_func()
-    except:
-        e = sys.exc_info()[0]
-        log.exception("Task failed: %s", task_name)
-        task_execution.date_finished = timezone.now()
-        task_execution.status = TaskExecution.STATUS_FAILED
-        task_execution.save()
-        raise e
-    finally:
-        if tear_down:
-            tear_down()
+    execute_func()
 
     log.debug("Finished task: %s", task_name)
     task_execution.date_finished = timezone.now()
@@ -80,12 +62,10 @@ class BasicTask(object):
         __class__ = ABCMeta
 
     def execute(self):
-        try:
-            self.before()
-            self.process()
-        finally:
-            self.after()
-            gc.collect()
+        self.before()
+        self.process()
+        self.after()
+        gc.collect()
 
     @abstractmethod
     def before(self):

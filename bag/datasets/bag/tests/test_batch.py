@@ -173,12 +173,12 @@ class ImportGmeTest(TaskTestCase):
 
         g = models.Gemeente.objects.get(pk='03630000000000')
 
-        self.assertEquals(g.id, '03630000000000')
-        self.assertEquals(g.code, '0363')
-        self.assertEquals(g.naam, 'Amsterdam')
+        self.assertEqual(g.id, '03630000000000')
+        self.assertEqual(g.code, '0363')
+        self.assertEqual(g.naam, 'Amsterdam')
         self.assertTrue(g.verzorgingsgebied)
         self.assertFalse(g.vervallen)
-        self.assertEquals(g.begin_geldigheid, datetime.date(1900, 1, 1))
+        self.assertEqual(g.begin_geldigheid, datetime.date(1900, 1, 1))
         self.assertIsNone(g.einde_geldigheid)
 
 
@@ -197,12 +197,12 @@ class ImportSdlTest(TaskTestCase):
 
         s = models.Stadsdeel.objects.get(pk='03630011872037')
 
-        self.assertEquals(s.id, '03630011872037')
-        self.assertEquals(s.code, 'F')
-        self.assertEquals(s.naam, 'Nieuw-West')
-        self.assertEquals(s.vervallen, False)
-        self.assertEquals(s.gemeente.id, '03630000000000')
-        self.assertEquals(s.begin_geldigheid, datetime.date(2015, 1, 1))
+        self.assertEqual(s.id, '03630011872037')
+        self.assertEqual(s.code, 'F')
+        self.assertEqual(s.naam, 'Nieuw-West')
+        self.assertEqual(s.vervallen, False)
+        self.assertEqual(s.gemeente.id, '03630000000000')
+        self.assertEqual(s.begin_geldigheid, datetime.date(2015, 1, 1))
         self.assertIsNone(s.einde_geldigheid)
 
     def test_import_geo(self):
@@ -225,16 +225,16 @@ class ImportBrtTest(TaskTestCase):
 
         b = models.Buurt.objects.get(pk='03630000000487')
 
-        self.assertEquals(b.id, '03630000000487')
-        self.assertEquals(b.code, '92c')
-        self.assertEquals(b.vollcode, 'T92c')
-        self.assertEquals(b.naam, 'Amstel III deel C/D Noord')
-        self.assertEquals(b.vervallen, False)
-        self.assertEquals(b.stadsdeel.id, '03630000000016')
+        self.assertEqual(b.id, '03630000000487')
+        self.assertEqual(b.code, '92c')
+        self.assertEqual(b.vollcode, 'T92c')
+        self.assertEqual(b.naam, 'Amstel III deel C/D Noord')
+        self.assertEqual(b.vervallen, False)
+        self.assertEqual(b.stadsdeel.id, '03630000000016')
         self.assertIsNotNone(b.geometrie)
-        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertEqual(b.begin_geldigheid, datetime.date(2015, 10, 1))
         self.assertIsNone(b.einde_geldigheid)
-        self.assertEquals(b.buurtcombinatie.code, '92')
+        self.assertEqual(b.buurtcombinatie.code, '92')
 
 
 class ImportBbkTest(TaskTestCase):
@@ -252,11 +252,11 @@ class ImportBbkTest(TaskTestCase):
 
         b = models.Bouwblok.objects.get(pk='03630012100449')
 
-        self.assertEquals(b.id, '03630012100449')
-        self.assertEquals(b.code, 'DE66')
-        self.assertEquals(b.buurt.id, '03630000000537')
+        self.assertEqual(b.id, '03630012100449')
+        self.assertEqual(b.code, 'DE66')
+        self.assertEqual(b.buurt.id, '03630000000537')
         self.assertIsNotNone(b.geometrie)
-        self.assertEquals(b.begin_geldigheid, datetime.date(2006, 6, 12))
+        self.assertEqual(b.begin_geldigheid, datetime.date(2006, 6, 12))
         self.assertIsNone(b.einde_geldigheid)
 
 
@@ -276,10 +276,10 @@ class ImportBuurtcombinatieTest(TaskTestCase):
 
         b = models.Buurtcombinatie.objects.get(code='14')
 
-        self.assertEquals(b.id, '3630012052018')
-        self.assertEquals(b.vollcode, 'E14')
-        self.assertEquals(b.stadsdeel.code, 'E')
-        self.assertEquals(b.begin_geldigheid, datetime.date(2010, 5, 1))
+        self.assertEqual(b.id, '3630012052018')
+        self.assertEqual(b.vollcode, 'E14')
+        self.assertEqual(b.stadsdeel.code, 'E')
+        self.assertEqual(b.begin_geldigheid, datetime.date(2010, 5, 1))
         self.assertIsNone(b.einde_geldigheid)
 
 
@@ -301,7 +301,7 @@ class ImportGebiedsgerichtwerkenTest(TaskTestCase):
 
         b = models.Gebiedsgerichtwerken.objects.get(code='DX06')
 
-        self.assertEquals(b.stadsdeel.id, '03630011872037')
+        self.assertEqual(b.stadsdeel.id, '03630011872037')
 
 
 class ImportGrootstedelijkgebiedTest(TaskTestCase):
@@ -312,7 +312,7 @@ class ImportGrootstedelijkgebiedTest(TaskTestCase):
         self.run_task()
 
         imported = models.Grootstedelijkgebied.objects.all()
-        self.assertEqual(len(imported), 15)
+        self.assertEqual(len(imported), 27)
 
         b = models.Grootstedelijkgebied.objects.get(naam='Overamstel')
 
@@ -348,25 +348,25 @@ class ImportLigTest(TaskTestCase):
         self.run_task()
 
         imported = models.Ligplaats.objects.all()
-        self.assertEqual(len(imported), 60)
+        self.assertEqual(len(imported), 58)
 
         l = models.Ligplaats.objects.get(pk='03630001028467')
-        self.assertEquals(l.landelijk_id, '0363020001028467')
-        self.assertEquals(l.vervallen, False)
+        self.assertEqual(l.landelijk_id, '0363020001028467')
+        self.assertEqual(l.vervallen, False)
         self.assertIsNone(l.bron)
-        self.assertEquals(l.status.code, '33')
-        self.assertEquals(l.buurt.id, '03630000000491')
-        self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
-        self.assertEquals(l.document_nummer, 'GV00000407')
-        self.assertEquals(l.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertEqual(l.status.code, '33')
+        self.assertEqual(l.buurt.id, '03630000000491')
+        self.assertEqual(l.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEqual(l.document_nummer, 'GV00000407')
+        self.assertEqual(l.begin_geldigheid, datetime.date(2010, 9, 9))
         self.assertIsNone(l.einde_geldigheid)
-        self.assertEquals(l.mutatie_gebruiker, 'DBI')
+        self.assertEqual(l.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
 
         imported = models.Ligplaats.objects.exclude(geometrie__isnull=True)
-        self.assertEqual(len(imported), 60)
+        self.assertEqual(len(imported), 58)
 
         l = models.Ligplaats.objects.get(pk='03630001024868')
         self.assertIsNotNone(l.geometrie)
@@ -388,17 +388,17 @@ class ImportWplTest(TaskTestCase):
         self.assertEqual(len(imported), 1)
 
         w = models.Woonplaats.objects.get(pk='03630022796658')
-        self.assertEquals(w.id, '03630022796658')
-        self.assertEquals(w.landelijk_id, '3594')
-        self.assertEquals(w.naam, 'Amsterdam')
-        self.assertEquals(w.document_mutatie, datetime.date(2014, 1, 10))
-        self.assertEquals(w.document_nummer, 'GV00001729_AC00AC')
-        self.assertEquals(w.naam_ptt, 'AMSTERDAM')
-        self.assertEquals(w.vervallen, False)
-        self.assertEquals(w.gemeente.id, '03630000000000')
-        self.assertEquals(w.begin_geldigheid, datetime.date(2014, 1, 10))
+        self.assertEqual(w.id, '03630022796658')
+        self.assertEqual(w.landelijk_id, '3594')
+        self.assertEqual(w.naam, 'Amsterdam')
+        self.assertEqual(w.document_mutatie, datetime.date(2014, 1, 10))
+        self.assertEqual(w.document_nummer, 'GV00001729_AC00AC')
+        self.assertEqual(w.naam_ptt, 'AMSTERDAM')
+        self.assertEqual(w.vervallen, False)
+        self.assertEqual(w.gemeente.id, '03630000000000')
+        self.assertEqual(w.begin_geldigheid, datetime.date(2014, 1, 10))
         self.assertIsNone(w.einde_geldigheid)
-        self.assertEquals(w.mutatie_gebruiker, 'DBI')
+        self.assertEqual(w.mutatie_gebruiker, 'DBI')
 
 
 class ImportOprTest(TaskTestCase):
@@ -413,23 +413,23 @@ class ImportOprTest(TaskTestCase):
         self.run_task()
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
-        self.assertEquals(o.id, '03630000002701')
-        self.assertEquals(o.landelijk_id, '0363300000002701')
-        self.assertEquals(o.type, models.OpenbareRuimte.TYPE_WEG)
-        self.assertEquals(o.naam, 'Amstel')
-        self.assertEquals(o.code, '02186')
-        self.assertEquals(o.document_mutatie, datetime.date(2014, 1, 10))
-        self.assertEquals(o.document_nummer, 'GV00001729_AC00AC')
-        self.assertEquals(o.straat_nummer, '')
-        self.assertEquals(o.naam_nen, 'Amstel')
-        self.assertEquals(o.naam_ptt, 'AMSTEL')
-        self.assertEquals(o.vervallen, False)
+        self.assertEqual(o.id, '03630000002701')
+        self.assertEqual(o.landelijk_id, '0363300000002701')
+        self.assertEqual(o.type, models.OpenbareRuimte.TYPE_WEG)
+        self.assertEqual(o.naam, 'Amstel')
+        self.assertEqual(o.code, '02186')
+        self.assertEqual(o.document_mutatie, datetime.date(2014, 1, 10))
+        self.assertEqual(o.document_nummer, 'GV00001729_AC00AC')
+        self.assertEqual(o.straat_nummer, '')
+        self.assertEqual(o.naam_nen, 'Amstel')
+        self.assertEqual(o.naam_ptt, 'AMSTEL')
+        self.assertEqual(o.vervallen, False)
         self.assertIsNone(o.bron)
-        self.assertEquals(o.status.code, '35')
-        self.assertEquals(o.woonplaats.id, '03630022796658')
-        self.assertEquals(o.begin_geldigheid, datetime.date(2014, 1, 10))
-        self.assertEquals(o.einde_geldigheid, None)
-        self.assertEquals(o.mutatie_gebruiker, 'DBI')
+        self.assertEqual(o.status.code, '35')
+        self.assertEqual(o.woonplaats.id, '03630022796658')
+        self.assertEqual(o.begin_geldigheid, datetime.date(2014, 1, 10))
+        self.assertEqual(o.einde_geldigheid, None)
+        self.assertEqual(o.mutatie_gebruiker, 'DBI')
         self.assertIsNotNone(o.geometrie)
 
 
@@ -446,31 +446,32 @@ class ImportStaTest(TaskTestCase):
         self.run_task()
 
         imported = models.Standplaats.objects.all()
-        self.assertEqual(len(imported), 50)
+        self.assertEqual(len(imported), 49)
 
         l = models.Standplaats.objects.get(pk='03630001002936')
-        self.assertEquals(l.landelijk_id, '0363030001002936')
-        self.assertEquals(l.vervallen, False)
+        self.assertEqual(l.landelijk_id, '0363030001002936')
+        self.assertEqual(l.vervallen, False)
         self.assertIsNone(l.bron)
-        self.assertEquals(l.status.code, '37')
+        self.assertEqual(l.status.code, '37')
         self.assertIsNone(l.buurt)
-        self.assertEquals(l.document_mutatie, datetime.date(2010, 9, 9))
-        self.assertEquals(l.document_nummer, 'GV00000407')
-        self.assertEquals(l.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertEqual(l.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEqual(l.document_nummer, 'GV00000407')
+        self.assertEqual(l.begin_geldigheid, datetime.date(2010, 9, 9))
         self.assertIsNone(l.einde_geldigheid)
-        self.assertEquals(l.mutatie_gebruiker, 'DBI')
+        self.assertEqual(l.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
 
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
-        self.assertEqual(len(imported), 50)
+        self.assertEqual(len(imported), 49)
 
         l = models.Standplaats.objects.get(pk='03630001002936')
         self.assertIsNotNone(l.geometrie)
 
 
 class ImportVboTest(TaskTestCase):
+
     def setUp(self):
         factories.EigendomsverhoudingFactory.create(code='02')
         factories.FinancieringswijzeFactory.create(code='274')
@@ -530,23 +531,23 @@ class ImportNumTest(TaskTestCase):
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000512845')
-        self.assertEquals(n.id, '03630000512845')
-        self.assertEquals(n.landelijk_id, '0363200000512845')
-        self.assertEquals(n.huisnummer, 26)
-        self.assertEquals(n.huisletter, 'G')
-        self.assertEquals(n.huisnummer_toevoeging, '')
-        self.assertEquals(n.postcode, '1018DS')
-        self.assertEquals(n.document_mutatie, datetime.date(2005, 5, 25))
-        self.assertEquals(n.document_nummer, 'GV00000403')
-        self.assertEquals(
+        self.assertEqual(n.id, '03630000512845')
+        self.assertEqual(n.landelijk_id, '0363200000512845')
+        self.assertEqual(n.huisnummer, 26)
+        self.assertEqual(n.huisletter, 'G')
+        self.assertEqual(n.huisnummer_toevoeging, '')
+        self.assertEqual(n.postcode, '1018DS')
+        self.assertEqual(n.document_mutatie, datetime.date(2005, 5, 25))
+        self.assertEqual(n.document_nummer, 'GV00000403')
+        self.assertEqual(
             n.type, models.Nummeraanduiding.OBJECT_TYPE_LIGPLAATS)
-        self.assertEquals(n.vervallen, False)
+        self.assertEqual(n.vervallen, False)
         self.assertIsNone(n.bron)
-        self.assertEquals(n.status.code, '16')
-        self.assertEquals(n.openbare_ruimte.id, '03630000003910')
-        self.assertEquals(n.begin_geldigheid, datetime.date(2005, 5, 25))
+        self.assertEqual(n.status.code, '16')
+        self.assertEqual(n.openbare_ruimte.id, '03630000003910')
+        self.assertEqual(n.begin_geldigheid, datetime.date(2005, 5, 25))
         self.assertIsNone(n.einde_geldigheid)
-        self.assertEquals(n.mutatie_gebruiker, 'DBI')
+        self.assertEqual(n.mutatie_gebruiker, 'DBI')
 
     def test_num_lig_hfd_import(self):
         factories.OpenbareRuimteFactory.create(pk='03630000003404')
@@ -557,8 +558,8 @@ class ImportNumTest(TaskTestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
         l = models.Ligplaats.objects.get(pk='03630001035885')
 
-        self.assertEquals(n.ligplaats.id, l.id)
-        self.assertEquals(l.hoofdadres.id, n.id)
+        self.assertEqual(n.ligplaats.id, l.id)
+        self.assertEqual(l.hoofdadres.id, n.id)
         self.assertIn(n.id, [a.id for a in l.adressen.all()])
 
     def test_num_sta_hfd_import(self):
@@ -570,8 +571,8 @@ class ImportNumTest(TaskTestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
         s = models.Standplaats.objects.get(pk='03630000717733')
 
-        self.assertEquals(n.standplaats.id, s.id)
-        self.assertEquals(s.hoofdadres.id, n.id)
+        self.assertEqual(n.standplaats.id, s.id)
+        self.assertEqual(s.hoofdadres.id, n.id)
         self.assertIn(n.id, [a.id for a in s.adressen.all()])
 
     def test_num_vbo_hfd_import(self):
@@ -583,8 +584,8 @@ class ImportNumTest(TaskTestCase):
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
         v = models.Verblijfsobject.objects.get(pk='03630000721053')
 
-        self.assertEquals(n.verblijfsobject.id, v.id)
-        self.assertEquals(v.hoofdadres.id, n.id)
+        self.assertEqual(n.verblijfsobject.id, v.id)
+        self.assertEqual(v.hoofdadres.id, n.id)
         self.assertIn(n.id, [n.id for n in v.adressen.all()])
 
     def test_num_vbo_nvn_import(self):
@@ -600,8 +601,8 @@ class ImportNumTest(TaskTestCase):
 
         self.assertIn(n1.id, [n.id for n in v.adressen.all()])
         self.assertIn(n2.id, [n.id for n in v.adressen.all()])
-        self.assertEquals(n1.verblijfsobject.id, v.id)
-        self.assertEquals(n2.verblijfsobject.id, v.id)
+        self.assertEqual(n1.verblijfsobject.id, v.id)
+        self.assertEqual(n2.verblijfsobject.id, v.id)
 
 
 class ImportPndTest(TaskTestCase):
@@ -617,7 +618,7 @@ class ImportPndTest(TaskTestCase):
         self.run_task()
 
         imported = models.Pand.objects.all()
-        self.assertEquals(len(imported), 79)
+        self.assertEqual(len(imported), 79)
 
         p = models.Pand.objects.get(pk='03630013002931')
         self.assertEqual(p.landelijk_id, '0363100012073178')
@@ -635,13 +636,13 @@ class ImportPndTest(TaskTestCase):
         self.assertIsNone(p.bouwblok)
 
         p = models.Pand.objects.get(pk='03630012977654')
-        self.assertEquals(p.bouwblok.id, '03630012102404')
+        self.assertEqual(p.bouwblok.id, '03630012102404')
 
     def test_import_geo(self):
         self.run_task()
 
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
-        self.assertEquals(len(imported), 79)
+        self.assertEqual(len(imported), 79)
 
 
 class ImportVboPndTaskTest(TaskTestCase):
@@ -659,7 +660,7 @@ class ImportVboPndTaskTest(TaskTestCase):
         self.run_task()
 
         imported = models.VerblijfsobjectPandRelatie.objects.all()
-        self.assertEquals(len(imported), 96)
+        self.assertEqual(len(imported), 96)
 
         p = models.Pand.objects.get(pk='03630013113460')
         v1 = models.Verblijfsobject.objects.get(pk='03630000716108')
@@ -699,33 +700,34 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
         # dus kan er geen vbo, standplaats, lig_n
         # zonder dit veld ingevuld.
 
+        # check that everything has a GGW code
+
         vb_n = models.Verblijfsobject.objects.filter(
             _gebiedsgerichtwerken__isnull=True)
+
+        # print([v.id for v in vb_n])
+
+        self.assertTrue(vb_n.count() == 0)
 
         std_n = models.Standplaats.objects.filter(
             _gebiedsgerichtwerken__isnull=True)
 
+        self.assertTrue(std_n.count() == 0)
+
         lig_n = models.Ligplaats.objects.filter(
             _gebiedsgerichtwerken__isnull=True)
 
-        # check that everything has a GGW code
-        self.assertTrue(vb_n.count() == 0)
-        self.assertTrue(std_n.count() == 0)
         self.assertTrue(lig_n.count() == 0)
 
 
 class UpdateGSGebiedenTaskTest(TaskTestCase):
 
     def requires(self):
+
+        factories.VerblijfsobjectFactory.create(
+            geometrie=Point(115909, 491336, srid=28992))
+
         return [
-            batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
-            batch.ImportStaTask(BAG, BAG_WKT),
-
-            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
-            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
-
-            batch.ImportVboTask(BAG),
 
             batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP)
         ]
