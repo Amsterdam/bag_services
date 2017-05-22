@@ -83,7 +83,7 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 "code": analyzer.get_bouwblok()
             },
         },
-        sort_fields=['_score'],
+        sort_fields=['code.raw'],
         indexes=[BAG],
     )
 
