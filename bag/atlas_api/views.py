@@ -662,6 +662,37 @@ class SearchObjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
     grond percelen objects that match the elastic search query.
+
+    examples:
+
+    input ?q=                    result
+
+    AMR03                        AMR03
+    amr03                        AMR03
+    AMR03 B                      AMR03 B
+    AMR03 b                      AMR03 B
+    AMR03 B 334                  AMR03 B 03347 G 0000
+    AMR03 B 03347                AMR03 B 03347 G 0000
+    AMR03 B 3347                 AMR03 B 03347 G 0000
+    AMR03 B 03347 G 0000         AMR03 B 03347 G 0000
+    AMR03 B 05054 A 0002         AMR03 B 05054 A 0002
+    AMR03 B 5054 A 2             AMR03 B 05054 A 0002
+    AMR03 B 05054 0002           AMR03 B 05054 A 0002
+    AMR03 B 5054 2               AMR03 B 05054 A 0002
+    Aalsmeer B 03347             AMR03 B 03347 G 0000
+    Aalsmeer B 3347              AMR03 B 03347 G 0000
+    Aalsmeer B 03347 G 0000      AMR03 B 03347 G 0000
+    Aalsmeer B 05054 A 0002      AMR03 B 05054 A 0002
+    Aalsmeer B 5054 A 2          AMR03 B 05054 A 0002
+    Aalsmeer B 05054 0002        AMR03 B 05054 A 0002
+    Aalsmeer B 5054 2            AMR03 B 05054 A 0002
+    AMR03 B 47                   AMR03 B 03347 G 0000
+    Aalsmeer B 47                AMR03 B 03347 G 0000
+    amsterdam f                  ASD04 F
+    sloten a                     STN02 A
+    amsterdam a                  ASD04 F 07587 A 0007
+    amsterdam g                  ASD04 F 03361 G 0000
+
     """
 
     url_name = 'search/kadastraalobject-list'
