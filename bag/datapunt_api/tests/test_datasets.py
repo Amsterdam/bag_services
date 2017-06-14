@@ -69,7 +69,8 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         """
 
         # gebieden
-        stadsdeel = bag_factories.StadsdeelFactory.create()
+        stadsdeel = bag_factories.StadsdeelFactory.create(
+            id='testdatasets', code='ABC')
 
         bag_factories.GebiedsgerichtwerkenFactory.create(
             stadsdeel=stadsdeel
@@ -164,7 +165,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         )
 
         self.setUpAuthorization()
-
         self.makesuperuser()
 
     def makesuperuser(self):
@@ -237,10 +237,14 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
                 self.find_all_href(detail.data)
 
     def find_all_href(self, data):
+        """
+        Validate al links referenced in json documents
+        """
 
         data = [data]
 
         tested_urls = set()
+
         jsondata = pretty_data(data)
 
         while data:
@@ -248,23 +252,49 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
             for key, value in item.items():
                 if isinstance(value, dict):
+                    # new object to check
                     data.append(value)
-                if key == 'href':
-                    url = value
-                    self.item_href_checks(url, tested_urls, jsondata)
+
+                if key != 'href':
+                    continue
+
+                url = value
+
+                if not self.follow_href(item, url):
+                    continue
+
+                self.item_href_checks(url, tested_urls, jsondata)
+
+    def follow_href(self, item, url):
+        """
+        check if we should follow link in item
+        """
+
+        # check if there is a count.
+        # do not follow.
+        if 'count' in item:
+            if not item['count']:
+                # skip this one
+                return False
+
+        return True
 
     def item_href_checks(self, url, tested_urls, jsondata):
 
+        # keep track of already vistited urls
         if url in tested_urls:
             return
 
         tested_urls.add(url)
 
+        # visited endpoint
         result = self.client.get(url)
 
         self.assertEqual(result.status_code, 200, url)
         LOG.debug('test url %s', url)
+
         self.valid_response(url, result)
+
         if 'count' in result.data:
             pdata = pretty_data(result.data)
 
