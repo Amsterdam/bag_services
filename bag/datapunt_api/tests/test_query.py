@@ -1,7 +1,7 @@
 
 from django.conf import settings
 
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from elasticsearch import Elasticsearch
 
 from batch import batch
@@ -11,7 +11,7 @@ import datasets.brk.batch
 from datasets.brk.tests import factories as brk_factories
 
 
-class QueryTest(APITestCase):
+class QueryTest(APITransactionTestCase):
     """
     Testing commonly used datasets
     """
@@ -21,6 +21,7 @@ class QueryTest(APITestCase):
         super().setUpClass()
 
         bag_factories.StadsdeelFactory(
+            id='test_query',
             naam='Centrum')
 
         bag_factories.OpenbareRuimteFactory.create(

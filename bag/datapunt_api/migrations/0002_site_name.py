@@ -6,7 +6,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('atlas_api', '0001_initial'),
+        ('datapunt_api', '0001_initial'),
     ]
 
     operations = [

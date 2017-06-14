@@ -56,29 +56,31 @@ class ManageView(Operation):
 
     def _drop_view_and_materialized_things(self, se, relname):
         self.logger.info(f'Cleaning up: {relname}.')
-        cursor = connection.cursor()
-        base_stmt = "SELECT count(relname) FROM pg_class " \
-                    "WHERE relkind = '{type}' AND relname = '{relname}'"
+        with connection.cursor() as cursor:
+            base_stmt = "SELECT count(relname) FROM pg_class " \
+                        "WHERE relkind = '{type}' AND relname = '{relname}'"
 
-        cursor.execute(base_stmt.format(type='v', relname=relname))
-        if cursor.fetchall()[0][0] > 0:
-            se.execute(f'DROP VIEW IF EXISTS {relname}')
-            self.logger.info(f'View {relname} dropped.')
+            cursor.execute(base_stmt.format(type='v', relname=relname))
+            if cursor.fetchall()[0][0] > 0:
+                se.execute(f'DROP VIEW IF EXISTS {relname}')
+                self.logger.info(f'View {relname} dropped.')
 
-        cursor.execute(base_stmt.format(type='r', relname=relname))
-        if cursor.fetchall()[0][0] > 0:
-            se.execute(f'DROP TABLE IF EXISTS {relname}')
-            self.logger.info(f'Table {relname} dropped.')
+            cursor.execute(base_stmt.format(type='r', relname=relname))
+            if cursor.fetchall()[0][0] > 0:
+                se.execute(f'DROP TABLE IF EXISTS {relname}')
+                self.logger.info(f'Table {relname} dropped.')
 
-        cursor.execute(base_stmt.format(type='v', relname=f'{relname}_mat'))
-        if cursor.fetchall()[0][0] > 0:
-            se.execute(f'DROP MATERIALIZED VIEW IF EXISTS {relname}_mat')
-            self.logger.info(f'Materialised View {relname}_mat dropped.')
+            cursor.execute(base_stmt.format(
+                type='v', relname=f'{relname}_mat'))
+            if cursor.fetchall()[0][0] > 0:
+                se.execute(f'DROP MATERIALIZED VIEW IF EXISTS {relname}_mat')
+                self.logger.info(f'Materialised View {relname}_mat dropped.')
 
-        cursor.execute(base_stmt.format(type='r', relname=f'{relname}_mat'))
-        if cursor.fetchall()[0][0] > 0:
-            se.execute(f'DROP TABLE IF EXISTS {relname}_mat')
-            self.logger.info(f'Table {relname}_mat dropped.')
+            cursor.execute(
+                base_stmt.format(type='r', relname=f'{relname}_mat'))
+            if cursor.fetchall()[0][0] > 0:
+                se.execute(f'DROP TABLE IF EXISTS {relname}_mat')
+                self.logger.info(f'Table {relname}_mat dropped.')
 
     @staticmethod
     def _create_geo_indices(se, viewname, sql, prefix='geo_'):

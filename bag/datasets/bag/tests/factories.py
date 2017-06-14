@@ -13,7 +13,7 @@ from factory import fuzzy
 
 from .. import models
 
-f = faker.Factory.create(locale='nl_NL')
+f = Faker(locale='nl_NL')
 
 
 class EigendomsverhoudingFactory(factory.DjangoModelFactory):
@@ -239,6 +239,7 @@ class GebiedsgerichtwerkenFactory(factory.DjangoModelFactory):
         model = models.Gebiedsgerichtwerken
         django_get_or_create = ('code',)
 
+    id = fuzzy.FuzzyText(length=4, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
     code = fuzzy.FuzzyText(length=4)
     stadsdeel = factory.SubFactory(StadsdeelFactory)

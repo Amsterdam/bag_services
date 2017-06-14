@@ -1,11 +1,11 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 
 # No longer use transaction test case
 # class TaskTestCase(TransactionTestCase):
 
 
-class TaskTestCase(TestCase):
+class TaskTestCase(TransactionTestCase):
 
     def setUp(self):
         for r in self.requires():

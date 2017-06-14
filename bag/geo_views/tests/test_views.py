@@ -6,7 +6,6 @@ from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
-
 from django.conf import settings
 
 URL = settings.DATAPUNT_API_URL
@@ -15,10 +14,10 @@ URL = settings.DATAPUNT_API_URL
 class ViewsTest(TestCase):
 
     def get_row(self, view_name):
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
-        result = cursor.fetchone()
-        self.assertIsNotNone(result)
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
+            result = cursor.fetchone()
+            self.assertIsNotNone(result)
 
         return dict(zip([col[0] for col in cursor.description], result))
 

@@ -129,11 +129,14 @@ class LimitedHALPagination(HALPagination):
     page_size = 5
 
 
-class AtlasViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
+class DatapuntViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
 
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
     filter_backends = (filters.DjangoFilterBackend,)
+
+    # default ordering
+    ordering = ('id',)
 
 
 class RelatedSummaryField(serializers.Field):

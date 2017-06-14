@@ -58,6 +58,7 @@ INSTALLED_APPS = (
 
     'django.contrib.staticfiles',
     'django_extensions',
+    'django_filters',
 
     'batch',
     'atlas',
@@ -67,7 +68,7 @@ INSTALLED_APPS = (
     'datasets.wkpb',
 
     'geo_views',
-    'atlas_api',
+    'datapunt_api',      # main entry, search urls
     'health',
 
     'django.contrib.gis',

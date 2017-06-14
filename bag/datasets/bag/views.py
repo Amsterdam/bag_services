@@ -31,7 +31,7 @@ class ExpansionMetadata(SimpleMetadata):
         return result
 
 
-class LigplaatsViewSet(rest.AtlasViewSet):
+class LigplaatsViewSet(rest.DatapuntViewSet):
     """
     Ligplaats
 
@@ -47,7 +47,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Ligplaats.objects.all()
+    queryset = models.Ligplaats.objects.all().order_by('id')
     queryset_detail = models.Ligplaats.objects.select_related(
         'buurt',
         'buurt__buurtcombinatie',
@@ -70,7 +70,7 @@ class LigplaatsViewSet(rest.AtlasViewSet):
         return obj
 
 
-class StandplaatsViewSet(rest.AtlasViewSet):
+class StandplaatsViewSet(rest.DatapuntViewSet):
     """
     Standplaats
 
@@ -135,7 +135,7 @@ class VerblijfsobjectFilter(FilterSet):
             return queryset.filter(panden__id=value)
 
 
-class VerblijfsobjectViewSet(rest.AtlasViewSet):
+class VerblijfsobjectViewSet(rest.DatapuntViewSet):
     """
     Verblijfsobject
 
@@ -309,7 +309,7 @@ class NummeraanduidingFilter(FilterSet):
             return queryset.filter(standplaats__id=value)
 
 
-class NummeraanduidingViewSet(rest.AtlasViewSet):
+class NummeraanduidingViewSet(rest.DatapuntViewSet):
     """
     Nummeraanduiding
 
@@ -325,7 +325,7 @@ class NummeraanduidingViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Nummeraanduiding.objects.all()
+    queryset = models.Nummeraanduiding.objects.all().order_by('id')
     queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
         Prefetch('verblijfsobject__panden',
                  queryset=models.Pand.objects.select_related('bouwblok'))
@@ -388,7 +388,7 @@ class PandenFilter(FilterSet):
 
 
 
-class PandViewSet(rest.AtlasViewSet):
+class PandViewSet(rest.DatapuntViewSet):
     """
     Pand
 
@@ -402,7 +402,7 @@ class PandViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Pand.objects.all()
+    queryset = models.Pand.objects.all().order_by('id')
     queryset_detail = models.Pand.objects.select_related(
         'status',
         'bouwblok',
@@ -425,7 +425,7 @@ class PandViewSet(rest.AtlasViewSet):
         return obj
 
 
-class OpenbareRuimteViewSet(rest.AtlasViewSet):
+class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     """
     OpenbareRuimte
 
@@ -463,7 +463,7 @@ class OpenbareRuimteViewSet(rest.AtlasViewSet):
         return obj
 
 
-class WoonplaatsViewSet(rest.AtlasViewSet):
+class WoonplaatsViewSet(rest.DatapuntViewSet):
     """
     Woonplaats
 
@@ -477,7 +477,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
     """  # noqa
 
     metadata_class = ExpansionMetadata
-    queryset = models.Woonplaats.objects.all()
+    queryset = models.Woonplaats.objects.all().order_by('id')
     serializer_detail_class = serializers.WoonplaatsDetail
     serializer_class = serializers.Woonplaats
 
@@ -501,7 +501,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 # Gemeente dataset zit in Kadaster. Deze is dus niet meer nodig
 # als view maar wel in de import.
 
-# class GemeenteViewSet(rest.AtlasViewSet):
+# class GemeenteViewSet(rest.DatapuntViewSet):
 #    """
 #    Gemeente
 #
@@ -527,7 +527,7 @@ class WoonplaatsViewSet(rest.AtlasViewSet):
 #    template_name = "gebieden/gemeente.html"
 
 
-class StadsdeelViewSet(rest.AtlasViewSet):
+class StadsdeelViewSet(rest.DatapuntViewSet):
     """
     Stadsdeel
 
@@ -539,7 +539,7 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Stadsdeel.objects.all()
+    queryset = models.Stadsdeel.objects.all().order_by('id')
     queryset_detail = models.Stadsdeel.objects.select_related(
         'gemeente',
     )
@@ -547,7 +547,7 @@ class StadsdeelViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Stadsdeel
 
 
-class BuurtViewSet(rest.AtlasViewSet):
+class BuurtViewSet(rest.DatapuntViewSet):
     """
     Buurt
 
@@ -571,7 +571,7 @@ class BuurtViewSet(rest.AtlasViewSet):
     filter_fields = ('stadsdeel', 'buurtcombinatie')
 
 
-class BouwblokViewSet(rest.AtlasViewSet):
+class BouwblokViewSet(rest.DatapuntViewSet):
     """
     Bouwblok
 
@@ -610,7 +610,7 @@ class BouwblokViewSet(rest.AtlasViewSet):
             request, *args, **kwargs)
 
 
-class BuurtcombinatieViewSet(rest.AtlasViewSet):
+class BuurtcombinatieViewSet(rest.DatapuntViewSet):
     """
     Buurtcombinatie
 
@@ -632,7 +632,7 @@ class BuurtcombinatieViewSet(rest.AtlasViewSet):
     filter_fields = ('stadsdeel',)
 
 
-class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
+class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     """
     Gebiedsgerichtwerken
 
@@ -653,7 +653,7 @@ class GebiedsgerichtwerkenViewSet(rest.AtlasViewSet):
     filter_fields = ('stadsdeel__id', 'stadsdeel')
 
 
-class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
+class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
     """
     Grootstedelijkgebied
 
@@ -670,7 +670,7 @@ class GrootstedelijkgebiedViewSet(rest.AtlasViewSet):
     serializer_class = serializers.Grootstedelijkgebied
 
 
-class UnescoViewSet(rest.AtlasViewSet):
+class UnescoViewSet(rest.DatapuntViewSet):
     """
     Unseco
 

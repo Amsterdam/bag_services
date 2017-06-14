@@ -20,7 +20,7 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework_swagger.renderers import OpenAPIRenderer
 from rest_framework_swagger.renderers import SwaggerUIRenderer
 
-import atlas_api.urls
+import datapunt_api.urls
 import datasets.bag.views
 import datasets.brk.views
 
@@ -30,7 +30,7 @@ grouped_url_patterns = {
     ],
 
     'bag_patterns': [
-        url(r'^bag/', include(atlas_api.urls.bag.urls)),
+        url(r'^bag/', include(datapunt_api.urls.bag.urls)),
     ],
 
     'gebieden_patterns': [
@@ -39,11 +39,11 @@ grouped_url_patterns = {
         url(r'^gebieden/stadsdeel/(?P<code>.)/?$',
             datasets.bag.views.StadsdeelCodeView.as_view()),
         url(r'^gebieden/',
-            include(atlas_api.urls.gebieden.urls)),
+            include(datapunt_api.urls.gebieden.urls)),
     ],
 
     'brk_patterns': [
-        url(r'^brk/', include(atlas_api.urls.brk.urls)),
+        url(r'^brk/', include(datapunt_api.urls.brk.urls)),
 
         url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
             datasets.brk.views.KadastraalObjectWkpbView.as_view(
@@ -52,19 +52,19 @@ grouped_url_patterns = {
     ],
 
     'beperkingen_patterns': [
-        url(r'^wkpb/', include(atlas_api.urls.wkpb.urls)),
+        url(r'^wkpb/', include(datapunt_api.urls.wkpb.urls)),
     ],
 
     'postcode_patterns': [
-        url(r'^search/', include(atlas_api.urls.search.urls)),
+        url(r'^search/', include(datapunt_api.urls.search.urls)),
     ],
 
     'typeahead_patterns': [
-        url(r'^atlas/typeahead/', include(atlas_api.urls.typeahead.urls)),
+        url(r'^atlas/typeahead/', include(datapunt_api.urls.typeahead.urls)),
     ],
 
     'search_patterns': [
-        url(r'^atlas/search/', include(atlas_api.urls.bag_search.urls)),
+        url(r'^atlas/search/', include(datapunt_api.urls.bag_search.urls)),
     ],
 }
 

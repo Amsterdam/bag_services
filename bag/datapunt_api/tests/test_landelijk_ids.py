@@ -1,9 +1,9 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 
 from datasets.bag.tests import factories as bag_factories
 
 
-class LandelijkIDTest(APITestCase):
+class LandelijkIDTest(APITransactionTestCase):
 
     def setUp(self):
         self.vbo = bag_factories.VerblijfsobjectFactory.create()

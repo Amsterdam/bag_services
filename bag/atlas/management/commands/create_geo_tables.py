@@ -5,7 +5,10 @@ from django.db import connection
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            self.create_geo(cursor)
+
+    def create_geo(self, cursor):
         tables = connection.introspection.get_table_list(cursor)
 
         for table_info in tables:

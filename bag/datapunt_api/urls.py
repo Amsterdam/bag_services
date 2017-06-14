@@ -3,7 +3,7 @@ from rest_framework import routers
 import datasets.bag.views
 import datasets.brk.views
 import datasets.wkpb.views
-from atlas_api import views
+from datapunt_api import views
 
 
 class SearchRouter(routers.DefaultRouter):

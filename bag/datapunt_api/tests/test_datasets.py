@@ -3,7 +3,7 @@ import logging
 import json
 
 # Packages
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework.reverse import reverse
 # Project
 from datasets.bag.tests import factories as bag_factories
@@ -20,7 +20,7 @@ def pretty_data(data):
     return json.dumps(data, indent=4, sort_keys=True)
 
 
-class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
+class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
     """
     Verifies that browsing the API works correctly.
 

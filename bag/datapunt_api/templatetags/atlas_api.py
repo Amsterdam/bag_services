@@ -57,7 +57,7 @@ def api_pagination(context, queryset):
         last_url=last_url,
     ))
 
-    return get_template("atlas_api/pagination.html").render(new_ctx)
+    return get_template("datapunt_api/pagination.html").render(new_ctx)
 
 
 def update_url(url, page):

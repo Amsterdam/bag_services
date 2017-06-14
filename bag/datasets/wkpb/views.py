@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 
 from . import models, serializers
-from datasets.generic.rest import AtlasViewSet
+from datasets.generic.rest import DatapuntViewSet
 
 from django_filters.rest_framework.filterset import FilterSet
 from django_filters.rest_framework import filters
@@ -9,7 +9,7 @@ from django_filters.rest_framework import filters
 from authorization_django import levels as authorization_levels
 
 
-class BroncodeView(AtlasViewSet):
+class BroncodeView(DatapuntViewSet):
     """
     BroncodeView
 
@@ -19,7 +19,7 @@ class BroncodeView(AtlasViewSet):
     """
     serializer_class = serializers.Broncode
     serializer_detail_class = serializers.BroncodeDetail
-    queryset = models.Broncode.objects.all()
+    queryset = models.Broncode.objects.all().order_by('code')
     template_name = "wkpb/broncode.html"
 
 
@@ -51,7 +51,7 @@ class BeperkingFilter(FilterSet):
         return queryset.filter(verblijfsobject__id=value)
 
 
-class BeperkingView(AtlasViewSet):
+class BeperkingView(DatapuntViewSet):
     """
     Wkpb
 
@@ -72,7 +72,7 @@ class BeperkingView(AtlasViewSet):
     """
     serializer_class = serializers.Beperking
     serializer_detail_class = serializers.BeperkingDetail
-    queryset = models.Beperking.objects.all()
+    queryset = models.Beperking.objects.all().order_by('id')
     queryset_detail = (
         models.Beperking.objects
         .prefetch_related(Prefetch(
@@ -86,7 +86,7 @@ class BeperkingView(AtlasViewSet):
     filter_class = BeperkingFilter
 
 
-class BrondocumentView(AtlasViewSet):
+class BrondocumentView(DatapuntViewSet):
     """
     Brondocument
 
@@ -97,7 +97,7 @@ class BrondocumentView(AtlasViewSet):
     serializer_class = serializers.Brondocument
     serializer_detail_class = serializers.BrondocumentDetail
 
-    queryset = models.Brondocument.objects.all()
+    queryset = models.Brondocument.objects.all().order_by('id')
     filter_fields = ('bron', 'beperking', )
 
     def get_serializer_class(self):
@@ -113,16 +113,3 @@ class BrondocumentView(AtlasViewSet):
             if self.request.is_authorized_for(medewerker):
                 return serializers.BrondocumentDetail
             return serializers.BrondocumentDetailPublic
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BrondocumentDetail
-
-        ---
-
-        serializer: serializers.BrondocumentDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
