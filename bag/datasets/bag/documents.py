@@ -592,7 +592,7 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
 
     d.subtype_id = bc.id
     d.naam = bc.naam
-    d._display = '{} ({})'.format(bc.naam, d.subtype)
+    d._display = '{} ({})'.format(bc.naam, 'wijk')
     d.g_code = bc.code
     d.order = 5
     d.centroid = get_centroid(bc.geometrie, 'wgs84')

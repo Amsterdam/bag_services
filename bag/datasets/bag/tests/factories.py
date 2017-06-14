@@ -4,7 +4,9 @@ import string
 # Packages
 from django.contrib.gis.geos import Point
 import factory
-import faker
+
+from faker import Faker
+
 from factory import fuzzy
 
 # from datasets.brk.tests import factories as brkfactory
