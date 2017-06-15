@@ -61,7 +61,7 @@ INSTALLED_APPS = (
     'django_filters',
 
     'batch',
-    'atlas',
+    'bag_commands',
 
     'datasets.bag',
     'datasets.brk',

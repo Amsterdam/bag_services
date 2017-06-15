@@ -167,6 +167,23 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         self.setUpAuthorization()
         self.makesuperuser()
 
+    def test_root_urls(self):
+        """
+        Visit all root main api pages
+        """
+        urls = [
+            'atlas/search',
+            'atlas/typeahead',
+            'wkpb',
+            'bag',
+            'brk',
+            'gebieden',
+        ]
+
+        for url in urls:
+            response = self.client.get('/{}/'.format(url))
+            self.valid_response(url, response)
+
     def makesuperuser(self):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
