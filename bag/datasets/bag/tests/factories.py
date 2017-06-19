@@ -226,6 +226,7 @@ class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Grootstedelijkgebied
 
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
 
 
