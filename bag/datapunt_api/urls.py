@@ -38,7 +38,8 @@ class GebiedenView(routers.APIRootView):
     Gebieden
 
     In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/) worden de
-    Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken
+    Amsterdamse stadsdelen,
+    wijk (voorheen) buurtcombinaties, buurten en bouwblokken
     vastgelegd. Verder bevat de registratie gegevens van de grootstedelijke
     gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de gebieden
     van gebiedsgericht werken.  """
@@ -117,6 +118,9 @@ gebieden = GebiedenRouter()
 gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
 gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
 gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
+
+gebieden.register(
+    r'wijk', datasets.bag.views.BuurtcombinatieViewSet)
 
 gebieden.register(
     r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)

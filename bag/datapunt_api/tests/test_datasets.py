@@ -41,6 +41,10 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         'gebieden/stadsdeel',
         'gebieden/buurt',
         'gebieden/bouwblok',
+        'gebieden/wijk',
+        'gebieden/buurtcombinatie',
+        'gebieden/gebiedsgerichtwerken',
+        'gebieden/grootstedelijkgebied',
 
         'wkpb/beperking',
         'wkpb/brondocument',
@@ -67,6 +71,8 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         links and properly
 
         """
+
+        bag_factories.GrootstedelijkGebiedFactory()
 
         # gebieden
         stadsdeel = bag_factories.StadsdeelFactory.create(
