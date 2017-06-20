@@ -208,7 +208,7 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(row["perceelnummer"], ko.perceelnummer)
         self.assertEqual(row["volledige_code"], ko.aanduiding)
-        self.assertEqual(row['display'], ko.aanduiding)
+        self.assertEqual(row['display'], ko.get_aanduiding_spaties())
         self.assertEqual(row['type'], 'kadaster/kadastraal_object')
         self.assertEqual(
             row['uri'], '{}brk/object/{}/'.format(URL, ko.id))
