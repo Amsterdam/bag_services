@@ -255,7 +255,7 @@ SELECT
   s.sectie || ' ' ||
   RIGHT('00000' || CAST(ko.perceelnummer AS VARCHAR), 5) || ' ' ||
   ko.indexletter || ' ' ||
-  ko.indexnummer
+  RIGHT('0000' || CAST(ko.indexnummer AS VARCHAR), 4)
                                                             AS display,
   'kadaster/kadastraal_object'::TEXT                        AS type,
   '{URL}' || 'brk/object/' || ko.id || '/' AS uri
