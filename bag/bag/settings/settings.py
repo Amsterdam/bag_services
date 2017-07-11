@@ -221,7 +221,7 @@ SWAGGER_SETTINGS = {
         'description': 'This is the BAG API server.',
         'license': 'Mozilla Public License Version 2.0',
         'licenseUrl': 'https://www.mozilla.org/en-US/MPL/2.0/',
-        'termsOfServiceUrl': 'https://atlas.amsterdam.nl/terms/',
+        'termsOfServiceUrl': 'https://data.amsterdam.nl/terms/',
         'title': 'BAG, BRK en WKPB API',
     },
     'doc_expansion': 'list',
