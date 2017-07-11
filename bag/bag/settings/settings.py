@@ -141,9 +141,9 @@ EL_PORT_VAR = os.getenv(OVERRIDE_EL_PORT_VAR, '9200')
 
 
 ELASTIC_OPTIONS = {
-    Location_key.docker: ["http://elasticsearch:9200"],
-    Location_key.local: [f"http://{get_docker_host()}:9201"],
-    Location_key.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
+    LocationKey.docker: ["http://elasticsearch:9200"],
+    LocationKey.local: [f"http://{get_docker_host()}:9201"],
+    LocationKey.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
 }
 
 ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
