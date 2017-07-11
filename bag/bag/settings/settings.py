@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-from settings_databases import LocationKey, \
+from bag.settings_databases import LocationKey, \
     get_docker_host, \
     get_database_key, \
     OVERRIDE_HOST_ENV_VAR, \
