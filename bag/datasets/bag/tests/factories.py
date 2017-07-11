@@ -4,7 +4,9 @@ import string
 # Packages
 from django.contrib.gis.geos import Point
 import factory
-import faker
+
+from faker import Faker
+
 from factory import fuzzy
 
 # from datasets.brk.tests import factories as brkfactory
@@ -13,7 +15,7 @@ from factory import fuzzy
 
 from .. import models
 
-f = faker.Factory.create(locale='nl_NL')
+f = Faker(locale='nl_NL')
 
 
 class EigendomsverhoudingFactory(factory.DjangoModelFactory):
@@ -99,7 +101,7 @@ class StadsdeelFactory(factory.DjangoModelFactory):
         django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    naam = fuzzy.FuzzyText(length=10)
+    naam = fuzzy.FuzzyText(length=4)
     code = fuzzy.FuzzyText(length=3, chars=string.digits)
     gemeente = factory.SubFactory(GemeenteFactory)
 
@@ -224,6 +226,7 @@ class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Grootstedelijkgebied
 
+    id = fuzzy.FuzzyText(length=14, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
 
 
@@ -239,6 +242,7 @@ class GebiedsgerichtwerkenFactory(factory.DjangoModelFactory):
         model = models.Gebiedsgerichtwerken
         django_get_or_create = ('code',)
 
+    id = fuzzy.FuzzyText(length=4, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
     code = fuzzy.FuzzyText(length=4)
     stadsdeel = factory.SubFactory(StadsdeelFactory)

@@ -3,7 +3,7 @@ import logging
 # Packages
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 # Project
 from batch import batch
 
@@ -14,7 +14,7 @@ from datasets.brk.tests import factories as brk_factories
 log = logging.getLogger('search')
 
 
-class ObjectSearchTest(APITestCase):
+class ObjectSearchTest(APITransactionTestCase):
 
     @classmethod
     def setUpClass(cls):

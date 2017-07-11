@@ -487,7 +487,9 @@ class ImportVboTest(TaskTestCase):
 
         v = models.Verblijfsobject.objects.get(pk='03630000648915')
         self.assertEqual(v.landelijk_id, '0363010000648915')
-        self.assertEqual(v.geometrie, Point(121466, 493032))
+        self.assertEqual(
+            v.geometrie, Point(121466, 493032, srid=28992),
+            "%s != 121466, 493032" % v.geometrie)
         self.assertEqual(v.gebruiksdoel_code, '1010')
         self.assertEqual(v.gebruiksdoel_omschrijving, 'BEST-woning')
         self.assertEqual(v.oppervlakte, 95)

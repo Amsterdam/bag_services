@@ -243,6 +243,27 @@ FROM brk_kadastraalobject ko
 """,
         ),
 
+        migrate.ManageView(
+            view_name='geo_lki_kadastraalobject',
+            sql=f"""
+SELECT
+  ko.id                                                     AS id,
+  ko.aanduiding                                             AS volledige_code,
+  ko.perceelnummer                                          AS perceelnummer,
+  coalesce(ko.point_geom, ko.poly_geom)                     AS geometrie,
+  g.id || ' ' ||
+  s.sectie || ' ' ||
+  RIGHT('00000' || CAST(ko.perceelnummer AS VARCHAR), 5) || ' ' ||
+  ko.indexletter || ' ' ||
+  RIGHT('0000' || CAST(ko.indexnummer AS VARCHAR), 4)
+                                                            AS display,
+  'kadaster/kadastraal_object'::TEXT                        AS type,
+  '{URL}' || 'brk/object/' || ko.id || '/' AS uri
+FROM brk_kadastraalobject ko
+LEFT JOIN brk_kadastralegemeente g ON g.id=ko.kadastrale_gemeente_id
+LEFT JOIN brk_kadastralesectie s ON s.id=ko.sectie_id
+"""
+        ),
 
         migrate.ManageView(
             view_name='geo_lki_kadastralegemeente',

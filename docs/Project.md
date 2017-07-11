@@ -23,7 +23,7 @@ The application consists of the following django apps:
 
 This app contains management commands for executing import tasks and managing the elasticsearch indices.
 
-## atlas_api
+## datapunt_api
 
 This app contains top-level code for the project (REST) API. Search viewsets are defined here, and all viewsets from the datasets modules are included here in urls.py to expose all endpoints. Tests for the API and search endpoints are also in this app.
 

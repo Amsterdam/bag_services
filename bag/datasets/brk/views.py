@@ -5,7 +5,7 @@ from rest_framework.status import HTTP_401_UNAUTHORIZED
 
 from datasets.brk import models, serializers, custom_serializers
 
-from datasets.generic.rest import AtlasViewSet
+from datasets.generic.rest import DatapuntViewSet
 
 from datasets.generic import rest
 
@@ -15,7 +15,7 @@ from django_filters.rest_framework.filterset import FilterSet
 from authorization_django import levels as authorization_levels
 
 
-class GemeenteViewSet(AtlasViewSet):
+class GemeenteViewSet(DatapuntViewSet):
     """
     Gemeente.
 
@@ -36,13 +36,13 @@ class GemeenteViewSet(AtlasViewSet):
     ---
 
     """
-    queryset = models.Gemeente.objects.all()
+    queryset = models.Gemeente.objects.all().order_by('gemeente')
     serializer_class = serializers.Gemeente
     serializer_detail_class = serializers.GemeenteDetail
     lookup_value_regex = '[^/]+'
 
 
-class KadastraleGemeenteViewSet(AtlasViewSet):
+class KadastraleGemeenteViewSet(DatapuntViewSet):
     """
     Kadastrale gemeente
 
@@ -53,13 +53,13 @@ class KadastraleGemeenteViewSet(AtlasViewSet):
     """
     queryset = (models.KadastraleGemeente.objects
                 .select_related('gemeente')
-                .all())
+                .all().order_by('id'))
     serializer_class = serializers.KadastraleGemeente
     serializer_detail_class = serializers.KadastraleGemeenteDetail
     lookup_value_regex = '[^/]+'
 
 
-class KadastraleSectieViewSet(AtlasViewSet):
+class KadastraleSectieViewSet(DatapuntViewSet):
     """
     Kadastrale sectie
 
@@ -69,7 +69,7 @@ class KadastraleSectieViewSet(AtlasViewSet):
 
     http://www.amsterdam.nl/stelselpedia/brk-index/catalogus/
     """
-    queryset = models.KadastraleSectie.objects.all()
+    queryset = models.KadastraleSectie.objects.all().order_by('id')
     queryset_detail = (
         models.KadastraleSectie.objects.select_related(
             'kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
@@ -78,7 +78,7 @@ class KadastraleSectieViewSet(AtlasViewSet):
     filter_fields = ('kadastrale_gemeente',)
 
 
-class KadastraalSubjectViewSet(AtlasViewSet):
+class KadastraalSubjectViewSet(DatapuntViewSet):
     """
     Kadastraal subject
 
@@ -101,7 +101,7 @@ class KadastraalSubjectViewSet(AtlasViewSet):
     employee - alleen niet natuurlijk
     plus     - mag alles zien
     """
-    queryset = models.KadastraalSubject.objects.all()
+    queryset = models.KadastraalSubject.objects.all().order_by('id')
 
     queryset_detail = (
         models.KadastraalSubject.objects.select_related(
@@ -154,7 +154,7 @@ class KadastraalObjectFilter(FilterSet):
         return queryset.filter(verblijfsobjecten__id=value)
 
 
-class KadastraalObjectViewSet(AtlasViewSet):
+class KadastraalObjectViewSet(DatapuntViewSet):
     """
     Kadastraal object
 
@@ -352,7 +352,7 @@ class ZakelijkRechtFilter(FilterSet):
         ]
 
 
-class ZakelijkRechtViewSet(AtlasViewSet):
+class ZakelijkRechtViewSet(DatapuntViewSet):
     """
     Zakelijkrecht
 
@@ -459,7 +459,7 @@ class AantekeningenFilter(FilterSet):
         ]
 
 
-class AantekeningViewSet(AtlasViewSet):
+class AantekeningViewSet(DatapuntViewSet):
     """
     Aantekening
 
@@ -473,7 +473,7 @@ class AantekeningViewSet(AtlasViewSet):
     """
     queryset = (models.Aantekening.objects
                 .select_related('aard_aantekening', 'opgelegd_door')
-                .all())
+                .all().order_by('id'))
 
     queryset_detail = (
         models.Aantekening.objects.select_related(
@@ -490,7 +490,7 @@ class AantekeningViewSet(AtlasViewSet):
     lookup_value_regex = '[^/]+'
 
 
-class KadastraalObjectWkpbView(AtlasViewSet):
+class KadastraalObjectWkpbView(DatapuntViewSet):
     """
     Kadastraal object met extra wkpb informatie
 

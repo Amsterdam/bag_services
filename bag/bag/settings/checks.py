@@ -31,12 +31,3 @@ def check_database(app_configs, **kwargs):
         return [checks.Error(
             "No database found on {}".format(settings.DATABASES['default'].get('HOST')),
         )]
-
-@checks.register
-def check_gal(app_configs, **kwargs):
-    from django.contrib.gis import gdal
-    if not gdal.HAS_GDAL:
-        return [checks.Error(
-            "GDAL is not installed, but it is required"
-        )]
-    return []

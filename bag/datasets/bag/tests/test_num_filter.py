@@ -2,7 +2,7 @@
 import logging
 # Packages
 from django.contrib.gis.geos import Point
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 
 from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
@@ -10,7 +10,7 @@ from datasets.brk.tests import factories as brk_factories
 LOG = logging.getLogger(__name__)
 
 
-class Numfilter(APITestCase):
+class Numfilter(APITransactionTestCase):
 
     def setUp(self):
 
@@ -160,7 +160,7 @@ class Numfilter(APITestCase):
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
-    def test_location_filter(self):
+    def test_location_filter_2(self):
         url = '/bag/nummeraanduiding/?locatie=52.3726097,4.9004161,10'
         response = self.client.get(url)
 

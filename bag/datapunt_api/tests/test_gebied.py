@@ -1,7 +1,7 @@
 # Python
 from unittest import skip
 # Packages
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 # Project
 from batch import batch
 import datasets.bag.batch
@@ -9,11 +9,9 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-class GebiedSearchTest(APITestCase):
+class GebiedSearchTest(APITransactionTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def setUp(self):
 
         # We need Openbare ruimte objecten
         # becuause opr queries are executed
@@ -34,11 +32,15 @@ class GebiedSearchTest(APITestCase):
 
         # the actual tested usecases
 
-        cls.gsg = bag_factories.GrootstedelijkGebiedFactory.create()
-        cls.unesco = bag_factories.UnescoFactory.create()
-        cls.ggw = bag_factories.GebiedsgerichtwerkenFactory.create()
-        cls.bb = bag_factories.BouwblokFactory(code='YC01')
-        cls.bb2 = bag_factories.BouwblokFactory(code='YC00')
+        self.gsg = bag_factories.GrootstedelijkGebiedFactory.create()
+        self.unesco = bag_factories.UnescoFactory.create()
+        self.stadsdeel = bag_factories.StadsdeelFactory.create(
+            id='testgebied')
+        self.ggw = bag_factories.GebiedsgerichtwerkenFactory.create(
+            stadsdeel=self.stadsdeel
+        )
+        self.bb = bag_factories.BouwblokFactory(code='YC01')
+        self.bb2 = bag_factories.BouwblokFactory(code='YC00')
 
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
 

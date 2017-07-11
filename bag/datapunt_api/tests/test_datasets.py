@@ -3,7 +3,7 @@ import logging
 import json
 
 # Packages
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework.reverse import reverse
 # Project
 from datasets.bag.tests import factories as bag_factories
@@ -20,7 +20,7 @@ def pretty_data(data):
     return json.dumps(data, indent=4, sort_keys=True)
 
 
-class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
+class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
     """
     Verifies that browsing the API works correctly.
 
@@ -41,6 +41,10 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         'gebieden/stadsdeel',
         'gebieden/buurt',
         'gebieden/bouwblok',
+        'gebieden/wijk',
+        'gebieden/buurtcombinatie',
+        'gebieden/gebiedsgerichtwerken',
+        'gebieden/grootstedelijkgebied',
 
         'wkpb/beperking',
         'wkpb/brondocument',
@@ -68,8 +72,11 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
 
         """
 
+        bag_factories.GrootstedelijkGebiedFactory()
+
         # gebieden
-        stadsdeel = bag_factories.StadsdeelFactory.create()
+        stadsdeel = bag_factories.StadsdeelFactory.create(
+            id='testdatasets', code='ABC')
 
         bag_factories.GebiedsgerichtwerkenFactory.create(
             stadsdeel=stadsdeel
@@ -164,8 +171,24 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
         )
 
         self.setUpAuthorization()
-
         self.makesuperuser()
+
+    def test_root_urls(self):
+        """
+        Visit all root main api pages
+        """
+        urls = [
+            'atlas/search',
+            'atlas/typeahead',
+            'wkpb',
+            'bag',
+            'brk',
+            'gebieden',
+        ]
+
+        for url in urls:
+            response = self.client.get('/{}/'.format(url))
+            self.valid_response(url, response)
 
     def makesuperuser(self):
         self.client.credentials(
@@ -237,10 +260,14 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
                 self.find_all_href(detail.data)
 
     def find_all_href(self, data):
+        """
+        Validate al links referenced in json documents
+        """
 
         data = [data]
 
         tested_urls = set()
+
         jsondata = pretty_data(data)
 
         while data:
@@ -248,23 +275,49 @@ class BrowseDatasetsTestCase(APITestCase, AuthorizationSetup):
 
             for key, value in item.items():
                 if isinstance(value, dict):
+                    # new object to check
                     data.append(value)
-                if key == 'href':
-                    url = value
-                    self.item_href_checks(url, tested_urls, jsondata)
+
+                if key != 'href':
+                    continue
+
+                url = value
+
+                if not self.follow_href(item, url):
+                    continue
+
+                self.item_href_checks(url, tested_urls, jsondata)
+
+    def follow_href(self, item, url):
+        """
+        check if we should follow link in item
+        """
+
+        # check if there is a count.
+        # do not follow.
+        if 'count' in item:
+            if not item['count']:
+                # skip this one
+                return False
+
+        return True
 
     def item_href_checks(self, url, tested_urls, jsondata):
 
+        # keep track of already vistited urls
         if url in tested_urls:
             return
 
         tested_urls.add(url)
 
+        # visited endpoint
         result = self.client.get(url)
 
         self.assertEqual(result.status_code, 200, url)
         LOG.debug('test url %s', url)
+
         self.valid_response(url, result)
+
         if 'count' in result.data:
             pdata = pretty_data(result.data)
 

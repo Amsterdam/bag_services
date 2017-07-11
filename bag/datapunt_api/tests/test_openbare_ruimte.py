@@ -2,7 +2,7 @@
 import time
 from unittest import skip
 # Packages
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 # Project
 from batch import batch
 import datasets.bag.batch
@@ -10,7 +10,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-class SubjectSearchTest(APITestCase):
+class SubjectSearchTest(APITransactionTestCase):
 
     @classmethod
     def setUpClass(cls):

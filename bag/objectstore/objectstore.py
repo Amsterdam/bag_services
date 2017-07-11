@@ -20,16 +20,16 @@ import proces.
 """
 import logging
 import os
+import time
 
 import datetime
 import zipfile
 
-from dateutil import parser
 from functools import lru_cache
 from pathlib import Path
+from dateutil import parser
 
 from swiftclient.client import Connection
-
 
 
 log = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ def download_diva_file(container_name, file_path, target_path=None):
     path = file_path.split('/')
 
     file_name = path[-1]
-    log.info("Create file {} in {}".format(DIVA_DIR, file_name))
+    log.info(f"Create file {DIVA_DIR} in {file_name}")
     file_name = path[-1]
 
     if target_path:
@@ -144,7 +144,7 @@ def delete_old_zips(container_name, zips_mapper):
     """
     Cleanup old zips
     """
-    for zipkey, zipfiles in zips_mapper.items():
+    for _zipkey, zipfiles in zips_mapper.items():
         log.debug('KEEP : %s', zipfiles[0][1]['name'])
         if len(zipfiles) > 1:
             # delete old files
@@ -152,7 +152,6 @@ def delete_old_zips(container_name, zips_mapper):
                 zippath = zipobject['name']
                 log.debug('PURGE: %s', zippath)
                 delete_from_objectstore(container_name, zippath)
-
 
 
 """
@@ -186,7 +185,7 @@ def create_target_directories():
             os.makedirs(directory)
 
 
-def unzip_files(zipsource):
+def unzip_files(zipsource, mtime):
     """
     Unzip single files to the right target directory
     """
@@ -205,6 +204,7 @@ def unzip_files(zipsource):
                 print(source)
                 print(target)
                 os.rename(source, target)
+                os.utime(target, (mtime, mtime))
 
 
 # list of exeptions which are not in the 'official zips'
@@ -242,7 +242,7 @@ def unzip_data(zips_mapper):
     unzip the zips
     """
 
-    for zipkey, zipfiles in zips_mapper.items():
+    for _zipkey, zipfiles in zips_mapper.items():
 
         latestzip = zipfiles[0][1]
 
@@ -250,21 +250,26 @@ def unzip_data(zips_mapper):
         file_name = filepath[-1]
         zip_path = '{}/{}'.format(DIVA_DIR, file_name)
 
-        log.info("Unzip {}".format(zip_path))
+        log.info(f"Unzip {zip_path}")
+
+        zip_date = file_name.split('_')[0]
+        log.debug('ZIP_DATE: %s', zip_date)
+        zip_date = parser.parse(zip_date)
+        zip_seconds = time.mktime(zip_date.timetuple())
 
         zipsource = zipfile.ZipFile(zip_path, 'r')
-        unzip_files(zipsource)
+        unzip_files(zipsource, zip_seconds)
 
 
 zip_age_limits = {
-  'GEBASCII.zip': 5,
-  'GEBSHAPE.zip': 365,
-  'BAGACTUEEL.zip': 5,
-  'BAGGEOMETRIE.zip': 5,
-  'BAGLSLEUTEL.zip': 5,
-  'BRKASCII.zip': 10,
-  'BRKSHAPE.zip': 10,
-  'WKPB.zip': 5,
+    'GEBASCII.zip': 5,
+    'GEBSHAPE.zip': 365,
+    'BAGACTUEEL.zip': 5,
+    'BAGGEOMETRIE.zip': 5,
+    'BAGLSLEUTEL.zip': 5,
+    'BRKASCII.zip': 10,
+    'BRKSHAPE.zip': 10,
+    'WKPB.zip': 5,
 }
 
 
@@ -278,9 +283,9 @@ def check_age(zip_created, file_key, file_object):
     log.debug('AGE: %2d days', delta.days)
     source_name = file_object['name']
 
-    log.debug('%s_%s' % (zip_created.strftime('%Y%m%d'), file_key))
+    log.debug('%s_%s', zip_created.strftime('%Y%m%d'), file_key)
 
-    for key, agelimit in zip_age_limits.items():
+    for key, _agelimit in zip_age_limits.items():
         if file_key.endswith(key):
             if zip_age_limits[key] < delta.days:
                 raise ValueError(
@@ -318,7 +323,7 @@ def fetch_diva_zips(container_name, zipfolder):
     :param folder:
     :return:
     """
-    log.info("import files from {}".format(zipfolder))
+    log.info(f"import files from {zipfolder}")
 
     zips_mapper = {}
 

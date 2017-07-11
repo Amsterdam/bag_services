@@ -3,10 +3,10 @@ from rest_framework import routers
 import datasets.bag.views
 import datasets.brk.views
 import datasets.wkpb.views
-from atlas_api import views
+from datapunt_api import views
 
 
-class SearchRouter(routers.DefaultRouter):
+class SearchView(routers.APIRootView):
     """
     Search
 
@@ -14,18 +14,12 @@ class SearchRouter(routers.DefaultRouter):
     in the models
     """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
 
-        class Search(cls):
-            pass
-
-        Search.__doc__ = self.__doc__
-        return Search.as_view()
+class SearchRouter(routers.DefaultRouter):
+    APIRootView = SearchView
 
 
-class BagRouter(routers.DefaultRouter):
+class BagView(routers.APIRootView):
     """
     BAG.
 
@@ -35,39 +29,27 @@ class BagRouter(routers.DefaultRouter):
     woonplaatsen en openbare ruimten.
     """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
-
-        class BAG(cls):
-            pass
-
-        BAG.__doc__ = self.__doc__
-        return BAG.as_view()
+class BagRouter(routers.DefaultRouter):
+    APIRootView = BagView
 
 
-class GebiedenRouter(routers.DefaultRouter):
+class GebiedenView(routers.APIRootView):
     """
     Gebieden
 
     In de [Registratie gebieden](https://www.amsterdam.nl/stelselpedia/gebieden-index/) worden de
-    Amsterdamse stadsdelen, buurtcombinaties, buurten en bouwblokken
+    Amsterdamse stadsdelen,
+    wijk (voorheen) buurtcombinaties, buurten en bouwblokken
     vastgelegd. Verder bevat de registratie gegevens van de grootstedelijke
     gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de gebieden
     van gebiedsgericht werken.  """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
 
-        class Gebieden(cls):
-            pass
-
-        Gebieden.__doc__ = self.__doc__
-        return Gebieden.as_view()
+class GebiedenRouter(routers.DefaultRouter):
+    APIRootView = GebiedenView
 
 
-class BrkRouter(routers.DefaultRouter):
+class BrkView(routers.APIRootView):
     """
     BRK Basisregistratie kadaster
 
@@ -79,18 +61,12 @@ class BrkRouter(routers.DefaultRouter):
     gemeenten.
     """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
 
-        class BRK(cls):
-            pass
-
-        BRK.__doc__ = self.__doc__
-        return BRK.as_view()
+class BrkRouter(routers.DefaultRouter):
+    APIRootView = BrkView
 
 
-class WkpbRouter(routers.DefaultRouter):
+class WkpbView(routers.APIRootView):
     """
     Wkpd
 
@@ -99,47 +75,32 @@ class WkpbRouter(routers.DefaultRouter):
     zaken, die het gemeentebestuur heeft opgelegd.
     """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
 
-        class WKPB(cls):
-            pass
+class WkpbRouter(routers.DefaultRouter):
+    APIRootView = WkpbView
 
-        WKPB.__doc__ = self.__doc__
-        return WKPB.as_view()
+
+class TypeAheadView(routers.APIRootView):
+    """
+    Typeahead API over de bag, brk, en gebieden datasets
+    """
 
 
 class TypeAheadRouter(routers.DefaultRouter):
+    APIRootView = TypeAheadView
+
+
+class BAGSearchView(routers.APIRootView):
     """
-    Specifieke functionaliteit voor de Atlas typeahead API.
+    Full Search API over BAG, BRK en gebieden.
     """
 
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
 
-        class Typeahead(cls):
-            pass
-
-        Typeahead.__doc__ = self.__doc__
-        return Typeahead.as_view()
-
-
-class AtlasSearchRouter(routers.DefaultRouter):
+class BAGSearchRouter(routers.DefaultRouter):
     """
     Specifieke functionaliteit voor de Atlas search API.
     """
-
-    def get_api_root_view(self, **kwargs):
-        view = super().get_api_root_view(**kwargs)
-        cls = view.cls
-
-        class Search(cls):
-            pass
-
-        Search.__doc__ = self.__doc__
-        return Search.as_view()
+    APIRootView = BAGSearchView
 
 
 bag = BagRouter()
@@ -157,6 +118,9 @@ gebieden = GebiedenRouter()
 gebieden.register(r'stadsdeel', datasets.bag.views.StadsdeelViewSet)
 gebieden.register(r'buurt', datasets.bag.views.BuurtViewSet)
 gebieden.register(r'bouwblok', datasets.bag.views.BouwblokViewSet)
+
+gebieden.register(
+    r'wijk', datasets.bag.views.BuurtcombinatieViewSet)
 
 gebieden.register(
     r'buurtcombinatie', datasets.bag.views.BuurtcombinatieViewSet)
@@ -218,7 +182,7 @@ typeahead.register(
 # ##########
 # Typeahead
 # ###########
-bag_search = AtlasSearchRouter()
+bag_search = BAGSearchRouter()
 
 # Alias voor nummeraanduiding
 bag_search.register(

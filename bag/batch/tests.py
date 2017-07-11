@@ -1,4 +1,4 @@
-from django.test import TestCase, SimpleTestCase
+from django.test import TransactionTestCase, SimpleTestCase
 from django.utils import timezone
 
 from . import models
@@ -35,7 +35,7 @@ class SimpleJob(object):
         return self._tasks
 
 
-class JobTest(TestCase):
+class JobTest(TransactionTestCase):
     def test_job_results_in_execution(self):
         e = batch.batch.execute(EmptyJob())
 
