@@ -17,6 +17,14 @@ import os
 import re
 import sys
 
+from settings_databases import LocationKey, \
+    get_docker_host, \
+    get_database_key, \
+    OVERRIDE_HOST_ENV_VAR, \
+    OVERRIDE_PORT_ENV_VAR
+
+OVERRIDE_EL_HOST_VAR = 'ELASTIC_HOST_OVERRIDE'
+OVERRIDE_EL_PORT_VAR = 'ELASTIC_PORT_OVERRIDE'
 
 def get_docker_host():
     d_host = os.getenv('DOCKER_HOST', None)
@@ -109,17 +117,62 @@ WSGI_APPLICATION = 'bag.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+DATABASE_OPTIONS = {
+    LocationKey.docker: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('DATABASE_NAME', 'atlas'),
         'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': os.getenv('DATABASE_PORT_5432_TCP_ADDR', get_docker_host()),
-        'PORT': os.getenv('DATABASE_PORT_5432_TCP_PORT', 5434),
-        'CONN_MAX_AGE': 30,
-    }
+        'HOST': 'database',
+        'PORT': '5432'
+    },
+    LocationKey.local: {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'atlas'),
+        'USER': os.getenv('DATABASE_USER', 'atlas'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
+        'HOST': get_docker_host(),
+        'PORT': '5412'
+    },
+    LocationKey.override: {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.getenv('DATABASE_NAME', 'atlas'),
+        'USER': os.getenv('DATABASE_USER', 'atlas'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
+        'HOST': os.getenv(OVERRIDE_HOST_ENV_VAR),
+        'PORT': os.getenv(OVERRIDE_PORT_ENV_VAR, '5432')
+    },
 }
+
+DATABASES = {
+    'default': DATABASE_OPTIONS[get_database_key()]
+}
+
+
+EL_HOST_VAR = os.getenv(OVERRIDE_EL_HOST_VAR)
+EL_PORT_VAR = os.getenv(OVERRIDE_EL_PORT_VAR, '9200')
+
+
+ELASTIC_OPTIONS = {
+    Location_key.docker: ["http://elasticsearch:9200"],
+    Location_key.local: [f"http://{get_docker_host()}:9201"],
+    Location_key.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
+}
+
+ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
+
+ELASTIC_INDICES = dict(
+    BAG='bag', BRK='brk', NUMMERAANDUIDING='nummeraanduiding')
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+
+if TESTING:
+    for k, v in ELASTIC_INDICES.items():
+        ELASTIC_INDICES[k] += 'test'
+
+BATCH_SETTINGS = dict(
+    batch_size=100000
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -133,26 +186,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
-
-ELASTIC_INDICES = {
-    'BAG': 'bag',
-    'BRK': 'brk',
-    'NUMMERAANDUIDING': 'nummeraanduiding',
-}
-
-if TESTING:
-    for k, v in ELASTIC_INDICES.items():
-        ELASTIC_INDICES[k] += 'test'
-
-ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
-    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', get_docker_host()),
-    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
-
-BATCH_SETTINGS = dict(
-    batch_size=4000
-)
 
 STATIC_URL = '/static/'
 
