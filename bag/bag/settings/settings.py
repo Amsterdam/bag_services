@@ -119,7 +119,7 @@ DATABASE_OPTIONS = {
         'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': get_docker_host(),
-        'PORT': '5412'
+        'PORT': '5434'
     },
     LocationKey.override: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -142,7 +142,7 @@ EL_PORT_VAR = os.getenv(OVERRIDE_EL_PORT_VAR, '9200')
 
 ELASTIC_OPTIONS = {
     LocationKey.docker: ["http://elasticsearch:9200"],
-    LocationKey.local: [f"http://{get_docker_host()}:9201"],
+    LocationKey.local: [f"http://{get_docker_host()}:9200"],
     LocationKey.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
 }
 
