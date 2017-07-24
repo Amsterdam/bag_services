@@ -7,16 +7,8 @@ ENV BAG_OBJECTSTORE_PASSWORD=$BAG_OBJECTSTORE_PASSWORD
 
 EXPOSE 8080
 
-RUN apt-get install -y \
-		gdal-bin \
-		libgeos-dev \
-		netcat \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-	&& adduser --system datapunt \
-	&& mkdir -p /static \
-	&& chown datapunt /static \
-	&& pip install uwsgi
+RUN mkdir -p /static \
+	&& chown datapunt /static
 
 WORKDIR /app/
 COPY requirements.txt /app/
