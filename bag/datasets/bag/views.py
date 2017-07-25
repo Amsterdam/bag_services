@@ -646,7 +646,7 @@ class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Gebiedsgerichtwerken.objects.all()
+    queryset = models.Gebiedsgerichtwerken.objects.all().order_by('naam')
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
 
@@ -665,7 +665,7 @@ class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
     (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
     """
     metadata_class = ExpansionMetadata
-    queryset = models.Grootstedelijkgebied.objects.all()
+    queryset = models.Grootstedelijkgebied.objects.all().order_by('naam')
     serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
 

@@ -13,12 +13,15 @@ from urllib.parse import quote, urlparse
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.utils.encoding import force_text
+
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.compat import coreapi, coreschema
 
 from authorization_django import levels as authorization_levels
 
@@ -415,8 +418,6 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
 
 class TypeAheadBagViewSet(TypeaheadViewSet):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def list(self, request):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
@@ -452,9 +453,6 @@ def authorized_subject_queries(request, analyzer):
 
 class TypeAheadBrkViewSet(TypeaheadViewSet):
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def authorized_queries(self, request, analyzer):
         return authorized_subject_queries(request, analyzer)
 
@@ -463,8 +461,6 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
 
 
 class TypeAheadGebiedenViewSet(TypeaheadViewSet):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def list(self, request):
         return self._abstr_list(request, {'gebieden'})
@@ -475,11 +471,33 @@ class TypeAheadLegacyViewSet(TypeaheadViewSet):
     The old typeahead containing all different results at once
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def list(self, request):
         return self._abstr_list(request, set())
+
+
+class QFilter(object):
+    """
+    For openapi documentation purposes
+    return the q field
+    """
+    search_title = 'search title'
+    search_description = 'search description'
+
+    def get_schema_fields(self, _view):
+        """
+        return Q parameter documentation
+        """
+        return [
+            coreapi.Field(
+                name='q',
+                required=False,
+                location='query',
+                schema=coreschema.String(
+                    title=force_text(self.search_title),
+                    description=force_text(self.search_description)
+                )
+            )
+        ]
 
 
 class SearchViewSet(viewsets.ViewSet):
@@ -491,6 +509,8 @@ class SearchViewSet(viewsets.ViewSet):
     page_size = 100
     url_name = 'search-list'
     page_limit = 10
+
+    filter_backends = [QFilter]
 
     def search_query(self, request,
                      elk_client, analyzer: QueryAnalyzer) -> Search:
@@ -534,16 +554,13 @@ class SearchViewSet(viewsets.ViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        Create a response list
+        Create a response list of search items
 
         ---
         parameters:
             - name: q
-              description: Zoek op kadastraal object
+              description: Zoek object
               required: true
-              type: string
-              paramType: query
-
         """
 
         if 'q' not in request.query_params:
@@ -710,6 +727,12 @@ class SearchObjectViewSet(SearchViewSet):
         return search
 
 
+class BouwblokQ(QFilter):
+
+    search_description = 'Zoek op bouwblokken'
+    search_title = 'Bouwblok'
+
+
 class SearchBouwblokViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -717,6 +740,7 @@ class SearchBouwblokViewSet(SearchViewSet):
     """
 
     url_name = 'search/bouwblok-list'
+    filter_backends = [BouwblokQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> List[Search]:
