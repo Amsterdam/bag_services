@@ -642,6 +642,12 @@ class SearchViewSet(viewsets.ViewSet):
         return result
 
 
+class KadastraalSubjectQ(QFilter):
+
+    search_description = 'Zoek op kadastrale subjecten'
+    search_title = 'Kadastraal subject'
+
+
 class SearchSubjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -657,6 +663,7 @@ class SearchSubjectViewSet(SearchViewSet):
     """
 
     url_name = 'search/kadastraalsubject-list'
+    filter_backends = [KadastraalSubjectQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -673,6 +680,12 @@ class SearchSubjectViewSet(SearchViewSet):
         search = querylist[0].to_elasticsearch_object(elk_client)
 
         return search
+
+
+class KadastraalObjectQ(QFilter):
+
+    search_description = 'Zoek op kadastrale objecten'
+    search_title = 'Kadastraal object'
 
 
 class SearchObjectViewSet(SearchViewSet):
@@ -713,6 +726,7 @@ class SearchObjectViewSet(SearchViewSet):
     """
 
     url_name = 'search/kadastraalobject-list'
+    filter_backends = [KadastraalObjectQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> List[Search]:
@@ -756,6 +770,12 @@ class SearchBouwblokViewSet(SearchViewSet):
         return search.filter('terms', subtype=['bouwblok'])
 
 
+class GebiedQ(QFilter):
+
+    search_description = 'Zoek op gebieden'
+    search_title = 'Gebied'
+
+
 class SearchGebiedenViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -763,6 +783,7 @@ class SearchGebiedenViewSet(SearchViewSet):
     """
 
     url_name = 'search/gebied-list'
+    filter_backends = [GebiedQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -784,6 +805,12 @@ class SearchGebiedenViewSet(SearchViewSet):
         return search
 
 
+class OpenbareRuimteQ(QFilter):
+
+    search_description = 'Zoek op openbare ruimtes'
+    search_title = 'Openbare ruimte'
+
+
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -800,6 +827,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
     """
     url_name = 'search/openbareruimte-list'
+    filter_backends = [OpenbareRuimteQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -810,12 +838,18 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         return search_data.to_elasticsearch_object(elk_client)
 
 
+class NummeraanduidingQ(QFilter):
+
+    search_description = 'Zoek op adressen'
+    search_title = 'Adres'
+
+
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
 
-    [/search/adres/?q=silodam 340](https://api.data.amsterdam.nl/atlas/search/adres/?q=silodam 340)  # noqa
+    [/search/adres/?q=silodam 340](https://api.data.amsterdam.nl/atlas/search/adres/?q=silodam 340)
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -824,8 +858,9 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
 
-    """
+    """  #noqa
     url_name = 'search/adres-list'
+    filter_backends = [NummeraanduidingQ]
     custom_sort = True
 
     def search_query(self, request, elk_client,
@@ -863,6 +898,12 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             result[key] = value
 
 
+class PostcodeQ(QFilter):
+
+    search_description = 'Zoek op postcodes'
+    search_title = 'Postcode'
+
+
 class SearchPostcodeViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -881,6 +922,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     """
     url_name = 'search/postcode-list'
+    filter_backends = [PostcodeQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
