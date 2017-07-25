@@ -274,6 +274,31 @@ class QueryMetadata(metadata.SimpleMetadata):
 # =============================================
 # Search view sets
 # =============================================
+class QFilter(object):
+    """
+    For openapi documentation purposes
+    return the q field
+    """
+    search_title = 'search title'
+    search_description = 'search description'
+
+    def get_schema_fields(self, _view):
+        """
+        return Q parameter documentation
+        """
+        return [
+            coreapi.Field(
+                name='q',
+                required=False,
+                location='query',
+                schema=coreschema.String(
+                    title=force_text(self.search_title),
+                    description=force_text(self.search_description)
+                )
+            )
+        ]
+
+
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a
@@ -417,7 +442,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         return Response(response)
 
 
+class BagQ(QFilter):
+
+    search_description = 'Zoek in BAG'
+    search_title = 'BAG object'
+
+
 class TypeAheadBagViewSet(TypeaheadViewSet):
+
+    filter_backends = [BagQ]
 
     def list(self, request):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
@@ -451,7 +484,15 @@ def authorized_subject_queries(request, analyzer):
     return []
 
 
+class BrkQ(QFilter):
+
+    search_description = 'Zoek in BRK'
+    search_title = 'BRK object'
+
+
 class TypeAheadBrkViewSet(TypeaheadViewSet):
+
+    filter_backends = [BrkQ]
 
     def authorized_queries(self, request, analyzer):
         return authorized_subject_queries(request, analyzer)
@@ -460,7 +501,15 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'brk'})
 
 
+class GebiedTQ(QFilter):
+
+    search_description = 'Zoek op gebied'
+    search_title = 'Gebied'
+
+
 class TypeAheadGebiedenViewSet(TypeaheadViewSet):
+
+    filter_backends = [GebiedTQ]
 
     def list(self, request):
         return self._abstr_list(request, {'gebieden'})
@@ -473,31 +522,6 @@ class TypeAheadLegacyViewSet(TypeaheadViewSet):
 
     def list(self, request):
         return self._abstr_list(request, set())
-
-
-class QFilter(object):
-    """
-    For openapi documentation purposes
-    return the q field
-    """
-    search_title = 'search title'
-    search_description = 'search description'
-
-    def get_schema_fields(self, _view):
-        """
-        return Q parameter documentation
-        """
-        return [
-            coreapi.Field(
-                name='q',
-                required=False,
-                location='query',
-                schema=coreschema.String(
-                    title=force_text(self.search_title),
-                    description=force_text(self.search_description)
-                )
-            )
-        ]
 
 
 class SearchViewSet(viewsets.ViewSet):
