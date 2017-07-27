@@ -719,6 +719,9 @@ class VerblijfsobjectDetail(
 
     bouwblok = Bouwblok()
 
+    indicatie_geconstateerd = serializers.Field(source='ind_geconstateerd')
+    indicatie_in_onderzoek = serializers.Field(source='ind_inonderzoek')
+
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
@@ -773,8 +776,8 @@ class VerblijfsobjectDetail(
             'beperkingen',
             'bouwblok',
 
-            'ind_geconstateerd',
-            'ind_inonderzoek',
+            'indicatie_geconstateerd',
+            'indicatie_in_onderzoek',
 
             '_buurtcombinatie',
             '_stadsdeel',
