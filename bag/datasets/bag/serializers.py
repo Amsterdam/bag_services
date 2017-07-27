@@ -773,6 +773,9 @@ class VerblijfsobjectDetail(
             'beperkingen',
             'bouwblok',
 
+            'ind_geconstateerd',
+            'ind_inonderzoek',
+
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
