@@ -169,6 +169,7 @@ path_mapping = {
     'BAG/UVA2/BAG_Actueel/ASCII': 'bag',
     'BAG/BAG_LandelijkeSleutel/ASCII': 'bag',
     'WKPB/beperkingen/ASCII': 'beperkingen',
+    'BAG/BAG_Authentiek/ASCII': 'bag',
 }
 
 
