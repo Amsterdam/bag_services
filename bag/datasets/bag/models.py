@@ -753,6 +753,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='verblijfsobjecten')
+    ind_geconstateerd = models.NullBooleanField(default=None)
+    ind_inonderzoek = models.NullBooleanField(default=None)
 
     panden = models.ManyToManyField(
         'Pand', related_name='verblijfsobjecten',

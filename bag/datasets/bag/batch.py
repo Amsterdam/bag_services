@@ -926,6 +926,7 @@ class ImportVboTask(batch.BasicTask):
         self.statussen = set()
         self.buurten = set()
         self.landelijke_ids = dict()
+        self.indicaties = dict()
 
     def before(self):
         self.redenen_afvoer = set(models.RedenAfvoer.objects.values_list("pk", flat=True))
@@ -955,6 +956,7 @@ class ImportVboTask(batch.BasicTask):
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
+        self.indicaties = uva2.read_indicaties(self.path)
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
 
@@ -1044,6 +1046,13 @@ class ImportVboTask(batch.BasicTask):
             log.warning('Verblijfsobject {} references non-existing bron {}; ignoring'.format(pk, buurt_id))
             buurt_id = None
 
+        if landelijk_id not in self.indicaties:
+            log.warning('Verblijfsobject {} references non-existing ind_gecontateerd / ind_inonderzoek; ignoring'.format(landelijk_id))
+            ind_inonderzoek = None
+            ind_geconstateerd = None
+        else:
+            ind_geconstateerd, ind_inonderzoek = self.indicaties[landelijk_id]
+
         return models.Verblijfsobject(
             pk=pk,
             landelijk_id=landelijk_id,
@@ -1085,6 +1094,8 @@ class ImportVboTask(batch.BasicTask):
             einde_geldigheid=uva2.uva_datum(
                 r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
+            ind_geconstateerd=ind_geconstateerd,
+            ind_inonderzoek=ind_inonderzoek,
         )
 
 

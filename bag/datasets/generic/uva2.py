@@ -172,3 +172,22 @@ def read_landelijk_id_mapping(path, file_code):
                 result[row[0]] = row[1]
 
     return result
+
+
+def read_indicaties(path):
+    """
+    Read landelijk BAG id to (indicatie geconstateerd, in onderzoek) mapping.
+
+    :param path: path containing the CSV file
+    """
+    file_code = 'VBO_geconstateerd-inonderzoek'
+    filename = resolve_file(path, file_code, extension='csv')
+
+    with open(filename, encoding='cp1252') as f:
+        rows = csv.reader(f, delimiter=';')
+
+        mapping = {}
+        for _id, geconst, inonderz in rows:
+            mapping[_id] = (uva_indicatie(geconst), uva_indicatie(inonderz))
+
+        return mapping
