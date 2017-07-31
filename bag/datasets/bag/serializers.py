@@ -719,8 +719,8 @@ class VerblijfsobjectDetail(
 
     bouwblok = Bouwblok()
 
-    indicatie_geconstateerd = serializers.Field(source='ind_geconstateerd')
-    indicatie_in_onderzoek = serializers.Field(source='ind_inonderzoek')
+    indicatie_geconstateerd = serializers.ReadOnlyField(source='ind_geconstateerd')
+    indicatie_in_onderzoek = serializers.ReadOnlyField(source='ind_inonderzoek')
 
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
