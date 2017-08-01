@@ -889,6 +889,10 @@ class Pand(
     def _gemeente(self):
         return self._stadsdeel.gemeente if self._stadsdeel else None
 
+    @property
+    def _monumenten(self):
+        return self
+
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=29, primary_key=True)

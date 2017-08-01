@@ -2,6 +2,7 @@
 from collections import OrderedDict
 import json
 # Packages
+from django.conf import settings
 from rest_framework import renderers, serializers
 from rest_framework import pagination, response, viewsets, filters
 from rest_framework.reverse import reverse
@@ -162,6 +163,23 @@ class RelatedSummaryField(serializers.Field):
             'count': count,
             'href': "{}?{}={}".format(
                 url, filter_name, parent_pk),
+        }
+
+
+class ExternalRelationField(serializers.Field):
+    def __init__(self, path, parameter_name, host=settings.DATAPUNT_API_URL):
+        super().__init__()
+        self.host = host
+        self.path = path
+        self.parameter_name = parameter_name
+
+    def to_representation(self, pand):
+        # prefer landeljk id usage
+        id = pand.landelijk_id if pand.landelijk_id else pand.pk
+
+        return {
+            'href': "{}{}?{}={}".format(
+                self.host, self.path, self.parameter_name, id),
         }
 
 

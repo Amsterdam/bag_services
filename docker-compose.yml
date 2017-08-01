@@ -26,7 +26,6 @@ atlas:
     DATABASE_PASSWORD: insecure
     BAG_OBJECTSTORE_PASSWORD: insecure
     JWT_SHARED_SECRET_KEY: atleast16characters
-
     UWSGI_HTTP: ":8080"
     UWSGI_MODULE: "bag.wsgi:application"
     UWSGI_PROCESSES: 4
@@ -35,4 +34,3 @@ atlas:
     UWSGI_VACUUM: 1
     UWSGI_HARAKIRI: 15
     UWSGI_DIE_ON_TERM: 1
-

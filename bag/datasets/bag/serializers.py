@@ -795,6 +795,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
     bouwblok = Bouwblok()
 
     _adressen = rest.AdresFilterField()
+    _monumenten = rest.ExternalRelationField('monumenten/monumenten', 'betreft_pand')
 
     _buurt = Buurt()
     _buurtcombinatie = Buurtcombinatie()
@@ -828,7 +829,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'verblijfsobjecten',
 
             '_adressen',
-
+            '_monumenten',
             'bouwblok',
 
             'begin_geldigheid',
