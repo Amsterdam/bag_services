@@ -173,9 +173,9 @@ class ExternalRelationField(serializers.Field):
         self.path = path
         self.parameter_name = parameter_name
 
-    def to_representation(self, pand):
+    def to_representation(self, value):
         # prefer landeljk id usage
-        id = pand.landelijk_id if pand.landelijk_id else pand.pk
+        id = value.landelijk_id if value.landelijk_id else value.pk
 
         return {
             'href': "{}{}?{}={}".format(
