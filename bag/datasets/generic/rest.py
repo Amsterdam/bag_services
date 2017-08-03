@@ -175,11 +175,11 @@ class ExternalRelationField(serializers.Field):
 
     def to_representation(self, value):
         # prefer landeljk id usage
-        id = value.landelijk_id if value.landelijk_id else value.pk
+        instance_id = value.landelijk_id if value.landelijk_id else value.pk
 
         return {
             'href': "{}{}?{}={}".format(
-                self.host, self.path, self.parameter_name, id),
+                self.host, self.path, self.parameter_name, instance_id),
         }
 
 
