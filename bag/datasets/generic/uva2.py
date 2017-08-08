@@ -191,3 +191,20 @@ def read_indicaties(path):
             mapping[_id] = (uva_indicatie(geconst), uva_indicatie(inonderz))
 
         return mapping
+
+
+def read_gebruiksdoelen(path):
+    """
+    Read CSV file with gebruiksdoel, gebruiksdoel plus data.
+
+    :param path: path containing the CSV file
+    """
+    file_code = 'VBO_gebruiksdoelen'
+    filename = resolve_file(path, file_code, extension='csv')
+
+    out = []
+    with open(filename, encoding='cp1252') as f:
+        rows = csv.reader(f, delimiter=';')
+        out = list(rows)
+
+    return out

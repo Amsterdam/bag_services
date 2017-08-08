@@ -691,6 +691,19 @@ class VerblijfsobjectDetailMixin(object):
             omschrijving=obj.type_woonobject_omschrijving,
         )
 
+    def get_gebruiksdoelen(self, obj):
+        gebruiksdoelen = models.Gebruiksdoel.objects.filter(verblijfsobject=obj)
+        out = []
+        for doel in gebruiksdoelen:
+            out.append({
+                'code': doel.code,
+                'omschrijving': doel.omschrijving,
+                'code_plus': doel.code_plus,
+                'omschrijving_plus': doel.omschrijving_plus
+            })
+
+        return out
+
 
 class VerblijfsobjectDetail(
         VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
@@ -732,6 +745,8 @@ class VerblijfsobjectDetail(
     verblijfsobjectidentificatie = serializers.CharField(
         source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+
+    gebruiksdoelen = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Verblijfsobject
@@ -785,6 +800,8 @@ class VerblijfsobjectDetail(
             '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
+
+            'gebruiksdoelen',
         )
 
 

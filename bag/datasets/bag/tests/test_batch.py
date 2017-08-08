@@ -762,3 +762,18 @@ class UpdateGSGebiedenTaskTest(TaskTestCase):
 
         # check that a vbo has a GSG code
         self.assertTrue(vb_n.count() > 0)
+
+
+class ImportGebruiksdoeleTaskTest(TaskTestCase):
+    def requires(self):
+        return [batch.ImportVboTask(BAG)]
+
+    def task(self):
+        return batch.ImportGebruiksdoelenTask(BAG)
+
+    def test_import(self):
+        self.run_task()
+
+        # check that several Gebruiksdoelen were imported:
+        g = list(models.Gebruiksdoel.objects.all())
+        self.assertTrue(g)

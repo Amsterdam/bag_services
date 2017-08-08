@@ -99,6 +99,47 @@ class ImportTggTask(CodeOmschrijvingUvaTask):
     model = models.Toegang
 
 
+class ImportGebruiksdoelenTask(batch.BasicTask):
+    name = "Import Gebruiksdoel CSV"
+
+    def __init__(self, path):
+        self.path = path
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+
+        pk_ids = models.Verblijfsobject.objects.values_list(
+            'pk', 'landelijk_id')
+        vbo_bag_ids = {_id: pk for pk, _id in pk_ids}
+        gebruiksdoelen = uva2.read_gebruiksdoelen(self.path)
+        msg = 'Gebruiksdoel references non-existing landelijk BAG id: {}'
+
+        clean = []
+        for doel in gebruiksdoelen:
+            landelijk_id = doel[0]
+
+            if landelijk_id not in vbo_bag_ids:
+                logging.warning(msg.format(landelijk_id))
+                continue
+
+            target_pk = vbo_bag_ids[landelijk_id]
+
+            clean.append(models.Gebruiksdoel(
+                verblijfsobject_id=target_pk,
+                code=doel[1],
+                omschrijving=doel[2],
+                code_plus=doel[3],
+                omschrijving_plus=doel[4]
+            ))
+
+        models.Gebruiksdoel.objects.bulk_create(clean)
+
+
 class ImportGmeTask(batch.BasicTask):
     name = "Import GME"
 
@@ -1823,6 +1864,7 @@ class ImportBagJob(object):
             ImportLigTask(self.bag, self.bag_wkt),
             ImportStaTask(self.bag, self.bag_wkt),
             ImportVboTask(self.bag),
+            ImportGebruiksdoelenTask(self.bag),
 
             ImportNumTask(self.bag),
 
