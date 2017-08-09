@@ -764,7 +764,7 @@ class UpdateGSGebiedenTaskTest(TaskTestCase):
         self.assertTrue(vb_n.count() > 0)
 
 
-class ImportGebruiksdoeleTaskTest(TaskTestCase):
+class ImportGebruiksdoelenTaskTest(TaskTestCase):
     def requires(self):
         return [batch.ImportVboTask(BAG)]
 

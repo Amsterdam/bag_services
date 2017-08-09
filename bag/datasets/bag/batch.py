@@ -137,7 +137,7 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
                 omschrijving_plus=doel[4]
             ))
 
-        models.Gebruiksdoel.objects.bulk_create(clean)
+        models.Gebruiksdoel.objects.bulk_create(clean, batch_size=database.BATCH_SIZE)
 
 
 class ImportGmeTask(batch.BasicTask):
