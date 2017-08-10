@@ -671,6 +671,19 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
+class GebruiksdoelSerializer(serializers.ModelSerializer):
+    verblijfsobject = serializers.ReadOnlyField(source='verblijfsobject_id')
+    code = serializers.CharField()
+    omschrijving = serializers.CharField()
+    code_plus = serializers.CharField()
+    omschrijving_plus = serializers.CharField()
+
+    class Meta:
+        model = models.Gebruiksdoel
+        fields = ('verblijfsobject', 'code', 'omschrijving', 'code_plus',
+            'omschrijving_plus')
+
+
 class VerblijfsobjectDetailMixin(object):
 
     def get_gebruiksdoel(self, obj):
@@ -692,17 +705,11 @@ class VerblijfsobjectDetailMixin(object):
         )
 
     def get_gebruiksdoelen(self, obj):
-        out = []
-        # prefetched over the reverse foreign key, see VerblijfsobjectViewSet
-        for doel in obj.gebruiksdoelen.all():
-            out.append({
-                'code': doel.code,
-                'omschrijving': doel.omschrijving,
-                'code_plus': doel.code_plus,
-                'omschrijving_plus': doel.omschrijving_plus
-            })
-
-        return out
+        data = GebruiksdoelSerializer(instance=obj.gebruiksdoelen.all(),
+            many=True).data
+        for doel in data:  # we know verblijfsobject id (do not include again)
+            doel.pop('verblijfsobject')
+        return data
 
 
 class VerblijfsobjectDetail(
