@@ -272,7 +272,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             for key, value in item.items():
                 # external link cannot be checked in standalone testrun
                 if key == '_monumenten':
-                    self.assertIn('https://api.data.amsterdam.nl/monumenten/monumenten?betreft_pand=', value['href'])
+                    self.assertIn('https://api.data.amsterdam.nl/monumenten/monumenten/?betreft_pand=', value['href'])
                     continue
 
                 if isinstance(value, dict):
