@@ -977,8 +977,8 @@ class Unesco(mixins.ImportStatusMixin, models.Model):
 
 
 class Gebruiksdoel(models.Model):
-    verblijfsobject = models.ForeignKey(Verblijfsobject, max_length=16,
-                                        related_name='gebruiksdoelen')
+    verblijfsobject = models.ForeignKey(
+        Verblijfsobject, max_length=16, related_name='gebruiksdoelen')
     code = models.CharField(max_length=4)
     omschrijving = models.CharField(max_length=150)
     code_plus = models.CharField(max_length=4, null=True)
