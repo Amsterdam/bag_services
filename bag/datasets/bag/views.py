@@ -165,6 +165,8 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'toegang',
         'reden_opvoer',
         '_gebiedsgerichtwerken',
+    ).prefetch_related(
+        'gebruiksdoelen'
     )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject

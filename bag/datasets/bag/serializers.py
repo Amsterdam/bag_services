@@ -692,9 +692,9 @@ class VerblijfsobjectDetailMixin(object):
         )
 
     def get_gebruiksdoelen(self, obj):
-        gebruiksdoelen = models.Gebruiksdoel.objects.filter(verblijfsobject=obj)
         out = []
-        for doel in gebruiksdoelen:
+        # prefetched over the reverse foreign key, see VerblijfsobjectViewSet
+        for doel in obj.gebruiksdoelen.all():
             out.append({
                 'code': doel.code,
                 'omschrijving': doel.omschrijving,
