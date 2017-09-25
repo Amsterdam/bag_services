@@ -548,6 +548,8 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
 
+    filter_fields = ('code',)
+
 
 class BuurtViewSet(rest.DatapuntViewSet):
     """
@@ -596,7 +598,7 @@ class BouwblokViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
-    filter_fields = ('buurt',)
+    filter_fields = ('buurt', 'code')
 
     def retrieve(self, request, *args, **kwargs):
         """

@@ -94,6 +94,7 @@ class ImportIndexTask(object):
         if denominator > 1:
             chunk_size = int(total / denominator)
             start_index = numerator * chunk_size
+            # for the last part do not change end_part
             if denominator > numerator+1:
                 end_part = (numerator + 1) * chunk_size
             total = end_part - start_index
