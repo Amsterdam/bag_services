@@ -1316,7 +1316,8 @@ class IndexVerblijfsobjectTask(index.ImportIndexTask):
     name = "index verblijfsobjecten"
     queryset = models.Verblijfsobject.objects.\
         prefetch_related('adressen').\
-        prefetch_related('adressen__openbare_ruimte')
+        prefetch_related('adressen__openbare_ruimte').\
+        prefetch_related('gebruiksdoelen')
 
     def convert(self, obj):
         return documents.from_verblijfsobject(obj)
