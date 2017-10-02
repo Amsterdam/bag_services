@@ -1098,10 +1098,6 @@ class ImportVboTask(batch.BasicTask):
             pk=pk,
             landelijk_id=landelijk_id,
             geometrie=geo,
-            gebruiksdoel_code=(
-                r['GebruiksdoelVerblijfsobjectDomein']),
-            gebruiksdoel_omschrijving=(
-                r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
             oppervlakte=uva2.uva_nummer(r['OppervlakteVerblijfsobject']),
             document_mutatie=uva2.uva_datum(
                 r['DocumentdatumMutatieVerblijfsobject']),

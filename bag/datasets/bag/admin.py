@@ -41,7 +41,7 @@ class StandplaatsAdmin(admin_mixins.ReadOnlyAdmin):
 
 
 class VerblijfsobjectAdmin(admin_mixins.ReadOnlyAdmin):
-    list_display = ('id', 'buurt', 'status', 'gebruiksdoel_omschrijving')
+    list_display = ('id', 'buurt', 'status')
 
 
 class WoonplaatsAdmin(admin_mixins.ReadOnlyAdmin):

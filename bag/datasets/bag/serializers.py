@@ -680,17 +680,12 @@ class GebruiksdoelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Gebruiksdoel
-        fields = ('verblijfsobject', 'code', 'omschrijving', 'code_plus',
+        fields = (
+            'verblijfsobject', 'code', 'omschrijving', 'code_plus',
             'omschrijving_plus')
 
 
 class VerblijfsobjectDetailMixin(object):
-
-    def get_gebruiksdoel(self, obj):
-        return dict(
-            code=obj.gebruiksdoel_code,
-            omschrijving=obj.gebruiksdoel_omschrijving,
-        )
 
     def get_status_coordinaat(self, obj):
         return dict(
@@ -705,8 +700,8 @@ class VerblijfsobjectDetailMixin(object):
         )
 
     def get_gebruiksdoelen(self, obj):
-        data = GebruiksdoelSerializer(instance=obj.gebruiksdoelen.all(),
-            many=True).data
+        data = GebruiksdoelSerializer(
+            instance=obj.gebruiksdoelen.all(), many=True).data
         for doel in data:  # we know verblijfsobject id (do not include again)
             doel.pop('verblijfsobject')
         return data
@@ -724,7 +719,6 @@ class VerblijfsobjectDetail(
     toegang = Toegang()
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
-    gebruiksdoel = serializers.SerializerMethodField()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
@@ -772,7 +766,6 @@ class VerblijfsobjectDetail(
             'bron',
 
             'geometrie',
-            'gebruiksdoel',
             'oppervlakte',
             'bouwlaag_toegang',
             'status_coordinaat',
@@ -965,7 +958,6 @@ class VerblijfsobjectNummeraanduiding(
     toegang = Toegang()
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
-    gebruiksdoel = serializers.SerializerMethodField()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
@@ -991,7 +983,6 @@ class VerblijfsobjectNummeraanduiding(
             'bron',
 
             'geometrie',
-            'gebruiksdoel',
             'oppervlakte',
             'bouwlaag_toegang',
             'status_coordinaat',
@@ -1012,6 +1003,10 @@ class VerblijfsobjectNummeraanduiding(
             'adressen',
             'kadastrale_objecten',
         )
+    # TODO: Check with the front-end team whether gebruiksdoelen (plural)
+    # should be exposed here as well - gebruiksdoel singular was removed.
+    # (The gebruiksdoel singular field was pulled in through the
+    # VerblijfsobjectDetailMixin.)
 
 
 class VerblijfsobjectNummeraanduidingExp(VerblijfsobjectNummeraanduiding):

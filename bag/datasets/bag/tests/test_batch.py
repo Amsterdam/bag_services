@@ -490,8 +490,6 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(
             v.geometrie, Point(121466, 493032, srid=28992),
             "%s != 121466, 493032" % v.geometrie)
-        self.assertEqual(v.gebruiksdoel_code, '1010')
-        self.assertEqual(v.gebruiksdoel_omschrijving, 'BEST-woning')
         self.assertEqual(v.oppervlakte, 95)
         self.assertEqual(v.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEqual(v.document_nummer, 'GV00000406')
