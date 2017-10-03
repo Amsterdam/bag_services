@@ -1003,10 +1003,6 @@ class VerblijfsobjectNummeraanduiding(
             'adressen',
             'kadastrale_objecten',
         )
-    # TODO: Check with the front-end team whether gebruiksdoelen (plural)
-    # should be exposed here as well - gebruiksdoel singular was removed.
-    # (The gebruiksdoel singular field was pulled in through the
-    # VerblijfsobjectDetailMixin.)
 
 
 class VerblijfsobjectNummeraanduidingExp(VerblijfsobjectNummeraanduiding):
