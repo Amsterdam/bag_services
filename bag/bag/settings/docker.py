@@ -1,7 +1,7 @@
 import os
 import re
 
-from bag.settings import *
+from .settings import *
 
 LOGGING = {
     'version': 1,
