@@ -24,5 +24,5 @@ services:
       DATABASE_PASSWORD: insecure
       BAG_OBJECTSTORE_PASSWORD:
       METADATA_URL: ""
-      JWT_SHARED_SECRET_KEY: atleast16characters
+      JWT_SHARED_SECRET_KEY:
     command: bash -c "/app/docker-wait.sh && python manage.py test"
