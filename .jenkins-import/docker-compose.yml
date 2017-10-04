@@ -1,109 +1,111 @@
-database:
-  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
-  environment:
-    POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: atlas
+version: '3.0'
+services:
+  database:
+    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: atlas
 
-elasticsearch:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
-  volumes:
-    - ./backups/elasticsearch:/tmp/backups
-  user: root
-  command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
+  elasticsearch:
+    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+    volumes:
+      - ./backups/elasticsearch:/tmp/backups
+    user: root
+    command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
-importer:
-  image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  user: root
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
-    DATABASE_PASSWORD: insecure
-    METADATA_URL:
-    BAG_OBJECTSTORE_PASSWORD:
-    DATAPUNT_API_URL:
-  command: >
-    bash -c "/app/docker-wait.sh \
-            && python objectstore/objectstore.py \
-            && python manage.py migrate \
-            && python manage.py run_import --no-index \
-            && python manage.py elastic_indices --delete"
+  importer:
+    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    user: root
+    environment:
+      DATABASE_NAME: atlas
+      DATABASE_USER: atlas
+      DATABASE_PASSWORD: insecure
+      METADATA_URL:
+      BAG_OBJECTSTORE_PASSWORD:
+      DATAPUNT_API_URL:
+    command: >
+      bash -c "/app/docker-wait.sh \
+              && python objectstore/objectstore.py \
+              && python manage.py migrate \
+              && python manage.py run_import --no-index \
+              && python manage.py elastic_indices --delete"
 
-importer_el1:
-  image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
-    DATABASE_PASSWORD: insecure
-    DATAPUNT_API_URL:
-  command: >
-    bash -c "/app/docker-wait.sh \
-            && python manage.py elastic_indices gebieden wkpb --build \
-            && python manage.py elastic_indices bag brk --partial=1/3 --build"
+  importer_el1:
+    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    environment:
+      DATABASE_NAME: atlas
+      DATABASE_USER: atlas
+      DATABASE_PASSWORD: insecure
+      DATAPUNT_API_URL:
+    command: >
+      bash -c "/app/docker-wait.sh \
+              && python manage.py elastic_indices gebieden wkpb --build \
+              && python manage.py elastic_indices bag brk --partial=1/3 --build"
 
-importer_el2:
-  image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
-    DATABASE_PASSWORD: insecure
-    DATAPUNT_API_URL:
-  command: >
-    bash -c "/app/docker-wait.sh \
-            && python manage.py elastic_indices bag brk --partial=2/3 --build"
+  importer_el2:
+    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    environment:
+      DATABASE_NAME: atlas
+      DATABASE_USER: atlas
+      DATABASE_PASSWORD: insecure
+      DATAPUNT_API_URL:
+    command: >
+      bash -c "/app/docker-wait.sh \
+              && python manage.py elastic_indices bag brk --partial=2/3 --build"
 
-importer_el3:
-  image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
-    DATABASE_PASSWORD: insecure
-    DATAPUNT_API_URL:
-  command: >
-    bash -c "/app/docker-wait.sh \
-            && python manage.py elastic_indices bag brk --partial=3/3 --build"
+  importer_el3:
+    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    environment:
+      DATABASE_NAME: atlas
+      DATABASE_USER: atlas
+      DATABASE_PASSWORD: insecure
+      DATAPUNT_API_URL:
+    command: >
+      bash -c "/app/docker-wait.sh \
+              && python manage.py elastic_indices bag brk --partial=3/3 --build"
 
-db-backup:
-  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
-  links:
-    - database:db
-  volumes:
-    - ./backups:/tmp/backups
-  command: >
-    bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
-            && chmod 600 ~/.pgpass \
-            && pg_dump --clean \
-                        -Fc \
-                        -t bag* \
-                        -t brk* \
-                        -t wkpb* \
-                        -t geo*  \
-                        -T django*  \
-                        -T auth*  \
-                        -T oauth2*  \
-                        -U atlas \
-                        -h db -p 5432 \
-                        atlas > /tmp/backups/database.dump"
+  db-backup:
+    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    links:
+      - database:db
+    volumes:
+      - ./backups:/tmp/backups
+    command: >
+      bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
+              && chmod 600 ~/.pgpass \
+              && pg_dump --clean \
+                          -Fc \
+                          -t bag* \
+                          -t brk* \
+                          -t wkpb* \
+                          -t geo*  \
+                          -T django*  \
+                          -T auth*  \
+                          -T oauth2*  \
+                          -U atlas \
+                          -h db -p 5432 \
+                          atlas > /tmp/backups/database.dump"
 
-el-backup:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
-  links:
-    - elasticsearch:el
-  volumes:
-    - ./backups/elasticsearch:/tmp/backups
-  user: root
-  command: >
-    bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
-            && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' \
-            && chmod -R 777 /tmp/backups"
+  el-backup:
+    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+    links:
+      - elasticsearch:el
+    volumes:
+      - ./backups/elasticsearch:/tmp/backups
+    user: root
+    command: >
+      bash -c "curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
+              && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' \
+              && chmod -R 777 /tmp/backups"
