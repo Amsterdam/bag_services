@@ -1,28 +1,30 @@
-database:
-  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
-  ports:
-    - "5434:5432"
-  environment:
-    POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: atlas
-    POSTGRES_DB: atlas
+version: '3.0'
+services:
+  database:
+    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: atlas
+      POSTGRES_DB: atlas
 
-elasticsearch:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
-  command: elasticsearch -Des.network.host=0.0.0.0
-  ports:
-    - "9200:9200"
-    - "9300:9300"
+  elasticsearch:
+    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
+    command: elasticsearch -Des.network.host=0.0.0.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
 
-atlas:
-  build: .
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  ports:
-    - "8080:8080"
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_PASSWORD: insecure
-    BAG_OBJECTSTORE_PASSWORD: insecure
-    JWT_SHARED_SECRET_KEY: atleast16characters
+  atlas:
+    build: .
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_NAME: atlas
+      DATABASE_PASSWORD: insecure
+      BAG_OBJECTSTORE_PASSWORD: insecure
+      JWT_SHARED_SECRET_KEY: atleast16characters
