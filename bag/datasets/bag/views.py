@@ -552,7 +552,7 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
 
     def get_object(self):
         pk = self.kwargs['pk']
-        if pk and len(pk) == 4:
+        if pk and len(pk) == 1:
             obj = get_object_or_404(models.Stadsdeel, code=pk)
         else:
             obj = get_object_or_404(models.Stadsdeel, pk=pk)
