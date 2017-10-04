@@ -27,7 +27,7 @@ services:
       DATABASE_NAME: atlas
       DATABASE_PASSWORD: insecure
       BAG_OBJECTSTORE_PASSWORD: insecure
-      BAG_SECRET_KEY: insecure
+      SECRET_KEY: insecure
       JWT_SHARED_SECRET_KEY: atleast16characters
       UWSGI_HTTP: ":8080"
       UWSGI_MODULE: "bag.wsgi:application"
