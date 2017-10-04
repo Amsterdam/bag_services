@@ -1,19 +1,11 @@
 import os
-import re
 import sys
 
-from bag.settings_databases import LocationKey, \
+from bag.settings.settings_databases import LocationKey, \
     get_docker_host, \
     get_database_key, \
     OVERRIDE_HOST_ENV_VAR, \
     OVERRIDE_PORT_ENV_VAR
-
-def get_docker_host():
-    d_host = os.getenv('DOCKER_HOST', None)
-    if d_host:
-        return re.match(r'tcp://(.*?):\d+', d_host).group(1)
-    return '0.0.0.0'
-
 
 NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
 
@@ -114,7 +106,7 @@ DATABASE_OPTIONS = {
         'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': get_docker_host(),
-        'PORT': '5412'
+        'PORT': '5434'
     },
     LocationKey.override: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -156,8 +148,8 @@ if TESTING:
         ELASTIC_INDICES[k] += 'test'
 
 ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
-    get_variable('ELASTIC_HOST_OVERRIDE', 'elasticsearch', 'localhost'),
-    get_variable('ELASTIC_PORT_OVERRIDE', '9200'))]
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_ADDR', get_docker_host()),
+    os.getenv('ELASTICSEARCH_PORT_9200_TCP_PORT', 9200))]
 
 BATCH_SETTINGS = dict(
     batch_size=4000

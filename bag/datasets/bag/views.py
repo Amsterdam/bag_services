@@ -550,6 +550,15 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
 
     filter_fields = ('code',)
 
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 4:
+            obj = get_object_or_404(models.Stadsdeel, code=pk)
+        else:
+            obj = get_object_or_404(models.Stadsdeel, pk=pk)
+
+        return obj
+
 
 class BuurtViewSet(rest.DatapuntViewSet):
     """
@@ -600,18 +609,14 @@ class BouwblokViewSet(rest.DatapuntViewSet):
     serializer_class = serializers.Bouwblok
     filter_fields = ('buurt', 'code')
 
-    def retrieve(self, request, *args, **kwargs):
-        """
-        retrieve BouwblokDetail
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk and len(pk) == 4:
+            obj = get_object_or_404(models.Bouwblok, code=pk)
+        else:
+            obj = get_object_or_404(models.Bouwblok, pk=pk)
 
-        ---
-
-        serializer: serializers.BouwblokDetail
-
-        """
-
-        return super().retrieve(
-            request, *args, **kwargs)
+        return obj
 
 
 class BuurtcombinatieViewSet(rest.DatapuntViewSet):

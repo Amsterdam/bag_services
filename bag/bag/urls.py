@@ -34,12 +34,7 @@ grouped_url_patterns = {
     ],
 
     'gebieden_patterns': [
-        url(r'^gebieden/bouwblok/(?P<code>....)/?$',
-            datasets.bag.views.BouwblokCodeView.as_view()),
-        url(r'^gebieden/stadsdeel/(?P<code>.)/?$',
-            datasets.bag.views.StadsdeelCodeView.as_view()),
-        url(r'^gebieden/',
-            include(datapunt_api.urls.gebieden.urls)),
+        url(r'^gebieden/', include(datapunt_api.urls.gebieden.urls)),
     ],
 
     'brk_patterns': [
