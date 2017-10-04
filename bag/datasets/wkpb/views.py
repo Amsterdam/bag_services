@@ -102,14 +102,12 @@ class BrondocumentView(DatapuntViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            medewerker = authorization_levels.LEVEL_EMPLOYEE
-            if self.request.is_authorized_for(medewerker):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
                 return serializers.Brondocument
 
             return serializers.BrondocumentPublic
 
         elif self.action == 'retrieve':
-            medewerker = authorization_levels.LEVEL_EMPLOYEE
-            if self.request.is_authorized_for(medewerker):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
                 return serializers.BrondocumentDetail
             return serializers.BrondocumentDetailPublic

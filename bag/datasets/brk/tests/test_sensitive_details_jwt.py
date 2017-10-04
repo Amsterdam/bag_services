@@ -58,26 +58,28 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         ]
 
     def test_ingelogd_wel_geautoriseed_wel_details_in_np_json_nieuw(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
-        response = self.client.get('/brk/subject/{}/'.format(
-            self.natuurlijk.pk)).data
+        for token in (self.token_employee_plus, self.token_scope_brk_rsn):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+            response = self.client.get('/brk/subject/{}/'.format(
+                self.natuurlijk.pk)).data
 
-        self.assertIn('rechten', response)
-        self.assertIn('woonadres', response)
-        self.assertIn('postadres', response)
+            self.assertIn('rechten', response)
+            self.assertIn('woonadres', response)
+            self.assertIn('postadres', response)
 
     def test_ingelogd_zakelijk_recht_verwijst_naar_hoofd_view_nieuw(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
-        response = self.client.get(
-            '/brk/zakelijk-recht/{}/'.format(self.recht_natuurlijk.pk)).data
+        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+            response = self.client.get(
+                '/brk/zakelijk-recht/{}/'.format(self.recht_natuurlijk.pk)).data
 
-        subj = response['kadastraal_subject']
-        self.assertEqual(
-            subj['_links']['self']['href'],
-            'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
-        )
+            subj = response['kadastraal_subject']
+            self.assertEqual(
+                subj['_links']['self']['href'],
+                'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
+            )
 
     def test_uitgelogd_zakelijk_recht_niet_natuurlijk_hoofd_view(self):
 
@@ -97,60 +99,64 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
 
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
-        response = self.client.get(
-            '/brk/zakelijk-recht/{}/subject/'.format(
-                self.recht_natuurlijk.pk))
+            response = self.client.get(
+                '/brk/zakelijk-recht/{}/subject/'.format(
+                    self.recht_natuurlijk.pk))
 
-        data = response.data
+            data = response.data
 
-        self.assertIn('woonadres', data)
-        self.assertIn('postadres', data)
+            self.assertIn('woonadres', data)
+            self.assertIn('postadres', data)
 
-        self.assertNotIn('rechten', data)
+            self.assertNotIn('rechten', data)
 
     def test_directional_name_subject_nieuw(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
-        response = self.client.get(
-            '/brk/zakelijk-recht/?kadastraal_object={}'.format(
-                self.kot.pk)).data
+        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+            response = self.client.get(
+                '/brk/zakelijk-recht/?kadastraal_object={}'.format(
+                    self.kot.pk)).data
 
-        kad_nat_naam = self.recht_natuurlijk._kadastraal_subject_naam
-        kad_nnat_naam = self.recht_niet_natuurlijk._kadastraal_subject_naam
+            kad_nat_naam = self.recht_natuurlijk._kadastraal_subject_naam
+            kad_nnat_naam = self.recht_niet_natuurlijk._kadastraal_subject_naam
 
-        subj = response['results'][0]
-        self.assertTrue(
-            kad_nat_naam in subj['_display'] or
-            kad_nnat_naam in subj['_display']
-        )
+            subj = response['results'][0]
+            self.assertTrue(
+                kad_nat_naam in subj['_display'] or
+                kad_nnat_naam in subj['_display']
+            )
 
     def test_directional_name_object_nieuw(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
-        response = self.client.get(
-            '/brk/zakelijk-recht/?kadastraal_subject={}'.format(
-                self.niet_natuurlijk.pk)).data
+        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+            response = self.client.get(
+                '/brk/zakelijk-recht/?kadastraal_subject={}'.format(
+                    self.niet_natuurlijk.pk)).data
 
-        obj = response['results'][0]
-        self.assertTrue(self.kot.aanduiding in obj['_display'])
+            obj = response['results'][0]
+            self.assertTrue(self.kot.aanduiding in obj['_display'])
 
     def test_match_kot_object_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+        for token in (self.token_employee, self.token_scope_brk_rs):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
-        response = self.client.get(f'/brk/object/{self.kot.pk}/')
+            response = self.client.get(f'/brk/object/{self.kot.pk}/')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("ACD00", str(response.data))
 
-        data = str(response.data)
+            data = str(response.data)
 
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
+            # check if authorized fields are in response
+            for field in self.not_public_fields:
+                self.assertIn(field, data)
 
     def test_match_kot_object_public(self):
         response = self.client.get(f'/brk/object/{self.kot.pk}/')
@@ -165,19 +171,20 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_match_kot_object_expand_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+        for token in (self.token_employee, self.token_scope_brk_rs):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
-        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
+            response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("ACD00", str(response.data))
 
-        data = str(response.data)
+            data = str(response.data)
 
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
+            # check if authorized fields are in response
+            for field in self.not_public_fields:
+                self.assertIn(field, data)
 
     def test_match_kot_object__expandpublic(self):
         response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
@@ -192,19 +199,20 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_match_kot_object_wkpb_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+        for token in (self.token_employee, self.token_scope_wkpd_rdbu):
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
-        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
+            response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("ACD00", str(response.data))
 
-        data = str(response.data)
+            data = str(response.data)
 
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
+            # check if authorized fields are in response
+            for field in self.not_public_fields:
+                self.assertIn(field, data)
 
     def test_match_kot_object__wkpb_public(self):
         response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
@@ -250,11 +258,12 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
         self.assertEqual(response.status_code, 401)
 
-        self.client.credentials(
-            HTTP_AUTHORIZATION=f'Bearer {self.token_employee}')
+        for token in (self.token_employee, self.token_scope_brk_rs):
+            self.client.credentials(
+                HTTP_AUTHORIZATION=f'Bearer {token}')
 
-        response = self.client.get('/brk/subject/{}/'.format(
-            self.natuurlijk.pk))
-        self.assertEqual(response.status_code, 200)
+            response = self.client.get('/brk/subject/{}/'.format(
+                self.natuurlijk.pk))
+            self.assertEqual(response.status_code, 200)
 
-        self.assertNotIn('rechten', str(response.data))
+            self.assertNotIn('rechten', str(response.data))

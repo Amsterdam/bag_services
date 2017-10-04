@@ -465,17 +465,15 @@ def authorized_subject_queries(request, analyzer):
     plus   - all subjects
     """
 
-    plus_user = authorization_levels.LEVEL_EMPLOYEE_PLUS
-    authorized = (request.is_authorized_for(plus_user))
+    authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN)
 
-    # EMPLOYEE PLUS
+    # Scope BRK/RSN or EMPLOYEE PLUS
     if authorized:
         return [brk_qs.kadastraal_subject_query(analyzer)]
 
-    # EMPLOYEE
-    employee = authorization_levels.LEVEL_EMPLOYEE
+    # Scope BRK/RS or EMPLOYEE
     niet_natuurlijk = brk_qs.kadastraal_subject_nietnatuurlijk_query
-    authorized = request.is_authorized_for(employee)
+    authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RS)
 
     if authorized:
         return [niet_natuurlijk(analyzer)]

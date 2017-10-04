@@ -115,12 +115,12 @@ class KadastraalSubjectViewSet(DatapuntViewSet):
     # NOTE in serializer there is MORE authorization code!!
 
     def list(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return super().list(request, *args, **kwargs)
         return Response(status=HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return super().retrieve(request, *args, **kwargs)
 
         return Response(status=HTTP_401_UNAUTHORIZED)
@@ -296,8 +296,7 @@ class KadastraalObjectViewSet(DatapuntViewSet):
 
         elif self.action == 'retrieve':
 
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
                 return serializers.KadastraalObjectDetail
 
             return serializers.KadastraalObjectDetailPublic
@@ -324,14 +323,12 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
                 return serializers.KadastraalObjectDetailExpand
             return serializers.KadastraalObjectDetailExpandPublic
 
         elif self.action == 'retrieve':
-            if self.request.is_authorized_for(
-                    authorization_levels.LEVEL_EMPLOYEE):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
                 return serializers.KadastraalObjectDetailExpand
             return serializers.KadastraalObjectDetailExpandPublic
 
@@ -399,16 +396,9 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         only plus users can see natuurlijke personen
         """
 
-        # plus = authorization_levels.LEVEL_EMPLOYEE_PLUS
-        # if self.request.is_authorized_for(plus):
-        #    return self.queryset
-
         # find all items but not natuurlijke personen
-        employee = authorization_levels.LEVEL_EMPLOYEE
-        if self.request.is_authorized_for(employee):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
             return self.queryset
-            # return self.queryset .filter(
-            #    kadastraal_subject__statutaire_naam__isnull=False)
 
         # return empty qs
         return self.queryset.none()
@@ -417,9 +407,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
 
-        employee = authorization_levels.LEVEL_EMPLOYEE
-
-        if not self.request.is_authorized_for(employee):
+        if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
             return Response(status=HTTP_401_UNAUTHORIZED)
 
         zakelijk_recht = self.get_object()
@@ -431,12 +419,12 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
             return super().list(request, *args, **kwargs)
         return Response(status=HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.LEVEL_EMPLOYEE):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
             return super().retrieve(request, *args, **kwargs)
 
         return Response(status=HTTP_401_UNAUTHORIZED)
@@ -508,12 +496,7 @@ class KadastraalObjectWkpbView(DatapuntViewSet):
     )
 
     def get_serializer_class(self):
-        if self.request.is_authorized_for(
-                authorization_levels.LEVEL_EMPLOYEE_PLUS):
-            return custom_serializers.KadastraalObjectDetailWkpb
-
-        if self.request.is_authorized_for(
-                authorization_levels.LEVEL_EMPLOYEE):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
             return custom_serializers.KadastraalObjectDetailWkpb
 
         return custom_serializers.KadastraalObjectDetailWkpbPublic

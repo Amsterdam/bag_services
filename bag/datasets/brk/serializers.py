@@ -168,8 +168,7 @@ class ZakelijkRechtContextMixin:
             instance.kadastraal_subject.type ==  \
             instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK
 
-        plus_user = authorization_levels.LEVEL_EMPLOYEE_PLUS
-        authorized = request.is_authorized_for(plus_user)
+        authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN)
 
         if subject_natuurlijk and not authorized:
             return reverse(
@@ -462,8 +461,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
         # check if we are authorized voor natuurlijke personen
         request = self.context['request']
-        plus = authorization_levels.LEVEL_EMPLOYEE_PLUS
-        if request.is_authorized_for(plus):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN):
             return data
 
         # We are employee and should not see 'rechten' / eigendommen
