@@ -727,8 +727,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
-    gebruiksdoel_code = models.CharField(max_length=4, null=True)
-    gebruiksdoel_omschrijving = models.CharField(max_length=150, null=True)
     oppervlakte = models.PositiveIntegerField(null=True)
     bouwlaag_toegang = models.IntegerField(null=True)
     status_coordinaat_code = models.CharField(max_length=3, null=True)
@@ -753,6 +751,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     status = models.ForeignKey(Status, null=True)
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='verblijfsobjecten')
+    ind_geconstateerd = models.NullBooleanField(default=None)
+    ind_inonderzoek = models.NullBooleanField(default=None)
 
     panden = models.ManyToManyField(
         'Pand', related_name='verblijfsobjecten',
@@ -887,6 +887,10 @@ class Pand(
     def _gemeente(self):
         return self._stadsdeel.gemeente if self._stadsdeel else None
 
+    @property
+    def _monumenten(self):
+        return self
+
 
 class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=29, primary_key=True)
@@ -968,3 +972,12 @@ class Unesco(mixins.ImportStatusMixin, models.Model):
 
     def __str__(self):
         return "{}".format(self.naam)
+
+
+class Gebruiksdoel(models.Model):
+    verblijfsobject = models.ForeignKey(
+        Verblijfsobject, max_length=16, related_name='gebruiksdoelen')
+    code = models.CharField(max_length=4)
+    omschrijving = models.CharField(max_length=150)
+    code_plus = models.CharField(max_length=4, null=True)
+    omschrijving_plus = models.CharField(max_length=150, null=True)

@@ -490,8 +490,6 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(
             v.geometrie, Point(121466, 493032, srid=28992),
             "%s != 121466, 493032" % v.geometrie)
-        self.assertEqual(v.gebruiksdoel_code, '1010')
-        self.assertEqual(v.gebruiksdoel_omschrijving, 'BEST-woning')
         self.assertEqual(v.oppervlakte, 95)
         self.assertEqual(v.document_mutatie, datetime.date(2010, 9, 9))
         self.assertEqual(v.document_nummer, 'GV00000406')
@@ -518,6 +516,20 @@ class ImportVboTest(TaskTestCase):
         self.assertIsNone(v.einde_geldigheid)
         self.assertEqual(v.verhuurbare_eenheden, None)
         self.assertEqual(v.mutatie_gebruiker, 'DBI')
+
+    def test_non_existing_indicatie(self):
+        self.run_task()
+
+        # Test the non-existing indicatie code path (i.e. store None on object)
+        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000648915')
+        self.assertEqual(v.ind_inonderzoek, None)
+        self.assertEqual(v.ind_geconstateerd, None)
+
+        # In the test data this object has 'J' and 'N' for respectively
+        # ind_geconstateerd and ind_in_onderzoek
+        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000722592')
+        self.assertEqual(v.ind_geconstateerd, True)
+        self.assertEqual(v.ind_inonderzoek, False)
 
 
 class ImportNumTest(TaskTestCase):
@@ -748,3 +760,18 @@ class UpdateGSGebiedenTaskTest(TaskTestCase):
 
         # check that a vbo has a GSG code
         self.assertTrue(vb_n.count() > 0)
+
+
+class ImportGebruiksdoelenTaskTest(TaskTestCase):
+    def requires(self):
+        return [batch.ImportVboTask(BAG)]
+
+    def task(self):
+        return batch.ImportGebruiksdoelenTask(BAG)
+
+    def test_import(self):
+        self.run_task()
+
+        # check that several Gebruiksdoelen were imported:
+        g = list(models.Gebruiksdoel.objects.all())
+        self.assertTrue(g)

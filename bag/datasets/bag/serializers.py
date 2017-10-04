@@ -671,13 +671,21 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class VerblijfsobjectDetailMixin(object):
+class GebruiksdoelSerializer(serializers.ModelSerializer):
+    verblijfsobject = serializers.ReadOnlyField(source='verblijfsobject_id')
+    code = serializers.CharField()
+    omschrijving = serializers.CharField()
+    code_plus = serializers.CharField()
+    omschrijving_plus = serializers.CharField()
 
-    def get_gebruiksdoel(self, obj):
-        return dict(
-            code=obj.gebruiksdoel_code,
-            omschrijving=obj.gebruiksdoel_omschrijving,
-        )
+    class Meta:
+        model = models.Gebruiksdoel
+        fields = (
+            'verblijfsobject', 'code', 'omschrijving', 'code_plus',
+            'omschrijving_plus')
+
+
+class VerblijfsobjectDetailMixin(object):
 
     def get_status_coordinaat(self, obj):
         return dict(
@@ -690,6 +698,13 @@ class VerblijfsobjectDetailMixin(object):
             code=obj.type_woonobject_code,
             omschrijving=obj.type_woonobject_omschrijving,
         )
+
+    def get_gebruiksdoelen(self, obj):
+        data = GebruiksdoelSerializer(
+            instance=obj.gebruiksdoelen.all(), many=True).data
+        for doel in data:  # we know verblijfsobject id (do not include again)
+            doel.pop('verblijfsobject')
+        return data
 
 
 class VerblijfsobjectDetail(
@@ -704,7 +719,6 @@ class VerblijfsobjectDetail(
     toegang = Toegang()
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
-    gebruiksdoel = serializers.SerializerMethodField()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
@@ -719,6 +733,9 @@ class VerblijfsobjectDetail(
 
     bouwblok = Bouwblok()
 
+    indicatie_geconstateerd = serializers.ReadOnlyField(source='ind_geconstateerd')
+    indicatie_in_onderzoek = serializers.ReadOnlyField(source='ind_inonderzoek')
+
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
@@ -729,6 +746,8 @@ class VerblijfsobjectDetail(
     verblijfsobjectidentificatie = serializers.CharField(
         source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+
+    gebruiksdoelen = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Verblijfsobject
@@ -747,7 +766,6 @@ class VerblijfsobjectDetail(
             'bron',
 
             'geometrie',
-            'gebruiksdoel',
             'oppervlakte',
             'bouwlaag_toegang',
             'status_coordinaat',
@@ -773,12 +791,17 @@ class VerblijfsobjectDetail(
             'beperkingen',
             'bouwblok',
 
+            'indicatie_geconstateerd',
+            'indicatie_in_onderzoek',
+
             '_buurtcombinatie',
             '_stadsdeel',
             '_gebiedsgerichtwerken',
             '_grootstedelijkgebied',
             '_gemeente',
             '_woonplaats',
+
+            'gebruiksdoelen',
         )
 
 
@@ -789,6 +812,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
     bouwblok = Bouwblok()
 
     _adressen = rest.AdresFilterField()
+    _monumenten = rest.ExternalRelationField('monumenten/monumenten/', 'betreft_pand')
 
     _buurt = Buurt()
     _buurtcombinatie = Buurtcombinatie()
@@ -822,7 +846,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'verblijfsobjecten',
 
             '_adressen',
-
+            '_monumenten',
             'bouwblok',
 
             'begin_geldigheid',
@@ -934,7 +958,6 @@ class VerblijfsobjectNummeraanduiding(
     toegang = Toegang()
     status_coordinaat = serializers.SerializerMethodField()
     type_woonobject = serializers.SerializerMethodField()
-    gebruiksdoel = serializers.SerializerMethodField()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
@@ -960,7 +983,6 @@ class VerblijfsobjectNummeraanduiding(
             'bron',
 
             'geometrie',
-            'gebruiksdoel',
             'oppervlakte',
             'bouwlaag_toegang',
             'status_coordinaat',

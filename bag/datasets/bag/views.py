@@ -165,6 +165,8 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'toegang',
         'reden_opvoer',
         '_gebiedsgerichtwerken',
+    ).prefetch_related(
+        'gebruiksdoelen'
     )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
@@ -546,6 +548,8 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
 
+    filter_fields = ('code',)
+
 
 class BuurtViewSet(rest.DatapuntViewSet):
     """
@@ -594,7 +598,7 @@ class BouwblokViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
-    filter_fields = ('buurt',)
+    filter_fields = ('buurt', 'code')
 
     def retrieve(self, request, *args, **kwargs):
         """
@@ -646,7 +650,7 @@ class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Gebiedsgerichtwerken.objects.all()
+    queryset = models.Gebiedsgerichtwerken.objects.all().order_by('naam')
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
 
@@ -665,7 +669,7 @@ class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
     (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/grootstedelijk/)
     """
     metadata_class = ExpansionMetadata
-    queryset = models.Grootstedelijkgebied.objects.all()
+    queryset = models.Grootstedelijkgebied.objects.all().order_by('naam')
     serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
 

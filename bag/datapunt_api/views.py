@@ -13,12 +13,15 @@ from urllib.parse import quote, urlparse
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
+from django.utils.encoding import force_text
+
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search
 from rest_framework import viewsets, metadata
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.compat import coreapi, coreschema
 
 from authorization_django import levels as authorization_levels
 
@@ -271,6 +274,31 @@ class QueryMetadata(metadata.SimpleMetadata):
 # =============================================
 # Search view sets
 # =============================================
+class QFilter(object):
+    """
+    For openapi documentation purposes
+    return the q field
+    """
+    search_title = 'search title'
+    search_description = 'search description'
+
+    def get_schema_fields(self, _view):
+        """
+        return Q parameter documentation
+        """
+        return [
+            coreapi.Field(
+                name='q',
+                required=False,
+                location='query',
+                schema=coreschema.String(
+                    title=force_text(self.search_title),
+                    description=force_text(self.search_description)
+                )
+            )
+        ]
+
+
 class TypeaheadViewSet(viewsets.ViewSet):
     """
     Given a query parameter `q`, this function returns a
@@ -414,9 +442,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
         return Response(response)
 
 
+class BagQ(QFilter):
+
+    search_description = 'Zoek in BAG'
+    search_title = 'BAG object'
+
+
 class TypeAheadBagViewSet(TypeaheadViewSet):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+
+    filter_backends = [BagQ]
 
     def list(self, request):
         return self._abstr_list(request, {'bag', 'nummeraanduiding'})
@@ -450,10 +484,15 @@ def authorized_subject_queries(request, analyzer):
     return []
 
 
+class BrkQ(QFilter):
+
+    search_description = 'Zoek in BRK'
+    search_title = 'BRK object'
+
+
 class TypeAheadBrkViewSet(TypeaheadViewSet):
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    filter_backends = [BrkQ]
 
     def authorized_queries(self, request, analyzer):
         return authorized_subject_queries(request, analyzer)
@@ -462,9 +501,15 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'brk'})
 
 
+class GebiedTQ(QFilter):
+
+    search_description = 'Zoek op gebied'
+    search_title = 'Gebied'
+
+
 class TypeAheadGebiedenViewSet(TypeaheadViewSet):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+
+    filter_backends = [GebiedTQ]
 
     def list(self, request):
         return self._abstr_list(request, {'gebieden'})
@@ -474,9 +519,6 @@ class TypeAheadLegacyViewSet(TypeaheadViewSet):
     """
     The old typeahead containing all different results at once
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def list(self, request):
         return self._abstr_list(request, set())
@@ -491,6 +533,8 @@ class SearchViewSet(viewsets.ViewSet):
     page_size = 100
     url_name = 'search-list'
     page_limit = 10
+
+    filter_backends = [QFilter]
 
     def search_query(self, request,
                      elk_client, analyzer: QueryAnalyzer) -> Search:
@@ -534,16 +578,13 @@ class SearchViewSet(viewsets.ViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        Create a response list
+        Create a response list of search items
 
         ---
         parameters:
             - name: q
-              description: Zoek op kadastraal object
+              description: Zoek object
               required: true
-              type: string
-              paramType: query
-
         """
 
         if 'q' not in request.query_params:
@@ -625,6 +666,12 @@ class SearchViewSet(viewsets.ViewSet):
         return result
 
 
+class KadastraalSubjectQ(QFilter):
+
+    search_description = 'Zoek op kadastrale subjecten'
+    search_title = 'Kadastraal subject'
+
+
 class SearchSubjectViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -640,6 +687,7 @@ class SearchSubjectViewSet(SearchViewSet):
     """
 
     url_name = 'search/kadastraalsubject-list'
+    filter_backends = [KadastraalSubjectQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -656,6 +704,12 @@ class SearchSubjectViewSet(SearchViewSet):
         search = querylist[0].to_elasticsearch_object(elk_client)
 
         return search
+
+
+class KadastraalObjectQ(QFilter):
+
+    search_description = 'Zoek op kadastrale objecten'
+    search_title = 'Kadastraal object'
 
 
 class SearchObjectViewSet(SearchViewSet):
@@ -696,6 +750,7 @@ class SearchObjectViewSet(SearchViewSet):
     """
 
     url_name = 'search/kadastraalobject-list'
+    filter_backends = [KadastraalObjectQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> List[Search]:
@@ -710,6 +765,12 @@ class SearchObjectViewSet(SearchViewSet):
         return search
 
 
+class BouwblokQ(QFilter):
+
+    search_description = 'Zoek op bouwblokken'
+    search_title = 'Bouwblok'
+
+
 class SearchBouwblokViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -717,6 +778,7 @@ class SearchBouwblokViewSet(SearchViewSet):
     """
 
     url_name = 'search/bouwblok-list'
+    filter_backends = [BouwblokQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> List[Search]:
@@ -732,6 +794,12 @@ class SearchBouwblokViewSet(SearchViewSet):
         return search.filter('terms', subtype=['bouwblok'])
 
 
+class GebiedQ(QFilter):
+
+    search_description = 'Zoek op gebieden'
+    search_title = 'Gebied'
+
+
 class SearchGebiedenViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset of all
@@ -739,6 +807,7 @@ class SearchGebiedenViewSet(SearchViewSet):
     """
 
     url_name = 'search/gebied-list'
+    filter_backends = [GebiedQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -760,6 +829,12 @@ class SearchGebiedenViewSet(SearchViewSet):
         return search
 
 
+class OpenbareRuimteQ(QFilter):
+
+    search_description = 'Zoek op openbare ruimtes'
+    search_title = 'Openbare ruimte'
+
+
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -776,6 +851,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
     """
     url_name = 'search/openbareruimte-list'
+    filter_backends = [OpenbareRuimteQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:
@@ -786,12 +862,18 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         return search_data.to_elasticsearch_object(elk_client)
 
 
+class NummeraanduidingQ(QFilter):
+
+    search_description = 'Zoek op adressen'
+    search_title = 'Adres'
+
+
 class SearchNummeraanduidingViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
     of nummeraanduiding objects that match the elastic search query.
 
-    [/search/adres/?q=silodam 340](https://api.data.amsterdam.nl/atlas/search/adres/?q=silodam 340)  # noqa
+    [/search/adres/?q=silodam 340](https://api.data.amsterdam.nl/atlas/search/adres/?q=silodam 340)
 
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -800,8 +882,9 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
 
-    """
+    """  #noqa
     url_name = 'search/adres-list'
+    filter_backends = [NummeraanduidingQ]
     custom_sort = True
 
     def search_query(self, request, elk_client,
@@ -839,6 +922,12 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             result[key] = value
 
 
+class PostcodeQ(QFilter):
+
+    search_description = 'Zoek op postcodes'
+    search_title = 'Postcode'
+
+
 class SearchPostcodeViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -857,6 +946,7 @@ class SearchPostcodeViewSet(SearchViewSet):
 
     """
     url_name = 'search/postcode-list'
+    filter_backends = [PostcodeQ]
 
     def search_query(self, request, elk_client,
                      analyzer: QueryAnalyzer) -> Search:

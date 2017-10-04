@@ -31,8 +31,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         'bag/ligplaats',
         'bag/standplaats',
         'bag/verblijfsobject',
-
-
         'bag/pand',
         'bag/nummeraanduiding',
         'bag/openbareruimte',
@@ -53,10 +51,8 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         'brk/gemeente',
         'brk/kadastrale-gemeente',
         'brk/kadastrale-sectie',
-
         'brk/object',
         'brk/object-expand',
-
         'brk/subject',
         'brk/zakelijk-recht',
         'brk/aantekening',
@@ -274,6 +270,11 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             item = data.pop()
 
             for key, value in item.items():
+                # external link cannot be checked in standalone testrun
+                if key == '_monumenten':
+                    self.assertIn('https://api.data.amsterdam.nl/monumenten/monumenten/?betreft_pand=', value['href'])
+                    continue
+
                 if isinstance(value, dict):
                     # new object to check
                     data.append(value)

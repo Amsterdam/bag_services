@@ -528,7 +528,13 @@ def from_verblijfsobject(v: models.Verblijfsobject):
     update_adres(d, v.hoofdadres)
     d.centroid = get_centroid(v.geometrie, 'wgs84')
 
-    d.bestemming = v.gebruiksdoel_omschrijving
+    # We can have many descriptions and extended descriptions,
+    # we add all of them in a text field here:
+    descriptions = []
+    for gd in v.gebruiksdoelen.all():
+        descriptions.extend([gd.omschrijving, gd.omschrijving_plus])
+    d.bestemming = ' '.join(descriptions)
+
     d.kamers = v.aantal_kamers
     d.oppervlakte = v.oppervlakte
     d.order = analyzers.orderings['adres']

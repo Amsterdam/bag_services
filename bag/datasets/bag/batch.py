@@ -99,6 +99,47 @@ class ImportTggTask(CodeOmschrijvingUvaTask):
     model = models.Toegang
 
 
+class ImportGebruiksdoelenTask(batch.BasicTask):
+    name = "Import Gebruiksdoel CSV"
+
+    def __init__(self, path):
+        self.path = path
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+
+        pk_ids = models.Verblijfsobject.objects.values_list(
+            'pk', 'landelijk_id')
+        vbo_bag_ids = {_id: pk for pk, _id in pk_ids}
+        gebruiksdoelen = uva2.read_gebruiksdoelen(self.path)
+        msg = 'Gebruiksdoel references non-existing landelijk BAG id: {}'
+
+        clean = []
+        for doel in gebruiksdoelen:
+            landelijk_id = doel[0]
+
+            if landelijk_id not in vbo_bag_ids:
+                logging.warning(msg.format(landelijk_id))
+                continue
+
+            target_pk = vbo_bag_ids[landelijk_id]
+
+            clean.append(models.Gebruiksdoel(
+                verblijfsobject_id=target_pk,
+                code=doel[1],
+                omschrijving=doel[2],
+                code_plus=doel[3],
+                omschrijving_plus=doel[4]
+            ))
+
+        models.Gebruiksdoel.objects.bulk_create(clean, batch_size=database.BATCH_SIZE)
+
+
 class ImportGmeTask(batch.BasicTask):
     name = "Import GME"
 
@@ -926,6 +967,7 @@ class ImportVboTask(batch.BasicTask):
         self.statussen = set()
         self.buurten = set()
         self.landelijke_ids = dict()
+        self.indicaties = dict()
 
     def before(self):
         self.redenen_afvoer = set(models.RedenAfvoer.objects.values_list("pk", flat=True))
@@ -955,6 +997,7 @@ class ImportVboTask(batch.BasicTask):
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
+        self.indicaties = uva2.read_indicaties(self.path)
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
 
@@ -1044,14 +1087,17 @@ class ImportVboTask(batch.BasicTask):
             log.warning('Verblijfsobject {} references non-existing bron {}; ignoring'.format(pk, buurt_id))
             buurt_id = None
 
+        if landelijk_id not in self.indicaties:
+            log.warning('Verblijfsobject {} references non-existing ind_gecontateerd / ind_inonderzoek; ignoring'.format(landelijk_id))
+            ind_inonderzoek = None
+            ind_geconstateerd = None
+        else:
+            ind_geconstateerd, ind_inonderzoek = self.indicaties[landelijk_id]
+
         return models.Verblijfsobject(
             pk=pk,
             landelijk_id=landelijk_id,
             geometrie=geo,
-            gebruiksdoel_code=(
-                r['GebruiksdoelVerblijfsobjectDomein']),
-            gebruiksdoel_omschrijving=(
-                r['OmschrijvingGebruiksdoelVerblijfsobjectDomein']),
             oppervlakte=uva2.uva_nummer(r['OppervlakteVerblijfsobject']),
             document_mutatie=uva2.uva_datum(
                 r['DocumentdatumMutatieVerblijfsobject']),
@@ -1085,6 +1131,8 @@ class ImportVboTask(batch.BasicTask):
             einde_geldigheid=uva2.uva_datum(
                 r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
+            ind_geconstateerd=ind_geconstateerd,
+            ind_inonderzoek=ind_inonderzoek,
         )
 
 
@@ -1268,7 +1316,8 @@ class IndexVerblijfsobjectTask(index.ImportIndexTask):
     name = "index verblijfsobjecten"
     queryset = models.Verblijfsobject.objects.\
         prefetch_related('adressen').\
-        prefetch_related('adressen__openbare_ruimte')
+        prefetch_related('adressen__openbare_ruimte').\
+        prefetch_related('gebruiksdoelen')
 
     def convert(self, obj):
         return documents.from_verblijfsobject(obj)
@@ -1812,6 +1861,7 @@ class ImportBagJob(object):
             ImportLigTask(self.bag, self.bag_wkt),
             ImportStaTask(self.bag, self.bag_wkt),
             ImportVboTask(self.bag),
+            ImportGebruiksdoelenTask(self.bag),
 
             ImportNumTask(self.bag),
 
