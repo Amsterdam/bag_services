@@ -397,7 +397,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         """
 
         # find all items but not natuurlijke personen
-        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
             return self.queryset
 
         # return empty qs
@@ -407,7 +407,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
 
-        if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
+        if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
             return Response(status=HTTP_401_UNAUTHORIZED)
 
         zakelijk_recht = self.get_object()
@@ -419,12 +419,12 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
             return super().list(request, *args, **kwargs)
         return Response(status=HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RZR):
+        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
             return super().retrieve(request, *args, **kwargs)
 
         return Response(status=HTTP_401_UNAUTHORIZED)
