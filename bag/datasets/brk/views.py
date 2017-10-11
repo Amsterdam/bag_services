@@ -296,7 +296,7 @@ class KadastraalObjectViewSet(DatapuntViewSet):
 
         elif self.action == 'retrieve':
 
-            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
                 return serializers.KadastraalObjectDetail
 
             return serializers.KadastraalObjectDetailPublic
@@ -323,12 +323,12 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
                 return serializers.KadastraalObjectDetailExpand
             return serializers.KadastraalObjectDetailExpandPublic
 
         elif self.action == 'retrieve':
-            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
+            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
                 return serializers.KadastraalObjectDetailExpand
             return serializers.KadastraalObjectDetailExpandPublic
 
@@ -337,8 +337,8 @@ class ZakelijkRechtFilter(FilterSet):
     """
     Filter aantekeningen with better form
     """
-    kadastraal_object = filters.CharFilter()
-    kadastraal_subject = filters.CharFilter()
+    kadastraal_object = filters.CharFilter(method="zakelijkrecht_filter")
+    kadastraal_subject = filters.CharFilter(method="zakelijkrecht_filter")
 
     class Meta:
         model = models.ZakelijkRecht
@@ -347,6 +347,22 @@ class ZakelijkRechtFilter(FilterSet):
             'kadastraal_object',
             'kadastraal_subject',
         ]
+
+    def zakelijkrecht_filter(self, queryset, filter_name, value):
+        kwargs = { filter_name:value }
+        if filter_name == 'kadastraal_subject':
+            try:
+                subject = models.KadastraalSubject.objects.get(pk=value)
+            except models.KadastraalSubject.DoesNotExist:
+                subject = None
+            if not subject or (subject.type == models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK and \
+                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN) ):
+                return queryset.none()
+        elif filter_name == 'kadastraal_object' and not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
+            return queryset.none()
+
+        filtered = queryset.filter(**kwargs)
+        return filtered
 
 
 class ZakelijkRechtViewSet(DatapuntViewSet):
@@ -407,7 +423,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
 
-        if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+        if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return Response(status=HTTP_401_UNAUTHORIZED)
 
         zakelijk_recht = self.get_object()
@@ -496,7 +512,4 @@ class KadastraalObjectWkpbView(DatapuntViewSet):
     )
 
     def get_serializer_class(self):
-        if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
-            return custom_serializers.KadastraalObjectDetailWkpb
-
         return custom_serializers.KadastraalObjectDetailWkpbPublic
