@@ -1,5 +1,6 @@
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+from rest_framework.exceptions import NotAuthenticated
 
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
@@ -356,10 +357,11 @@ class ZakelijkRechtFilter(FilterSet):
             except models.KadastraalSubject.DoesNotExist:
                 subject = None
             if not subject or (subject.type == models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK and \
-                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN) ):
-                return queryset.none()
-        elif filter_name == 'kadastraal_object' and not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
-            return queryset.none()
+                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN) ) or \
+                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
+                raise NotAuthenticated;
+        elif filter_name == 'kadastraal_object' and not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+            raise NotAuthenticated;
 
         filtered = queryset.filter(**kwargs)
         return filtered
@@ -413,7 +415,8 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         """
 
         # find all items but not natuurlijke personen
-        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO) or \
+                self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return self.queryset
 
         # return empty qs
@@ -435,12 +438,14 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO) or \
+                self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return super().list(request, *args, **kwargs)
         return Response(status=HTTP_401_UNAUTHORIZED)
 
     def retrieve(self, request, *args, **kwargs):
-        if request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO) or \
+                self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
             return super().retrieve(request, *args, **kwargs)
 
         return Response(status=HTTP_401_UNAUTHORIZED)
@@ -512,4 +517,6 @@ class KadastraalObjectWkpbView(DatapuntViewSet):
     )
 
     def get_serializer_class(self):
+        if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
+            return custom_serializers.KadastraalObjectDetailWkpb
         return custom_serializers.KadastraalObjectDetailWkpbPublic

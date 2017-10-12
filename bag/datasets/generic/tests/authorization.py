@@ -52,8 +52,8 @@ class AuthorizationSetup(object):
         token_scope_brk_rsn = jwt.encode({
             'scopes': [authorization_levels.SCOPE_BRK_RSN, authorization_levels.SCOPE_BRK_RS],
             'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
-        token_scope_brk_rzr = jwt.encode({
-            'scopes': [authorization_levels.SCOPE_BRK_RZR],
+        token_scope_brk_ro = jwt.encode({
+            'scopes': [authorization_levels.SCOPE_BRK_RO],
             'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
         token_scope_wkpd_rdbu = jwt.encode({
             'scopes': [authorization_levels.SCOPE_WKPB_RBDU],
@@ -65,6 +65,6 @@ class AuthorizationSetup(object):
         self.token_employee_plus = str(token_employee_plus, 'utf-8')
         self.token_scope_brk_rs = str(token_scope_brk_rs, 'utf-8')
         self.token_scope_brk_rsn = str(token_scope_brk_rsn, 'utf-8')
-        self.token_scope_brk_rzr = str(token_scope_brk_rzr, 'utf-8')
+        self.token_scope_brk_ro = str(token_scope_brk_ro, 'utf-8')
         self.token_scope_wkpd_rdbu = str(token_scope_wkpd_rdbu, 'utf-8')
 
