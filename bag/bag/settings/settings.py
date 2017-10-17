@@ -49,8 +49,6 @@ DATAPUNT_API_URL = os.getenv(
     'DATAPUNT_API_URL', 'https://api.data.amsterdam.nl/')
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
 
     'django.contrib.staticfiles',
@@ -187,6 +185,9 @@ ALLOWED_HOSTS = [
 REST_FRAMEWORK = dict(
     PAGE_SIZE=25,
     MAX_PAGINATE_BY=100,
+
+    UNAUTHENTICATED_USER={},
+    UNAUTHENTICATED_TOKEN={},
 
     DEFAULT_PAGINATION_CLASS='drf_hal_json.pagination.HalPageNumberPagination',
     DEFAULT_PARSER_CLASSES=(
