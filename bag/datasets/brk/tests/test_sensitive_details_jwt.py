@@ -69,7 +69,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertIn('postadres', response)
 
     def test_ingelogd_zakelijk_recht_verwijst_naar_hoofd_view_nieuw(self):
-        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+        for token in (self.token_employee_plus, self.token_scope_brk_rsn):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
             response = self.client.get(
@@ -99,7 +99,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
     def test_subresource_toon_persoonsgegevens_maar_geen_relaties(self):
 
-        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+        for token in (self.token_employee_plus, self.token_scope_brk_rsn):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
@@ -115,7 +115,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn('rechten', data)
 
     def test_directional_name_subject_nieuw(self):
-        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+        for token in (self.token_employee_plus, self.token_scope_brk_ro):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
             response = self.client.get(
@@ -132,7 +132,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             )
 
     def test_directional_name_object_nieuw(self):
-        for token in (self.token_employee_plus, self.token_scope_brk_rzr):
+        for token in (self.token_employee_plus, self.token_scope_brk_rsn):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
             response = self.client.get(
@@ -143,7 +143,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertTrue(self.kot.aanduiding in obj['_display'])
 
     def test_match_kot_object_authorized(self):
-        for token in (self.token_employee, self.token_scope_brk_rs):
+        for token in (self.token_employee, self.token_scope_brk_ro):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
@@ -171,7 +171,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_match_kot_object_expand_authorized(self):
-        for token in (self.token_employee, self.token_scope_brk_rs):
+        for token in (self.token_employee, self.token_scope_brk_ro):
             self.client.credentials(
                 HTTP_AUTHORIZATION='Bearer {}'.format(token))
 
