@@ -193,7 +193,7 @@ class NummeraanduidingFilter(FilterSet):
     standplaats = filters.CharFilter(method="standplaats_filter")
 
     postcode = filters.CharFilter(method="postcode_filter")
-    huisnummer = filters.CharFilter()
+    huisnummer = filters.NumberFilter()
     huisletter = filters.CharFilter()
     openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
     locatie = filters.CharFilter(method="locatie_filter")
@@ -385,9 +385,8 @@ class PandenFilter(FilterSet):
 
         if len(value) == 16:
             return queryset.filter(verblijfsobjecten__landelijk_id=value)
-        else:
-            return queryset.filter(verblijfsobjecten__id=value)
 
+        return queryset.filter(verblijfsobjecten__id=value)
 
 
 class PandViewSet(rest.DatapuntViewSet):

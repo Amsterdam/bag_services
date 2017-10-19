@@ -155,8 +155,10 @@ class QueryAnalyzerTest(TestCase):
             ('Nieuwe achtergracht 105 2', 'nieuwe achtergracht', 105, '105 2'),
             ('Nieuwe achtergracht 105', 'nieuwe achtergracht', 105, '105'),
             ('P C HOOFT 10', 'p c hooft', 10, '10'),
-            ('Eerste Jan van der Heijdenstraat 22-2A', 'eerste jan van der heijdenstraat', 22, '22 2 a')
+            ('Eerste Jan van der Heijdenstraat 22-2A', 'eerste jan van der heijdenstraat', 22, '22 2 a'),
+
         ]
+
         for case in test_cases:
             analyzer = QueryAnalyzer(case[0])
             straat, huisnummer, toevoeging = analyzer.get_straatnaam_huisnummer_toevoeging()
