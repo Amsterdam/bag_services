@@ -91,6 +91,7 @@ db-backup:
                         -t wkpb* \
                         -t geo*  \
                         -t django_migrations  \
+                        -t django_content_type  \
                         -U atlas \
                         -h db -p 5432 \
                         atlas > /tmp/backups/database.dump"
