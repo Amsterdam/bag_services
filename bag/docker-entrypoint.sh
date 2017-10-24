@@ -5,8 +5,6 @@ set -e   # stop on any error
 
 cd /app
 
-source docker-wait.sh
-
 echo Performing system check
 python manage.py check
 
