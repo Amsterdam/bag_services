@@ -126,8 +126,8 @@ DATABASE_OPTIONS = {
         'NAME': os.getenv('DATABASE_NAME', 'atlas'),
         'USER': os.getenv('DATABASE_USER', 'atlas'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
-        'HOST': os.getenv('DATABASE_HOST_OVERRIDE', get_docker_host()),
-        'PORT': os.getenv('DATABASE_PORT_OVERRIDE', 5434),
+        'HOST': os.getenv(OVERRIDE_HOST_ENV_VAR, get_docker_host()),
+        'PORT': os.getenv(OVERRIDE_PORT_ENV_VAR, 5434),
         'CONN_MAX_AGE': 30,
     }
 }
