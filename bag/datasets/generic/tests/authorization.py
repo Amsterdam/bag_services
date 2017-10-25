@@ -8,13 +8,17 @@ from authorization_django import levels as authorization_levels
 
 class AuthorizationSetup(object):
     """
-    Helper methods to setup JWT tokens and authorization levels
+    Helper methods to setup JWT tokens and authorization scopes
 
     sets the following attributes:
 
     token_default
-    token_employee
     token_employee_plus
+    token_scope_brk_rs
+    token_scope_brk_rsn
+    token_scope_brk_ro
+    token_scope_wkpd_rdbu
+
     """
 
     def setUpAuthorization(self):
@@ -22,8 +26,11 @@ class AuthorizationSetup(object):
         SET
 
         token_default
-        token_employee
         token_employee_plus
+        token_scope_brk_rs
+        token_scope_brk_rsn
+        token_scope_brk_ro
+        token_scope_wkpd_rdbu
 
         to use with:
 
@@ -38,13 +45,11 @@ class AuthorizationSetup(object):
         now = int(time.time())
 
         token_default = jwt.encode({
-            'authz': authorization_levels.LEVEL_DEFAULT,
-            'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
-        token_employee = jwt.encode({
-            'authz': authorization_levels.LEVEL_EMPLOYEE,
+            'scopes':[],
             'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
         token_employee_plus = jwt.encode({
-            'authz': authorization_levels.LEVEL_EMPLOYEE_PLUS,
+            'scopes':[authorization_levels.SCOPE_BRK_RSN, authorization_levels.SCOPE_BRK_RS,
+                      authorization_levels.SCOPE_BRK_RO, authorization_levels.SCOPE_WKPB_RBDU],
             'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
         token_scope_brk_rs = jwt.encode({
             'scopes': [authorization_levels.SCOPE_BRK_RS],
@@ -59,9 +64,7 @@ class AuthorizationSetup(object):
             'scopes': [authorization_levels.SCOPE_WKPB_RBDU],
             'iat': now, 'exp': now + 600}, key, algorithm=algorithm)
 
-
         self.token_default = str(token_default, 'utf-8')
-        self.token_employee = str(token_employee, 'utf-8')
         self.token_employee_plus = str(token_employee_plus, 'utf-8')
         self.token_scope_brk_rs = str(token_scope_brk_rs, 'utf-8')
         self.token_scope_brk_rsn = str(token_scope_brk_rsn, 'utf-8')

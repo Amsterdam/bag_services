@@ -143,20 +143,19 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertTrue(self.kot.aanduiding in obj['_display'])
 
     def test_match_kot_object_authorized(self):
-        for token in (self.token_employee, self.token_scope_brk_ro):
-            self.client.credentials(
-                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_ro))
 
-            response = self.client.get(f'/brk/object/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object/{self.kot.pk}/')
 
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("ACD00", str(response.data))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))
 
-            data = str(response.data)
+        data = str(response.data)
 
-            # check if authorized fields are in response
-            for field in self.not_public_fields:
-                self.assertIn(field, data)
+        # check if authorized fields are in response
+        for field in self.not_public_fields:
+            self.assertIn(field, data)
 
     def test_match_kot_object_public(self):
         response = self.client.get(f'/brk/object/{self.kot.pk}/')
@@ -171,20 +170,19 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_match_kot_object_expand_authorized(self):
-        for token in (self.token_employee, self.token_scope_brk_ro):
-            self.client.credentials(
-                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_ro))
 
-            response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
 
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("ACD00", str(response.data))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))
 
-            data = str(response.data)
+        data = str(response.data)
 
-            # check if authorized fields are in response
-            for field in self.not_public_fields:
-                self.assertIn(field, data)
+        # check if authorized fields are in response
+        for field in self.not_public_fields:
+            self.assertIn(field, data)
 
     def test_match_kot_object__expandpublic(self):
         response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
@@ -199,20 +197,19 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertNotIn(field, data)
 
     def test_match_kot_object_wkpb_authorized(self):
-        for token in (self.token_employee, self.token_scope_wkpd_rdbu):
-            self.client.credentials(
-                HTTP_AUTHORIZATION='Bearer {}'.format(token))
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
-            response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("ACD00", str(response.data))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ACD00", str(response.data))
 
-            data = str(response.data)
+        data = str(response.data)
 
-            # check if authorized fields are in response
-            for field in self.not_public_fields:
-                self.assertIn(field, data)
+        # check if authorized fields are in response
+        for field in self.not_public_fields:
+            self.assertIn(field, data)
 
     def test_match_kot_object__wkpb_public(self):
         response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
@@ -258,12 +255,11 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
         self.assertEqual(response.status_code, 401)
 
-        for token in (self.token_employee, self.token_scope_brk_rs):
-            self.client.credentials(
-                HTTP_AUTHORIZATION=f'Bearer {token}')
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {self.token_scope_brk_rs}')
 
-            response = self.client.get('/brk/subject/{}/'.format(
-                self.natuurlijk.pk))
-            self.assertEqual(response.status_code, 200)
+        response = self.client.get('/brk/subject/{}/'.format(
+            self.natuurlijk.pk))
+        self.assertEqual(response.status_code, 200)
 
-            self.assertNotIn('rechten', str(response.data))
+        self.assertNotIn('rechten', str(response.data))

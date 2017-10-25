@@ -27,7 +27,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
 
     def test_employee_brondocument(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
         doc_id = self.brondocument.id
         response = self.client.get(f'/wkpb/brondocument/{doc_id}/')
@@ -56,7 +56,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
 
     def test_employee_brondocument_list(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
         doc_id = self.brondocument.id
         response = self.client.get(f'/wkpb/brondocument/')

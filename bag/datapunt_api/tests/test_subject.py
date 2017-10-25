@@ -78,7 +78,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
 
     def test_match_subject2_employee_authorized(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_rs))
 
         # we should not find person
         response = self.client.get(
@@ -158,7 +158,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
 
     def test_match_typeahead_subject_level_employee(self):
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee))
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_rs))
 
         # no natuurlijk subject search
         response = self.client.get(
