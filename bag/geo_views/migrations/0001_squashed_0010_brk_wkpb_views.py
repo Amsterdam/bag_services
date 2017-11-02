@@ -17,9 +17,9 @@ class Migration(migrations.Migration):
                 ('geo_views', '0010_brk_wkpb_views')]
 
     dependencies = [
-        ('wkpb', '0001_squashed_0010_auto_20151221_1123'),
-        ('bag', '0007_auto_20161110_1548'),
-        ('brk', '0034_kadastraalobject_geom_point'),
+        ('wkpb', '0001_initial'),
+        ('bag', '0001_initial'),
+        ('brk', '0001_initial'),
     ]
 
     operations = [
