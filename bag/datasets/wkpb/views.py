@@ -6,7 +6,7 @@ from datasets.generic.rest import DatapuntViewSet
 from django_filters.rest_framework.filterset import FilterSet
 from django_filters.rest_framework import filters
 
-from authorization_django import levels as authorization_levels
+import authorization_levels
 
 
 class BroncodeView(DatapuntViewSet):

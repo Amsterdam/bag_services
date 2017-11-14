@@ -13,7 +13,7 @@ from datasets.generic import rest
 from django_filters.rest_framework import filters
 from django_filters.rest_framework.filterset import FilterSet
 
-from authorization_django import levels as authorization_levels
+import authorization_levels
 
 
 class GemeenteViewSet(DatapuntViewSet):
