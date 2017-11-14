@@ -48,7 +48,7 @@ Importing the latest backup
 
 To import the latest database from acceptance:
 
-    docker-compose exec database update-db.sh atlas
+    docker-compose exec database update-db.sh atlas root
 
 To import the latest elastic index from acceptance:
 
