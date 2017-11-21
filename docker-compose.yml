@@ -6,9 +6,6 @@ database:
     POSTGRES_PASSWORD: insecure
     POSTGRES_USER: atlas
     POSTGRES_DB: atlas
-    LOCAL: "True"
-  extra_hosts:
-    admin.datapunt.amsterdam.nl: 10.99.157.24
   volumes:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 elasticsearch:
