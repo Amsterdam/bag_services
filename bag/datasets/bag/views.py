@@ -6,7 +6,7 @@ from django.contrib.gis.measure import D
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
-from django_filters.rest_framework.filterset import FilterSet
+from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from rest_framework.reverse import reverse
 from rest_framework.metadata import SimpleMetadata
@@ -111,7 +111,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
 
 class VerblijfsobjectFilter(FilterSet):
 
-    pand = filters.CharFilter(method="pand_filter")
+    pand = filters.CharFilter(method="pand_filter", name="pand")
     panden__id = filters.CharFilter(method="pand_filter")
     panden__landelijk_id = filters.CharFilter(method="pand_filter")
 

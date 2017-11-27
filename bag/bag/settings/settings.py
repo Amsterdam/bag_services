@@ -41,6 +41,8 @@ PARTIAL_IMPORT = dict(
     numerator=0,
     denominator=1
 )
+STATIC_ROOT = 'static/'
+
 
 NO_INTEGATION_TEST = True
 

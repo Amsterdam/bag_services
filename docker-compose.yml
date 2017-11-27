@@ -8,9 +8,11 @@ database:
     POSTGRES_DB: atlas
   volumes:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+
 elasticsearch:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5:latest
-  command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch:latest
+  # command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+  command: elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
 
   ports:
     - "9200:9200"
