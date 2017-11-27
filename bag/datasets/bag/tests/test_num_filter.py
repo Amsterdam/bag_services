@@ -1,7 +1,7 @@
 # Python
 import logging
 # Packages
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 from rest_framework.test import APITransactionTestCase
 
 from datasets.bag.tests import factories as bag_factories
@@ -13,6 +13,17 @@ LOG = logging.getLogger(__name__)
 class Numfilter(APITransactionTestCase):
 
     def setUp(self):
+
+        vierkantje = Polygon([
+                (121849.65, 487303.93),
+                (121889.65, 487303.93),
+                (121889.65, 487373.93),
+                (121849.65, 487303.93)
+        ], srid=28992)
+
+        self.opr = bag_factories.OpenbareRuimteFactory(
+            geometrie=MultiPolygon([vierkantje])
+        )
 
         self.num = bag_factories.NummeraanduidingFactory.create(
             postcode='1000AN'  # default postcode..
@@ -36,7 +47,9 @@ class Numfilter(APITransactionTestCase):
             standplaats=self.standplaats
         )
 
-        self.pand = bag_factories.PandFactory.create()
+        self.pand = bag_factories.PandFactory.create(
+            geometrie=vierkantje
+        )
         self.pand_vbo = bag_factories.VerblijfsobjectPandRelatie.create(
             pand=self.pand,
             verblijfsobject=self.vbo)
