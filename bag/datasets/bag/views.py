@@ -29,10 +29,17 @@ def parse_xyr(value: str) -> (Point, int):
         raise validation.ValidationError(
             "Locatie must be rdx,rdy,radius or lat,long,radius"
         )
-    # Converting , to . and then to float
-    x = float(x)
-    y = float(y)
-    radius = int(radius)
+
+    try:
+        # Converting , to . and then to float
+        x = float(x)
+        y = float(y)
+        radius = int(radius)
+    except ValueError:
+        raise validation.ValidationError(
+            "Locatie must be x: float, y: float, r: int"
+        )
+
     # Checking if the given coords are in RD, otherwise converting
     if y > 10:
         point = Point(x, y, srid=28992)
