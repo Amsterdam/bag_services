@@ -220,7 +220,7 @@ class NummeraanduidingFilter(FilterSet):
     Filter nummeraanduidingkjes
     """
 
-    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    verblijfsobject = filters.CharFilter(method="vbo_filter", label='vbo')
     ligplaats = filters.CharFilter(method="ligplaats_filter")
     standplaats = filters.CharFilter(method="standplaats_filter")
 
@@ -228,11 +228,11 @@ class NummeraanduidingFilter(FilterSet):
     huisnummer = filters.NumberFilter()
     huisletter = filters.CharFilter()
     openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
-    locatie = filters.CharFilter(method="locatie_filter", name='locatie')
+    locatie = filters.CharFilter(method="locatie_filter", label='x,y,r')
 
-    pand = filters.CharFilter(method="pand_filter", name='pand')
+    pand = filters.CharFilter(method="pand_filter", label='pand')
 
-    kadastraalobject = filters.CharFilter(method="kot_filter")
+    kadastraalobject = filters.CharFilter(method="kot_filter", label='kot')
 
     class Meta:
         model = models.Nummeraanduiding
@@ -245,7 +245,9 @@ class NummeraanduidingFilter(FilterSet):
             'postcode',
             'pand',
             'kadastraalobject',
+            'locatie',
         ]
+
 
     def postcode_filter(self, queryset, _filter_name, value):
         """
