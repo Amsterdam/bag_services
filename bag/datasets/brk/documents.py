@@ -4,47 +4,42 @@ from datasets.generic import analyzers
 from django.conf import settings
 
 
+kad_text_fields = {
+    'raw': es.Keyword(),
+    'ngram': es.Text(analyzer=analyzers.kad_obj_aanduiding),
+    'keyword': es.Keyword()
+}
+
+kad_int_fields = {
+    'raw': es.Keyword(),
+    'int': es.Integer(),
+    'ngram': es.Text(analyzer=analyzers.kad_obj_aanduiding),
+    'keyword': es.Keyword()
+}
+
+
 class KadastraalObject(es.DocType):
     aanduiding = es.String(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
-            'keyword': es.String(
-                analyzer=analyzers.kad_obj_aanduiding_keyword)
-        })
+        fields=kad_text_fields)
 
     # The search aanduiding is the aanduiding without the "acd00 " prefix
     # remove this in future
     short_aanduiding = es.String(
         analyzer=analyzers.kad_obj_aanduiding,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
-            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding_keyword)
-        })
+        fields=kad_text_fields)
 
     sectie = es.String()
 
     objectnummer = es.String(
         analyzer=analyzers.ngram,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'int': es.Integer(),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
-        }
+        fields=kad_int_fields,
     )
 
-    indexletter = es.String()
-    indexnummer = es.String(
+    indexletter = es.Keyword()
+    indexnummer = es.Text(
         analyzer=analyzers.ngram,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'int': es.Integer(),
-            'ngram': es.String(analyzer=analyzers.kad_obj_aanduiding),
-            'keyword': es.String(analyzer=analyzers.kad_obj_aanduiding)
-        }
+        fields=kad_int_fields
     )
 
     order = es.Integer()
@@ -62,7 +57,7 @@ class KadastraalObject(es.DocType):
 
 
 class KadastraalSubject(es.DocType):
-    naam = es.String(
+    naam = es.Text(
         analyzer=analyzers.naam,
         fields={
             'raw': es.String(index='not_analyzed'),

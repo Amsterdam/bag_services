@@ -122,6 +122,7 @@ class QueryTest(APITransactionTestCase):
             woonadres=adres
         )
 
+        # batch.execute(datasets.bag
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
@@ -129,7 +130,7 @@ class QueryTest(APITransactionTestCase):
         es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
         es.indices.refresh(index="_all")
 
-    def test_search_openbare_ruimte_api(self):
+    def test_openbare_ruimte(self):
         response = self.client.get(
             "/atlas/search/openbareruimte/", {'q': "Prinsengracht"})
         self.assertEqual(response.status_code, 200)
@@ -143,7 +144,7 @@ class QueryTest(APITransactionTestCase):
         self.assertEqual(
             response.data['results'][0]['subtype'], "water")
 
-    def test_search_subject_api(self):
+    def test_subject(self):
         """
         We are not authorized. should fail
         """
@@ -152,7 +153,7 @@ class QueryTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('results', response.data)
 
-    def test_search_bouwblok_api(self):
+    def test_bouwblok(self):
         response = self.client.get(
             "/atlas/search/bouwblok/", {'q': "RN3"})
         self.assertEqual(response.status_code, 200)

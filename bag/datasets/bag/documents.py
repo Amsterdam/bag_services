@@ -8,31 +8,31 @@ from . import models
 
 
 class Ligplaats(es.DocType):
-    straatnaam = es.String(
+    straatnaam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'),
         },
     )
-    adres = es.String(
+    adres = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard',
             ),
         },
     )
     huisnummer = es.Integer(
-        fields={'variation': es.String(analyzer=analyzers.huisnummer)},
+        fields={'variation': es.Text(analyzer=analyzers.huisnummer)},
     )
-    postcode = es.String(
+    postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.autocomplete),
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.autocomplete),
         },
     )
     order = es.Integer()
@@ -45,29 +45,33 @@ class Ligplaats(es.DocType):
 
 
 class Standplaats(es.DocType):
-    straatnaam = es.String(
+    straatnaam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')})
 
-    adres = es.String(
+    adres = es.Text(
         analyzer=analyzers.adres, fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')})
+
     huisnummer = es.Integer(
-        fields={'variation': es.String(analyzer=analyzers.huisnummer)})
-    postcode = es.String(
+        fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
+
+    postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.autocomplete)})
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.autocomplete)}
+    )
+
     order = es.Integer()
     centroid = es.GeoPoint()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -75,88 +79,79 @@ class Standplaats(es.DocType):
 
 
 class Verblijfsobject(es.DocType):
-    straatnaam = es.String(
+    straatnaam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')})
-    adres = es.String(
+    adres = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')})
+
     huisnummer = es.Integer(
-        fields={'variation': es.String(analyzer=analyzers.huisnummer)})
-    postcode = es.String(
+        fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
+
+    postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.autocomplete)})
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.autocomplete)})
+
     order = es.Integer()
 
     centroid = es.GeoPoint()
 
-    bestemming = es.String()
+    bestemming = es.Text()
     kamers = es.Integer()
     oppervlakte = es.Integer()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
 
 
+text_fields = {
+    'raw': es.Keyword(index='not_analyzed'),
+    'ngram_edge': es.Text(
+        analyzer=analyzers.autocomplete, search_analyzer='standard'
+    ),
+    'ngram': es.Text(analyzer=analyzers.ngram),
+    'keyword': es.Keyword(),
+}
+
+
+
 class OpenbareRuimte(es.DocType):
-    naam = es.String(
+    naam = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
-
-        }
+        fields=text_fields
     )
 
-    naam_nen = es.String(
+    naam_nen = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
-
-        }
+        fields=text_fields
     )
 
-    naam_ptt = es.String(
-        analyzer=analyzers.adres, fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
-
-        }
+    naam_ptt = es.Text(
+        analyzer=analyzers.adres,
+        fields=text_fields
     )
 
-    postcode = es.String(
+    postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.autocomplete)})
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.autocomplete)})
     order = es.Integer()
 
-    subtype = es.String(analyzer=analyzers.subtype)
+    subtype = es.Keyword()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword(index='not_analyzed')
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -173,126 +168,123 @@ class Nummeraanduiding(es.DocType):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
     """
-    straatnaam = es.String(
+    straatnaam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
+            'raw': es.Keyword(),
+            'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
+            'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
-    straatnaam_keyword = es.String(analyzer=analyzers.subtype)
+    straatnaam_keyword = es.Keyword()
 
-    straatnaam_nen = es.String(
+    straatnaam_nen = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
+            'raw': es.Keyword(),
+            'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
-
+            'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
-    straatnaam_nen_keyword = es.String(analyzer=analyzers.subtype)
+    straatnaam_nen_keyword = es.Keyword()
 
-    straatnaam_ptt = es.String(
+    straatnaam_ptt = es.Text(
         analyzer=analyzers.adres, fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
+            'raw': es.Keyword(),
+            'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
+            'ngram': es.Text(analyzer=analyzers.ngram),
+            'keyword': es.Keyword(),
 
         }
     )
 
-    straatnaam_ptt_keyword = es.String(analyzer=analyzers.subtype)
+    straatnaam_ptt_keyword = es.Keyword()
 
-    adres = es.String(
+    adres = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
+            'raw': es.Keyword(),
+            'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.String(analyzer=analyzers.ngram)
+            'ngram': es.Text(analyzer=analyzers.ngram)
         }
     )
 
-    comp_address = es.String(
+    comp_address = es.Text(
         analyzer=analyzers.adres, fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
         }
     )
-    comp_address_nen = es.String(
+    comp_address_nen = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete,
                 search_analyzer='standard')
         }
     )
-    comp_address_ptt = es.String(
+    comp_address_ptt = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
         }
     )
-    comp_address_pcode = es.String(
+    comp_address_pcode = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard')
         }
     )
 
     huisnummer = es.Integer(
-        fields={'variation': es.String(analyzer=analyzers.huisnummer)})
+        fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
 
-    toevoeging = es.String(analyzer=analyzers.toevoeging,
-                           fields={'raw': es.String(index='not_analyzed')}
-                           )
+    toevoeging = es.Text(
+        analyzer=analyzers.toevoeging,
+       fields={'raw': es.Keyword()}
+    )
 
-    postcode = es.String(
+    postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.autocomplete)})
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.autocomplete)})
 
     order = es.Integer()
 
     hoofdadres = es.Boolean()
     status = es.Nested({
         'properties': {
-            'code': es.String(),
-            'omschrijving': es.String()
+            'code': es.Keyword(),
+            'omschrijving': es.Text()
         }
     })
 
     vbo_status = es.Nested({
         'properties': {
-            'code': es.String(),
-            'omschrijving': es.String()
+            'code': es.Keyword(),
+            'omschrijving': es.Text()
         }
     })
 
-
-    subtype = es.String(analyzer=analyzers.subtype)
-    _display = es.String(index='not_analyzed')
+    subtype = es.Keyword()
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
@@ -303,16 +295,16 @@ class Bouwblok(es.DocType):
     """
     Elasticsearch doc for the bouwblok model
     """
-    code = es.String(
+    code = es.Text(
         analyzer=analyzers.bouwblokid,
         fields={
-            'raw': es.String(index='not_analyzed'),
+            'raw': es.Keyword()
         },
     )
 
-    subtype = es.String(analyzer=analyzers.subtype)
+    subtype = es.Keyword()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
@@ -332,34 +324,33 @@ class Gebied(es.DocType):
     Woonplaats
     """
 
-    id = es.String()
+    id = es.Keyword()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword()
 
-    naam = es.String(
+    naam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram_edge': es.String(
+            'raw': es.Keyword(),
+            'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.String(analyzer=analyzers.ngram),
-            'keyword': es.String(analyzer=analyzers.subtype),
+            'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
-    g_code = es.String(
+    g_code = es.Text(
         analyzer=analyzers.autocomplete,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(analyzer=analyzers.ngram),
+            'raw': es.Keyword(),
+            'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
     # gebied order
     order = es.Integer()
 
-    subtype = es.String(analyzer=analyzers.subtype)
+    subtype = es.Keyword()
 
     centroid = es.GeoPoint()
 
@@ -372,14 +363,14 @@ class ExactLocation(es.DocType):
     """
     Elasticsearch doc for exact location data
     """
-    nummeraanduiding_id = es.String()
-    address = es.String(index='not_analyzed')
-    postcode_huisnummer = es.String(index='not_analyzed')
-    postcode_toevoeging = es.String(index='not_analyzed', boost=5)
-    subtype = es.String(analyzer=analyzers.subtype)
+    nummeraanduiding_id = es.Keyword()
+    address = es.Keyword()
+    postcode_huisnummer = es.Keyword()
+    postcode_toevoeging = es.Keyword()
+    subtype = es.Keyword()
     geometrie = es.GeoPoint()
 
-    _display = es.String(index='not_analyzed')
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']

@@ -202,7 +202,27 @@ REST_FRAMEWORK = dict(
     ),
 )
 
-# Security
+# The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256
+# This is a test public key def. The private key is add for testing.
+JWKS_TEST_KEY = """
+{
+    "keys": [
+        {
+            "kty": "EC",
+            "key_ops": [
+                "verify",
+                "sign"
+            ],
+            "kid": "2aedafba-8170-4064-b704-ce92b7c89cc6",
+            "crv": "P-256",
+            "x": "6r8PYwqfZbq_QzoMA4tzJJsYUIIXdeyPA27qTgEJCDw=",
+            "y": "Cf2clfAfFuuCB06NMfIat9ultkMyrMQO9Hd2H7O9ZVE=",
+            "d": "N1vu0UQUp0vLfaNeM0EDbl4quvvL6m_ltjoAXXzkI3U="
+        }
+    ]
+}
+"""
+
 DATAPUNT_AUTHZ = {
     'JWT_SECRET_KEY': os.getenv(
         'JWT_SHARED_SECRET_KEY', 'insecureeeeeeeeeeeeeee'),
@@ -259,6 +279,82 @@ OBJECTSTORE = {
         'endpoint_type': 'internalURL'
     }
 }
+
+
+LOGSTASH_HOST = os.getenv('LOGSTASH_HOST', '127.0.0.1')
+LOGSTASH_PORT = int(os.getenv('LOGSTASH_GELF_UDP_PORT', 12201))
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+
+    'formatters': {
+        'slack': {
+            'format': '%(message)s',
+        },
+        'console': {
+            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        },
+
+    },
+
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+
+        'graypy': {
+            'level': 'ERROR',
+            'class': 'graypy.GELFHandler',
+            'host': LOGSTASH_HOST,
+            'port': LOGSTASH_PORT,
+        },
+
+    },
+
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['console', 'graypy'],
+    },
+
+    'loggers': {
+        # Debug all batch jobs
+        'batch': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
+        'search': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
+        'elasticsearch': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
+        'urllib3.connectionpool': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # Log all unhandled exceptions
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 
