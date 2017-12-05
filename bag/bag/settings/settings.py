@@ -41,6 +41,8 @@ PARTIAL_IMPORT = dict(
     numerator=0,
     denominator=1
 )
+STATIC_ROOT = 'static/'
+
 
 NO_INTEGATION_TEST = True
 
@@ -224,9 +226,7 @@ JWKS_TEST_KEY = """
 """
 
 DATAPUNT_AUTHZ = {
-    'JWT_SECRET_KEY': os.getenv(
-        'JWT_SHARED_SECRET_KEY', 'insecureeeeeeeeeeeeeee'),
-    'JWT_ALGORITHM': 'HS256'
+    'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
 }
 
 SECURE_CONTENT_TYPE_NOSNIFF = True

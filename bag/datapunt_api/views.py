@@ -23,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.compat import coreapi, coreschema
 
-from authorization_django import levels as authorization_levels
+import authorization_levels
 
 from datasets.bag import queries as bag_qs  # noqa
 from datasets.brk import queries as brk_qs  # noqa

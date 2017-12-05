@@ -6,16 +6,48 @@ from django.contrib.gis.measure import D
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.views.generic import RedirectView
-from django_filters.rest_framework.filterset import FilterSet
+from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework import filters
 from rest_framework.reverse import reverse
 from rest_framework.metadata import SimpleMetadata
+from rest_framework import serializers as validation
 
 from datasets.generic import rest
 from . import serializers, models
 
 
 LOG = logging.getLogger(__name__)
+
+
+def parse_xyr(value: str) -> (Point, int):
+    """
+    Parse x, y, radius input.
+    """
+    try:
+        x, y, radius = value.split(',')
+    except ValueError:
+        raise validation.ValidationError(
+            "Locatie must be rdx,rdy,radius or lat,long,radius"
+        )
+
+    try:
+        # Converting , to . and then to float
+        x = float(x)
+        y = float(y)
+        radius = int(radius)
+    except ValueError:
+        raise validation.ValidationError(
+            "Locatie must be x: float, y: float, r: int"
+        )
+
+    # Checking if the given coords are in RD, otherwise converting
+    if y > 10:
+        point = Point(x, y, srid=28992)
+    else:
+        point = Point(y, x, srid=4326).transform(28992, clone=True)
+
+    return point, radius
+
 
 
 class ExpansionMetadata(SimpleMetadata):
@@ -111,7 +143,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
 
 class VerblijfsobjectFilter(FilterSet):
 
-    pand = filters.CharFilter(method="pand_filter")
+    pand = filters.CharFilter(method="pand_filter", name="pand")
     panden__id = filters.CharFilter(method="pand_filter")
     panden__landelijk_id = filters.CharFilter(method="pand_filter")
 
@@ -188,7 +220,7 @@ class NummeraanduidingFilter(FilterSet):
     Filter nummeraanduidingkjes
     """
 
-    verblijfsobject = filters.CharFilter(method="vbo_filter")
+    verblijfsobject = filters.CharFilter(method="vbo_filter", label='vbo')
     ligplaats = filters.CharFilter(method="ligplaats_filter")
     standplaats = filters.CharFilter(method="standplaats_filter")
 
@@ -196,11 +228,11 @@ class NummeraanduidingFilter(FilterSet):
     huisnummer = filters.NumberFilter()
     huisletter = filters.CharFilter()
     openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
-    locatie = filters.CharFilter(method="locatie_filter")
+    locatie = filters.CharFilter(method="locatie_filter", label='x,y,r')
 
-    pand = filters.CharFilter(method="pand_filter")
+    pand = filters.CharFilter(method="pand_filter", label='pand')
 
-    kadastraalobject = filters.CharFilter(method="kot_filter")
+    kadastraalobject = filters.CharFilter(method="kot_filter", label='kot')
 
     class Meta:
         model = models.Nummeraanduiding
@@ -213,7 +245,9 @@ class NummeraanduidingFilter(FilterSet):
             'postcode',
             'pand',
             'kadastraalobject',
+            'locatie',
         ]
+
 
     def postcode_filter(self, queryset, _filter_name, value):
         """
@@ -238,22 +272,11 @@ class NummeraanduidingFilter(FilterSet):
         """
         Filter based on the geolocation. This filter actually
         expect 3 numerical values: x, y and radius
-        The value given is broken up by ',' and coverterd
+        The value given is broken up by ',' and converterd
         to the value tuple
         """
-        try:
-            x, y, radius = value.split(',')
-        except ValueError:
-            return queryset.none()
-        # Converting , to . and then to float
-        x = float(x)
-        y = float(y)
-        radius = int(radius)
-        # Checking if the given coords are in RD, otherwise converting
-        if y > 10:
-            point = Point(x, y, srid=28992)
-        else:
-            point = Point(y, x, srid=4326).transform(28992, clone=True)
+        point, radius= parse_xyr(value)
+
         # Creating one big queryset
         verblijfsobjecten = queryset.filter(
             verblijfsobject__geometrie__dwithin=(point, D(m=radius))
@@ -366,8 +389,10 @@ class PandenFilter(FilterSet):
     Filter panden met landelijke ids
     """
 
-    verblijfsobject = filters.CharFilter(method="vbo_filter")
-    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter")
+    verblijfsobject = filters.CharFilter(method="vbo_filter", name="verblijfsobject")
+    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter", name="vbo_id")
+
+    locatie = filters.CharFilter(method="locatie_filter", name='locatie')
 
     class Meta:
         model = models.Pand
@@ -378,6 +403,7 @@ class PandenFilter(FilterSet):
             'verblijfsobjecten__landelijk_id',
             'landelijk_id',
             'bouwblok',
+            'locatie',
         )
 
     def vbo_filter(self, queryset, _filter_name, value):
@@ -387,6 +413,21 @@ class PandenFilter(FilterSet):
             return queryset.filter(verblijfsobjecten__landelijk_id=value)
 
         return queryset.filter(verblijfsobjecten__id=value)
+
+    def locatie_filter(self, queryset, _filter_name, value):
+        """
+        Filter based on the geolocation. This filter actually
+        expect 3 numerical values: x, y and radius
+        The value given is broken up by ',' and converterd
+        to the value tuple
+        """
+        point, radius= parse_xyr(value)
+
+        opr = queryset.filter(
+            geometrie__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('geometrie', point))
+
+        return opr.order_by('afstand')
 
 
 class PandViewSet(rest.DatapuntViewSet):
@@ -426,6 +467,41 @@ class PandViewSet(rest.DatapuntViewSet):
         return obj
 
 
+
+class OpenbareRuimteFilter(FilterSet):
+    """
+    Filter openbare ruimte
+    """
+
+    locatie = filters.CharFilter(method="locatie_filter", name='locatie')
+
+    class Meta:
+        model = models.OpenbareRuimte
+
+        fields = (
+            'landelijk_id',
+            'naam',
+            'code',
+            'type',
+            'locatie',
+        )
+
+    def locatie_filter(self, queryset, _filter_name, value):
+        """
+        Filter based on the geolocation. This filter actually
+        expect 3 numerical values: x, y and radius
+        The value given is broken up by ',' and converterd
+        to the value tuple
+        """
+        point, radius= parse_xyr(value)
+
+        opr = queryset.filter(
+            geometrie__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('geometrie', point))
+
+        return opr.order_by('afstand')
+
+
 class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     """
     OpenbareRuimte
@@ -452,7 +528,7 @@ class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
 
-    filter_fields = ('landelijk_id', 'naam', 'code', 'type')
+    filter_class = OpenbareRuimteFilter
 
     def get_object(self):
         pk = self.kwargs['pk']

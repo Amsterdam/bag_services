@@ -1,7 +1,7 @@
 # Python
 import logging
 # Packages
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 from rest_framework.test import APITransactionTestCase
 
 from datasets.bag.tests import factories as bag_factories
@@ -14,13 +14,26 @@ class Numfilter(APITransactionTestCase):
 
     def setUp(self):
 
-        self.num = bag_factories.NummeraanduidingFactory.create(
-            postcode='1000AN'  # default postcode..
+        vierkantje = Polygon([
+                (121849.65, 487303.93),
+                (121889.65, 487303.93),
+                (121889.65, 487373.93),
+                (121849.65, 487303.93)
+        ], srid=28992)
+
+        self.opr = bag_factories.OpenbareRuimteFactory(
+            geometrie=MultiPolygon([vierkantje])
         )
 
         self.vbo = bag_factories.VerblijfsobjectFactory.create(
             geometrie=Point(121849.65, 487303.93, srid=28992))
             # (52.3726097, 4.9004161)
+
+        self.num = bag_factories.NummeraanduidingFactory.create(
+            postcode='1000AN',  # default postcode..
+            openbare_ruimte=self.opr,
+            verblijfsobject=self.vbo,
+        )
 
         self.ligplaats = bag_factories.LigplaatsFactory.create()
 
@@ -36,7 +49,9 @@ class Numfilter(APITransactionTestCase):
             standplaats=self.standplaats
         )
 
-        self.pand = bag_factories.PandFactory.create()
+        self.pand = bag_factories.PandFactory.create(
+            geometrie=vierkantje
+        )
         self.pand_vbo = bag_factories.VerblijfsobjectPandRelatie.create(
             pand=self.pand,
             verblijfsobject=self.vbo)
@@ -169,6 +184,51 @@ class Numfilter(APITransactionTestCase):
         self.assertEquals(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
+
+    def test_opr_location_filter_in(self):
+        url = '/bag/openbareruimte/?locatie=121850,487304,10'
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(
+            self.opr.landelijk_id,
+            data['results'][0]['landelijk_id'])
+
+    def test_opr_location_filter_out(self):
+        url = '/bag/openbareruimte/?locatie=100000,400000,10'
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(data['results'], [])
+
+    def test_pand_location_filter_in(self):
+        url = '/bag/pand/?locatie=121850,487304,10'
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(
+            self.pand.landelijk_id,
+            data['results'][0]['landelijk_id'])
+
+    def test_pand_location_filter_out(self):
+        url = '/bag/pand/?locatie=100000,400000,10'
+        response = self.client.get(url)
+
+        self.assertEquals(200, response.status_code)
+        data = response.json()
+        self.assertEquals(data['results'], [])
+
+    def test_pand_location_filter_error(self):
+        url = '/bag/pand/?locatie=X00000,X00000,10'
+        response = self.client.get(url)
+
+        self.assertEquals(400, response.status_code)
+        data = response.json()
+        self.assertEquals(data,
+            ['Locatie must be x: float, y: float, r: int'])
 
     def test_detailed_view(self):
         url = '/bag/nummeraanduiding/?detailed=1'

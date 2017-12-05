@@ -3,10 +3,12 @@ from collections import OrderedDict
 import json
 # Packages
 from django.conf import settings
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, serializers
-from rest_framework import pagination, response, viewsets, filters
+from rest_framework import pagination, response, viewsets
 from rest_framework.reverse import reverse
 from rest_framework.utils.urls import replace_query_param
+
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
 DEFAULT_RENDERERS = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer)
@@ -134,7 +136,8 @@ class DatapuntViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
 
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
+
 
     # default ordering
     ordering = ('id',)
