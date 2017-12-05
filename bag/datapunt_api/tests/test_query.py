@@ -163,7 +163,7 @@ class QueryTest(APITransactionTestCase):
         self.assertEqual(
             response.data['results'][0]['code'], "RN35")
 
-    def test_search_adres_api(self):
+    def test_adres(self):
         response = self.client.get(
             "/atlas/search/postcode/", {'q': "1016 SZ 228 a 1"})
         self.assertEqual(response.status_code, 200)

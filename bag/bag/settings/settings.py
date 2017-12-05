@@ -346,12 +346,18 @@ LOGGING = {
             'propagate': False,
         },
 
-        # Log all unhandled exceptions
         'django.request': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'propagate': False,
         },
+
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+
     },
 }
 

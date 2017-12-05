@@ -135,8 +135,8 @@ def _basis_openbare_ruimte_query(
     # Metrostation Weesperstraat.  Zoeken op Prinsen, geeft eerst
     # Prinsengracht, dan pas Korte Prinsengracht.
 
-    _must = [{'constant_score': {'query': q}} for q in (must or [])]
-    _must_not = [{'constant_score': {'query': q}} for q in (must_not or [])]
+    _must = [{'constant_score': {'filter': q}} for q in (must or [])]
+    _must_not = [{'constant_score': {'filter': q}} for q in (must_not or [])]
 
     sort_fields = ['_score', 'naam.keyword']
 
@@ -151,7 +151,7 @@ def _basis_openbare_ruimte_query(
                 'should': [
                     {
                         'constant_score': {
-                            'query': {
+                            'filter': {
                                 'prefix': {
                                     'naam.keyword': analyzer.get_straatnaam(),
                                 }
@@ -161,7 +161,7 @@ def _basis_openbare_ruimte_query(
                     },
                     {
                         'constant_score': {
-                            'query': {
+                            'filter': {
                                 'multi_match': {
                                     'query': analyzer.get_straatnaam(),
                                     'type': 'phrase_prefix',

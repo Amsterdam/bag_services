@@ -19,19 +19,19 @@ kad_int_fields = {
 
 
 class KadastraalObject(es.DocType):
-    aanduiding = es.String(
+    aanduiding = es.Text(
         analyzer=analyzers.postcode,
         fields=kad_text_fields)
 
     # The search aanduiding is the aanduiding without the "acd00 " prefix
     # remove this in future
-    short_aanduiding = es.String(
+    short_aanduiding = es.Text(
         analyzer=analyzers.kad_obj_aanduiding,
         fields=kad_text_fields)
 
-    sectie = es.String()
+    sectie = es.Keyword()
 
-    objectnummer = es.String(
+    objectnummer = es.Text(
         analyzer=analyzers.ngram,
         fields=kad_int_fields,
     )
@@ -45,11 +45,11 @@ class KadastraalObject(es.DocType):
     order = es.Integer()
     centroid = es.GeoPoint()
 
-    gemeente = es.String()
-    gemeente_code = es.String()
+    gemeente = es.Keyword()
+    gemeente_code = es.Keyword()
 
-    subtype = es.String(analyzer=analyzers.subtype)
-    _display = es.String(index='not_analyzed')
+    subtype = es.Keyword()
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
@@ -60,17 +60,17 @@ class KadastraalSubject(es.DocType):
     naam = es.Text(
         analyzer=analyzers.naam,
         fields={
-            'raw': es.String(index='not_analyzed'),
-            'ngram': es.String(
+            'raw': es.Keyword(),
+            'ngram': es.Text(
                 analyzer=analyzers.kad_sbj_naam,
                 search_analyzer=analyzers.kad_obj_aanduiding_keyword)})
 
     natuurlijk_persoon = es.Boolean()
-    geslachtsnaam = es.String(analyzer=analyzers.naam)
+    geslachtsnaam = es.Text(analyzer=analyzers.naam)
     order = es.Integer()
 
-    subtype = es.String(analyzer=analyzers.subtype)
-    _display = es.String(index='not_analyzed')
+    subtype = es.Keyword()
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BRK']
