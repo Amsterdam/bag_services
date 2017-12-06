@@ -23,4 +23,4 @@ tests:
     BAG_OBJECTSTORE_PASSWORD:
     METADATA_URL: ""
     JWT_SHARED_SECRET_KEY: atleast16characters
-  command: bash -c "/app/docker-wait.sh && python manage.py test"
+  command: bash -c "/app/docker-wait.sh && python manage.py test --noinput"
