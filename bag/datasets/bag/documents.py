@@ -11,13 +11,13 @@ naam_fields = {
     'raw': es.Keyword(normalizer=analyzers.lowercase),
     'ngram': es.Text(
         analyzer=analyzers.autocomplete, search_analyzer='standard'),
-},
+}
 
 
 class Ligplaats(es.DocType):
     straatnaam = es.Text(
         analyzer=analyzers.adres,
-        fields=naam_fields,
+        fields=naam_fields
     )
 
     adres = es.Text(
@@ -139,7 +139,7 @@ class OpenbareRuimte(es.DocType):
 
     subtype = es.Keyword()
 
-    _display = es.Keyword(index='not_analyzed')
+    _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']

@@ -5,11 +5,10 @@ database:
     POSTGRES_USER: atlas
 
 elasticsearch:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
+  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5
   volumes:
     - ./backups/elasticsearch:/tmp/backups
-  user: root
-  command: /usr/share/elasticsearch/bin/elasticsearch -Des.insecure.allow.root=true -Des.network.host=0.0.0.0 -Des.path.repo=/tmp
+  command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
 tests:
   build: ..
