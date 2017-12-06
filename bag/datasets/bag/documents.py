@@ -13,6 +13,11 @@ naam_fields = {
         analyzer=analyzers.autocomplete, search_analyzer='standard'),
 }
 
+postcode_fields = {
+    'raw': es.Keyword(normalizer=analyzers.lowercase),
+    'ngram': es.Text(analyzer=analyzers.autocomplete),
+}
+
 
 class Ligplaats(es.DocType):
     straatnaam = es.Text(
@@ -30,11 +35,7 @@ class Ligplaats(es.DocType):
     )
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.Keyword(normalizer=analyzers.lowercase),
-            'ngram': es.Text(analyzer=analyzers.autocomplete),
-        },
-    )
+        fields=postcode_fields)
     order = es.Integer()
 
     centroid = es.GeoPoint()
@@ -57,9 +58,7 @@ class Standplaats(es.DocType):
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.Keyword(normalizer=analyzers.lowercase),
-            'ngram': es.Text(analyzer=analyzers.autocomplete)}
+        fields=postcode_fields
     )
 
     order = es.Integer()
@@ -86,9 +85,7 @@ class Verblijfsobject(es.DocType):
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.Keyword(normalizer=analyzers.lowercase),
-            'ngram': es.Text(analyzer=analyzers.autocomplete)})
+        fields=postcode_fields)
 
     order = es.Integer()
 
@@ -132,9 +129,7 @@ class OpenbareRuimte(es.DocType):
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(analyzer=analyzers.autocomplete)})
+        fields=postcode_fields)
     order = es.Integer()
 
     subtype = es.Keyword()
@@ -250,9 +245,7 @@ class Nummeraanduiding(es.DocType):
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(analyzer=analyzers.autocomplete)})
+        fields=postcode_fields)
 
     order = es.Integer()
 
