@@ -26,7 +26,8 @@ class ObjectSearchTest(APITransactionTestCase):
 
         kada_amsterdam = brk_factories.KadastraleGemeenteFactory(
             pk='ACD00',
-            gemeente=amsterdam
+            gemeente=amsterdam,
+            naam='Amsterdam',
         )
 
         sectie = brk_factories.KadastraleSectieFactory(
@@ -54,16 +55,15 @@ class ObjectSearchTest(APITransactionTestCase):
         response = self.client.get(
             '/atlas/search/kadastraalobject/',
             dict(q="ACD00"))
-
         self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
+        self.assertIn("ACD00", str(response.data['results']))
 
     # @skip('This test needs to be looked into')
     def test_match_perceelnummer(self):
         response = self.client.get(
             '/atlas/search/kadastraalobject/', {'q': 'Amsterdam s 10000'})
         self.assertEqual(response.status_code, 200)
-        self.assertIn("10000", str(response.data))
+        self.assertIn("10000", str(response.data['results']))
 
     def test_match_object_typeahead(self):
         response = self.client.get(

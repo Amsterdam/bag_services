@@ -55,7 +55,7 @@ naam_stripper = analysis.char_filter(
 divider_normalizer = analysis.token_filter(
     'divider_normalizer',
     type='pattern_replace',
-    pattern='(str\.|\/|-)',
+    pattern=r'(str\.|\/|-)',
     replacement=' '
 )
 
@@ -64,7 +64,7 @@ divider_normalizer = analysis.token_filter(
 divider_stripper = analysis.token_filter(
     'divider_stripper',
     type='pattern_replace',
-    pattern='(str\.|\/|-|\.| )',
+    pattern=r'(str\.|\/|-|\.| )',
     replacement=''
 )
 
@@ -97,6 +97,11 @@ kadaster_object_aanduiding = analysis.token_filter(
     type='ngram',
     min_gram=4,
     max_gram=16
+)
+
+lowercase = analysis.normalizer(
+    'lowercase_keyword',
+    filter=['lowercase']
 )
 
 ####################################

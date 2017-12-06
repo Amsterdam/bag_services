@@ -34,6 +34,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 
     """
     kot_query = analyzer.get_kadastraal_object_query()
+
     if kot_query.is_empty():
         return ElasticQueryWrapper(query=None)
 
@@ -56,7 +57,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 'term': {'objectnummer.int': int(kot_query.object_nummer)}})
         else:
             must.append({
-                'prefix': {'objectnummer.raw': int(kot_query.object_nummer)}})
+                'prefix': {'objectnummer': int(kot_query.object_nummer)}})
 
     if kot_query.index_letter:
         must.append(Q('term', indexletter=kot_query.index_letter))

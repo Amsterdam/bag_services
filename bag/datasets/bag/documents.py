@@ -7,31 +7,31 @@ from datasets.generic import analyzers
 from . import models
 
 
+naam_fields = {
+    'raw': es.Keyword(normalizer=analyzers.lowercase),
+    'ngram': es.Text(
+        analyzer=analyzers.autocomplete, search_analyzer='standard'),
+},
+
+
 class Ligplaats(es.DocType):
     straatnaam = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'),
-        },
+        fields=naam_fields,
     )
+
     adres = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard',
-            ),
-        },
+        fields=naam_fields
     )
+
     huisnummer = es.Integer(
         fields={'variation': es.Text(analyzer=analyzers.huisnummer)},
     )
     postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.Keyword(),
+            'raw': es.Keyword(normalizer=analyzers.lowercase),
             'ngram': es.Text(analyzer=analyzers.autocomplete),
         },
     )
@@ -47,16 +47,10 @@ class Ligplaats(es.DocType):
 class Standplaats(es.DocType):
     straatnaam = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+        fields=naam_fields
+    )
 
-    adres = es.Text(
-        analyzer=analyzers.adres, fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+    adres = es.Text(analyzer=analyzers.adres, fields=naam_fields)
 
     huisnummer = es.Integer(
         fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
@@ -64,7 +58,7 @@ class Standplaats(es.DocType):
     postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.Keyword(),
+            'raw': es.Keyword(normalizer=analyzers.lowercase),
             'ngram': es.Text(analyzer=analyzers.autocomplete)}
     )
 
@@ -81,16 +75,11 @@ class Standplaats(es.DocType):
 class Verblijfsobject(es.DocType):
     straatnaam = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+        fields=naam_fields)
+
     adres = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')})
+        fields=naam_fields)
 
     huisnummer = es.Integer(
         fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
@@ -98,7 +87,7 @@ class Verblijfsobject(es.DocType):
     postcode = es.Text(
         analyzer=analyzers.postcode,
         fields={
-            'raw': es.Keyword(),
+            'raw': es.Keyword(normalizer=analyzers.lowercase),
             'ngram': es.Text(analyzer=analyzers.autocomplete)})
 
     order = es.Integer()
@@ -116,14 +105,13 @@ class Verblijfsobject(es.DocType):
 
 
 text_fields = {
-    'raw': es.Keyword(index='not_analyzed'),
+    'raw': es.Keyword(),
     'ngram_edge': es.Text(
         analyzer=analyzers.autocomplete, search_analyzer='standard'
     ),
     'ngram': es.Text(analyzer=analyzers.ngram),
-    'keyword': es.Keyword(),
+    'keyword': es.Keyword(normalizer=analyzers.lowercase),
 }
-
 
 
 class OpenbareRuimte(es.DocType):
@@ -201,7 +189,7 @@ class Nummeraanduiding(es.DocType):
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
             'ngram': es.Text(analyzer=analyzers.ngram),
-            'keyword': es.Keyword(),
+            'keyword': es.Keyword(normalizer=analyzers.lowercase),
 
         }
     )
@@ -271,14 +259,14 @@ class Nummeraanduiding(es.DocType):
     hoofdadres = es.Boolean()
     status = es.Nested({
         'properties': {
-            'code': es.Keyword(),
+            'code': es.Keyword(normalizer=analyzers.lowercase),
             'omschrijving': es.Text()
         }
     })
 
     vbo_status = es.Nested({
         'properties': {
-            'code': es.Keyword(),
+            'code': es.Keyword(normalizer=analyzers.lowercase),
             'omschrijving': es.Text()
         }
     })

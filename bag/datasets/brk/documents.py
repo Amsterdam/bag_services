@@ -7,19 +7,20 @@ from django.conf import settings
 kad_text_fields = {
     'raw': es.Keyword(),
     'ngram': es.Text(analyzer=analyzers.kad_obj_aanduiding),
-    'keyword': es.Keyword()
+    'keyword': es.Keyword(normalizer=analyzers.lowercase)
 }
 
 kad_int_fields = {
-    'raw': es.Keyword(),
+    'raw': es.Keyword(normalizer=analyzers.lowercase),
     'int': es.Integer(),
     'ngram': es.Text(analyzer=analyzers.kad_obj_aanduiding),
-    'keyword': es.Keyword()
+    'keyword': es.Keyword(normalizer=analyzers.lowercase)
 }
 
 
 class KadastraalObject(es.DocType):
     aanduiding = es.Text(
+        fielddata=True,
         analyzer=analyzers.postcode,
         fields=kad_text_fields)
 
@@ -36,7 +37,7 @@ class KadastraalObject(es.DocType):
         fields=kad_int_fields,
     )
 
-    indexletter = es.Keyword()
+    indexletter = es.Keyword(normalizer=analyzers.lowercase)
     indexnummer = es.Text(
         analyzer=analyzers.ngram,
         fields=kad_int_fields
@@ -45,8 +46,8 @@ class KadastraalObject(es.DocType):
     order = es.Integer()
     centroid = es.GeoPoint()
 
-    gemeente = es.Keyword()
-    gemeente_code = es.Keyword()
+    gemeente = es.Text(analyzer=analyzers.naam)
+    gemeente_code = es.Keyword(normalizer=analyzers.lowercase)
 
     subtype = es.Keyword()
     _display = es.Keyword()
@@ -101,7 +102,7 @@ def from_kadastraal_object(ko):
     d.aanduiding = ko.get_aanduiding_spaties()
 
     d.gemeente = ko.kadastrale_gemeente.naam
-    d.gemeente_code = ko.kadastrale_gemeente.id
+    d.gemeente_code = ko.kadastrale_gemeente.id.lower()
 
     d.sectie = ko.sectie.sectie
     d.objectnummer = ko.perceelnummer
