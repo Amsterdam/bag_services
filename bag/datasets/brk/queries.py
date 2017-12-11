@@ -43,13 +43,15 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     ]
 
     if kot_query.gemeente_code:
-        must.append({'term': {'gemeente_code': kot_query.gemeente_code}})
+        must.append(
+            {'term':
+                {'gemeente_code': kot_query.gemeente_code}})
 
     if kot_query.gemeente_naam:
         must.append({'term': {'gemeente': kot_query.gemeente_naam}})
 
     if kot_query.sectie:
-        must.append({'term': {'sectie': kot_query.sectie}})
+        must.append({'term': {'sectie.keyword': kot_query.sectie}})
 
     if kot_query.object_nummer and int(kot_query.object_nummer):
         if kot_query.object_nummer_is_exact():
@@ -60,7 +62,11 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 'prefix': {'objectnummer': int(kot_query.object_nummer)}})
 
     if kot_query.index_letter:
-        must.append(Q('term', indexletter=kot_query.index_letter))
+        must.append({
+            'term':
+                {'indexletter.keyword': kot_query.index_letter}
+            }
+        )
 
     if kot_query.index_nummer and int(kot_query.index_nummer):
         if kot_query.index_nummer_is_exact():
@@ -72,7 +78,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 
     return ElasticQueryWrapper(
         query=Q('bool', must=must),
-        sort_fields=['aanduiding'],
+        sort_fields=['aanduiding.raw'],
         indexes=[BRK],
     )
 

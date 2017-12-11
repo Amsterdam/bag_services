@@ -11,7 +11,7 @@ kad_text_fields = {
 }
 
 kad_int_fields = {
-    'raw': es.Keyword(normalizer=analyzers.lowercase),
+    'raw': es.Keyword(),
     'int': es.Integer(),
     'ngram': es.Text(analyzer=analyzers.kad_obj_aanduiding),
     'keyword': es.Keyword(normalizer=analyzers.lowercase)
@@ -30,14 +30,19 @@ class KadastraalObject(es.DocType):
         analyzer=analyzers.kad_obj_aanduiding,
         fields=kad_text_fields)
 
-    sectie = es.Keyword()
+    sectie = es.Text(
+        fields=kad_text_fields,
+    )
 
     objectnummer = es.Text(
         analyzer=analyzers.ngram,
         fields=kad_int_fields,
     )
 
-    indexletter = es.Keyword(normalizer=analyzers.lowercase)
+    indexletter = es.Keyword(
+        fields=kad_text_fields,
+    )
+
     indexnummer = es.Text(
         analyzer=analyzers.ngram,
         fields=kad_int_fields

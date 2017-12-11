@@ -1155,6 +1155,8 @@ class ImportPndTask(batch.BasicTask):
     def after(self):
         self.statussen.clear()
         self.panden.clear()
+        self.bouwblokken.clear()
+        self.landelijke_ids.clear()
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "PND")

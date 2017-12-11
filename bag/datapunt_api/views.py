@@ -630,6 +630,8 @@ class SearchViewSet(viewsets.ViewSet):
 
         response = OrderedDict()
 
+        # log.exception(json.dumps(result.to_dict(), indent=4))
+
         self._set_followup_url(request, result, end, response, query, page)
 
         count = result.hits.total
