@@ -117,14 +117,14 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
             'pk', 'landelijk_id')
         vbo_bag_ids = {_id: pk for pk, _id in pk_ids}
         gebruiksdoelen = uva2.read_gebruiksdoelen(self.path)
-        msg = 'Gebruiksdoel references non-existing landelijk BAG id: {}'
+        msg = 'Gebruiksdoel references non-existing landelijk BAG id: %s'
 
         clean = []
         for doel in gebruiksdoelen:
             landelijk_id = doel[0]
 
             if landelijk_id not in vbo_bag_ids:
-                logging.warning(msg.format(landelijk_id))
+                logging.warning(msg, landelijk_id)
                 continue
 
             target_pk = vbo_bag_ids[landelijk_id]
@@ -137,7 +137,8 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
                 omschrijving_plus=doel[4]
             ))
 
-        models.Gebruiksdoel.objects.bulk_create(clean, batch_size=database.BATCH_SIZE)
+        models.Gebruiksdoel.objects.bulk_create(
+            clean, batch_size=database.BATCH_SIZE)
 
 
 class ImportGmeTask(batch.BasicTask):
