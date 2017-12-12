@@ -2,6 +2,7 @@ import os
 import re
 
 from .settings import *
+from .settings_common import *
 
 LOGGING = {
     'version': 1,
