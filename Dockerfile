@@ -10,7 +10,6 @@ WORKDIR /app/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN adduser datapunt
 RUN mkdir -p /static && chown datapunt /static
 
 ENV DJANGO_SETTINGS_MODULE=bag.settings.docker
