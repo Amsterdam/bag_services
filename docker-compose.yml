@@ -1,39 +1,39 @@
-database:
-  image: build.datapunt.amsterdam.nl:5000/atlas/postgres
-  ports:
-    - "5434:5432"
-  environment:
-    POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: atlas
-    POSTGRES_DB: atlas
-  volumes:
+version: "3.0"
+services:
+  database:
+    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: insecure
+    volumes:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
-elasticsearch:
-  image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5:latest
-  command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+  elasticsearch:
+    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5:latest
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
 
-  ports:
-    - "9200:9200"
-    - "9300:9300"
-
-atlas:
-  build: .
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  ports:
-    - "8080:8080"
-  environment:
-    DATABASE_NAME: atlas
-    DATABASE_PASSWORD: insecure
-    BAG_OBJECTSTORE_PASSWORD: insecure
-    JWT_SHARED_SECRET_KEY: atleast16characters
-    UWSGI_HTTP: ":8080"
-    UWSGI_MODULE: "bag.wsgi:application"
-    UWSGI_PROCESSES: 4
-    UWSGI_MASTER: 1
-    UWSGI_STATIC_MAP: "/static=/static"
-    UWSGI_VACUUM: 1
-    UWSGI_HARAKIRI: 15
-    UWSGI_DIE_ON_TERM: 1
+  atlas:
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - database
+      - elasticsearch
+    environment:
+      - DATAPUNT_API_URL=${DATAPUNT_API_URL:-https://api.data.amsterdam.nl/}
+      - SECRET_KEY=insecure
+      - DATABASE_NAME=atlas
+      - DATABASE_USER=atlas
+      - DATABASE_PASSWORD=insecure
+      - BAG_OBJECTSTORE_PASSWORD=insecure
+      - JWT_SHARED_SECRET_KEY=atleast16characters
+      - UWSGI_HTTP=0.0.0.0:8000
+      - UWSGI_MODULE=bag.wsgi
+      - UWSGI_CALLABLE=application
+      - UWSGI_MASTER=1
