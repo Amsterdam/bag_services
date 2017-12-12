@@ -31,7 +31,6 @@ STATIC_URL = '/static/'
 
 ROOT_URLCONF = 'bag.urls'
 
-#WSGI_APPLICATION = 'bag.wsgi'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases

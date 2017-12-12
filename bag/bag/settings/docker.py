@@ -1,8 +1,9 @@
 import os
-import re
 
-from .settings_common import *
-from .settings import *
+from .settings_common import *  # noqa
+# from .settings import *  # already done in settings
+
+WSGI_APPLICATION = 'bag.wsgi'
 
 LOGGING = {
     'version': 1,
