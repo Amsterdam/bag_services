@@ -42,13 +42,13 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.gis',
 
+    'datapunt_api',      # main entry, search urls
     'batch',
     'bag_commands',
     'datasets.bag',
     'datasets.brk',
     'datasets.wkpb',
     'geo_views',
-    'datapunt_api',      # main entry, search urls
     'health',
 
     'rest_framework',

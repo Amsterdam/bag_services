@@ -1,7 +1,6 @@
-import os
 
 from .settings_common import *  # noqa
-# from .settings import *  # already done in settings
+from .settings import *  # noqa
 
 WSGI_APPLICATION = 'bag.wsgi'
 

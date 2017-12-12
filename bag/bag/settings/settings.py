@@ -1,7 +1,6 @@
 import os
 import sys
 
-from bag.settings.settings_common import INSTALLED_APPS
 from bag.settings.settings_common import DEBUG
 from bag.settings.settings_common import BASE_DIR
 from bag.settings.settings_common import * # noqa F403
@@ -123,7 +122,6 @@ REST_FRAMEWORK = dict(
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 )
-
 
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
