@@ -14,11 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 
+from django.conf import settings
 from django.conf.urls import url, include
 from rest_framework import renderers, schemas, response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework_swagger.renderers import OpenAPIRenderer
 from rest_framework_swagger.renderers import SwaggerUIRenderer
+
+from django.conf.urls.static import static
 
 import datapunt_api.urls
 import datasets.bag.views
@@ -140,8 +143,15 @@ def search_schema_view(request):
     )
     return response.Response(generator.get_schema(request=request))
 
+urlpatterns = []
 
-urlpatterns = [
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns.append(
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
+
+urlpatterns.extend([
                   url('^bag/docs/api-docs/bag/$', bag_schema_view),
                   url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
                   url('^bag/docs/api-docs/brk/$', brk_schema_view),
@@ -150,4 +160,6 @@ urlpatterns = [
                   url('^bag/docs/api-docs/search/$', search_schema_view),
                   url('^bag/docs/api-docs/typeahead/$', typeahead_schema_view),
               ] + [url for pattern_list in grouped_url_patterns.values()
-                   for url in pattern_list]
+                   for url in pattern_list])
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

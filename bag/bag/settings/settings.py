@@ -1,23 +1,21 @@
 import os
 import sys
 
+from bag.settings.settings_common import INSTALLED_APPS
+from bag.settings.settings_common import DEBUG
+from bag.settings.settings_common import BASE_DIR
 from bag.settings.settings_common import * # noqa F403
+
+
 from bag.settings.settings_databases import LocationKey,\
     get_docker_host,\
     get_database_key,\
     OVERRIDE_HOST_ENV_VAR,\
     OVERRIDE_PORT_ENV_VAR
 
-INSTALLED_APPS = (
-    'batch',
-    'bag_commands',
-    'datasets.bag',
-    'datasets.brk',
-    'datasets.wkpb',
-    'geo_views',
-    'datapunt_api',      # main entry, search urls
-    'health',
-)
+from .checks import check_elasticsearch  # noqa
+from .checks import check_database  # noqa
+
 
 NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
 NO_INTEGATION_TEST = True
@@ -33,7 +31,7 @@ STATIC_URL = '/static/'
 
 ROOT_URLCONF = 'bag.urls'
 
-WSGI_APPLICATION = 'bag.wsgi.application'
+#WSGI_APPLICATION = 'bag.wsgi'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
@@ -189,8 +187,6 @@ if not os.path.exists(DIVA_DIR):
     print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset",
           DIVA_DIR, "\n")
 
-# noinspection PyUnresolvedReferences
-from .checks import *  # used for ./manage.py check  # noqa
 
 # The following JWKS data was obtained in the authz project :  jwkgen -create -alg ES256
 # This is a test public/private key def and added for testing .

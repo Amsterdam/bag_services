@@ -1,8 +1,8 @@
 import os
 import re
 
-from .settings import *
 from .settings_common import *
+from .settings import *
 
 LOGGING = {
     'version': 1,
@@ -65,7 +65,9 @@ LOGGING = {
     },
 }
 
+# DEBUG=False
 STATIC_ROOT = '/static/'
+STATIC_URL = '/static/'
 
 DIVA_DIR = '/app/data/'
 

@@ -40,8 +40,17 @@ INSTALLED_APPS = [
 
     'django_filters',
     'django_extensions',
-
     'django.contrib.gis',
+
+    'batch',
+    'bag_commands',
+    'datasets.bag',
+    'datasets.brk',
+    'datasets.wkpb',
+    'geo_views',
+    'datapunt_api',      # main entry, search urls
+    'health',
+
     'rest_framework',
     'rest_framework_gis',
     'rest_framework_swagger',

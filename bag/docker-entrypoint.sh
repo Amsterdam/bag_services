@@ -3,16 +3,16 @@
 set -u   # crash on missing env variables
 set -e   # stop on any error
 
-cd /app
-
 echo Performing system check
 python manage.py check
-
-#echo Performing migrations
-#yes yes | python manage.py migrate
 
 echo Collecting static files
 yes yes | python manage.py collectstatic
 
+ls -al /static/
+
+chmod -R 777 /static
+
 # run uwsgi
 exec uwsgi
+
