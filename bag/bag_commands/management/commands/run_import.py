@@ -6,7 +6,6 @@ import datasets.bag.batch
 import datasets.brk.batch
 import datasets.wkpb.batch
 from batch import batch
-from batch.models import JobExecution
 
 
 class Command(BaseCommand):
@@ -72,11 +71,6 @@ class Command(BaseCommand):
                             default=True,
                             help='Skip elastic search indexing')
 
-    def act_on_result(self, job_execution):
-        if job_execution.status == JobExecution.STATUS_FAILED:
-            self.stderr.write("Job {} failed, exiting".format(job_execution.name))
-            sys.exit(1)
-
     def handle(self, *args, **options):
         dataset = options['dataset']
 
@@ -93,10 +87,8 @@ class Command(BaseCommand):
 
             if options['run-import']:
                 for job_class in self.imports[ds]:
-                    result = batch.execute(job_class())
-                    self.act_on_result(result)
+                    batch.execute(job_class())
 
             if options['run-index']:
                 for job_class in self.indexes[ds]:
-                    result = batch.execute(job_class())
-                    self.act_on_result(result)
+                    batch.execute(job_class())

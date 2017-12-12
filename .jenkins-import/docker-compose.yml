@@ -3,7 +3,7 @@ database:
   image: build.datapunt.amsterdam.nl:5000/atlas/postgres
   environment:
     POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: atlas
+    POSTGRES_USER: bag
 
 elasticsearch:
   image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5
@@ -19,8 +19,8 @@ importer:
     - elasticsearch:elasticsearch
   user: root
   environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
+    DATABASE_NAME: bag
+    DATABASE_USER: bag
     DATABASE_PASSWORD: insecure
     METADATA_URL:
     BAG_OBJECTSTORE_PASSWORD:
@@ -34,8 +34,8 @@ importer_el1:
     - database:database
     - elasticsearch:elasticsearch
   environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
+    DATABASE_NAME: bag
+    DATABASE_USER: bag
     DATABASE_PASSWORD: insecure
     DATAPUNT_API_URL:
   command: >
@@ -49,8 +49,8 @@ importer_el2:
     - database:database
     - elasticsearch:elasticsearch
   environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
+    DATABASE_NAME: bag
+    DATABASE_USER: bag
     DATABASE_PASSWORD: insecure
     DATAPUNT_API_URL:
   command: >
@@ -63,8 +63,8 @@ importer_el3:
     - database:database
     - elasticsearch:elasticsearch
   environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
+    DATABASE_NAME: bag
+    DATABASE_USER: bag
     DATABASE_PASSWORD: insecure
     DATAPUNT_API_URL:
   command: >
@@ -78,7 +78,7 @@ db-backup:
   volumes:
     - ./backups:/tmp/backups
   command: >
-    bash -c "echo db:5432:atlas:atlas:insecure > ~/.pgpass \
+    bash -c "echo db:5432:bag:bag:insecure > ~/.pgpass \
             && chmod 600 ~/.pgpass \
             && pg_dump --clean \
                         -Fc \
@@ -87,9 +87,9 @@ db-backup:
                         -t wkpb* \
                         -t geo*  \
                         -t django_*  \
-                        -U atlas \
+                        -U bag \
                         -h db -p 5432 \
-                        atlas > /tmp/backups/database.dump"
+                        bag > /tmp/backups/database.dump"
 
 el-backup:
   image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
