@@ -16,8 +16,6 @@ import logging
 import typing as typing
 from elasticsearch_dsl import Search
 
-from datasets.generic.query_analyzer import QueryAnalyzer
-
 log = logging.getLogger(__name__)
 
 

@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.gis',
 
-    'datapunt_api',      # main entry, search urls
+    'datapunt_api',  # custom api templates
+    'search',        # search urls
     'batch',
     'bag_commands',
     'datasets.bag',

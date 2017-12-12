@@ -38,9 +38,9 @@ services:
       - UWSGI_CALLABLE=application
       - UWSGI_MASTER=1
       - UWSGI_VACUUM=1
-      - UWSGI_STATIC_MAP="/static=/static"
-      - UWSGI_STATIC_SAFE="/static"
-      - UWSGI_STATIC_EXPIRES="/* 3600"
+      - UWSGI_STATIC_MAP=/static=/static
+      - UWSGI_STATIC_SAFE=static/
+      - UWSGI_STATIC_EXPIRES=/* 3600
       - UWSGI_OFFLOAD_THREADS=3
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1

@@ -13,8 +13,8 @@ from django.conf import settings
 
 from elasticsearch_dsl import Q
 
-from datasets.generic.queries import ElasticQueryWrapper
-from datasets.generic.query_analyzer import QueryAnalyzer
+from search.queries import ElasticQueryWrapper
+from search.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger(__name__)
 

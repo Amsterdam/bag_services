@@ -25,6 +25,10 @@ This app contains management commands for executing import tasks and managing th
 
 ## datapunt_api
 
+Contains api templates for a custom amsterdam look
+
+### search
+
 This app contains top-level code for the project (REST) API. Search viewsets are defined here, and all viewsets from the datasets modules are included here in urls.py to expose all endpoints. Tests for the API and search endpoints are also in this app.
 
 Management commands regarding the API are also located here.

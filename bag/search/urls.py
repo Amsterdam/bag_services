@@ -4,7 +4,7 @@ import datasets.bag.views
 import datasets.brk.views
 import datasets.wkpb.views
 
-from datapunt_api import views
+from . import views
 
 
 class SearchView(routers.APIRootView):
@@ -28,7 +28,8 @@ class BagView(routers.APIRootView):
     bevatten gegevens over panden, verblijfsobjecten, standplaatsen en
     ligplaatsen en de bijbehorende adressen en de benoeming van
     woonplaatsen en openbare ruimten.
-    """
+    """  # noqa
+
 
 class BagRouter(routers.DefaultRouter):
     APIRootView = BagView
@@ -43,7 +44,7 @@ class GebiedenView(routers.APIRootView):
     wijk (voorheen) buurtcombinaties, buurten en bouwblokken
     vastgelegd. Verder bevat de registratie gegevens van de grootstedelijke
     gebieden binnen de gemeente, de UNESCO werelderfgoedgrens en de gebieden
-    van gebiedsgericht werken.  """
+    van gebiedsgericht werken.  """  # noqa
 
 
 class GebiedenRouter(routers.DefaultRouter):

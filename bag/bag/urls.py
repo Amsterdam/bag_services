@@ -23,7 +23,7 @@ from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 from django.conf.urls.static import static
 
-import datapunt_api.urls
+import search.urls
 import datasets.bag.views
 import datasets.brk.views
 
@@ -33,15 +33,15 @@ grouped_url_patterns = {
     ],
 
     'bag_patterns': [
-        url(r'^bag/', include(datapunt_api.urls.bag.urls)),
+        url(r'^bag/', include(search.urls.bag.urls)),
     ],
 
     'gebieden_patterns': [
-        url(r'^gebieden/', include(datapunt_api.urls.gebieden.urls)),
+        url(r'^gebieden/', include(search.urls.gebieden.urls)),
     ],
 
     'brk_patterns': [
-        url(r'^brk/', include(datapunt_api.urls.brk.urls)),
+        url(r'^brk/', include(search.urls.brk.urls)),
 
         url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
             datasets.brk.views.KadastraalObjectWkpbView.as_view(
@@ -50,19 +50,19 @@ grouped_url_patterns = {
     ],
 
     'beperkingen_patterns': [
-        url(r'^wkpb/', include(datapunt_api.urls.wkpb.urls)),
+        url(r'^wkpb/', include(search.urls.wkpb.urls)),
     ],
 
     'postcode_patterns': [
-        url(r'^search/', include(datapunt_api.urls.search.urls)),
+        url(r'^search/', include(search.urls.search.urls)),
     ],
 
     'typeahead_patterns': [
-        url(r'^atlas/typeahead/', include(datapunt_api.urls.typeahead.urls)),
+        url(r'^atlas/typeahead/', include(search.urls.typeahead.urls)),
     ],
 
     'search_patterns': [
-        url(r'^atlas/search/', include(datapunt_api.urls.bag_search.urls)),
+        url(r'^atlas/search/', include(search.urls.bag_search.urls)),
     ],
 }
 
