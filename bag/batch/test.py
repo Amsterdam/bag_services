@@ -1,10 +1,6 @@
 from django.test import TransactionTestCase
 
 
-# No longer use transaction test case
-# class TaskTestCase(TransactionTestCase):
-
-
 class TaskTestCase(TransactionTestCase):
 
     def setUp(self):
@@ -19,7 +15,6 @@ class TaskTestCase(TransactionTestCase):
 
     def test_task_attributes(self):
         if self.__class__ == TaskTestCase:
-            # only run this on subclasses
             return
 
         t = self.task()

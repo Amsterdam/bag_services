@@ -1,11 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import logging
-import sys
 
-from django.utils import timezone
 import gc
-
-from batch.models import JobExecution, TaskExecution
 
 log = logging.getLogger(__name__)
 
@@ -13,20 +9,13 @@ log = logging.getLogger(__name__)
 def execute(job):
     log.info("Starting job: %s", job.name)
 
-    job_execution = JobExecution.objects.create(name=job.name)
-
-    for t in job.tasks():
-        _execute_task(job_execution, t)
+    for task in job.tasks():
+        _execute_task(task)
 
     log.info("Finished job: %s", job.name)
-    job_execution.date_finished = timezone.now()
-    job_execution.status = JobExecution.STATUS_FINISHED
-    job_execution.save()
-
-    return job_execution
 
 
-def _execute_task(job_execution, task):
+def _execute_task(task):
 
     if callable(task):
         task_name = task.__name__
@@ -36,15 +25,8 @@ def _execute_task(job_execution, task):
         execute_func = task.execute
 
     log.debug("Starting task: %s", task_name)
-    task_execution = TaskExecution.objects.create(
-        job=job_execution, name=task_name, date_started=timezone.now())
 
     execute_func()
-
-    log.debug("Finished task: %s", task_name)
-    task_execution.date_finished = timezone.now()
-    task_execution.status = TaskExecution.STATUS_FINISHED
-    task_execution.save()
 
 
 class BasicTask(object):
@@ -55,7 +37,6 @@ class BasicTask(object):
     * ``process``
     * ``after``
 
-    ``after`` is *always* called, whether ``process`` fails or not
     """
 
     class Meta:
