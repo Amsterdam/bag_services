@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
-  volumes:
+    volumes:
       - ./backups:/tmp/backups
       - ./backup-bagdb.sh:/backup-bagdb.sh
 
