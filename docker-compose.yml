@@ -18,7 +18,7 @@ services:
       - "9200:9200"
       - "9300:9300"
 
-  atlas:
+  bag:
     build: .
     ports:
       - "8080:8080"

@@ -4,7 +4,7 @@ import datasets.bag.views
 import datasets.brk.views
 import datasets.wkpb.views
 
-from . import views
+from search import views
 
 
 class SearchView(routers.APIRootView):
@@ -61,7 +61,7 @@ class BrkView(routers.APIRootView):
     Daarnaast staan er kadastrale kaarten in met perceel, perceelnummer,
     oppervlakte, kadastrale grens en de grenzen van het rijk, de provincies en
     gemeenten.
-    """
+    """  # noqa
 
 
 class BrkRouter(routers.DefaultRouter):
@@ -75,7 +75,7 @@ class WkpbView(routers.APIRootView):
     De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
     bevat alle bij wet genoemde beperkingenbesluiten op onroerende
     zaken, die het gemeentebestuur heeft opgelegd.
-    """
+    """  # noqa
 
 
 class WkpbRouter(routers.DefaultRouter):

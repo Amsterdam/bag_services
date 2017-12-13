@@ -28,8 +28,8 @@ import authorization_levels
 from datasets.bag import queries as bag_qs  # noqa
 from datasets.brk import queries as brk_qs  # noqa
 from datasets.generic import rest
-from .queries import ElasticQueryWrapper
-from .query_analyzer import QueryAnalyzer
+from search.queries import ElasticQueryWrapper
+from search.query_analyzer import QueryAnalyzer
 
 
 log = logging.getLogger(__name__)
