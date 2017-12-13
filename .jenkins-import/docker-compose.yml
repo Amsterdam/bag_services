@@ -29,49 +29,6 @@ services:
     command: >
       bash -c "/app/docker-import-db.sh"
 
-  importer_el1:
-    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-    links:
-      - database:database
-      - elasticsearch:elasticsearch
-    environment:
-      DATABASE_NAME: bag
-      DATABASE_USER: bag
-      DATABASE_PASSWORD: insecure
-      DATAPUNT_API_URL:
-    command: >
-      bash -c "/app/docker-wait.sh \
-              && python manage.py elastic_indices gebieden wkpb --build \
-              && python manage.py elastic_indices bag brk --partial=1/3 --build"
-
-  importer_el2:
-    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-    links:
-      - database:database
-      - elasticsearch:elasticsearch
-    environment:
-      DATABASE_NAME: bag
-      DATABASE_USER: bag
-      DATABASE_PASSWORD: insecure
-      DATAPUNT_API_URL:
-    command: >
-      bash -c "/app/docker-wait.sh \
-              && python manage.py elastic_indices bag brk --partial=2/3 --build"
-
-  importer_el3:
-    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
-    links:
-      - database:database
-      - elasticsearch:elasticsearch
-    environment:
-      DATABASE_NAME: bag
-      DATABASE_USER: bag
-      DATABASE_PASSWORD: insecure
-      DATAPUNT_API_URL:
-    command: >
-      bash -c "/app/docker-wait.sh \
-              && python manage.py elastic_indices bag brk --partial=3/3 --build"
-
   db-backup:
     image: build.datapunt.amsterdam.nl:5000/atlas/postgres
     links:
