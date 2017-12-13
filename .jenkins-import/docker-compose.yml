@@ -5,6 +5,9 @@ services:
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
+  volumes:
+      - ./backups:/tmp/backups
+      - ./backup-bagdb.sh:/backup-bagdb.sh
 
   elasticsearch:
     image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5
@@ -28,36 +31,3 @@ services:
       DATAPUNT_API_URL:
     command: >
       bash -c "/app/docker-import-db.sh"
-
-  db-backup:
-    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
-    links:
-      - database:db
-    volumes:
-      - ./backups:/tmp/backups
-    command: >
-      bash -c "echo db:5432:bag:bag:insecure > ~/.pgpass \
-              && chmod 600 ~/.pgpass \
-              && pg_dump --clean \
-                          -Fc \
-                          -t bag* \
-                          -t brk* \
-                          -t wkpb* \
-                          -t geo*  \
-                          -t django_*  \
-                          -U bag \
-                          -h db -p 5432 \
-                          bag > /tmp/backups/database.dump"
-
-  el-backup:
-    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch
-    links:
-      - elasticsearch:el
-    volumes:
-      - ./backups/elasticsearch:/tmp/backups
-    user: root
-    command: >
-      bash -c "chmod -R 777 /tmp/backups \
-              && curl -X PUT http://el:9200/_snapshot/backup -d '{ \"type\": \"fs\", \"settings\": { \"location\": \"/tmp/backups\" }}' \
-              && curl -X PUT http://el:9200/_snapshot/backup/atlas?wait_for_completion=true -d '{ \"indices\": \"bag,brk,nummeraanduiding\" }' \
-              && chmod -R 777 /tmp/backups"
