@@ -22,7 +22,7 @@ echo "import new diva files into database"
 dc run --rm importer
 
 echo "Starting Elastic importers"
-dc run --rm importer docker-index-es.sh
+dc run --rm importer ./docker-index-es.sh
 
 echo "Running backups"
 dc run --rm db-backup
