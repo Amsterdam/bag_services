@@ -106,6 +106,7 @@ class ObjectSearchTest(APITransactionTestCase):
             [['ASD15', 'S', '00045', 'G', '0000'], 'ASD15 S 00045 G 0000'],
             [['ASD15', 'S', '00045', 'G'], 'ASD15 S 00045 G 0000'],
             [['ASD15', 'S', '00045'], 'ASD15 S 00045 G 0000'],
+            [['ASD15', 'S'], 'ASD15 S 00045 G 0000'],
         ]
 
         for example, kot in examples:
@@ -116,3 +117,10 @@ class ObjectSearchTest(APITransactionTestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn(
                 kot, str(response.data.get('results', 'empty')), query)
+
+            response = self.client.get(
+                '/atlas/typeahead/brk/', {'q': query})
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(
+                kot, str(response.data), query)
