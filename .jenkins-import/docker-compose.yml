@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
     volumes:
-      - ./backup-bagdb.sh:/backups-bagdb.sh
+      - ./backup-bagdb.sh:/backup-bagdb.sh
       - ./backups:/tmp/backups
 
   elasticsearch:
