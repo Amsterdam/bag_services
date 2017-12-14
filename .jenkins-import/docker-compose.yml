@@ -6,8 +6,8 @@ services:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
     volumes:
-      - ./backups:/tmp/backups
       - ./backup-bagdb.sh:/backup-bagdb.sh
+      - ./backups:/tmp/backups
 
   elasticsearch:
     image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5

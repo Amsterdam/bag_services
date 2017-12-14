@@ -2,7 +2,7 @@ database:
   image: build.datapunt.amsterdam.nl:5000/atlas/postgres
   environment:
     POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: atlas
+    POSTGRES_USER: bag
 
 elasticsearch:
   image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5
@@ -16,8 +16,8 @@ tests:
     - database:database
     - elasticsearch:elasticsearch
   environment:
-    DATABASE_NAME: atlas
-    DATABASE_USER: atlas
+    DATABASE_NAME: bag
+    DATABASE_USER: bag
     DATABASE_PASSWORD: insecure
     BAG_OBJECTSTORE_PASSWORD:
     METADATA_URL: ""
