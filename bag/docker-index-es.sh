@@ -11,9 +11,9 @@ python manage.py elastic_indices --delete
 
 python manage.py elastic_indices gebieden wkpb --build
 
-python manage.py elastic_indices bag brk --partial=1/4 --build
-python manage.py elastic_indices bag brk --partial=2/4 --build
-python manage.py elastic_indices bag brk --partial=3/4 --build
+python manage.py elastic_indices bag brk --partial=1/4 --build &
+python manage.py elastic_indices bag brk --partial=2/4 --build &
+python manage.py elastic_indices bag brk --partial=3/4 --build &
 python manage.py elastic_indices bag brk --partial=4/4 --build
 
 
