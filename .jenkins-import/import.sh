@@ -26,7 +26,7 @@ dc run importer ./docker-wait.sh
 echo "import new diva files into database"
 dc run --rm importer
 
-echo "Starting Elastic importers"
+echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
 
 
