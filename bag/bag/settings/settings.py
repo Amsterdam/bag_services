@@ -89,7 +89,7 @@ if TESTING:
         ELASTIC_INDICES[k] += 'test'
 
 BATCH_SETTINGS = dict(
-    batch_size=1000
+    batch_size=500
 )
 
 
