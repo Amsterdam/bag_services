@@ -47,7 +47,8 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
 
     id = models.IntegerField(null=False, primary_key=True)
     inschrijfnummer = models.IntegerField(null=False)
-    beperkingtype = models.ForeignKey(Beperkingcode, null=False)
+    beperkingtype = models.ForeignKey(
+        Beperkingcode, null=False, on_delete=models.CASCADE)
     datum_in_werking = models.DateField(null=False)
     datum_einde = models.DateField(null=True)
 
@@ -75,13 +76,17 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
 
     id = models.IntegerField(null=False, primary_key=True)  # beperking id
     inschrijfnummer = models.IntegerField(null=False)
-    bron = models.ForeignKey(Broncode, null=True, related_name="documenten")
+    bron = models.ForeignKey(
+        Broncode, null=True, related_name="documenten",
+        on_delete=models.CASCADE)
     documentnaam = models.CharField(max_length=21, null=False)
     persoonsgegevens_afschermen = models.NullBooleanField(null=None)
     soort_besluit = models.CharField(max_length=60, null=True)
     # Seems to be only 1 document for each Beperking.
     beperking = models.ForeignKey(
-        Beperking, related_name='documenten', null=True)
+        Beperking, related_name='documenten', null=True,
+        on_delete=models.CASCADE
+    )
 
     @property
     def url(self):
@@ -102,8 +107,12 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
     """
 
     id = models.CharField(max_length=33, null=False, primary_key=True)
-    beperking = models.ForeignKey(Beperking, null=False)
-    kadastraal_object = models.ForeignKey(brk.KadastraalObject)
+    beperking = models.ForeignKey(
+        Beperking, null=False,
+        on_delete=models.CASCADE
+    )
+    kadastraal_object = models.ForeignKey(
+        brk.KadastraalObject, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{}-{}".format(
@@ -112,5 +121,6 @@ class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
 
 
 class BeperkingVerblijfsobject(models.Model):
-    beperking = models.ForeignKey(Beperking)
-    verblijfsobject = models.ForeignKey(bag.Verblijfsobject)
+    beperking = models.ForeignKey(Beperking, on_delete=models.CASCADE)
+    verblijfsobject = models.ForeignKey(
+        bag.Verblijfsobject, on_delete=models.CASCADE)
