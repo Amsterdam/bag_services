@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   database:
-    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    image: amsterdam/postgres
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
@@ -10,7 +10,7 @@ services:
       - ./backups:/tmp/backups
 
   elasticsearch:
-    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5
+    image: amsterdam/elasticsearch5
     volumes:
       - ./backups/elasticsearch:/tmp/backups
     user: root

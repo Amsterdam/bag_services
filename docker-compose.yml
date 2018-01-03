@@ -1,7 +1,7 @@
 version: "3.0"
 services:
   database:
-    image: build.datapunt.amsterdam.nl:5000/atlas/postgres
+    image: amsterdam/postgres
     ports:
       - "5434:5432"
     environment:
@@ -12,7 +12,7 @@ services:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
   elasticsearch:
-    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch5:latest
+    image: amsterdam/elasticsearch5
     command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
     ports:
       - "9200:9200"

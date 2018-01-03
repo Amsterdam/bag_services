@@ -655,7 +655,7 @@ def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
     elif n.ligplaats:
         doc.geometrie = get_centroid(n.ligplaats.geometrie, 'wgs84')
     else:
-        print('Failed to find geolocation for nummeraanduiduing {}'.format(n.id))
+        print('Failed to find geolocation for nummeraanduiding {}'.format(n.id))
     doc._display = doc.adres
 
     return doc
