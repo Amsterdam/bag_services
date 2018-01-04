@@ -18,7 +18,8 @@ from search.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger(__name__)
 
-BRK = settings.ELASTIC_INDICES['BRK']
+BRK_OBJECT = settings.ELASTIC_INDICES['BRK_OBJECT']
+BRK_SUBJECT = settings.ELASTIC_INDICES['BRK_SUBJECT']
 
 
 def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
@@ -79,7 +80,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query=Q('bool', must=must),
         sort_fields=['aanduiding.raw'],
-        indexes=[BRK],
+        indexes=[BRK_OBJECT],
     )
 
 
@@ -102,7 +103,7 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
             ]
         ),
         sort_fields=['naam.raw'],
-        indexes=[BRK],
+        indexes=[BRK_SUBJECT],
     )
 
 
@@ -130,5 +131,5 @@ def kadastraal_subject_nietnatuurlijk_query(
             ]
         ),
         sort_fields=['naam.raw'],
-        indexes=[BRK],
+        indexes=[BRK_SUBJECT],
     )

@@ -1,9 +1,10 @@
 # Python
 # Packages
+
 import elasticsearch_dsl as es
 from django.conf import settings
 
-from datasets.generic import analyzers
+from search import analyzers
 from . import models
 
 
@@ -95,6 +96,8 @@ class Verblijfsobject(es.DocType):
     kamers = es.Integer()
     oppervlakte = es.Integer()
 
+    subtype = es.Keyword()
+
     _display = es.Keyword()
 
     class Meta:
@@ -137,7 +140,7 @@ class OpenbareRuimte(es.DocType):
     _display = es.Keyword()
 
     class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
+        index = settings.ELASTIC_INDICES['BAG_OPENBARETUIMTE']
 
 
 class Nummeraanduiding(es.DocType):
@@ -240,7 +243,7 @@ class Nummeraanduiding(es.DocType):
 
     toevoeging = es.Text(
         analyzer=analyzers.toevoeging,
-       fields={'raw': es.Keyword()}
+        fields={'raw': es.Keyword()}
     )
 
     postcode = es.Text(
@@ -250,31 +253,30 @@ class Nummeraanduiding(es.DocType):
     order = es.Integer()
 
     hoofdadres = es.Boolean()
-    status = es.Nested({
-        'properties': {
+    status = es.Nested(
+        properties={
             'code': es.Keyword(normalizer=analyzers.lowercase),
             'omschrijving': es.Text()
         }
-    })
+    )
 
-    vbo_status = es.Nested({
-        'properties': {
+    vbo_status = es.Nested(
+        properties={
             'code': es.Keyword(normalizer=analyzers.lowercase),
             'omschrijving': es.Text()
         }
-    })
+    )
 
     subtype = es.Keyword()
     _display = es.Keyword()
 
     class Meta:
         index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-        all = es.MetaField(enabled=False)
 
 
 class Bouwblok(es.DocType):
     """
-    Elasticsearch doc for the bouwblok model
+    Bouwblok searchable fields.
     """
     code = es.Text(
         analyzer=analyzers.bouwblokid,
@@ -288,8 +290,7 @@ class Bouwblok(es.DocType):
     _display = es.Keyword()
 
     class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
-        all = es.MetaField(enabled=False)
+        index = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 
 
 class Gebied(es.DocType):
@@ -336,8 +337,7 @@ class Gebied(es.DocType):
     centroid = es.GeoPoint()
 
     class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
-        all = es.MetaField(enabled=False)
+        index = settings.ELASTIC_INDICES['BAG_GEBIED']
 
 
 class ExactLocation(es.DocType):
@@ -355,7 +355,6 @@ class ExactLocation(es.DocType):
 
     class Meta:
         index = settings.ELASTIC_INDICES['BAG']
-        all = es.MetaField(enabled=False)
 
 
 def get_centroid(geom, transform=None):

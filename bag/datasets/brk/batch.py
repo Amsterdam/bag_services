@@ -9,9 +9,10 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
 # Project
 from batch import batch
+from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
-from datasets.generic import geo, database, uva2, kadaster, index, metadata
+from datasets.generic import geo, database, uva2, kadaster, metadata
 
 
 log = logging.getLogger(__name__)
@@ -606,11 +607,15 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         vbo_id = '0' + row['DIVA_VOT_ID']
 
         if not kot_id or kot_id not in self.kot:
-            log.warn("BRK_BAG references non-existing kadastraal object {}; skipping".format(kot_id))
+            log.warn(
+                "BRK_BAG references non-existing kadastraal" +
+                "object %s; skipping", kot_id)
             return
 
         if not vbo_id or vbo_id not in self.vbo:
-            log.warn("BRK_BAG references non-existing verblijfsobject {}; skipping".format(vbo_id))
+            log.warn(
+                "BRK_BAG references non-existing "
+                "verblijfsobject %s; skipping", vbo_id)
             return
 
         return models.KadastraalObjectVerblijfsobjectRelatie(
@@ -640,7 +645,7 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
               f.betrokken_bij_id IS NOT NULL
               AND f.kadastraal_object_id IS NOT NULL
               AND t.kadastraal_object_id IS NOT NULL
-            """)
+            """)  # noqa
 
 
 class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
@@ -691,18 +696,16 @@ class ImportKadasterJob(object):
         ]
 
 
-class DeleteIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BRK']
+class DeleteObjectIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BRK_OBJECT']
     doc_types = [
         documents.KadastraalObject,
-        documents.KadastraalSubject
     ]
 
 
-class DeleteBackupIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BRK'] + 'backup'
+class DeleteSubjectIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BRK_SUBJECT']
     doc_types = [
-        documents.KadastraalObject,
         documents.KadastraalSubject
     ]
 
@@ -723,18 +726,6 @@ class IndexObjectTask(index.ImportIndexTask):
         return documents.from_kadastraal_object(obj)
 
 
-class BackupKadasterTask(index.CopyIndexTask):
-    name = 'Backup Kadaster index'
-    index = settings.ELASTIC_INDICES['BRK']
-    target = settings.ELASTIC_INDICES['BRK'] + 'backup'
-
-
-class RestoreKadasterTask(index.CopyIndexTask):
-    name = 'Restore Kadaster index'
-    index = settings.ELASTIC_INDICES['BRK'] + 'backup'
-    target = settings.ELASTIC_INDICES['BRK']
-
-
 class IndexKadasterJob(object):
     """
     Destroy and recreate elastic BKR index
@@ -743,7 +734,8 @@ class IndexKadasterJob(object):
 
     def tasks(self):
         return [
-            DeleteIndexTask(),
+            DeleteSubjectIndexTask(),
+            DeleteObjectIndexTask(),
             IndexSubjectTask(),
             IndexObjectTask(),
         ]
@@ -768,33 +760,6 @@ class DeleteIndexKadasterJob(object):
 
     def tasks(self):
         return [
-            DeleteIndexTask(),
-        ]
-
-
-class BackupKadasterJob(object):
-    name = 'Backup Kadaster index'
-
-    def tasks(self):
-        """
-        delete the target backup index
-        copy index to target
-        """
-        return [
-            DeleteBackupIndexTask(),
-            BackupKadasterTask(),
-        ]
-
-
-class RestoreKadasterJob(object):
-    name = 'Restore Kadaster index from backup'
-
-    def tasks(self):
-        """
-        Delete index
-        Restore index from backup
-        """
-        return [
-            DeleteIndexTask(),
-            RestoreKadasterTask(),
+            DeleteObjectIndexTask(),
+            DeleteSubjectIndexTask(),
         ]

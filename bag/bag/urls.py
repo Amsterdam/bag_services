@@ -29,7 +29,7 @@ import datasets.brk.views
 
 grouped_url_patterns = {
     'base_patterns': [
-        url(r'^status/', include('health.urls', namespace='health')),
+        url(r'^status/', include('health.urls')),
     ],
 
     'bag_patterns': [

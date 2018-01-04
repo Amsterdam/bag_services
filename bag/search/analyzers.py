@@ -80,7 +80,7 @@ ngram_filter = analysis.token_filter(
     'ngram_filter',
     type='edge_ngram',
     min_gram=1,
-    max_gram=15
+    max_gram=2,
 )
 
 # Create edge ngram filtering to postcode
@@ -88,15 +88,15 @@ edge_ngram_filter = analysis.token_filter(
     'edge_ngram_filter',
     type='edge_ngram',
     min_gram=1,
-    max_gram=15
+    max_gram=2,
 )
 
 # Creating ngram filtering to kadastral objects
 kadaster_object_aanduiding = analysis.token_filter(
     'kad_obj_aanduiding_filter',
     type='ngram',
-    min_gram=4,
-    max_gram=16
+    min_gram=1,
+    max_gram=2,
 )
 
 lowercase = analysis.normalizer(
@@ -113,7 +113,7 @@ bouwblokid = es.analyzer(
     tokenizer=tokenizer(
         'bouwbloktokens',
         'edge_ngram',
-        min_gram=1, max_gram=4,
+        min_gram=1, max_gram=2,
         token_chars=["letter", "digit"]),
     filter=['lowercase', divider_stripper],
 )
@@ -144,7 +144,7 @@ postcode_ng = es.analyzer(
     'postcode_ng',
     tokenizer=tokenizer(
         'postcode_ngram', 'nGram',
-        min_gram=2, max_gram=4,
+        min_gram=2, max_gram=3,
         token_chars=['letter', 'digit']),
     filter=['lowercase'],
 )
@@ -213,7 +213,7 @@ kad_sbj_naam = es.analyzer(
     'kad_sbj_naam',
     tokenizer=tokenizer(
         'kadobj_token', 'nGram',
-        min_gram=3, max_gram=16,
+        min_gram=3, max_gram=4,
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )

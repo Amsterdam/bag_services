@@ -1,6 +1,6 @@
 import elasticsearch_dsl as es
 
-from datasets.generic import analyzers
+from search import analyzers
 from django.conf import settings
 
 
@@ -58,8 +58,7 @@ class KadastraalObject(es.DocType):
     _display = es.Keyword()
 
     class Meta:
-        index = settings.ELASTIC_INDICES['BRK']
-        all = es.MetaField(enabled=False)
+        index = settings.ELASTIC_INDICES['BRK_OBJECT']
 
 
 class KadastraalSubject(es.DocType):
@@ -79,8 +78,7 @@ class KadastraalSubject(es.DocType):
     _display = es.Keyword()
 
     class Meta:
-        index = settings.ELASTIC_INDICES['BRK']
-        all = es.MetaField(enabled=False)
+        index = settings.ELASTIC_INDICES['BRK_SUBJECT']
 
 
 def from_kadastraal_subject(ks):

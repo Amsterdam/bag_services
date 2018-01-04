@@ -10,8 +10,9 @@ from django.db import connection
 from django.utils.text import slugify
 # import requests
 # Project
+from search import index
 from batch import batch
-from datasets.generic import uva2, index, database, geo, metadata
+from datasets.generic import uva2, database, geo, metadata
 from . import models, documents
 
 log = logging.getLogger(__name__)
