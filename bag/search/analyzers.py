@@ -80,23 +80,23 @@ ngram_filter = analysis.token_filter(
     'ngram_filter',
     type='edge_ngram',
     min_gram=1,
-    max_gram=2,
+    max_gram=20,
 )
 
-# Create edge ngram filtering to postcode
+# Create edge edge_ngram filtering to postcode
 edge_ngram_filter = analysis.token_filter(
     'edge_ngram_filter',
     type='edge_ngram',
     min_gram=1,
-    max_gram=2,
+    max_gram=6,
 )
 
 # Creating ngram filtering to kadastral objects
 kadaster_object_aanduiding = analysis.token_filter(
     'kad_obj_aanduiding_filter',
-    type='ngram',
+    type='edge_ngram',
     min_gram=1,
-    max_gram=2,
+    max_gram=6,
 )
 
 lowercase = analysis.normalizer(
@@ -113,7 +113,7 @@ bouwblokid = es.analyzer(
     tokenizer=tokenizer(
         'bouwbloktokens',
         'edge_ngram',
-        min_gram=1, max_gram=2,
+        min_gram=1, max_gram=4,
         token_chars=["letter", "digit"]),
     filter=['lowercase', divider_stripper],
 )
@@ -140,21 +140,18 @@ naam = es.analyzer(
     char_filter=[naam_stripper],
 )
 
-postcode_ng = es.analyzer(
-    'postcode_ng',
-    tokenizer=tokenizer(
-        'postcode_ngram', 'nGram',
-        min_gram=2, max_gram=3,
-        token_chars=['letter', 'digit']),
-    filter=['lowercase'],
-)
-
 postcode = es.analyzer(
     'postcode',
     tokenizer=tokenizer(
-        'postcode_keyword', 'keyword', token_chars=['letter', 'digit']),
-    filter=['lowercase', whitespace_stripper],
+        'postcode', 'edge_ngram',
+        min_gram=1, max_gram=6,
+        token_chars=['letter', 'digit']),
+    filter=[
+        'lowercase',
+        whitespace_stripper,
+    ],
 )
+
 
 huisnummer = es.analyzer(
     'huisnummer',
@@ -163,17 +160,20 @@ huisnummer = es.analyzer(
     char_filter=[naam_stripper],
 )
 
+
 subtype = es.analyzer(
     'subtype',
     tokenizer='keyword',
     filter=['lowercase'],
 )
 
+
 autocomplete = es.analyzer(
     'autocomplete',
     tokenizer='standard',
     filter=['lowercase', edge_ngram_filter]
 )
+
 
 ngram = es.analyzer(
     'ngram_analyzer',
@@ -186,8 +186,12 @@ toevoeging = es.analyzer(
     'toevoeging_analyzer',
     tokenizer='keyword',
     filter=['lowercase', edge_ngram_filter],
-    char_filter=[naam_stripper]
+    token_chars=['letter', 'digit'],
+    char_filter=[
+        naam_stripper,
+    ]
 )
+
 
 kad_obj_aanduiding = es.analyzer(
     'kad_obj_aanduiding',
@@ -198,6 +202,7 @@ kad_obj_aanduiding = es.analyzer(
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )
+
 
 kad_obj_nummer = es.analyzer(
     'kad_obj_nummer',
@@ -217,6 +222,7 @@ kad_sbj_naam = es.analyzer(
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )
+
 
 kad_obj_aanduiding_keyword = es.analyzer(
     'kad_obj_aanduiding_keyword',

@@ -15,93 +15,9 @@ naam_fields = {
 }
 
 postcode_fields = {
-    'raw': es.Keyword(normalizer=analyzers.lowercase),
-    'ngram': es.Text(analyzer=analyzers.autocomplete),
+    'raw': es.Keyword(
+        normalizer=analyzers.lowercase),
 }
-
-
-class Ligplaats(es.DocType):
-    straatnaam = es.Text(
-        analyzer=analyzers.adres,
-        fields=naam_fields
-    )
-
-    adres = es.Text(
-        analyzer=analyzers.adres,
-        fields=naam_fields
-    )
-
-    huisnummer = es.Integer(
-        fields={'variation': es.Text(analyzer=analyzers.huisnummer)},
-    )
-    postcode = es.Text(
-        analyzer=analyzers.postcode,
-        fields=postcode_fields)
-    order = es.Integer()
-
-    centroid = es.GeoPoint()
-
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
-        all = es.MetaField(enabled=False)
-
-
-class Standplaats(es.DocType):
-    straatnaam = es.Text(
-        analyzer=analyzers.adres,
-        fields=naam_fields
-    )
-
-    adres = es.Text(analyzer=analyzers.adres, fields=naam_fields)
-
-    huisnummer = es.Integer(
-        fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
-
-    postcode = es.Text(
-        analyzer=analyzers.postcode,
-        fields=postcode_fields
-    )
-
-    order = es.Integer()
-    centroid = es.GeoPoint()
-
-    _display = es.Keyword()
-
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
-        all = es.MetaField(enabled=False)
-
-
-class Verblijfsobject(es.DocType):
-    straatnaam = es.Text(
-        analyzer=analyzers.adres,
-        fields=naam_fields)
-
-    adres = es.Text(
-        analyzer=analyzers.adres,
-        fields=naam_fields)
-
-    huisnummer = es.Integer(
-        fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
-
-    postcode = es.Text(
-        analyzer=analyzers.postcode,
-        fields=postcode_fields)
-
-    order = es.Integer()
-
-    centroid = es.GeoPoint()
-
-    bestemming = es.Text()
-    kamers = es.Integer()
-    oppervlakte = es.Integer()
-
-    subtype = es.Keyword()
-
-    _display = es.Keyword()
-
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
 
 
 text_fields = {
@@ -112,35 +28,6 @@ text_fields = {
     'ngram': es.Text(analyzer=analyzers.ngram),
     'keyword': es.Keyword(normalizer=analyzers.lowercase),
 }
-
-
-class OpenbareRuimte(es.DocType):
-    naam = es.Text(
-        analyzer=analyzers.adres,
-        fields=text_fields
-    )
-
-    naam_nen = es.Text(
-        analyzer=analyzers.adres,
-        fields=text_fields
-    )
-
-    naam_ptt = es.Text(
-        analyzer=analyzers.adres,
-        fields=text_fields
-    )
-
-    postcode = es.Text(
-        analyzer=analyzers.postcode,
-        fields=postcode_fields)
-    order = es.Integer()
-
-    subtype = es.Keyword()
-
-    _display = es.Keyword()
-
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG_OPENBARETUIMTE']
 
 
 class Nummeraanduiding(es.DocType):
@@ -243,12 +130,13 @@ class Nummeraanduiding(es.DocType):
 
     toevoeging = es.Text(
         analyzer=analyzers.toevoeging,
-        fields={'raw': es.Keyword()}
+        fields={'keyword': es.Keyword()}
     )
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        fields=postcode_fields)
+        fields=postcode_fields,
+    )
 
     order = es.Integer()
 
@@ -281,7 +169,7 @@ class Bouwblok(es.DocType):
     code = es.Text(
         analyzer=analyzers.bouwblokid,
         fields={
-            'raw': es.Keyword()
+            'keyword': es.Keyword()
         },
     )
 
@@ -313,18 +201,35 @@ class Gebied(es.DocType):
     naam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'raw': es.Keyword(),
+            'keyword': es.Keyword(),
             'ngram_edge': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
+                analyzer=analyzers.autocomplete,
+                search_analyzer='standard'
             ),
             'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
+    naam_nen = es.Text(
+        analyzer=analyzers.adres,
+        fields=text_fields
+    )
+
+    naam_ptt = es.Text(
+        analyzer=analyzers.adres,
+        fields=text_fields
+    )
+
+    postcode = es.Text(
+        analyzer=analyzers.postcode,
+        search_analyzer='standard',
+        fields=postcode_fields
+    )
+
     g_code = es.Text(
         analyzer=analyzers.autocomplete,
         fields={
-            'raw': es.Keyword(),
+            'keyword': es.Keyword(),
             'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
@@ -515,7 +420,7 @@ def from_verblijfsobject(v: models.Verblijfsobject):
 
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
-    d = OpenbareRuimte(_id=o.id)
+    d = Gebied(_id=o.id)
     d.type = 'Openbare ruimte'
     # weg, water, spoorbaan, terrein, kunstwerk (brug), landschap,..
     d.subtype = o.get_type_display().lower()
@@ -533,6 +438,9 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d.postcode = list(postcodes)
     d.order = analyzers.orderings['openbare_ruimte']
     d._display = d.naam
+
+    d.centroid = get_centroid(o.geometrie, 'wgs84')
+
     return d
 
 

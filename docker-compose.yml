@@ -12,7 +12,7 @@ services:
       - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
   elasticsearch:
-    image: build.datapunt.amsterdam.nl:5000/atlas/elasticsearch6:latest
+    image: amsterdam/elasticsearch6
     command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
     ports:
       - "9200:9200"

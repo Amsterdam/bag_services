@@ -1,6 +1,4 @@
 # Python
-import time
-from unittest import skip
 # Packages
 from rest_framework.test import APITransactionTestCase
 # Project
@@ -10,7 +8,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-class SubjectSearchTest(APITransactionTestCase):
+class OPRTest(APITransactionTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -25,9 +23,8 @@ class SubjectSearchTest(APITransactionTestCase):
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
-        batch.execute(datasets.bag.batch.IndexBagJob())
-
-        batch.execute(datasets.brk.batch.IndexKadasterJob())
+        batch.execute(datasets.bag.batch.DeleteIndexBagJob())
+        batch.execute(datasets.bag.batch.IndexGebiedenJob())
 
     def test_matching_query(self):
         response = self.client.get(

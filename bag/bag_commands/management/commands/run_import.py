@@ -25,39 +25,14 @@ class Command(BaseCommand):
         gebieden=[datasets.bag.batch.IndexGebiedenJob],
     )
 
-    backup_indexes = dict(
-        bag=[datasets.bag.batch.BackupBagJob],
-        brk=[datasets.brk.batch.BackupKadasterJob],
-        wkpb=[],
-        gebieden=[],
-    )
-
-    restore_indexes = dict(
-        bag=[datasets.bag.batch.RestoreBagJob],
-        brk=[datasets.brk.batch.RestoreKadasterJob],
-        wkpb=[],
-        gebieden=[],
-    )
-
     def add_arguments(self, parser):
+
         parser.add_argument(
             'dataset',
             nargs='*',
             default=self.ordered,
             help="Dataset to import, choose from {}".format(
                 ', '.join(self.imports.keys())))
-
-        parser.add_argument('--backup-indexes-es',
-                            action='store_true',
-                            dest='backup_indexes_es',
-                            default=False,
-                            help='Backup elsatic search')
-
-        parser.add_argument('--restore-indexes-es',
-                            action='store_true',
-                            dest='restore_indexes_es',
-                            default=False,
-                            help='Restore elsatic search index')
 
         parser.add_argument('--no-import',
                             action='store_false',

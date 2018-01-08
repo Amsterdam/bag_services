@@ -1266,34 +1266,24 @@ class ImportPndVboTask(batch.BasicTask):
 
 
 BAG_DOC_TYPES = [
-    documents.Ligplaats,
-    documents.Standplaats,
-    documents.Verblijfsobject,
-    documents.OpenbareRuimte,
     documents.Bouwblok,
     documents.Gebied,
-    documents.ExactLocation,
 ]
 
 
-class DeleteIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BAG']
-    doc_types = BAG_DOC_TYPES
+class DeleteGebiedIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_GEBIED']
+    doc_types = [documents.Gebied]
+
+
+class DeleteBouwblokIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
+    doc_types = [documents.Bouwblok]
 
 
 class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
     doc_types = [documents.Nummeraanduiding]
-
-
-class DeleteNummerAanduidingBackupIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
-    doc_types = [documents.Nummeraanduiding]
-
-
-class DeleteBackupIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    doc_types = BAG_DOC_TYPES
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
@@ -1428,18 +1418,7 @@ class IndexBouwblokTask(index.ImportIndexTask):
         return documents.from_bouwblok(obj)
 
 
-class IndexExactMatchesTask(index.ImportIndexTask):
-    name = "index extact matches for postcode geocoding"
-    queryset = models.Nummeraanduiding.objects.\
-        prefetch_related('verblijfsobject').\
-        prefetch_related('standplaats').\
-        prefetch_related('ligplaats')
-
-    def convert(self, obj):
-        return documents.exact_from_nummeraanduiding(obj)
-
-
-# these files don't have a UVA file
+# These files don't have a UVA file
 class ImportBuurtcombinatieTask(batch.BasicTask):
     """
     layer.fields:
@@ -1887,11 +1866,11 @@ class IndexBagJob(object):
 
     def tasks(self):
         return [
-            DeleteIndexTask(),
+            DeleteBouwblokIndexTask(),
+            DeleteGebiedIndexTask(),
             DeleteNummerAanduidingIndexTask(),
-            IndexOpenbareRuimteTask(),
             IndexNummerAanduidingTask(),
-            IndexExactMatchesTask(),
+
         ]
 
 
@@ -1900,9 +1879,7 @@ class BuildIndexBagJob(object):
 
     def tasks(self):
         return [
-            IndexOpenbareRuimteTask(),
             IndexNummerAanduidingTask(),
-            IndexExactMatchesTask(),
         ]
 
 
@@ -1912,7 +1889,8 @@ class DeleteIndexBagJob(object):
 
     def tasks(self):
         return [
-            DeleteIndexTask(),
+            DeleteGebiedIndexTask(),
+            DeleteBouwblokIndexTask(),
             DeleteNummerAanduidingIndexTask(),
         ]
 
@@ -1935,10 +1913,7 @@ class IndexGebiedenJob(object):
     def tasks(self):
         return [
             IndexBouwblokTask(),
-
-            # NOTE !! DEVELOPMENT -> Only for document changes
-            # DeleteIndexTaskTask(),
-
+            IndexOpenbareRuimteTask(),
             IndexUnescoTask(),
             IndexBuurtTask(),
             IndexBuurtcombinatieTask(),
@@ -1946,92 +1921,4 @@ class IndexGebiedenJob(object):
             IndexGrootstedelijkgebiedTask(),
             IndexGebiedsgerichtWerkenTask(),
             IndexGemeenteTask()
-        ]
-
-
-class BackupBagIndexTask(index.CopyIndexTask):
-    """
-    Backup elastic BAG Index
-    """
-    index = settings.ELASTIC_INDICES['BAG']
-    target = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    name = 'Backup BAG index in elastic'
-
-
-class BackupNummerAanduidingTask(index.CopyIndexTask):
-    """
-    Backup elastic BAG Index
-    """
-    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
-    name = 'Backup Aanduiding index in elastic'
-
-
-class RestoreBagIndexTask(index.CopyIndexTask):
-    """
-    Restore elastic BAG Index
-    """
-    name = 'Restore backup bag index in elastic'
-
-    index = settings.ELASTIC_INDICES['BAG'] + 'backup'
-    target = settings.ELASTIC_INDICES['BAG']
-
-
-class RestoreNummerAanduidingIndexTask(index.CopyIndexTask):
-    """
-    Restore elastic BAG Index
-    """
-    name = 'Restore backup nummeraanduiding index in elastic'
-
-    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING'] + 'backup'
-    target = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-
-
-class BackupBagJob(object):
-    """
-    Backup elastic BAG documents
-    """
-    name = "Backup elastic-index BAG"
-
-    def tasks(self):
-        return [
-            DeleteBackupIndexTask,
-            BackupBagIndexTask(),
-        ]
-
-
-class RestoreBagJob(object):
-
-    name = "Restore Backup elastic-index BAG"
-
-    def tasks(self):
-        return [
-            DeleteIndexTask(),
-            RestoreBagIndexTask()
-        ]
-
-
-class BackupNummerAanduidingJob(object):
-    """
-    Nummeraanduiding elastic index Backup
-    """
-
-    name = "Backup elastic-index NUMMERAANDUIDING"
-
-    def tasks(self):
-        return [
-            DeleteNummerAanduidingBackupIndexTask(),
-            BackupNummerAanduidingTask(),
-        ]
-
-
-class RestoreNummerAanduidingJob(object):
-    """
-    Nummeraanduiding elastic index Restore
-    """
-
-    def tasks(self):
-        return [
-            DeleteNummerAanduidingIndexTask(),
-            RestoreNummerAanduidingIndexTask()
         ]

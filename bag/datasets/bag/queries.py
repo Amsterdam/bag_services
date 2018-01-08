@@ -20,6 +20,9 @@ from search.query_analyzer import QueryAnalyzer
 log = logging.getLogger('bag_Q')
 
 BAG = settings.ELASTIC_INDICES['BAG']
+
+BAG_BOUWBLOK = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
+BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
@@ -34,12 +37,12 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
             'bool': {
                 'must': [
                     {
-                        'term': {
+                        'prefix': {
                             'postcode': postcode,
                         }
                     },
                     {
-                        'prefix': {
+                        'match': {
                             'toevoeging': toevoeging,
                         }
                     },
@@ -47,7 +50,7 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
             },
         },
         indexes=[NUMMERAANDUIDING],
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword']
     )
 
 
@@ -66,7 +69,7 @@ def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer):
                 Q('term', huisnummer=huisnummer)
             ],
         ),
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING],
 
         size=1
@@ -79,34 +82,29 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         query={
             "prefix": {
                 # upper, want raw is case-sensitive
-                # "code.raw": analyzer.get_bouwblok().upper(),
                 "code": analyzer.get_bouwblok()
             },
         },
-        sort_fields=['code.raw'],
-        indexes=[BAG],
+        sort_fields=['code.keyword'],
+        indexes=[BAG_BOUWBLOK],
     )
 
 
 def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ create query/aggregation for public area"""
 
+    postcode = analyzer.get_postcode()
+
     return ElasticQueryWrapper(
         query=Q(
             'bool',
             must=[
-                Q(
-                    'multi_match',
-                    query=analyzer.get_postcode(),
-                    type="phrase_prefix",
-                    # other streets
-                    fields=['postcode']
-                ),
+                {'match': {'postcode': postcode}},
                 Q('term', subtype='weg'),
             ],
         ),
         sort_fields=['_display'],
-        indexes=[BAG]
+        indexes=[BAG_GEBIED]
     )
 
 
@@ -114,6 +112,7 @@ def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
         must: [dict] = None,
         must_not: [dict] = None,
+        index: str = None,
         useorder: [bool] = False) -> ElasticQueryWrapper:
     """
     Basis openbare-ruimte query.
@@ -141,7 +140,7 @@ def _basis_openbare_ruimte_query(
     sort_fields = ['_score', 'naam.keyword']
 
     if useorder:
-        sort_fields = ['order', 'naam.raw']
+        sort_fields = ['order', 'naam.keyword']
 
     return ElasticQueryWrapper(
         query={
@@ -180,7 +179,7 @@ def _basis_openbare_ruimte_query(
                 'minimum_should_match': 1,
             }
         },
-        indexes=[BAG],
+        indexes=[BAG_GEBIED],
         sort_fields=sort_fields,
         size=10,
     )
@@ -200,18 +199,19 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Maak een query voor openbare ruimte.
     """
-    return _basis_openbare_ruimte_query(analyzer, must_not=[{
-        'term': {'_type': 'gebied'}
-    }])
+    return _basis_openbare_ruimte_query(analyzer, must=[{
+        'term': {'type.keyword': 'Openbare ruimte'}}],
+    )
 
 
 def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """
     Maak een query voor gebieden.
     """
-    return _basis_openbare_ruimte_query(analyzer, useorder=True, must=[{
-        'term': {'_type': 'gebied'}
-    }])
+    return _basis_openbare_ruimte_query(
+            analyzer, useorder=True, must_not=[{
+                'term': {'type': 'Openbare ruimte'}}],
+    )
 
 
 def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
@@ -228,7 +228,7 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 ]
             },
         },
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING]
     )
 
@@ -262,6 +262,6 @@ def straatnaam_huisnummer_query(
                 ],
             },
         },
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.raw'],
+        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING]
     )

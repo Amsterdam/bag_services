@@ -13,24 +13,18 @@ class GebiedSearchTest(APITransactionTestCase):
 
     def setUp(self):
 
-        # We need Openbare ruimte objecten
-        # becuause opr queries are executed
-        # when searching on gebieden if name.raw
-        # mapping is missing elastic crashes.
         bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat")
 
+        # weg
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='01')
 
+        # water
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
-        batch.execute(datasets.bag.batch.IndexBagJob())
-
-        batch.execute(datasets.brk.batch.IndexKadasterJob())
-
-        # the actual tested usecases
+        # The actual tested usecases
 
         self.gsg = bag_factories.GrootstedelijkGebiedFactory.create()
         self.unesco = bag_factories.UnescoFactory.create()
@@ -42,6 +36,7 @@ class GebiedSearchTest(APITransactionTestCase):
         self.bb = bag_factories.BouwblokFactory(code='YC01')
         self.bb2 = bag_factories.BouwblokFactory(code='YC00')
 
+        batch.execute(datasets.bag.batch.DeleteIndexBagJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
 
     def find(self, naam, tussenhaakjes=None):

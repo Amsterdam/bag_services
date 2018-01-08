@@ -105,7 +105,8 @@ LOGGING = {
 
     'formatters': {
         'console': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            'format': '{asctime} - {name} - {levelname} - {message}',
+            'style': '{',
         },
     },
 

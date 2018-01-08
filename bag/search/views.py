@@ -353,13 +353,15 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             search = q.to_elasticsearch_object(self.client)
 
+            log.debug(json.dumps(search.to_dict(), indent=4))
+
             # get the result from elastic
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except TransportError:
                 log.exception(
                     'FAILED ELK SEARCH: %s',
-                    json.dumps(search.to_dict()))
+                    json.dumps(search.to_dict(), indent=4))
                 continue
 
             # Get the datas!
@@ -648,7 +650,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         ignore_cache = settings.DEBUG
 
-        # log.exception(json.dumps(search.to_dict(), indent=4))
+        log.debug(json.dumps(search.to_dict(), indent=4))
 
         try:
             result = search.execute(ignore_cache=ignore_cache)

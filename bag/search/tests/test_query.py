@@ -122,7 +122,6 @@ class QueryTest(APITransactionTestCase):
             woonadres=adres
         )
 
-        # batch.execute(datasets.bag
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
