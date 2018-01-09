@@ -4,16 +4,17 @@ set -u   # crash on missing environment variables
 set -e   # stop on any error
 set -x   # log every command.
 
-source docker-wait.sh
+#source docker-wait.sh
 
 # download csv
 python objectstore/objectstore.py
 
 # load data in database
 python manage.py migrate
+python manage.py flush --noinput
 python manage.py run_import gebieden --no-index
 
-python manage.py run_import bag --no-index &
+python manage.py run_import bag --no-index
 python manage.py run_import brk --no-index
 
 python manage.py run_import wkpb --no-index
