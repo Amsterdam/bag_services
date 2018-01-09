@@ -27,20 +27,6 @@ class Command(BaseCommand):
         'gebieden': [],  # too small..
     }
 
-    backup_indexes = {
-        'bag': [datasets.bag.batch.BackupBagJob],
-        'brk': [datasets.brk.batch.BackupKadasterJob],
-        'wkpb': [],
-        'gebieden': [],
-    }
-
-    restore_indexes = {
-        'bag': [datasets.bag.batch.RestoreBagJob],
-        'brk': [datasets.brk.batch.RestoreKadasterJob],
-        'wkpb': [],
-        'gebieden': [],
-    }
-
     def add_arguments(self, parser):
         parser.add_argument(
             'dataset',
@@ -48,20 +34,6 @@ class Command(BaseCommand):
             default=self.ordered,
             help="Dataset to use, choose from {}".format(
                 ', '.join(self.indexes.keys())))
-
-        parser.add_argument(
-            '--backup',
-            action='store_true',
-            dest='backup_indexes_es',
-            default=False,
-            help='Backup elsatic search')
-
-        parser.add_argument(
-            '--restore',
-            action='store_true',
-            dest='restore_indexes_es',
-            default=False,
-            help='Restore elsatic search index')
 
         parser.add_argument(
             '--build',
@@ -117,18 +89,6 @@ class Command(BaseCommand):
         self.set_partial_config(options)
 
         for ds in sets:
-
-            if options['backup_indexes_es']:
-                for job_class in self.backup_indexes[ds]:
-                    batch.execute(job_class())
-                # we do not run the other tasks
-                continue  # to next dataset please..
-
-            if options['restore_indexes_es']:
-                for job_class in self.restore_indexes[ds]:
-                    batch.execute(job_class())
-                # we do not run the other tasks
-                continue  # to next dataset please..
 
             if options['delete_indexes']:
                 for job_class in self.delete_indexes[ds]:
