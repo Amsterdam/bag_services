@@ -14,7 +14,7 @@ python manage.py migrate
 python manage.py flush --noinput
 python manage.py run_import gebieden --no-index
 
-python manage.py run_import bag --no-index
+python manage.py run_import bag --no-index &
 python manage.py run_import brk --no-index
 
 python manage.py run_import wkpb --no-index

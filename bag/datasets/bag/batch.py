@@ -1445,18 +1445,18 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         bcs = geo.process_shp(
             self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
 
-        models.Buurtcombinatie.objects.bulk_create(
-            bcs, batch_size=database.BATCH_SIZE)
+        for buurtcombinatie in bcs:
+            buurtcombinatie.save()
 
     def process_feature(self, feat):
         vollcode = feat.get('VOLLCODE')
 
         return models.Buurtcombinatie(
             id=str(int(feat.get('ID'))),
-            naam=feat.get('NAAM').encode('utf-8'),
-            code=feat.get('CODE').encode('utf-8'),
+            naam=feat.get('NAAM'),
+            code=feat.get('CODE'),
             vollcode=vollcode,
-            brondocument_naam=feat.get('DOCNR').encode('utf-8'),
+            brondocument_naam=feat.get('DOCNR'),
             brondocument_datum=feat.get('DOCDATUM'),
             ingang_cyclus=feat.get('INGSDATUM'),
             geometrie=geo.get_multipoly(feat.geom.wkt),
@@ -1543,8 +1543,8 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             self.shp_path, "GBD_gebiedsgerichtwerken.shp",
             self.process_feature)
 
-        models.Gebiedsgerichtwerken.objects.bulk_create(
-            ggws, batch_size=database.BATCH_SIZE)
+        for gebied in ggws:
+            gebied.save()
 
     def process_feature(self, feat):
         sdl = feat.get('STADSDEEL')
@@ -1552,10 +1552,10 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
             return
 
-        code = feat.get('CODE').encode('utf-8')
+        code = feat.get('CODE')
         return models.Gebiedsgerichtwerken(
             id=code,
-            naam=feat.get('NAAM').encode('utf-8'),
+            naam=feat.get('NAAM'),
             code=code,
             stadsdeel_id=self.stadsdelen[sdl],
             geometrie=geo.get_multipoly(feat.geom.wkt),

@@ -39,6 +39,7 @@ Use `docker-compose` to start a local database and Elastic Search service. Use
 Create a new virtual env, and execute the following:
 
 	pip install -r requirements.txt
+	export DJANGO_SETTINGS_MODULE=bag.settings.settings
 	./bag/manage.py migrate
 	./bag/manage.py runserver
 
