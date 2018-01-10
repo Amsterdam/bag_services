@@ -3,7 +3,7 @@ import sys
 
 from bag.settings.settings_common import DEBUG
 from bag.settings.settings_common import BASE_DIR
-from bag.settings.settings_common import * # noqa F403
+from bag.settings.settings_common import *  # noqa F403
 
 
 from bag.settings.settings_databases import LocationKey,\
@@ -78,7 +78,7 @@ ELASTIC_OPTIONS = {
 ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
 
 ELASTIC_INDICES = {
-    'BAG': 'bag',
+    # 'BAG': 'bag',
     'BAG_GEBIED': 'bag_gebied',
     'BAG_BOUWBLOK': 'bag_bouwblok',
     'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
@@ -182,6 +182,7 @@ OBJECTSTORE = {
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
+# DIVA_DIR = '/app/data'
 
 if not os.path.exists(DIVA_DIR):
     DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))

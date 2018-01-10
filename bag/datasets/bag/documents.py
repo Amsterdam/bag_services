@@ -245,23 +245,6 @@ class Gebied(es.DocType):
         index = settings.ELASTIC_INDICES['BAG_GEBIED']
 
 
-class ExactLocation(es.DocType):
-    """
-    Elasticsearch doc for exact location data
-    """
-    nummeraanduiding_id = es.Keyword()
-    address = es.Keyword()
-    postcode_huisnummer = es.Keyword()
-    postcode_toevoeging = es.Keyword()
-    subtype = es.Keyword()
-    geometrie = es.GeoPoint()
-
-    _display = es.Keyword()
-
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG']
-
-
 def get_centroid(geom, transform=None):
     """
     Finds the centroid of a geometrie object
@@ -544,25 +527,3 @@ def from_woonplaats(w: models.Woonplaats):
     d.g_code = w.landelijk_id
     d.order = 2
     return d
-
-
-def exact_from_nummeraanduiding(n: models.Nummeraanduiding):
-    doc = ExactLocation(_id=n.id)
-    doc.adres = n.adres()
-    doc.nummeraanduiding_id = n.id
-    doc.postcode_huisnummer = '{0} {1}'.format(n.postcode, n.huisnummer)
-    doc.postcode_toevoeging = '{0} {1}'.format(n.postcode, n.toevoeging)
-    doc.subtype = 'exact'
-
-    # Retriving the geolocation is dependent on the geometrie
-    if n.verblijfsobject:
-        doc.geometrie = get_centroid(n.verblijfsobject.geometrie, 'wgs84')
-    elif n.standplaats:
-        doc.geometrie = get_centroid(n.standplaats.geometrie, 'wgs84')
-    elif n.ligplaats:
-        doc.geometrie = get_centroid(n.ligplaats.geometrie, 'wgs84')
-    else:
-        print('Failed to find geolocation for nummeraanduiding {}'.format(n.id))
-    doc._display = doc.adres
-
-    return doc

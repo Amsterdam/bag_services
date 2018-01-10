@@ -9,7 +9,7 @@ services:
       - ./backups:/tmp/backups
 
   elasticsearch:
-    image: amsterdam/elasticsearch5
+    image: amsterdam/elasticsearch6
     volumes:
       - ./backups/elasticsearch:/tmp/backups
     user: root

@@ -4,12 +4,18 @@ import random
 # Packages
 from rest_framework.test import APITestCase
 # Project
+from search.tests.fill_elastic import load_docs
 
 import logging
 log = logging.getLogger(__name__)
 
 
 class RandomShitTest(APITestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        load_docs()
 
     def test_random_shit_typeahead(self):
         """

@@ -65,7 +65,9 @@ username, assumes your SSH key is known and you have appropriate level of access
 
 To import the latest elastic index from acceptance:
 
-	docker-compose exec elasticsearch update-el.sh atlas bag brk nummeraanduiding
+ 	make sure LOCAL=true as environment variable
+
+	docker-compose exec elasticsearch update-el.sh bag bag*,brk*,nummeraanduiding
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.

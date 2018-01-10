@@ -19,8 +19,6 @@ from search.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger('bag_Q')
 
-BAG = settings.ELASTIC_INDICES['BAG']
-
 BAG_BOUWBLOK = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']

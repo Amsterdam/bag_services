@@ -1588,11 +1588,11 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
             self.shp_path,
             "GBD_grootstedelijke_projecten.shp", self.process_feature)
 
-        models.Grootstedelijkgebied.objects.bulk_create(
-            ggbs, batch_size=database.BATCH_SIZE)
+        for ggb in ggbs:
+            ggb.save()
 
     def process_feature(self, feat):
-        naam = feat.get('NAAM').encode('utf-8')
+        naam = feat.get('NAAM')
         return models.Grootstedelijkgebied(
             id=slugify(naam),
             naam=naam,
@@ -1628,7 +1628,7 @@ class ImportUnescoTask(batch.BasicTask):
             unesco, batch_size=database.BATCH_SIZE)
 
     def process_feature(self, feat):
-        naam = feat.get('NAAM').encode('utf-8')
+        naam = feat.get('NAAM')
         return models.Unesco(
             id=slugify(naam),
             naam=naam,

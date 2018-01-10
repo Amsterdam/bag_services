@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import connection
 from django.http import HttpResponse
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import TransportError, NotFoundError
 from elasticsearch_dsl import Search
 # Project
 from datasets.bag.models import Verblijfsobject
@@ -67,14 +68,18 @@ def check_data(request):
             content_type="text/plain", status=500)
 
     # check elastic
-    try:
-        client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
-        assert Search().using(client).index(
-            settings.ELASTIC_INDICES['NUMMERAANDUIDING'],
-            settings.ELASTIC_INDICES['BAG']).query("match_all", size=0)
-    except:
-        log.exception("Autocomplete failed")
-        return HttpResponse(
-            "Autocomplete failed", content_type="text/plain", status=500)
+    client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
+    for index in settings.ELASTIC_INDICES.values():
+        try:
+            assert (
+                Search()
+                .using(client) .index(index)
+                .query("match_all", size=0)
+            )
+        except (TransportError, NotFoundError):
+            log.exception("Index missing!")
+            return HttpResponse(
+                "Elastic Index missing ",
+                content_type="text/plain", status=500)
 
     return HttpResponse("Data OK", content_type='text/plain', status=200)

@@ -1,14 +1,6 @@
-
-from django.conf import settings
-
 from rest_framework.test import APITransactionTestCase
-from elasticsearch import Elasticsearch
 
-from batch import batch
-import datasets.bag.batch
-from datasets.bag.tests import factories as bag_factories
-import datasets.brk.batch
-from datasets.brk.tests import factories as brk_factories
+from search.tests.fill_elastic import load_docs
 
 
 class QueryTest(APITransactionTestCase):
@@ -19,115 +11,7 @@ class QueryTest(APITransactionTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        bag_factories.StadsdeelFactory(
-            id='test_query',
-            naam='Centrum')
-
-        bag_factories.OpenbareRuimteFactory.create(
-            naam="Prinsengracht", type='02')
-
-        # Create brug objects
-        bag_factories.OpenbareRuimteFactory.create(
-            naam="Korte Brug", type='05')
-
-        bag_factories.OpenbareRuimteFactory.create(
-            naam="Brugover", type='05')
-
-        bag_factories.OpenbareRuimteFactory.create(
-            naam="Brughuis", type='05')
-
-        anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat", type='01')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=anjeliersstraat, huisnummer=11, huisletter='A',
-            type='01',
-            postcode=1001)
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=anjeliersstraat, huisnummer=11,
-            huisletter='B', type='01',
-            postcode=1001)
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=anjeliersstraat, huisnummer=11, huisletter='C',
-            type='01',
-            postcode=1001)
-
-        bag_factories.NummeraanduidingFactory.create(
-            postcode=1001,
-            type='01',
-            openbare_ruimte=anjeliersstraat, huisnummer=12)
-
-        # Maak een woonboot
-        kade_ruimte = bag_factories.OpenbareRuimteFactory.create(
-            type='01',
-            naam="Ligplaatsenstraat")
-
-        bag_factories.NummeraanduidingFactory.create(
-            type='05',
-            postcode='9999ZZ',
-            openbare_ruimte=kade_ruimte, huisnummer=33, hoofdadres=True)
-
-        # marnixkade
-        marnix_kade = bag_factories.OpenbareRuimteFactory.create(
-            naam="Marnixkade")
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=marnix_kade, huisnummer=36, huisletter='F',
-            hoofdadres=True, postcode='1015XR')
-
-        rozenstraat = bag_factories.OpenbareRuimteFactory.create(
-            naam="Rozenstraat")
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=228, huisletter='a',
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=228, huisletter='b',
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=229,
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=229,
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='2')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=229,
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='3')
-
-        bag_factories.NummeraanduidingFactory.create(
-            openbare_ruimte=rozenstraat, huisnummer=229,
-            hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='4')
-
-        bag_factories.BouwblokFactory.create(code='RN35')
-        bag_factories.BouwblokFactory.create(code='AB01')
-
-        adres = brk_factories.AdresFactory(
-            huisnummer=340,
-            huisletter='A',
-            postcode='1234AB',
-            woonplaats='FabeltjesLand',
-            openbareruimte_naam='Sesamstraat')
-
-        brk_factories.NatuurlijkPersoonFactory(
-            naam='Kikker',
-            voorvoegsels='de',
-            voornamen='Kermet',
-            woonadres=adres
-        )
-
-        batch.execute(datasets.bag.batch.IndexBagJob())
-        batch.execute(datasets.bag.batch.IndexGebiedenJob())
-        batch.execute(datasets.brk.batch.IndexKadasterJob())
-
-        es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)
-        es.indices.refresh(index="_all")
+        load_docs()
 
     def test_openbare_ruimte(self):
         response = self.client.get(

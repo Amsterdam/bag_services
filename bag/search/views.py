@@ -75,6 +75,8 @@ _autocomplete_group_order = [
 
 _subtype_mapping = {
     'weg': 'Straatnamen',
+    'water': 'Water',
+    'kunstwerk': 'Kunstwerk',
     'verblijfsobject': 'Adres',
     'ligplaats': 'Adres',
     'standplaats': 'Adres',
@@ -659,7 +661,7 @@ class SearchViewSet(viewsets.ViewSet):
             log.debug(json.dumps(search.to_dict(), indent=4))
             # Todo fix this
             # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
-            return Response([])
+            return Response([], 500)
 
         response = OrderedDict()
 
