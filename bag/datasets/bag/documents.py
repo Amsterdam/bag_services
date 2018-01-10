@@ -222,9 +222,11 @@ class Gebied(es.DocType):
 
     g_code = es.Text(
         analyzer=analyzers.autocomplete,
+        search_analyzer='standard',
         fields={
             'keyword': es.Keyword(),
-            'ngram': es.Text(analyzer=analyzers.edge_ngram),
+            'ngram': es.Text(
+                analyzer=analyzers.autocomplete),
         }
     )
 

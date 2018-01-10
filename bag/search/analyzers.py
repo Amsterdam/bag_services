@@ -81,7 +81,7 @@ edge_ngram_filter = analysis.token_filter(
     'edge_ngram_filter',
     type='edge_ngram',
     min_gram=1,
-    max_gram=6,
+    max_gram=20,
 )
 
 # Creating ngram filtering to kadastral objects

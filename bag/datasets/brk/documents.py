@@ -28,6 +28,7 @@ class KadastraalObject(es.DocType):
     # remove this in future
     short_aanduiding = es.Text(
         analyzer=analyzers.kad_obj_aanduiding,
+        search_analyzer='standard',
         fields=kad_text_fields)
 
     sectie = es.Text(
@@ -35,7 +36,8 @@ class KadastraalObject(es.DocType):
     )
 
     objectnummer = es.Text(
-        analyzer=analyzers.edge_ngram,
+        analyzer=analyzers.autocomplete,
+        search_analyzer='standard',
         fields=kad_int_fields,
     )
 
@@ -44,7 +46,8 @@ class KadastraalObject(es.DocType):
     )
 
     indexnummer = es.Text(
-        analyzer=analyzers.edge_ngram,
+        analyzer=analyzers.autocomplete,
+        search_analyzer='standard',
         fields=kad_int_fields
     )
 
