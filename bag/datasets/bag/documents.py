@@ -25,7 +25,6 @@ text_fields = {
     'ngram_edge': es.Text(
         analyzer=analyzers.autocomplete, search_analyzer='standard'
     ),
-    'ngram': es.Text(analyzer=analyzers.ngram),
     'keyword': es.Keyword(normalizer=analyzers.lowercase),
 }
 
@@ -47,8 +46,7 @@ class Nummeraanduiding(es.DocType):
             'raw': es.Keyword(),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'ngram': es.Text(analyzer=analyzers.ngram),
+            )
         }
     )
 
@@ -60,8 +58,7 @@ class Nummeraanduiding(es.DocType):
             'raw': es.Keyword(),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'ngram': es.Text(analyzer=analyzers.ngram),
+            )
         }
     )
 
@@ -73,7 +70,6 @@ class Nummeraanduiding(es.DocType):
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.Text(analyzer=analyzers.ngram),
             'keyword': es.Keyword(normalizer=analyzers.lowercase),
 
         }
@@ -88,7 +84,6 @@ class Nummeraanduiding(es.DocType):
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
-            'ngram': es.Text(analyzer=analyzers.ngram)
         }
     )
 
@@ -206,7 +201,6 @@ class Gebied(es.DocType):
                 analyzer=analyzers.autocomplete,
                 search_analyzer='standard'
             ),
-            'ngram': es.Text(analyzer=analyzers.ngram),
         }
     )
 
@@ -230,7 +224,7 @@ class Gebied(es.DocType):
         analyzer=analyzers.autocomplete,
         fields={
             'keyword': es.Keyword(),
-            'ngram': es.Text(analyzer=analyzers.ngram),
+            'ngram': es.Text(analyzer=analyzers.edge_ngram),
         }
     )
 

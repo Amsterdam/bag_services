@@ -35,7 +35,7 @@ class KadastraalObject(es.DocType):
     )
 
     objectnummer = es.Text(
-        analyzer=analyzers.ngram,
+        analyzer=analyzers.edge_ngram,
         fields=kad_int_fields,
     )
 
@@ -44,7 +44,7 @@ class KadastraalObject(es.DocType):
     )
 
     indexnummer = es.Text(
-        analyzer=analyzers.ngram,
+        analyzer=analyzers.edge_ngram,
         fields=kad_int_fields
     )
 

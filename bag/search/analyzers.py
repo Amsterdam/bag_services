@@ -76,13 +76,6 @@ whitespace_stripper = analysis.token_filter(
     replacement=''
 )
 
-ngram_filter = analysis.token_filter(
-    'ngram_filter',
-    type='edge_ngram',
-    min_gram=1,
-    max_gram=20,
-)
-
 # Create edge edge_ngram filtering to postcode
 edge_ngram_filter = analysis.token_filter(
     'edge_ngram_filter',
@@ -172,13 +165,6 @@ autocomplete = es.analyzer(
     'autocomplete',
     tokenizer='standard',
     filter=['lowercase', edge_ngram_filter]
-)
-
-
-ngram = es.analyzer(
-    'ngram_analyzer',
-    tokenizer='standard',
-    filter=['lowercase', ngram_filter]
 )
 
 
