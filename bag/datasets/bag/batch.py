@@ -1402,8 +1402,12 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
     name = "index nummer aanduidingen"
     queryset = models.Nummeraanduiding.objects.\
         prefetch_related('verblijfsobject').\
+        prefetch_related('verblijfsobject__status').\
         prefetch_related('standplaats').\
+        prefetch_related('standplaats__status').\
         prefetch_related('ligplaats').\
+        prefetch_related('ligplaats__status').\
+        prefetch_related('status').\
         prefetch_related('openbare_ruimte')
 
     def convert(self, obj):

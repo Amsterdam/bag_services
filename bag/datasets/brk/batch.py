@@ -720,7 +720,11 @@ class IndexSubjectTask(index.ImportIndexTask):
 
 class IndexObjectTask(index.ImportIndexTask):
     name = "index kadastraal object"
-    queryset = models.KadastraalObject.objects
+    queryset = (
+        models.KadastraalObject.objects
+        .select_related('kadastrale_gemeente')
+        .select_related('sectie')
+    )
 
     def convert(self, obj):
         return documents.from_kadastraal_object(obj)
