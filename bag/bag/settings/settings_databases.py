@@ -26,7 +26,8 @@ def in_docker():
     :return: true when running in a docker container, false otherwise
     """
     try:
-        return ':/docker/' in open('/proc/1/cgroup', 'r').read()
+        cgroup = open('/proc/1/cgroup', 'r').read()
+        return ':/docker/' in cgroup or ':/docker-ce/' in cgroup
     except:
         return False
 
