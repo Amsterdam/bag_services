@@ -211,10 +211,3 @@ bag_search.register(
 bag_search.register(
     r'openbareruimte',
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
-
-
-search = SearchRouter()
-
-search.register(
-    r'postcode', views.SearchExactPostcodeToevoegingViewSet,
-    base_name='postcode')

@@ -32,13 +32,13 @@ class QueryTest(APITransactionTestCase):
         We are not authorized. should fail
         """
         response = self.client.get(
-            "/atlas/search/kadastraalsubject/", {'q': "kikker"})
+            "/search/kadastraalsubject/", {'q': "kikker"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('results', response.data)
 
     def test_bouwblok(self):
         response = self.client.get(
-            "/atlas/search/bouwblok/", {'q': "RN3"})
+            "/search/bouwblok/", {'q': "RN3"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -48,7 +48,7 @@ class QueryTest(APITransactionTestCase):
 
     def test_adres(self):
         response = self.client.get(
-            "/atlas/search/postcode/", {'q': "1016 SZ 228 a 1"})
+            "/search/postcode/", {'q': "1016 SZ 228 a 1"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -60,40 +60,40 @@ class QueryTest(APITransactionTestCase):
         self.assertFalse(expr='order' in response.data['results'][0],
                          msg='Order data should be stripped from result')
 
-    def test_postcode_exact(self):
-        response = self.client.get(
-            "/search/postcode/", {'q': "1016 SZ 228 a 1"})
-        self.assertEqual(response.status_code, 200)
+    # def test_postcode_exact(self):
+    #    response = self.client.get(
+    #        "/search/postcode/", {'q': "1016 SZ 228 a 1"})
+    #    self.assertEqual(response.status_code, 200)
 
-        # not due to elk scoring it could happen 228 B, scores better
-        # then 228 A
-        adres = response.data['adres']
-        self.assertTrue(
-            adres.startswith("Rozenstraat 228")
-        )
+    #    # now due to elk scoring it could happen 228 B, scores better
+    #    # then 228 A
 
-    def test_postcode_exact_incorrect_house_num(self):
-        response = self.client.get(
-            "/search/postcode/", {'q': "1016 SZ 1"})
-        self.assertEqual(response.status_code, 200)
+    #    adres = response.data['adres']
+    #    self.assertTrue(
+    #        adres.startswith("Rozenstraat 228")
+    #    )
 
-        # not due to elk scoring it could happen 228 B, scores better
-        # then 228 A
-        self.assertNotIn('adres', response.data)
+    #def test_postcode_exact_incorrect_house_num(self):
+    #    response = self.client.get(
+    #        "/search/postcode/", {'q': "1016 SZ 1"})
+    #    self.assertEqual(response.status_code, 200)
 
-    def test_postcode_exact_no_house_num(self):
-        response = self.client.get(
-            "/search/postcode/", {'q': "1016 SZ"})
-        self.assertEqual(response.status_code, 200)
+    #    self.assertNotIn('adres', response.data)
 
-        # we should get openbare ruimte
-        self.assertNotIn('adres', response.data)
+    #def test_postcode_exact_no_house_num(self):
+    #    response = self.client.get(
+    #        "/search/postcode/", {'q': "1016 SZ"})
+    #    self.assertEqual(response.status_code, 200)
+
+    #    # we should get openbare ruimte
+    #    self.assertNotIn('adres', response.data)
 
     # /typeahead/logica
 
     # /atlas/typeahead/gebieden/
     # /atlas/typeahead/brk/
     # /atlas/typeahead/bag/
+
     def test_typeahead_gebied(self):
         response = self.client.get(
             "/atlas/typeahead/gebieden/", {'q': "Centrum"})

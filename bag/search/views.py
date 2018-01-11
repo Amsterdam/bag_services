@@ -100,27 +100,32 @@ _subtype_mapping = {
 all_query_selectors = [
     {
         'labels': {'bag'},
-        'test': 'is_postcode_prefix',
+        'testfunction': 'is_postcode_prefix',
         'query': bag_qs.postcode_query,
     },
     {
         'labels': {'bag'},
-        'test': 'is_bouwblok_prefix',
+        'testfunction': 'is_bouwblok_prefix',
         'query': bag_qs.bouwblok_query,
     },
     {
         'labels': {'bag', 'nummeraanduiding'},
-        'test': 'is_postcode_huisnummer_prefix',
+        'testfunction': 'is_postcode_huisnummer_prefix',
         'query': bag_qs.postcode_huisnummer_query,
     },
     {
         'labels': {'brk'},
-        'test': 'is_kadastraal_object_prefix',
+        'testfunction': 'is_kadastraal_object_prefix',
         'query': brk_qs.kadastraal_object_query,
     },
     {
         'labels': {'nummeraanduiding'},
-        'test': 'is_straatnaam_huisnummer_prefix',
+        'testfunction': 'is_straatnaam_huisnummer_prefix',
+        'query': bag_qs.straatnaam_huisnummer_query,
+    },
+    {
+        'labels': {'gebieden'},
+        'testfunction': None,
         'query': bag_qs.straatnaam_huisnummer_query,
     },
 ]
@@ -145,6 +150,11 @@ def make_new_selection(q_select, query_selectors):
         if a['labels'] & q_select:
             new_selection.append(a)
 
+    if not new_selection:
+        raise ValueError(
+            'q_select %s not in %s',
+            q_select, query_selectors)
+
     return new_selection
 
 
@@ -162,11 +172,20 @@ def collect_queries(query_selectors, analyzer):
 
     for option in query_selectors:
         # call the test function on analyzer
-        test_function = getattr(analyzer, option['test'])
-        if not test_function():
+
+        test_function = None
+        test_name = option.get('testfunction')
+        if not test_name:
             continue
 
-        log.debug('Matched %s for query <%s>', option['test'], analyzer.query)
+        test_function = getattr(analyzer, option['testfunction'])
+
+        if test_function and not test_function():
+            continue
+
+        log.debug(
+            'Matched %s for query <%s>',
+            option['testfunction'], analyzer.query)
 
         queries.append(option['query'])
 
@@ -993,78 +1012,3 @@ class SearchPostcodeViewSet(SearchViewSet):
         else:
             search = bag_qs.weg_query(analyzer)
             return search.to_elasticsearch_object(elk_client)
-
-
-class SearchExactPostcodeToevoegingViewSet(viewsets.ViewSet):
-    """
-    Exact match lookup for a postcode and house number with extensions.
-
-    Returns either 1 result for the exact match or 0 if non is found.
-    This endpoint is used for the geocodering of addresses for the
-    afvalophalgebieden.
-    """
-
-    metadata_class = QueryMetadata
-
-    def search_query(self, request, elk_client,
-                     analyzer: QueryAnalyzer) -> Search:
-        """
-        Execute search in Objects
-        """
-        return bag_qs.postcode_huisnummer_exact_query(analyzer) \
-            .to_elasticsearch_object(elk_client)
-
-    def list(self, request, *args, **kwargs):
-        """
-        Show search results
-
-        ---
-        parameters:
-            - name: q
-              description: Zoek specifiek adres / nummeraanduiding
-              required: true
-              type: string
-              paramType: query
-        """
-
-        if 'q' not in request.query_params:
-            return Response([])
-
-        analyzer = QueryAnalyzer(request.query_params['q'])
-
-        # Making sure a house number is present
-        # There should be a minimum of 3 tokens:
-        # postcode number, postcode letters and house number
-        if not analyzer.is_postcode_huisnummer_prefix():
-            return Response([])
-
-        client = Elasticsearch(
-            settings.ELASTIC_SEARCH_HOSTS,
-            raise_on_error=True
-        )
-
-        # Ignoring cache in case debug is on
-        ignore_cache = settings.DEBUG
-        search = self.search_query(request, client, analyzer)
-        response = search.execute(ignore_cache=ignore_cache)
-
-        # Getting the first response.
-        # Either there is only one, or a housenumber was given
-        # where only extensions are available, in which case any result will do
-        if response and response.hits:
-            response = response.hits[0].to_dict()
-            # Adding RD gepopoint
-            if 'centroid' in response:
-                rd_point = Point(*response['centroid'], srid=4326)
-                # Using the newly generated point to
-                # replace the elastic results
-                # with geojson
-                response['geometrie'] = json.loads(rd_point.geojson)
-                rd_point.transform(28992)
-                response['geometrie_rd'] = json.loads(rd_point.geojson)
-                # Removing the poscode based fields from the results
-                # del(response['postcode_toevoeging'])
-                # del(response['postcode_huisnummer'])
-        else:
-            response = []
-        return Response(response)

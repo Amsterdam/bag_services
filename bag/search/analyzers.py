@@ -141,7 +141,6 @@ postcode = es.analyzer(
         token_chars=['letter', 'digit']),
     filter=[
         'lowercase',
-        whitespace_stripper,
     ],
 )
 

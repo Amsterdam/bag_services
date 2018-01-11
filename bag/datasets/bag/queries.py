@@ -198,7 +198,7 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor openbare ruimte.
     """
     return _basis_openbare_ruimte_query(analyzer, must=[{
-        'term': {'type.keyword': 'Openbare ruimte'}}],
+        'term': {'type': 'Openbare ruimte'}}],
     )
 
 
@@ -207,8 +207,8 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor gebieden.
     """
     return _basis_openbare_ruimte_query(
-            analyzer, useorder=True, must_not=[{
-                'term': {'type': 'Openbare ruimte'}}],
+            analyzer, useorder=True, must=[{
+                'term': {'type': 'Gebied'}}],
     )
 
 

@@ -628,8 +628,10 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
+
         self.nummeraanduidingen = dict(
             uva2.process_uva2(self.path, "NUM", self.process_num_row))
+
         uva2.process_uva2(self.path, "NUMLIGHFD", self.process_numlig_row)
         uva2.process_uva2(self.path, "NUMSTAHFD", self.process_numsta_row)
         uva2.process_uva2(self.path, "NUMVBOHFD", self.process_numvbo_row)
