@@ -64,7 +64,8 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         self.gemeentes = set()
 
     def before(self):
-        self.gemeentes = set(models.Gemeente.objects.values_list('gemeente', flat=True))
+        self.gemeentes = set(
+            models.Gemeente.objects.values_list('gemeente', flat=True))
 
     def after(self):
         self.gemeentes.clear()
@@ -117,8 +118,8 @@ class ImportKadastraleSectieTask(batch.BasicTask):
 
         if kad_gem_id not in self.gemeentes:
             log.warn(
-                    "Kadastrale sectie {} references non-existing Kadastrale Gemeente {}; skipping".format(pk,
-                                                                                                           kad_gem_id))
+                "Kadastrale sectie %s references non-existing "
+                "Kadastrale Gemeente %s; skipping", pk, kad_gem_id)
             return
 
         return pk, models.KadastraleSectie(
@@ -276,7 +277,9 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         except ValueError:
             huisnummer_int = None
 
-        self.adressen.setdefault(adres_id, models.Adres(
+        self.adressen.setdefault(
+            adres_id,
+            models.Adres(
                 id=adres_id,
 
                 openbareruimte_naam=openbareruimte_naam,
@@ -292,8 +295,10 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
                 buitenland_woonplaats=buitenland_woonplaats,
                 buitenland_regio=buitenland_regio,
                 buitenland_naam=buitenland_naam,
-                buitenland_land=self.get_land(buitenland_code, buitenland_omschrijving),
-        ))
+                buitenland_land=self.get_land(
+                    buitenland_code, buitenland_omschrijving),
+            )
+        )
         return adres_id
 
 
@@ -318,6 +323,12 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
         self.subjects = set(
             models.KadastraalSubject.objects.values_list("id", flat=True))
+
+        if not self.secties:
+            raise ValueError('Sections are missing..')
+
+        if not self.subjects:
+            raise ValueError('Sections are missing..')
 
     def after(self):
         self.secties.clear()
@@ -590,8 +601,15 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
     def before(self):
         self.kot = set(
             models.KadastraalObject.objects.values_list("id", flat=True))
+
         self.vbo = set(
             bag.Verblijfsobject.objects.values_list("id", flat=True))
+
+        if not self.vbo:
+            raise ValueError('VBO table empty')
+
+        if not self.kot:
+            raise ValueError('KOT table empty')
 
     def after(self):
         self.kot.clear()
@@ -688,10 +706,15 @@ class ImportKadasterJob(object):
             ImportKadastraleSectieTask(self.brk_shp),
             ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
+            # needs Subject and Object
             ImportZakelijkRechtTask(self.brk),
+            # needs Subject and Object
             ImportAantekeningTask(self.brk),
+            # needs bag.VBO
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
+            # needs zakelijk recht.
             ImportKadastraalObjectRelatiesTask(),
+            # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
         ]
 
