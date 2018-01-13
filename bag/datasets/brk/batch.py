@@ -139,7 +139,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         self.beschikkingsbevoegdheid = dict()
         self.aanduiding_naam = dict()
         self.land = dict()
-        self.adressen = dict()
+        # self.adressen = dict()
         self.rechtsvorm = dict()
 
     def before(self):
@@ -150,16 +150,23 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         self.beschikkingsbevoegdheid.clear()
         self.aanduiding_naam.clear()
         self.land.clear()
-        self.adressen.clear()
+        # self.adressen.clear()
         self.rechtsvorm.clear()
 
     def process(self):
-        subjects = uva2.process_csv(self.path, 'BRK_kadastraal_subject', self.process_subject)
+        subjects = uva2.process_csv(
+            self.path, 'BRK_kadastraal_subject', self.process_subject)
 
-        models.Adres.objects.bulk_create(self.adressen.values(), batch_size=database.BATCH_SIZE)
-        models.KadastraalSubject.objects.bulk_create(subjects, batch_size=database.BATCH_SIZE)
+        #log.debug(self.adressen.values())
+
+        #models.Adres.objects.bulk_create(
+        #    self.adressen.values(), batch_size=database.BATCH_SIZE)
+
+        models.KadastraalSubject.objects.bulk_create(
+            subjects, batch_size=database.BATCH_SIZE)
 
     def process_subject(self, row):
+
         subject_type = row['SJT_TYPE']
 
         woonadres_id = self.get_adres(row['SWS_OPENBARERUIMTENAAM'],
@@ -268,8 +275,10 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             return None
 
         m = hashlib.md5()
+
         for v in values:
             m.update(str(v).encode('utf-8'))
+
         adres_id = m.hexdigest()
 
         try:
@@ -277,28 +286,25 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         except ValueError:
             huisnummer_int = None
 
-        self.adressen.setdefault(
-            adres_id,
-            models.Adres(
-                id=adres_id,
+        models.Adres(
+            id=adres_id,
 
-                openbareruimte_naam=openbareruimte_naam,
-                huisnummer=huisnummer_int,
-                huisletter=huisletter,
-                toevoeging=toevoeging,
-                postcode=postcode,
-                woonplaats=woonplaats,
-                postbus_nummer=int(postbus_nummer) if postbus_nummer else None,
-                postbus_postcode=postbus_postcode,
-                postbus_woonplaats=postbus_woonplaats,
-                buitenland_adres=buitenland_adres,
-                buitenland_woonplaats=buitenland_woonplaats,
-                buitenland_regio=buitenland_regio,
-                buitenland_naam=buitenland_naam,
-                buitenland_land=self.get_land(
-                    buitenland_code, buitenland_omschrijving),
-            )
-        )
+            openbareruimte_naam=openbareruimte_naam,
+            huisnummer=huisnummer_int,
+            huisletter=huisletter,
+            toevoeging=toevoeging,
+            postcode=postcode,
+            woonplaats=woonplaats,
+            postbus_nummer=int(postbus_nummer) if postbus_nummer else None,
+            postbus_postcode=postbus_postcode,
+            postbus_woonplaats=postbus_woonplaats,
+            buitenland_adres=buitenland_adres,
+            buitenland_woonplaats=buitenland_woonplaats,
+            buitenland_regio=buitenland_regio,
+            buitenland_naam=buitenland_naam,
+            buitenland_land=self.get_land(
+            buitenland_code, buitenland_omschrijving),
+        ).save()
         return adres_id
 
 
@@ -469,6 +475,7 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         zrts = dict(
             uva2.process_csv(
                 self.path, 'BRK_zakelijk_recht', self.process_subject))
+
         models.ZakelijkRecht.objects.bulk_create(
             zrts.values(), batch_size=database.BATCH_SIZE)
 
@@ -551,6 +558,7 @@ class ImportAantekeningTask(batch.BasicTask):
 
     def process(self):
         atks = dict(uva2.process_csv(self.path, 'BRK_aantekening', self.process_row))
+
         models.Aantekening.objects.bulk_create(atks.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):

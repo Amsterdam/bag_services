@@ -1,14 +1,22 @@
+"""
+Database import commands
+"""
+
 import sys
 
-from django.core.management import BaseCommand, call_command
+from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
 import datasets.wkpb.batch
+from datasets import validate_tables
 from batch import batch
 
 
 class Command(BaseCommand):
+    """
+    Import datainto database. with options to select dataset
+    """
     ordered = ['bag', 'brk', 'wkpb', 'gebieden']
 
     imports = dict(
@@ -34,36 +42,33 @@ class Command(BaseCommand):
             help="Dataset to import, choose from {}".format(
                 ', '.join(self.imports.keys())))
 
-        parser.add_argument('--no-import',
-                            action='store_false',
-                            dest='run-import',
-                            default=True,
-                            help='Skip database importing')
+        parser.add_argument(
+            '--validate',
+            action='store_true',
+            dest='validate',
+            default=False,
+            help='Skip database importing')
 
-        parser.add_argument('--no-index',
-                            action='store_false',
-                            dest='run-index',
-                            default=True,
-                            help='Skip elastic search indexing')
 
     def handle(self, *args, **options):
         dataset = options['dataset']
 
-        for ds in dataset:
-            if ds not in self.imports.keys():
-                self.stderr.write("Unkown dataset: {}".format(ds))
+        for a_ds in dataset:
+            if a_ds not in self.imports.keys():
+                self.stderr.write("Unkown dataset: {}".format(a_ds))
                 sys.exit(1)
 
         sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
 
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
-        for ds in sets:
+        if options['validate']:
+            validate_tables.check_table_targets()
+            return
+
+        for a_ds in sets:
 
             if options['run-import']:
-                for job_class in self.imports[ds]:
+                for job_class in self.imports[a_ds]:
                     batch.execute(job_class())
 
-            if options['run-index']:
-                for job_class in self.indexes[ds]:
-                    batch.execute(job_class())

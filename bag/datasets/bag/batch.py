@@ -602,6 +602,7 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(
             models.Status.objects.values_list("pk", flat=True))
+
         self.openbare_ruimtes = set(
             models.OpenbareRuimte.objects.values_list("pk", flat=True))
 
@@ -627,18 +628,19 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.update_metadata_uva2(self.path, 'NUM')
 
     def process(self):
+
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
 
         self.nummeraanduidingen = dict(
             uva2.process_uva2(self.path, "NUM", self.process_num_row))
 
-        uva2.process_uva2(self.path, "NUMLIGHFD", self.process_numlig_row)
-        uva2.process_uva2(self.path, "NUMSTAHFD", self.process_numsta_row)
-        uva2.process_uva2(self.path, "NUMVBOHFD", self.process_numvbo_row)
-        uva2.process_uva2(self.path, "NUMVBONVN", self.process_numvbonvn_row)
-
         models.Nummeraanduiding.objects.bulk_create(
             self.nummeraanduidingen.values(), batch_size=database.BATCH_SIZE)
+
+        list(uva2.process_uva2(self.path, "NUMLIGHFD", self.process_numlig_row))
+        list(uva2.process_uva2(self.path, "NUMSTAHFD", self.process_numsta_row))
+        list(uva2.process_uva2(self.path, "NUMVBOHFD", self.process_numvbo_row))
+        list(uva2.process_uva2(self.path, "NUMVBONVN", self.process_numvbonvn_row))
 
     def process_num_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -710,9 +712,10 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                 'Num-Lig-Hfd {} references non-existing nummeraanduiding {}; skipping'.format(pk, nummeraanduiding_id))
             return None
 
-        nummeraanduiding = self.nummeraanduidingen[nummeraanduiding_id]
+        nummeraanduiding = models.Nummeraanduiding.objects.get(pk=nummeraanduiding_id)
         nummeraanduiding.ligplaats_id = ligplaats_id
         nummeraanduiding.hoofdadres = True
+        nummeraanduiding.save()
 
     def process_numsta_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -733,9 +736,10 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                 'Num-Sta-Hfd {} references non-existing nummeraanduiding {}; skipping'.format(pk, nummeraanduiding_id))
             return None
 
-        nummeraanduiding = self.nummeraanduidingen[nummeraanduiding_id]
+        nummeraanduiding = models.Nummeraanduiding.objects.get(id=nummeraanduiding_id)
         nummeraanduiding.standplaats_id = standplaats_id
         nummeraanduiding.hoofdadres = True
+        nummeraanduiding.save()
 
     def process_numvbo_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -756,9 +760,10 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                 'Num-Vbo-Hfd {} references non-existing nummeraanduiding {}; skipping'.format(pk, nummeraanduiding_id))
             return None
 
-        nummeraanduiding = self.nummeraanduidingen[nummeraanduiding_id]
+        nummeraanduiding = models.Nummeraanduiding.objects.get(id=nummeraanduiding_id)
         nummeraanduiding.verblijfsobject_id = vbo_id
         nummeraanduiding.hoofdadres = True
+        nummeraanduiding.save()
 
     def process_numvbonvn_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -779,9 +784,10 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                 'Num-Vbo-Nvn {} references non-existing nummeraanduiding {}; skipping'.format(pk, nummeraanduiding_id))
             return None
 
-        nummeraanduiding = self.nummeraanduidingen[nummeraanduiding_id]
+        nummeraanduiding = models.Nummeraanduiding.objects.get(id=nummeraanduiding_id)
         nummeraanduiding.verblijfsobject_id = vbo_id
         nummeraanduiding.hoofdadres = False
+        nummeraanduiding.save()
 
 
 class ImportLigTask(batch.BasicTask):
