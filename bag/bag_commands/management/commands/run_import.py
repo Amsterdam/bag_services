@@ -26,13 +26,6 @@ class Command(BaseCommand):
         gebieden=[],
     )
 
-    indexes = dict(
-        bag=[datasets.bag.batch.IndexBagJob],
-        brk=[datasets.brk.batch.IndexKadasterJob],
-        wkpb=[],
-        gebieden=[datasets.bag.batch.IndexGebiedenJob],
-    )
-
     def add_arguments(self, parser):
 
         parser.add_argument(
@@ -48,7 +41,6 @@ class Command(BaseCommand):
             dest='validate',
             default=False,
             help='Skip database importing')
-
 
     def handle(self, *args, **options):
         dataset = options['dataset']
