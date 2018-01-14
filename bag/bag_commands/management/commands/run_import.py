@@ -67,8 +67,6 @@ class Command(BaseCommand):
             return
 
         for one_ds in sets:
-
-            if options['run-import']:
-                for job_class in self.imports[one_ds]:
-                    batch.execute(job_class())
+            for job_class in self.imports[one_ds]:
+                batch.execute(job_class())
 
