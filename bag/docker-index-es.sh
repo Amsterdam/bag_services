@@ -6,7 +6,7 @@ set -x   # log every command.
 
 source docker-wait.sh
 
-# clear elasticindices
+# clear elasticindices and creates empty ones
 python manage.py elastic_indices --delete
 
 python manage.py elastic_indices gebieden wkpb --build

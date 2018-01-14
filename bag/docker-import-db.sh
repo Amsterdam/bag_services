@@ -12,4 +12,5 @@ python objectstore/objectstore.py
 # load data in database
 python manage.py migrate
 python manage.py flush --noinput
-python manage.py run_import --no-index
+python manage.py run_import
+python manage.py run_import --validate

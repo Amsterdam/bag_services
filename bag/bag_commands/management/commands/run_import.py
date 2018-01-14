@@ -53,9 +53,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dataset = options['dataset']
 
-        for a_ds in dataset:
-            if a_ds not in self.imports.keys():
-                self.stderr.write("Unkown dataset: {}".format(a_ds))
+        for one_ds in dataset:
+            if one_ds not in self.imports.keys():
+                self.stderr.write("Unkown dataset: {}".format(one_ds))
                 sys.exit(1)
 
         sets = [ds for ds in self.ordered if ds in dataset]  # enforce order
@@ -66,9 +66,9 @@ class Command(BaseCommand):
             validate_tables.check_table_targets()
             return
 
-        for a_ds in sets:
+        for one_ds in sets:
 
             if options['run-import']:
-                for job_class in self.imports[a_ds]:
+                for job_class in self.imports[one_ds]:
                     batch.execute(job_class())
 
