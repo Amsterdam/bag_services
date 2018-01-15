@@ -197,7 +197,7 @@ class Gebied(es.DocType):
     naam = es.Text(
         analyzer=analyzers.adres,
         fields={
-            'keyword': es.Keyword(),
+            'keyword': es.Keyword(normalizer=analyzers.lowercase),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete,
                 search_analyzer='standard'

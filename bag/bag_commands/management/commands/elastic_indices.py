@@ -79,7 +79,8 @@ class Command(BaseCommand):
 
         for ds in dataset:
             if ds not in self.indexes.keys():
-                self.stderr.write("Unkown dataset: {}".format(ds))
+                self.stderr.write("Unkown dataset: {} options are: {}".format(
+                    ds, self.ordered))
                 return
 
         sets = [ds for ds in self.ordered if ds in dataset]  # enforce order

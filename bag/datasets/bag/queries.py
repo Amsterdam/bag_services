@@ -207,8 +207,7 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor gebieden.
     """
     return _basis_openbare_ruimte_query(
-            analyzer, useorder=True, must=[{
-                'term': {'type': 'gebied'}}],
+            analyzer, useorder=False, must=[],
     )
 
 
