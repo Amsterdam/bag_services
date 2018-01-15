@@ -357,10 +357,11 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
-    d = Gebied(_id=o.id)
-    d.type = 'Openbare ruimte'
+    d = Gebied(_id='opr_{}'.format(o.id))
+    d.type = 'openbare_ruimte'
     # weg, water, spoorbaan, terrein, kunstwerk (brug), landschap,..
     d.subtype = o.get_type_display().lower()
+    d.subtype_id = o.id
 
     d.naam = o.naam
     d.naam_nen = o.naam_nen
@@ -384,7 +385,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 def from_unesco(u: models.Unesco):
     d = Gebied(_id='unseco{}'.format(u.id))
 
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype = 'unesco'
 

@@ -1901,9 +1901,18 @@ class DeleteIndexBagJob(object):
 
     def tasks(self):
         return [
+            DeleteNummerAanduidingIndexTask(),
+        ]
+
+
+class DeleteIndexGebiedJob(object):
+
+    name = "Delete BAG_GEBIED index"
+
+    def tasks(self):
+        return [
             DeleteGebiedIndexTask(),
             DeleteBouwblokIndexTask(),
-            DeleteNummerAanduidingIndexTask(),
         ]
 
 

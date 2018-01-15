@@ -23,8 +23,8 @@ class Command(BaseCommand):
         'bag': [datasets.bag.batch.DeleteIndexBagJob],
         'brk': [datasets.brk.batch.DeleteIndexKadasterJob],
         # 'brk': [],
-        'wkpb': [],
-        'gebieden': [],  # too small..
+        'wkpb': [],  # has no elastic index
+        'gebieden': [datasets.bag.batch.DeleteIndexGebiedJob],
     }
 
     def add_arguments(self, parser):

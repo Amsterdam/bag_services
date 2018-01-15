@@ -49,7 +49,6 @@ def parse_xyr(value: str) -> (Point, int):
     return point, radius
 
 
-
 class ExpansionMetadata(SimpleMetadata):
     def determine_metadata(self, request, view):
         result = super().determine_metadata(request, view)
@@ -248,7 +247,6 @@ class NummeraanduidingFilter(FilterSet):
             'locatie',
         ]
 
-
     def postcode_filter(self, queryset, _filter_name, value):
         """
         Support for incomplete postcode
@@ -275,7 +273,7 @@ class NummeraanduidingFilter(FilterSet):
         The value given is broken up by ',' and converterd
         to the value tuple
         """
-        point, radius= parse_xyr(value)
+        point, radius = parse_xyr(value)
 
         # Creating one big queryset
         verblijfsobjecten = queryset.filter(
@@ -421,7 +419,7 @@ class PandenFilter(FilterSet):
         The value given is broken up by ',' and converterd
         to the value tuple
         """
-        point, radius= parse_xyr(value)
+        point, radius = parse_xyr(value)
 
         opr = queryset.filter(
             geometrie__dwithin=(point, D(m=radius))
@@ -467,7 +465,6 @@ class PandViewSet(rest.DatapuntViewSet):
         return obj
 
 
-
 class OpenbareRuimteFilter(FilterSet):
     """
     Filter openbare ruimte
@@ -493,7 +490,7 @@ class OpenbareRuimteFilter(FilterSet):
         The value given is broken up by ',' and converterd
         to the value tuple
         """
-        point, radius= parse_xyr(value)
+        point, radius = parse_xyr(value)
 
         opr = queryset.filter(
             geometrie__dwithin=(point, D(m=radius))
@@ -571,37 +568,6 @@ class WoonplaatsViewSet(rest.DatapuntViewSet):
             obj = get_object_or_404(models.Woonplaats, pk=pk)
 
         return obj
-
-
-# gebieden
-
-# Gemeente dataset zit in Kadaster. Deze is dus niet meer nodig
-# als view maar wel in de import.
-
-# class GemeenteViewSet(rest.DatapuntViewSet):
-#    """
-#    Gemeente
-#
-#    Een gemeente is een afgebakend gedeelte van het grondgebied
-#    van Nederland, ingesteld op basis van artikel 123 van
-#    de Grondwet.
-#
-#    Verder is een gemeente zelfstandig, heeft zij zelfbestuur en
-#    is onderdeel van de staat. Zij staat onder bestuur van
-#    een raad, een burgemeester en wethouders.
-#
-#    De gemeentegrens wordt door de centrale overheid vastgesteld,
-#    en door het Kadaster vastgelegd.
-#
-#    [Stelselpedia]
-#    (https://www.amsterdam.nl/stelselpedia/brk-index/catalogus/objectklasse-2/)
-#    """
-#
-#    metadata_class = ExpansionMetadata
-#    queryset = models.Gemeente.objects.all()
-#    serializer_detail_class = serializers.GemeenteDetail
-#    serializer_class = serializers.Gemeente
-#    template_name = "gebieden/gemeente.html"
 
 
 class StadsdeelViewSet(rest.DatapuntViewSet):
