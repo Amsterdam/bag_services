@@ -48,3 +48,10 @@ services:
       - UWSGI_OFFLOAD_THREADS=3
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
+
+  swaggerui:
+    image: amsterdam/oauth2swaggerui
+    ports:
+      - 8686:8686
+    links:
+      - bag
