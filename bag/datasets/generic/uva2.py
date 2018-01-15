@@ -97,6 +97,7 @@ def geldige_relaties(row, *relaties):
 
 
 def logging_callback(source_path, original_callback):
+
     def result(r):
         try:
             return original_callback(r)
@@ -147,18 +148,26 @@ def process_uva2(path, file_code, process_row_callback):
     :return: an iterable over the results of process_row_callback
     """
     source = resolve_file(path, file_code)
+
     cb = logging_callback(source, process_row_callback)
 
     with _context_reader(source) as rows:
-        return [result for result in (cb(r) for r in rows) if result]
+        for row in rows:
+            result = cb(row)
+            if result:
+                yield result
 
 
 def process_csv(path, file_code, process_row_callback):
     source = resolve_file(path, file_code, extension='csv')
+
     cb = logging_callback(source, process_row_callback)
 
     with _context_reader(source, skip=0, quotechar='"', quoting=csv.QUOTE_MINIMAL) as rows:
-        return [result for result in (cb(r) for r in rows) if result]
+        for row in rows:
+            result = cb(row)
+            if result:
+                yield result
 
 
 def read_landelijk_id_mapping(path, file_code):

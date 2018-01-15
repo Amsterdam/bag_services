@@ -49,6 +49,7 @@ The BAG API should now be available on http://localhost:8000/
 To run an import, execute:
 
 	./bag/manage.py run_import
+	./bag/manage.py elastic_indices --build
 
 To see the various options for partial imports, execute:
 

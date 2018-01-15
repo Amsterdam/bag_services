@@ -149,12 +149,12 @@ LOGGING = {
         },
         'index': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'propagate': False,
         },
         'batch': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'propagate': False,
         },
 

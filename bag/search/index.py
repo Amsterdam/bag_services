@@ -55,7 +55,7 @@ class DeleteIndexTask(object):
 
 class ImportIndexTask(object):
     queryset = None
-    batch_size = 10000
+    # batch_size = 10000
 
     def get_queryset(self):
         return self.queryset.order_by('id')
@@ -127,6 +127,13 @@ class ImportIndexTask(object):
         duration = time.time()
         loop_time = elapsed = duration - start_time
 
+        def gen_dicts(qs):
+            """
+            Generate dicst from querysets.
+            """
+            for obj in qs:
+                yield self.convert(obj).to_dict(include_meta=True)
+
         for batch_i, total_batches, start, end, total, qs in self.batch_qs():
 
             loop_start = time.time()
@@ -140,9 +147,9 @@ class ImportIndexTask(object):
 
             log.debug(progres_msg)
 
+
             helpers.bulk(
-                client, (self.convert(obj).to_dict(include_meta=True)
-                         for obj in qs),
+                client, gen_dicts(qs),
                 raise_on_error=True,
                 refresh=True
             )
@@ -157,41 +164,3 @@ class ImportIndexTask(object):
         if settings.TESTING:
             es_index = IndicesClient(client)
             es_index.forcemerge('*test', max_num_segments=1)
-
-
-class CopyIndexTask(object):
-    """
-    Backup index from already loaded documents in elastic
-
-    Building index from existing documents is a lot faster
-    then doing if directly from the database
-
-    Especialy userfull when editing/testing analyzers
-    and change production environment on the fly
-    """
-    index = ''
-    target = ''
-    name = 'copy index elastic'
-
-    def __init__(self):
-        """
-        """
-        if not self.index:
-            raise ValueError("No index specified")
-
-        if not self.target:
-            raise ValueError("No target index specified")
-
-    def execute(self):
-        """
-        Reindex elastic index using existing documents
-        """
-        client = elasticsearch.Elasticsearch(
-            hosts=settings.ELASTIC_SEARCH_HOSTS,
-            # sniff_on_start=True,
-            retry_on_timeout=True
-        )
-
-        log.debug('Backup index %s to %s ', self.index, self.target)
-        helpers.reindex(client, self.index, self.target)
-

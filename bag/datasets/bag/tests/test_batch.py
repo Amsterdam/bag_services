@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 
 from datasets.bag.tests import factories
 from .. import models, batch
+
 from batch.test import TaskTestCase
 
 BAG = 'diva/bag'
@@ -565,6 +566,7 @@ class ImportNumTest(TaskTestCase):
 
     def test_num_lig_hfd_import(self):
         factories.OpenbareRuimteFactory.create(pk='03630000003404')
+        factories.OpenbareRuimteFactory.create(pk='03630000001094')
         factories.LigplaatsFactory.create(pk='03630001035885')
 
         self.run_task()
