@@ -51,6 +51,7 @@ _details = {
 
     # OPR
     'gebied': 'openbareruimte-detail',
+    'overig terrein': 'openbareruimte-detail',
 
     'grootstedelijk': 'grootstedelijkgebied-detail',
     'woonplaats': 'woonplaats-detail',
@@ -82,7 +83,6 @@ _subtype_mapping = {
     'terrein': 'Gebieden',
     'administratief gebied': 'Gebieden',
     'spoorbaan': 'Gebieden',
-    'overig terrein': 'Gebieden',
     'landschappelijk gebied': 'Gebieden',
     'verblijfsobject': 'Adres',
     'ligplaats': 'Adres',
