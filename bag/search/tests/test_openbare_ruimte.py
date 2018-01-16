@@ -23,7 +23,7 @@ class OPRTest(APITransactionTestCase):
         bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='02')
 
-        batch.execute(datasets.bag.batch.DeleteIndexBagJob())
+        batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
 
     def test_matching_query(self):
@@ -37,7 +37,7 @@ class OPRTest(APITransactionTestCase):
         first = response.data['results'][0]
 
         self.assertEqual(first['naam'], "Anjeliersstraat")
-        self.assertEqual(first['type'], "Openbare ruimte")
+        self.assertEqual(first['type'], "openbare_ruimte")
 
     def test_query_openbare_ruimte_gracht(self):
         response = self.client.get(

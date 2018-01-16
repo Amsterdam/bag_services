@@ -36,7 +36,7 @@ class GebiedSearchTest(APITransactionTestCase):
         self.bb = bag_factories.BouwblokFactory(code='YC01')
         self.bb2 = bag_factories.BouwblokFactory(code='YC00')
 
-        batch.execute(datasets.bag.batch.DeleteIndexBagJob())
+        batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
 
     def find(self, naam, tussenhaakjes=None):
