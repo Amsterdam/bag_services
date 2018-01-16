@@ -116,6 +116,10 @@ def load_docs():
         woonadres=adres
     )
 
+    batch.execute(datasets.bag.batch.DeleteIndexBagJob())
+    batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())
+    batch.execute(datasets.brk.batch.DeleteIndexKadasterJob())
+
     batch.execute(datasets.bag.batch.IndexBagJob())
     batch.execute(datasets.bag.batch.IndexGebiedenJob())
     batch.execute(datasets.brk.batch.IndexKadasterJob())
