@@ -12,7 +12,6 @@ from typing import AbstractSet, List
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
-from django.contrib.gis.geos import Point
 from django.utils.encoding import force_text
 
 from elasticsearch import Elasticsearch
@@ -50,6 +49,9 @@ _details = {
     'gebiedsgerichtwerken': 'gebiedsgerichtwerken-detail',
     'stadsdeel': 'stadsdeel-detail',
 
+    # OPR
+    'gebied': 'openbareruimte-detail',
+
     'grootstedelijk': 'grootstedelijkgebied-detail',
     'woonplaats': 'woonplaats-detail',
 }
@@ -77,6 +79,10 @@ _subtype_mapping = {
     'weg': 'Straatnamen',
     'water': 'Water',
     'kunstwerk': 'Kunstwerk',
+    'terrein': 'Gebieden',
+    'administratief gebied': 'Gebieden',
+    'spoorbaan': 'Gebied',
+    'landschappelijk gebied': 'Gebieden',
     'verblijfsobject': 'Adres',
     'ligplaats': 'Adres',
     'standplaats': 'Adres',
@@ -126,7 +132,8 @@ all_query_selectors = [
     {
         'labels': {'gebieden'},
         'testfunction': None,
-        'query': bag_qs.weg_query,
+        # 'query': bag_qs.weg_query,
+        'query': bag_qs.gebied_query,
     },
 ]
 
@@ -245,6 +252,16 @@ def select_queries(
     return [q(analyzer) for q in queries]
 
 
+def get_possible_doc_value(hit, attribute, default):
+
+    if hasattr(hit, attribute):
+        value = getattr(hit, attribute)
+        if value:
+            return value
+
+    return default
+
+
 def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
@@ -252,8 +269,8 @@ def _get_url(request, hit):
 
     doc_type, id = hit.meta.doc_type, hit.meta.id
 
-    if hasattr(hit, 'subtype_id'):
-        id = hit.subtype_id if hit.subtype_id else id
+    id = get_possible_doc_value(hit, 'subtype_id', id)
+    doc_type = get_possible_doc_value(hit, 'type', doc_type)
 
     if doc_type in _details:
         return rest.get_links(
@@ -272,11 +289,7 @@ def _get_url(request, hit):
             view_name=_details[hit.subtype],
             kwargs={'pk': id}, request=request)
 
-    return {
-        'self': {
-            'href': '/{}/{}/{}/notworking'.format(doc_type, hit.subtype, id)
-        }
-    }
+    raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
 
 class QueryMetadata(metadata.SimpleMetadata):

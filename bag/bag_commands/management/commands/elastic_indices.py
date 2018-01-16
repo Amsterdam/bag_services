@@ -22,9 +22,8 @@ class Command(BaseCommand):
     delete_indexes = {
         'bag': [datasets.bag.batch.DeleteIndexBagJob],
         'brk': [datasets.brk.batch.DeleteIndexKadasterJob],
-        # 'brk': [],
-        'wkpb': [],
-        'gebieden': [datasets.bag.batch.DeleteIndexGebiedenJob],
+        'wkpb': [],  # has no elastic index
+        'gebieden': [datasets.bag.batch.DeleteIndexGebiedJob],
     }
 
     def add_arguments(self, parser):
@@ -79,9 +78,8 @@ class Command(BaseCommand):
 
         for ds in dataset:
             if ds not in self.indexes.keys():
-                self.stderr.write(
-                    "Unkown dataset: {} options {}".format(
-                        ds, self.ordered))
+                self.stderr.write("Unkown dataset: {} options are: {}".format(
+                    ds, self.ordered))
                 return
 
         sets = [ds for ds in self.ordered if ds in dataset]  # enforce order

@@ -1944,9 +1944,9 @@ class DeleteIndexBagJob(object):
         ]
 
 
-class DeleteIndexGebiedenJob(object):
+class DeleteIndexGebiedJob(object):
 
-    name = "Delete Gebieden indexes"
+    name = "Delete BAG_GEBIED index"
 
     def tasks(self):
         return [
