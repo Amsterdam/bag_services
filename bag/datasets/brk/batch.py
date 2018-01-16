@@ -344,10 +344,11 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         self.subjects.clear()
 
     def process(self):
-        objects = dict(uva2.process_csv(
-            self.path, 'BRK_kadastraal_object', self.process_object))
+        objects = uva2.process_csv(
+            self.path, 'BRK_kadastraal_object', self.process_object)
+
         models.KadastraalObject.objects.bulk_create(
-            objects.values(), batch_size=database.BATCH_SIZE)
+            objects, batch_size=database.BATCH_SIZE)
 
     def process_object(self, row):
         kot_id = row['BRK_KOT_ID']
@@ -355,7 +356,8 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         kg_id = row['KOT_KADASTRALEGEMEENTE_CODE']
         sectie = row['KOT_SECTIE']
         if (kg_id, sectie) not in self.secties:
-            log.warn("Kadastraal Object {} references non-existing Kadastrale Gemeente {}, Sectie {}; skipping".format(
+            log.warn(
+                "Kadastraal Object {} references non-existing Kadastrale Gemeente {}, Sectie {}; skipping".format(
                     kot_id, kg_id, sectie))
             return
 
@@ -398,7 +400,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
         vrlpg = row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens'
 
-        return kot_id, models.KadastraalObject(
+        return models.KadastraalObject(
                 id=kot_id,
                 kadastrale_gemeente_id=kg_id,
                 aanduiding=aanduiding,
@@ -750,6 +752,7 @@ class IndexSubjectTask(index.ImportIndexTask):
 
 
 class IndexObjectTask(index.ImportIndexTask):
+
     name = "index kadastraal object"
     queryset = (
         models.KadastraalObject.objects

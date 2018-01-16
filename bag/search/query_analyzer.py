@@ -247,7 +247,7 @@ class QueryAnalyzer(object):
         query.
         """
         assert self.is_postcode_prefix()
-        return " ".join(self._tokens[:2])
+        return "".join(self._tokens[:2])
 
     def is_postcode_huisnummer_prefix(self) -> bool:
         """

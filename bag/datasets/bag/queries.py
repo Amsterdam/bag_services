@@ -36,11 +36,11 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 'must': [
                     {
                         'prefix': {
-                            'postcode': postcode,
+                            'postcode.raw': postcode,
                         }
                     },
                     {
-                        'match': {
+                        'prefix': {
                             'toevoeging': toevoeging,
                         }
                     },
@@ -79,7 +79,6 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     return ElasticQueryWrapper(
         query={
             "prefix": {
-                # upper, want raw is case-sensitive
                 "code": analyzer.get_bouwblok()
             },
         },
@@ -97,7 +96,7 @@ def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         query=Q(
             'bool',
             must=[
-                {'match': {'postcode': postcode}},
+                {'prefix': {'postcode': postcode}},
                 Q('term', subtype='weg'),
             ],
         ),
@@ -198,7 +197,7 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor openbare ruimte.
     """
     return _basis_openbare_ruimte_query(analyzer, must=[{
-        'term': {'type': 'Openbare ruimte'}}],
+        'term': {'type': 'openbare_ruimte'}}],
     )
 
 
@@ -207,8 +206,8 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor gebieden.
     """
     return _basis_openbare_ruimte_query(
-            analyzer, useorder=True, must=[{
-                'term': {'type': 'Gebied'}}],
+            analyzer, useorder=False, must=[{
+                'term': {'type': 'gebied'}}],
     )
 
 

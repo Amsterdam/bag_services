@@ -15,15 +15,13 @@ naam_fields = {
 }
 
 postcode_fields = {
-    'raw': es.Keyword(
-        normalizer=analyzers.lowercase),
+    'raw': es.Keyword(normalizer=analyzers.lowercase),
     'ngram': es.Text(
         analyzer=analyzers.autocomplete, search_analyzer='standard'),
 }
 
 
 text_fields = {
-    'raw': es.Keyword(),
     'ngram_edge': es.Text(
         analyzer=analyzers.autocomplete, search_analyzer='standard'
     ),
@@ -131,6 +129,7 @@ class Nummeraanduiding(es.DocType):
     )
 
     postcode = es.Text(
+        analyzer=analyzers.postcode,
         fields=postcode_fields,
     )
 
@@ -196,13 +195,7 @@ class Gebied(es.DocType):
 
     naam = es.Text(
         analyzer=analyzers.adres,
-        fields={
-            'keyword': es.Keyword(),
-            'ngram_edge': es.Text(
-                analyzer=analyzers.autocomplete,
-                search_analyzer='standard'
-            ),
-        }
+        fields=text_fields
     )
 
     naam_nen = es.Text(
@@ -217,7 +210,6 @@ class Gebied(es.DocType):
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
-        search_analyzer='standard',
         fields=postcode_fields
     )
 
@@ -358,7 +350,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
 def from_openbare_ruimte(o: models.OpenbareRuimte):
     d = Gebied(_id=o.id)
-    d.type = 'Openbare ruimte'
+    d.type = 'openbare_ruimte'
     # weg, water, spoorbaan, terrein, kunstwerk (brug), landschap,..
     d.subtype = o.get_type_display().lower()
 
@@ -384,7 +376,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 def from_unesco(u: models.Unesco):
     d = Gebied(_id='unseco{}'.format(u.id))
 
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype = 'unesco'
 
@@ -400,7 +392,7 @@ def from_unesco(u: models.Unesco):
 def from_buurt(b: models.Buurt):
     d = Gebied(_id='buurt{}'.format(b.id))
     d.subtype = 'buurt'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = b.id
     d.naam = b.naam
@@ -414,7 +406,7 @@ def from_buurt(b: models.Buurt):
 def from_buurtcombinatie(bc: models.Buurtcombinatie):
     d = Gebied(_id='buurtcombinatie{}'.format(bc.id))
     d.subtype = 'buurtcombinatie'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = bc.id
     d.naam = bc.naam
@@ -428,7 +420,7 @@ def from_buurtcombinatie(bc: models.Buurtcombinatie):
 def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
     d = Gebied(_id='gebiedsgericht{}'.format(gg.id))
     d.subtype = 'gebiedsgerichtwerken'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = gg.id
     d.naam = gg.naam
@@ -442,7 +434,7 @@ def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
 def from_stadsdeel(sd: models.Stadsdeel):
     d = Gebied(_id='stadsdeel{}'.format(sd.id))
     d.subtype = 'stadsdeel'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = sd.id
     d.naam = sd.naam
@@ -456,7 +448,7 @@ def from_stadsdeel(sd: models.Stadsdeel):
 def from_grootstedelijk(gs: models.Grootstedelijkgebied):
     d = Gebied(_id='stadsdeel{}'.format(gs.id))
     d.subtype = 'grootstedelijk'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = gs.id
     d.naam = gs.naam
@@ -469,7 +461,7 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
 def from_gemeente(g: models.Gemeente):
     d = Gebied(_id='gemeente{}'.format(g.id))
     d.subtype = 'gemeente'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = g.naam.lower()
     d.naam = g.naam
@@ -482,7 +474,7 @@ def from_gemeente(g: models.Gemeente):
 def from_woonplaats(w: models.Woonplaats):
     d = Gebied(_id='woonplaats{}'.format(w.id))
     d.subtype = 'woonplaats'
-    d.type = 'Gebied'
+    d.type = 'gebied'
 
     d.subtype_id = w.id
     d.naam = w.naam

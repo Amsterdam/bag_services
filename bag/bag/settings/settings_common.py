@@ -112,7 +112,7 @@ LOGGING = {
 
     'handlers': {
         'console': {
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'console',
         },
@@ -132,26 +132,47 @@ LOGGING = {
     },
 
     'loggers': {
+
         'django.db': {
             'handlers': ['console'],
             'level': 'ERROR',
         },
+
         'django': {
             'handlers': ['console'],
             'level': 'ERROR',
         },
 
-        # Debug all batch jobs
+        'django.template': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
+
         'doc': {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
+
+        'markdown': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'authorization_django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
         'index': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
+
+        # Debug all batch jobs
         'batch': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -161,6 +182,13 @@ LOGGING = {
         'search': {
             'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # Debug all search index jobs
+        'search.index': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
 

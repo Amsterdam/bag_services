@@ -717,7 +717,6 @@ class SetHoofdAdres(batch.BasicTask):
         nummeraanduiding.verblijfsobject_id = vbo_id
         nummeraanduiding.hoofdadres = False
         nummeraanduiding.save()
-        log.debug(nummeraanduiding)
 
 
 class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
@@ -1921,11 +1920,8 @@ class IndexBagJob(object):
 
     def tasks(self):
         return [
-            DeleteBouwblokIndexTask(),
-            DeleteGebiedIndexTask(),
             DeleteNummerAanduidingIndexTask(),
             IndexNummerAanduidingTask(),
-
         ]
 
 
@@ -1944,9 +1940,18 @@ class DeleteIndexBagJob(object):
 
     def tasks(self):
         return [
+            DeleteNummerAanduidingIndexTask(),
+        ]
+
+
+class DeleteIndexGebiedenJob(object):
+
+    name = "Delete Gebieden indexes"
+
+    def tasks(self):
+        return [
             DeleteGebiedIndexTask(),
             DeleteBouwblokIndexTask(),
-            DeleteNummerAanduidingIndexTask(),
         ]
 
 

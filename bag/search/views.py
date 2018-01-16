@@ -126,7 +126,7 @@ all_query_selectors = [
     {
         'labels': {'gebieden'},
         'testfunction': None,
-        'query': bag_qs.straatnaam_huisnummer_query,
+        'query': bag_qs.weg_query,
     },
 ]
 

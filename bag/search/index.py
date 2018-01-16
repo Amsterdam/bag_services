@@ -147,7 +147,6 @@ class ImportIndexTask(object):
 
             log.debug(progres_msg)
 
-
             helpers.bulk(
                 client, gen_dicts(qs),
                 raise_on_error=True,
