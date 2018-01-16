@@ -28,14 +28,15 @@ def check_table_counts(table_data: list):
     check if current table counts are close
     """
     error = False
-    all_msg = "Table count errors \n"
+    all_msg = ("Table count errors \n"
+              "Count,    Target,    Table")
     for target, table in table_data:
         count = sql_count(table)
+        msg = f"{count:>6} ~= {target:<6} {table:<45}\n"   # noqa
+        all_msg += msg
         if count < target - 4000 or count == 0:
-            msg = f"{table:<35}: {count} != {target}\n"   # noqa
             LOG.error(msg)
             error = True
-            all_msg += msg
 
     if error:
         raise ValueError(all_msg)

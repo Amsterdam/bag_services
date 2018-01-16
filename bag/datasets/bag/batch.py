@@ -734,7 +734,6 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.bronnen = set()
         self.statussen = set()
         self.openbare_ruimtes = set()
-        self.nummeraanduidingen = dict()
         self.landelijke_ids = dict()
 
     def before(self):
@@ -750,19 +749,16 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.statussen.clear()
         self.openbare_ruimtes.clear()
 
-        self.nummeraanduidingen.clear()
-
         self.update_metadata_uva2(self.path, 'NUM')
 
     def process(self):
 
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
-
-        self.nummeraanduidingen = dict(
-            uva2.process_uva2(self.path, "NUM", self.process_num_row))
+        # NOTE generator!
+        nummeraanduidingen = uva2.process_uva2(self.path, "NUM", self.process_num_row)
 
         models.Nummeraanduiding.objects.bulk_create(
-            self.nummeraanduidingen.values(), batch_size=database.BATCH_SIZE)
+            nummeraanduidingen, batch_size=database.BATCH_SIZE)
 
     def process_num_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -795,7 +791,7 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
                         .format(pk, openbare_ruimte_id))
             return None
 
-        return pk, models.Nummeraanduiding(
+        return models.Nummeraanduiding(
             pk=pk,
             landelijk_id=landelijk_id,
             huisnummer=r['Huisnummer'],

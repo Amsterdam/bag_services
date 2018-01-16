@@ -133,6 +133,11 @@ LOGGING = {
 
     'loggers': {
 
+        'datasets.validate_table': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+
         'django.db': {
             'handlers': ['console'],
             'level': 'ERROR',
