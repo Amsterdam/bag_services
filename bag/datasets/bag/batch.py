@@ -257,8 +257,8 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.stadsdelen[code].geometrie = geo.get_multipoly(feat.geom.wkt)
 
 
-class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
-    name = "Import BRT"
+class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
+    name = "Import BRT - BUURT"
     dataset_id = 'gebieden-buurt'
 
     def __init__(self, uva_path, shp_path):
@@ -281,6 +281,8 @@ class ImportBrtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurtcombinaties.clear()
         self.update_metadata_uva2(self.uva_path, 'BRT')
         validate_geometry(models.Buurt)
+
+        log.info("%d Buurten imported", models.Buurt.objects.count())
 
     def process(self):
         self.buurten = dict(
@@ -1886,7 +1888,7 @@ class ImportBagJob(object):
             ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
             ImportBuurtcombinatieTask(self.gebieden_shp_path),
 
-            ImportBrtTask(self.gebieden_path, self.gebieden_shp_path),
+            ImportBuurtTask(self.gebieden_path, self.gebieden_shp_path),
             # depends on buurten.
             ImportBbkTask(self.gebieden_path, self.gebieden_shp_path),
             ImportOprTask(self.bag_path, self.bag_wkt_path),

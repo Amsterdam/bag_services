@@ -219,7 +219,7 @@ class ImportBrtTest(TaskTestCase):
         factories.BuurtcombinatieFactory.create(code='92')
 
     def task(self):
-        return batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP)
+        return batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -710,7 +710,7 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
             batch.ImportGmeTask(GEBIEDEN),
             batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
             batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
-            batch.ImportBrtTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP),
             batch.ImportStsTask(BAG),
             batch.ImportVboTask(BAG),
             batch.ImportStaTask(BAG, BAG_WKT),
