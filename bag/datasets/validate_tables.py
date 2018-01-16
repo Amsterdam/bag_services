@@ -7,6 +7,7 @@ from django.db import connection
 
 LOG = logging.getLogger(__name__)
 
+
 def sql_count(table):
 
     c_stmt = f"SELECT COUNT(*) FROM {table};"
@@ -21,15 +22,23 @@ def sql_count(table):
     return count
 
 
-def check_table_counts(table_data):
+def check_table_counts(table_data: list):
+    """
+    Given list with tuples of count - table name
+    check if current table counts are close
+    """
+    error = False
+    all_msg = "Table count errors \n"
     for target, table in table_data:
         count = sql_count(table)
-        if count < target - 5000 and count > 0:
-            LOG.debug(
-                'Table Count Mismatch. %s %s is not around %s',
-                table, count, target
-            )
-            raise ValueError()
+        if count < target - 4000 or count == 0:
+            msg = f"{table:<35}: {count} is not around {target}\n"   # noqa
+            LOG.error(msg)
+            error = True
+            all_msg += msg
+
+    if error:
+        raise ValueError(all_msg)
 
 
 def check_table_targets():
@@ -90,9 +99,6 @@ def check_table_targets():
         (2      ,"brk_soortgrootte"),
         (902675 ,"brk_zakelijkrecht"),
         (869108 ,"brk_zakelijkrechtverblijfsobjectrelatie"),
-        (56     ,"django_content_type"),
-        (18     ,"django_migrations"),
-        (5536   ,"spatial_ref_sys"),
         (4969   ,"wkpb_beperking"),
         (20     ,"wkpb_beperkingcode"),
         (310870 ,"wkpb_beperkingkadastraalobject"),

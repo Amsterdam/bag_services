@@ -46,7 +46,9 @@ def _wrap_row(r, headers):
 
 
 @contextmanager
-def _context_reader(source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE):
+def _context_reader(
+        source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE,
+        with_header=True):
     if not os.path.exists(source):
         raise ValueError("File not found: {}".format(source))
 
@@ -55,9 +57,11 @@ def _context_reader(source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE):
         for i in range(skip):
             next(rows)
 
-        headers = next(rows)
-
-        yield (_wrap_row(r, headers) for r in rows)
+        if with_header:
+            headers = next(rows)
+            yield (_wrap_row(r, headers) for r in rows)
+        else:
+            yield (r for r in rows)
 
 
 def resolve_file(path, code, extension='UVA2'):
@@ -158,12 +162,14 @@ def process_uva2(path, file_code, process_row_callback):
                 yield result
 
 
-def process_csv(path, file_code, process_row_callback):
+def process_csv(path, file_code, process_row_callback, with_header=True):
     source = resolve_file(path, file_code, extension='csv')
 
     cb = logging_callback(source, process_row_callback)
 
-    with _context_reader(source, skip=0, quotechar='"', quoting=csv.QUOTE_MINIMAL) as rows:
+    with _context_reader(
+            source, skip=0, quotechar='"',
+            quoting=csv.QUOTE_MINIMAL, with_header=with_header) as rows:
         for row in rows:
             result = cb(row)
             if result:

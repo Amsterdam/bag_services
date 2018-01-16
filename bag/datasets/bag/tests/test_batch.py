@@ -449,17 +449,17 @@ class ImportStaTest(TaskTestCase):
         imported = models.Standplaats.objects.all()
         self.assertEqual(len(imported), 49)
 
-        l = models.Standplaats.objects.get(pk='03630001002936')
-        self.assertEqual(l.landelijk_id, '0363030001002936')
-        self.assertEqual(l.vervallen, False)
-        self.assertIsNone(l.bron)
-        self.assertEqual(l.status.code, '37')
-        self.assertIsNone(l.buurt)
-        self.assertEqual(l.document_mutatie, datetime.date(2010, 9, 9))
-        self.assertEqual(l.document_nummer, 'GV00000407')
-        self.assertEqual(l.begin_geldigheid, datetime.date(2010, 9, 9))
-        self.assertIsNone(l.einde_geldigheid)
-        self.assertEqual(l.mutatie_gebruiker, 'DBI')
+        lp = models.Standplaats.objects.get(pk='03630001002936')
+        self.assertEqual(lp.landelijk_id, '0363030001002936')
+        self.assertEqual(lp.vervallen, False)
+        self.assertIsNone(lp.bron)
+        self.assertEqual(lp.status.code, '37')
+        self.assertIsNone(lp.buurt)
+        self.assertEqual(lp.document_mutatie, datetime.date(2010, 9, 9))
+        self.assertEqual(lp.document_nummer, 'GV00000407')
+        self.assertEqual(lp.begin_geldigheid, datetime.date(2010, 9, 9))
+        self.assertIsNone(lp.einde_geldigheid)
+        self.assertEqual(lp.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
@@ -467,8 +467,8 @@ class ImportStaTest(TaskTestCase):
         imported = models.Standplaats.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 49)
 
-        l = models.Standplaats.objects.get(pk='03630001002936')
-        self.assertIsNotNone(l.geometrie)
+        lp = models.Standplaats.objects.get(pk='03630001002936')
+        self.assertIsNotNone(lp.geometrie)
 
 
 class ImportVboTest(TaskTestCase):
@@ -534,6 +534,7 @@ class ImportVboTest(TaskTestCase):
 
 
 class ImportNumTest(TaskTestCase):
+
     def setUp(self):
         factories.OpenbareRuimteFactory.create(pk='03630000003910')
         factories.LigplaatsFactory.create(pk='03630001025513')
@@ -564,24 +565,35 @@ class ImportNumTest(TaskTestCase):
         self.assertIsNone(n.einde_geldigheid)
         self.assertEqual(n.mutatie_gebruiker, 'DBI')
 
+
+class SetHoofdAdressenTest(TaskTestCase):
+
+    def loadNums(self):
+        batch.ImportNumTask(BAG).execute()
+
+    def task(self):
+        return batch.SetHoofdAdres(BAG)
+
     def test_num_lig_hfd_import(self):
         factories.OpenbareRuimteFactory.create(pk='03630000003404')
         factories.OpenbareRuimteFactory.create(pk='03630000001094')
         factories.LigplaatsFactory.create(pk='03630001035885')
 
+        self.loadNums()
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000520671')
-        l = models.Ligplaats.objects.get(pk='03630001035885')
+        lp = models.Ligplaats.objects.get(pk='03630001035885')
 
-        self.assertEqual(n.ligplaats.id, l.id)
-        self.assertEqual(l.hoofdadres.id, n.id)
-        self.assertIn(n.id, [a.id for a in l.adressen.all()])
+        self.assertEqual(n.ligplaats.id, lp.id)
+        self.assertEqual(lp.hoofdadres.id, n.id)
+        self.assertIn(n.id, [a.id for a in lp.adressen.all()])
 
     def test_num_sta_hfd_import(self):
         factories.OpenbareRuimteFactory.create(pk='03630000001094')
         factories.StandplaatsFactory.create(pk='03630000717733')
 
+        self.loadNums()
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000398621')
@@ -595,6 +607,7 @@ class ImportNumTest(TaskTestCase):
         factories.OpenbareRuimteFactory.create(pk='03630000004150')
         factories.VerblijfsobjectFactory.create(pk='03630000721053')
 
+        self.loadNums()
         self.run_task()
 
         n = models.Nummeraanduiding.objects.get(pk='03630000181936')
@@ -602,13 +615,14 @@ class ImportNumTest(TaskTestCase):
 
         self.assertEqual(n.verblijfsobject.id, v.id)
         self.assertEqual(v.hoofdadres.id, n.id)
-        self.assertIn(n.id, [n.id for n in v.adressen.all()])
+        self.assertIn(n.id, [vn.id for vn in v.adressen.all()])
 
     def test_num_vbo_nvn_import(self):
         factories.OpenbareRuimteFactory.create(pk='03630000003699')
         factories.OpenbareRuimteFactory.create(pk='03630000003293')
         factories.VerblijfsobjectFactory.create(pk='03630000643306')
 
+        self.loadNums()
         self.run_task()
 
         v = models.Verblijfsobject.objects.get(pk='03630000643306')
@@ -686,7 +700,7 @@ class ImportVboPndTaskTest(TaskTestCase):
         self.assertCountEqual(
             [v.id for v in p.verblijfsobjecten.all()],
             [v1.id, v2.id, v3.id])
-        self.assertEqual([p.id for p in v1.panden.all()], [p.id])
+        self.assertEqual([_p.id for _p in v1.panden.all()], [p.id])
 
 
 class UpdateGGWGebiedenTaskTest(TaskTestCase):

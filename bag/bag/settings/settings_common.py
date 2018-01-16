@@ -200,6 +200,12 @@ LOGGING = {
             'propagate': False,
         },
 
+        'validate_tables': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+
         # Log all unhandled exceptions
         'django.request': {
             'handlers': ['console'],
