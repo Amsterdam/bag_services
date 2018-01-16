@@ -17,7 +17,7 @@ def sql_count(table):
         c.execute(c_stmt)
         row = c.fetchone()
         count += row[0]
-        LOG.debug('COUNT %-6s %s', count, table)
+        # LOG.debug('COUNT %-6s %s', count, table)
 
     return count
 
@@ -32,7 +32,7 @@ def check_table_counts(table_data: list):
     for target, table in table_data:
         count = sql_count(table)
         if count < target - 4000 or count == 0:
-            msg = f"{table:<35}: {count} is not around {target}\n"   # noqa
+            msg = f"{table:<35}: {count} != {target}\n"   # noqa
             LOG.error(msg)
             error = True
             all_msg += msg

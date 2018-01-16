@@ -109,6 +109,7 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
     def before(self):
         self.pk_ids = models.Verblijfsobject.objects.values_list('pk', 'landelijk_id')
         self.vbo_bag_ids = {_id: pk for pk, _id in self.pk_ids}
+        assert self.vbo_bag_ids
 
     def after(self):
         del self.pk_ids
@@ -192,6 +193,8 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def before(self):
         self.gemeentes = set(
             models.Gemeente.objects.values_list("pk", flat=True))
+
+        assert self.gemeentes
 
     def after(self):
         self.gemeentes.clear()
@@ -362,6 +365,7 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def before(self):
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
+        assert self.buurten
 
     def after(self):
         self.buurten.clear()
@@ -1575,12 +1579,16 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         self.stadsdelen = dict(
             models.Stadsdeel.objects.values_list("code", "pk"))
 
+        assert self.stadsdelen
+
     def after(self):
         """
         Validate geometry
         """
         self.stadsdelen.clear()
         validate_geometry(models.Gebiedsgerichtwerken)
+        log.debug(
+            '%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
 
     def process(self):
         ggws = geo.process_shp(
@@ -1597,6 +1605,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             return
 
         code = feat.get('CODE')
+
         return models.Gebiedsgerichtwerken(
             id=code,
             naam=feat.get('NAAM'),
@@ -1877,16 +1886,16 @@ class ImportBagJob(object):
             ImportLocTask(self.bag_path),
             ImportTggTask(self.bag_path),
             ImportStsTask(self.bag_path),
+            ImportGmeTask(self.gebieden_path),
+            ImportWplTask(self.bag_path),
+
+            ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
+            ImportBuurtcombinatieTask(self.gebieden_shp_path),
 
             # stads delen.
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp_path),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),
             ImportUnescoTask(self.gebieden_shp_path),
-
-            ImportGmeTask(self.gebieden_path),
-            ImportWplTask(self.bag_path),
-            ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
-            ImportBuurtcombinatieTask(self.gebieden_shp_path),
 
             ImportBuurtTask(self.gebieden_path, self.gebieden_shp_path),
             # depends on buurten.

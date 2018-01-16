@@ -160,6 +160,13 @@ LOGGING = {
             'propagate': False,
         },
 
+        'MARKDOWN': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+
         'authorization_django': {
             'handlers': ['console'],
             'level': 'ERROR',
