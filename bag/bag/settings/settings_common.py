@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
-import sys
+# import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +22,7 @@ insecure_key = 'insecure'
 SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
 
 DEBUG = SECRET_KEY == insecure_key
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
