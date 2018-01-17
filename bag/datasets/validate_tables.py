@@ -29,17 +29,24 @@ def check_table_counts(table_data: list):
     """
     error = False
     all_msg = ("Table count errors \n"
-              "Count,    Target,    Table")
+               "Count,    Target,    Table,           Status \n")
+
     for target, table in table_data:
         count = sql_count(table)
-        msg = f"{count:>6} ~= {target:<6} {table:<45}\n"   # noqa
-        all_msg += msg
         if count < target - 4000 or count == 0:
-            LOG.error(msg)
+            status = '<FAIL>'
             error = True
+        else:
+            status = '< OK >'
+
+        msg = f"{count:>6} ~= {target:<6} {table:<42} {status} \n"
+        all_msg += msg
 
     if error:
+        LOG.error(msg)
         raise ValueError(all_msg)
+    else:
+        LOG.debug(all_msg)
 
 
 def check_table_targets():

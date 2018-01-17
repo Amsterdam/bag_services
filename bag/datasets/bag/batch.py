@@ -52,14 +52,14 @@ class ImportOvrTask(CodeOmschrijvingUvaTask):
     model = models.RedenOpvoer
 
 
-class ImportBrnTask(CodeOmschrijvingUvaTask):
+class ImportBronTask(CodeOmschrijvingUvaTask):
     name = "Import BRN"
     code = "BRN"
     model = models.Bron
 
 
-class ImportStsTask(CodeOmschrijvingUvaTask):
-    name = "Import STS"
+class ImportStatusTask(CodeOmschrijvingUvaTask):
+    name = "Import STS - Status"
     code = "STS"
     model = models.Status
 
@@ -290,6 +290,7 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process(self):
         self.buurten = dict(
             uva2.process_uva2(self.uva_path, "BRT", self.process_row))
+
         geo.process_shp(
             self.shp_path, "GBD_Buurt.shp", self.process_feature)
 
@@ -353,8 +354,8 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurten[code].vollcode = vollcode
 
 
-class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
-    name = "Import BBK"
+class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
+    name = "Import BBK  - Bouwblok"
     dataset_id = 'gebieden-bouwblok'
 
     def __init__(self, uva_path, shp_path):
@@ -369,20 +370,16 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def after(self):
         self.buurten.clear()
-        self.bouwblokken.clear()
         self.update_metadata_uva2(self.uva_path, 'BBK')
 
         validate_geometry(models.Bouwblok)
+        log.info('%s Bouwblokken imported', models.Bouwblok.objects.count())
 
     def process(self):
-        self.bouwblokken = dict(
-            uva2.process_uva2(self.uva_path, "BBK", self.process_row))
+        for bb in uva2.process_uva2(self.uva_path, "BBK", self.process_row):
+            bb.save()
 
-        geo.process_shp(
-            self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
-
-        models.Bouwblok.objects.bulk_create(
-            self.bouwblokken.values(), batch_size=database.BATCH_SIZE)
+        geo.process_shp(self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
 
     def process_row(self, r):
         if not uva2.uva_geldig(
@@ -403,7 +400,8 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             buurt_id = None
 
         code = r['Bouwbloknummer']
-        return code, models.Bouwblok(
+
+        return models.Bouwblok(
             pk=pk,
             code=code,
             ingang_cyclus=uva2.uva_datum(
@@ -417,13 +415,16 @@ class ImportBbkTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process_feature(self, feat):
         code = feat.get('CODE')
-        if code not in self.bouwblokken:
+        try:
+            bouwblok = models.Bouwblok.objects.get(code=code)
+        except models.Bouwblok.DoesNotExist:
             log.warning("""
-            BBK/SHP {} references non-existing bouwblok; skipping
+            Bouwblok/SHP {} code of non-existing bouwblok; skipping
             """.format(code))
             return
 
-        self.bouwblokken[code].geometrie = geo.get_multipoly(feat.geom.wkt)
+        bouwblok.geometrie = geo.get_multipoly(feat.geom.wkt)
+        bouwblok.save()
 
 
 class ImportWplTask(batch.BasicTask):
@@ -897,8 +898,8 @@ class ImportLigTask(batch.BasicTask):
         self.ligplaatsen[key].geometrie = geometrie
 
 
-class ImportStaTask(batch.BasicTask):
-    name = "Import STA"
+class ImportStandplaatsenTask(batch.BasicTask):
+    name = "Import STA - Standplaatsen"
 
     def __init__(self, bag_path, wkt_path):
         self.bag_path = bag_path
@@ -907,8 +908,6 @@ class ImportStaTask(batch.BasicTask):
         self.statussen = set()
         self.buurten = set()
         self.landelijke_ids = dict()
-
-        self.standplaatsen = dict()
 
     def before(self):
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
@@ -919,16 +918,24 @@ class ImportStaTask(batch.BasicTask):
         self.bronnen.clear()
         self.statussen.clear()
         self.buurten.clear()
-        self.standplaatsen.clear()
 
         validate_geometry(models.Standplaats)
 
+        assert models.Standplaats.objects.filter(
+            geometrie__isnull=True).count() == 0
+
+        log.info(
+            '%s Standplaatsen',
+            models.Standplaats.objects.filter(
+                geometrie__isnull=True).count())
+
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "STA")
-        self.standplaatsen = dict(uva2.process_uva2(self.bag_path, "STA", self.process_row))
-        geo.process_wkt(self.wkt_path, "BAG_STANDPLAATS_GEOMETRIE.dat", self.process_wkt_row)
+        standplaatsen = uva2.process_uva2(self.bag_path, "STA", self.process_row)
 
-        models.Standplaats.objects.bulk_create(self.standplaatsen.values(), batch_size=database.BATCH_SIZE)
+        models.Standplaats.objects.bulk_create(standplaatsen, batch_size=database.BATCH_SIZE)
+
+        geo.process_wkt(self.wkt_path, "BAG_STANDPLAATS_GEOMETRIE.dat", self.process_wkt_row)
 
     def process_row(self, r):
         if not uva2.geldig_tijdvak(r):
@@ -959,7 +966,7 @@ class ImportStaTask(batch.BasicTask):
             log.warning('Standplaats {} references non-existing buurt {}; ignoring'.format(pk, status_id))
             buurt_id = None
 
-        return pk, models.Standplaats(
+        return models.Standplaats(
             pk=pk,
             landelijk_id=landelijk_id,
             vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
@@ -975,11 +982,14 @@ class ImportStaTask(batch.BasicTask):
 
     def process_wkt_row(self, wkt_id, geometrie):
         key = '0' + wkt_id
-        if key not in self.standplaatsen:
+        try:
+            standplaats = models.Standplaats.objects.get(id=key)
+        except models.Standplaats.DoesNotExist:
             log.warning('Standplaats/WKT {} references non-existing standplaats {}; skipping'.format(wkt_id, key))
             return
 
-        self.standplaatsen[key].geometrie = geometrie
+        standplaats.geometrie = geometrie
+        return standplaats.save()
 
 
 class ImportVboTask(batch.BasicTask):
@@ -1486,16 +1496,13 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         validate_geometry(models.Buurtcombinatie)
 
     def process(self):
-        bcs = geo.process_shp(
+        geo.process_shp(
             self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
-
-        for buurtcombinatie in bcs:
-            buurtcombinatie.save()
 
     def process_feature(self, feat):
         vollcode = feat.get('VOLLCODE')
 
-        return models.Buurtcombinatie(
+        models.Buurtcombinatie(
             id=str(int(feat.get('ID'))),
             naam=feat.get('NAAM'),
             code=feat.get('CODE'),
@@ -1507,7 +1514,7 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
             stadsdeel_id=self.stadsdelen.get(vollcode[0]),
             begin_geldigheid=feat.get('INGSDATUM'),
             einde_geldigheid=feat.get('EINDDATUM'),
-        )
+        ).save()
 
 
 def log_details_wrong_geometry(model):
@@ -1540,7 +1547,8 @@ def log_details_wrong_geometry(model):
 
 def validate_geometry(model):
     """
-    given model validdate geometry of crash.
+    given model validdate geometry so we can properly log it.
+    and crash.
     """
     invalid = model.objects.filter(
         geometrie__isvalid=False)
@@ -1587,28 +1595,26 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             '%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
 
     def process(self):
-        ggws = geo.process_shp(
+        geo.process_shp(
             self.shp_path, "GBD_gebiedsgerichtwerken.shp",
             self.process_feature)
-
-        for gebied in ggws:
-            gebied.save()
 
     def process_feature(self, feat):
         sdl = feat.get('STADSDEEL')
         if sdl not in self.stadsdelen:
-            log.warning('Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
+            log.warning(
+                'Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
             return
 
         code = feat.get('CODE')
 
-        return models.Gebiedsgerichtwerken(
+        models.Gebiedsgerichtwerken(
             id=code,
             naam=feat.get('NAAM'),
             code=code,
             stadsdeel_id=self.stadsdelen[sdl],
             geometrie=geo.get_multipoly(feat.geom.wkt),
-        )
+        ).save()
 
 
 class ImportGrootstedelijkgebiedTask(batch.BasicTask):
@@ -1633,20 +1639,17 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
         validate_geometry(models.Grootstedelijkgebied)
 
     def process(self):
-        ggbs = geo.process_shp(
+        geo.process_shp(
             self.shp_path,
             "GBD_grootstedelijke_projecten.shp", self.process_feature)
 
-        for ggb in ggbs:
-            ggb.save()
-
     def process_feature(self, feat):
         naam = feat.get('NAAM')
-        return models.Grootstedelijkgebied(
+        models.Grootstedelijkgebied(
             id=slugify(naam),
             naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
-        )
+        ).save()
 
 
 class ImportUnescoTask(batch.BasicTask):
@@ -1671,18 +1674,15 @@ class ImportUnescoTask(batch.BasicTask):
         validate_geometry(models.Unesco)
 
     def process(self):
-        unesco = geo.process_shp(
-            self.shp_path, "GBD_unesco.shp", self.process_feature)
-        models.Unesco.objects.bulk_create(
-            unesco, batch_size=database.BATCH_SIZE)
+        geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature)
 
     def process_feature(self, feat):
         naam = feat.get('NAAM')
-        return models.Unesco(
+        models.Unesco(
             id=slugify(naam),
             naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
-        )
+        ).save()
 
 
 class DenormalizeDataTask(batch.BasicTask):
@@ -1874,14 +1874,14 @@ class ImportBagJob(object):
             # no-dependencies.
             ImportAvrTask(self.bag_path),
             ImportOvrTask(self.bag_path),
-            ImportBrnTask(self.bag_path),
+            ImportBronTask(self.bag_path),
             ImportEgmTask(self.bag_path),
             ImportFngTask(self.bag_path),
             ImportGbkTask(self.bag_path),
             ImportLggTask(self.bag_path),
             ImportLocTask(self.bag_path),
             ImportTggTask(self.bag_path),
-            ImportStsTask(self.bag_path),
+            ImportStatusTask(self.bag_path),
             ImportGmeTask(self.gebieden_path),
             ImportWplTask(self.bag_path),
 
@@ -1895,11 +1895,11 @@ class ImportBagJob(object):
 
             ImportBuurtTask(self.gebieden_path, self.gebieden_shp_path),
             # depends on buurten.
-            ImportBbkTask(self.gebieden_path, self.gebieden_shp_path),
+            ImportBouwblokTask(self.gebieden_path, self.gebieden_shp_path),
             ImportOprTask(self.bag_path, self.bag_wkt_path),
 
             ImportLigTask(self.bag_path, self.bag_wkt_path),
-            ImportStaTask(self.bag_path, self.bag_wkt_path),
+            ImportStandplaatsenTask(self.bag_path, self.bag_wkt_path),
 
             # large. 500.000
             ImportVboTask(self.bag_path),

@@ -26,8 +26,8 @@ def _get_related(code, omschrijving, cache, model):
         return cached
 
     obj = model.objects.create(
-            code=code,
-            omschrijving=omschrijving
+        code=code,
+        omschrijving=omschrijving
     )
     cache[code] = obj
     return obj
@@ -43,17 +43,16 @@ class ImportGemeenteTask(batch.BasicTask):
         pass
 
     def after(self):
-        pass
+        assert models.Gemeente.objects.count() > 0
 
     def process(self):
-        gemeentes = geo.process_shp(self.path, 'BRK_GEMEENTE.shp', self.process_feature)
-        models.Gemeente.objects.bulk_create(gemeentes, batch_size=database.BATCH_SIZE)
+        geo.process_shp(self.path, 'BRK_GEMEENTE.shp', self.process_feature)
 
     def process_feature(self, feat):
-        return models.Gemeente(
-                gemeente=feat.get('GEMEENTE'),
-                geometrie=geo.get_multipoly(feat.geom.wkt)
-        )
+        models.Gemeente(
+            gemeente=feat.get('GEMEENTE'),
+            geometrie=geo.get_multipoly(feat.geom.wkt)
+        ).save()
 
 
 class ImportKadastraleGemeenteTask(batch.BasicTask):
@@ -67,12 +66,13 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         self.gemeentes = set(
             models.Gemeente.objects.values_list('gemeente', flat=True))
 
+        assert self.gemeentes
+
     def after(self):
         self.gemeentes.clear()
 
     def process(self):
-        kgs = dict(geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature))
-        models.KadastraleGemeente.objects.bulk_create(kgs.values(), batch_size=database.BATCH_SIZE)
+        geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature)
 
     def process_feature(self, feat):
         pk = feat.get('KADGEMCODE')
@@ -82,12 +82,12 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
             log.warn("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
             return
 
-        return pk, models.KadastraleGemeente(
-                id=pk,
-                naam=feat.get('KADGEM'),
-                gemeente_id=gemeente_id,
-                geometrie=geo.get_multipoly(feat.geom.wkt)
-        )
+        models.KadastraleGemeente(
+            id=pk,
+            naam=feat.get('KADGEM'),
+            gemeente_id=gemeente_id,
+            geometrie=geo.get_multipoly(feat.geom.wkt)
+        ).save()
 
 
 class ImportKadastraleSectieTask(batch.BasicTask):
@@ -105,11 +105,7 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         self.gemeentes.clear()
 
     def process(self):
-        s = dict(
-            geo.process_shp(
-                self.path, 'BRK_KAD_SECTIE.shp', self.process_feature))
-        models.KadastraleSectie.objects.bulk_create(
-            s.values(), batch_size=database.BATCH_SIZE)
+        geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature)
 
     def process_feature(self, feat):
         kad_gem_id = feat.get('KADGEMCODE')
@@ -122,12 +118,12 @@ class ImportKadastraleSectieTask(batch.BasicTask):
                 "Kadastrale Gemeente %s; skipping", pk, kad_gem_id)
             return
 
-        return pk, models.KadastraleSectie(
-                pk=pk,
-                sectie=sectie,
-                kadastrale_gemeente_id=kad_gem_id,
-                geometrie=geo.get_multipoly(feat.geom.wkt)
-        )
+        models.KadastraleSectie(
+            pk=pk,
+            sectie=sectie,
+            kadastrale_gemeente_id=kad_gem_id,
+            geometrie=geo.get_multipoly(feat.geom.wkt)
+        ).save()
 
 
 class ImportKadastraalSubjectTask(batch.BasicTask):
@@ -157,11 +153,6 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         subjects = uva2.process_csv(
             self.path, 'BRK_kadastraal_subject', self.process_subject)
 
-        #log.debug(self.adressen.values())
-
-        #models.Adres.objects.bulk_create(
-        #    self.adressen.values(), batch_size=database.BATCH_SIZE)
-
         models.KadastraalSubject.objects.bulk_create(
             subjects, batch_size=database.BATCH_SIZE)
 
@@ -169,22 +160,24 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
 
         subject_type = row['SJT_TYPE']
 
-        woonadres_id = self.get_adres(row['SWS_OPENBARERUIMTENAAM'],
-                                      row['SWS_HUISNUMMER'], row['SWS_HUISLETTER'], row['SWS_HUISNUMMERTOEVOEGING'],
-                                      row['SWS_POSTCODE'], row['SWS_WOONPLAATSNAAM'],
-                                      None, None, None,
-                                      row['SWS_BUITENLAND_ADRES'], row['SWS_BUITENLAND_WOONPLAATS'],
-                                      row['SWS_BUITENLAND_REGIO'], row['SWS_BUITENLAND_NAAM'],
-                                      row['SWS_BUITENLAND_CODE'], row['SWS_BUITENLAND_OMS'])
+        woonadres_id = self.save_adres(
+            row['SWS_OPENBARERUIMTENAAM'],
+            row['SWS_HUISNUMMER'], row['SWS_HUISLETTER'], row['SWS_HUISNUMMERTOEVOEGING'],
+            row['SWS_POSTCODE'], row['SWS_WOONPLAATSNAAM'],
+            None, None, None,
+            row['SWS_BUITENLAND_ADRES'], row['SWS_BUITENLAND_WOONPLAATS'],
+            row['SWS_BUITENLAND_REGIO'], row['SWS_BUITENLAND_NAAM'],
+            row['SWS_BUITENLAND_CODE'], row['SWS_BUITENLAND_OMS'])
 
-        postadres_id = self.get_adres(row['SPS_OPENBARERUIMTENAAM'],
-                                      row['SPS_HUISNUMMER'], row['SPS_HUISLETTER'], row['SPS_HUISNUMMERTOEVOEGING'],
-                                      row['SPS_POSTCODE'], row['SPS_WOONPLAATSNAAM'],
-                                      row['SPS_POSTBUSNUMMER'], row['SPS_POSTBUS_POSTCODE'],
-                                      row['SPS_POSTBUS_WOONPLAATSNAAM'],
-                                      row['SPS_BUITENLAND_ADRES'], row['SPS_BUITENLAND_WOONPLAATS'],
-                                      row['SPS_BUITENLAND_REGIO'], row['SPS_BUITENLAND_NAAM'],
-                                      row['SPS_BUITENLAND_CODE'], row['SPS_BUITENLAND_OMS'])
+        postadres_id = self.save_adres(
+            row['SPS_OPENBARERUIMTENAAM'],
+            row['SPS_HUISNUMMER'], row['SPS_HUISLETTER'], row['SPS_HUISNUMMERTOEVOEGING'],
+            row['SPS_POSTCODE'], row['SPS_WOONPLAATSNAAM'],
+            row['SPS_POSTBUSNUMMER'], row['SPS_POSTBUS_POSTCODE'],
+            row['SPS_POSTBUS_WOONPLAATSNAAM'],
+            row['SPS_BUITENLAND_ADRES'], row['SPS_BUITENLAND_WOONPLAATS'],
+            row['SPS_BUITENLAND_REGIO'], row['SPS_BUITENLAND_NAAM'],
+            row['SPS_BUITENLAND_CODE'], row['SPS_BUITENLAND_OMS'])
 
         if subject_type == "NATUURLIJK PERSOON":
             return self.process_natuurlijk(row, woonadres_id, postadres_id)
@@ -263,7 +256,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
     def get_rechtsvorm(self, code, omschrijving):
         return _get_related(code, omschrijving, self.rechtsvorm, models.Rechtsvorm)
 
-    def get_adres(self, openbareruimte_naam, huisnummer, huisletter, toevoeging, postcode, woonplaats, postbus_nummer,
+    def save_adres(self, openbareruimte_naam, huisnummer, huisletter, toevoeging, postcode, woonplaats, postbus_nummer,
                   postbus_postcode, postbus_woonplaats, buitenland_adres, buitenland_woonplaats, buitenland_regio,
                   buitenland_naam, buitenland_code, buitenland_omschrijving):
 
@@ -288,7 +281,6 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
 
         models.Adres(
             id=adres_id,
-
             openbareruimte_naam=openbareruimte_naam,
             huisnummer=huisnummer_int,
             huisletter=huisletter,
@@ -303,8 +295,9 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
             buitenland_regio=buitenland_regio,
             buitenland_naam=buitenland_naam,
             buitenland_land=self.get_land(
-            buitenland_code, buitenland_omschrijving),
+                buitenland_code, buitenland_omschrijving)
         ).save()
+
         return adres_id
 
 
@@ -401,37 +394,37 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         vrlpg = row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens'
 
         return models.KadastraalObject(
-                id=kot_id,
-                kadastrale_gemeente_id=kg_id,
-                aanduiding=aanduiding,
-                sectie_id=s_id,
-                perceelnummer=perceelnummer,
-                indexletter=indexletter,
-                indexnummer=indexnummer,
-                soort_grootte=self.get_soort_grootte(
-                    row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
-                grootte=int(grootte) if grootte else None,
-                koopsom=int(koopsom) if koopsom else None,
-                koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
-                koopjaar=row['KOT_KOOPJAAR'],
-                meer_objecten=uva2.uva_indicatie(
-                    row['KOT_INDICATIE_MEER_OBJECTEN']),
-                cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(
-                    row['KOT_CULTUURCODEONBEBOUWD_CODE'],
-                    row['KOT_CULTUURCODEONBEBOUWD_OMS']),
+            id=kot_id,
+            kadastrale_gemeente_id=kg_id,
+            aanduiding=aanduiding,
+            sectie_id=s_id,
+            perceelnummer=perceelnummer,
+            indexletter=indexletter,
+            indexnummer=indexnummer,
+            soort_grootte=self.get_soort_grootte(
+                row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
+            grootte=int(grootte) if grootte else None,
+            koopsom=int(koopsom) if koopsom else None,
+            koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
+            koopjaar=row['KOT_KOOPJAAR'],
+            meer_objecten=uva2.uva_indicatie(
+                row['KOT_INDICATIE_MEER_OBJECTEN']),
+            cultuurcode_onbebouwd=self.get_cultuur_code_onbebouwd(
+                row['KOT_CULTUURCODEONBEBOUWD_CODE'],
+                row['KOT_CULTUURCODEONBEBOUWD_OMS']),
 
-                cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(
-                    row['KOT_CULTUURCODEBEBOUWD_CODE'],
-                    row['KOT_CULTUURCODEBEBOUWD_OMS']),
+            cultuurcode_bebouwd=self.get_cultuur_code_bebouwd(
+                row['KOT_CULTUURCODEBEBOUWD_CODE'],
+                row['KOT_CULTUURCODEBEBOUWD_OMS']),
 
-                register9_tekst=row['KOT_AKRREGISTER9TEKST'],
-                status_code=row['KOT_STATUS_CODE'],
-                toestandsdatum=toestands_datum,
-                voorlopige_kadastrale_grens=vrlpg,
-                in_onderzoek=row['KOT_INONDERZOEK'],
-                poly_geom=poly_geom,
-                point_geom=point_geom,
-                voornaamste_gerechtigde_id=subject_id,
+            register9_tekst=row['KOT_AKRREGISTER9TEKST'],
+            status_code=row['KOT_STATUS_CODE'],
+            toestandsdatum=toestands_datum,
+            voorlopige_kadastrale_grens=vrlpg,
+            in_onderzoek=row['KOT_INONDERZOEK'],
+            poly_geom=poly_geom,
+            point_geom=point_geom,
+            voornaamste_gerechtigde_id=subject_id,
         )
 
     def get_soort_grootte(self, code, omschrijving):
@@ -505,32 +498,34 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         ontstaan_uit = row['ZRT_ONTSTAAN_UIT']
         if ontstaan_uit and ontstaan_uit not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(tng_id, ontstaan_uit))
+            log.warn("Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(
+                tng_id, ontstaan_uit))
             return
 
         if betrokken_bij and betrokken_bij not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(tng_id, betrokken_bij))
+            log.warn("Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(
+                tng_id, betrokken_bij))
             return
 
         teller = row['TNG_AANDEEL_TELLER']
         noemer = row['TNG_AANDEEL_NOEMER']
         return pk, models.ZakelijkRecht(
-                pk=pk,
-                zrt_id=zrt_id,
-                aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
-                                                                row['ZRT_AARDZAKELIJKRECHT_OMS']),
-                aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
-                teller=int(teller) if teller else None,
-                noemer=int(noemer) if noemer else None,
-                ontstaan_uit_id=ontstaan_uit or None,
-                betrokken_bij_id=betrokken_bij or None,
-                kadastraal_object_id=kot_id,
-                kadastraal_subject_id=kst_id,
-                kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
-                app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
-                                                                            row['ASG_APP_RECHTSPLITSTYPE_OMS']),
-                _kadastraal_subject_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_NAAM'],
-                _kadastraal_object_aanduiding=(row['ZRT_BETREKKING_OP_KOT'] or '').replace('-', ' ')
+            pk=pk,
+            zrt_id=zrt_id,
+            aard_zakelijk_recht=self.get_aardzakelijk_recht(row['ZRT_AARDZAKELIJKRECHT_CODE'],
+                                                            row['ZRT_AARDZAKELIJKRECHT_OMS']),
+            aard_zakelijk_recht_akr=row['ZRT_AARDZAKELIJKRECHT_AKR_CODE'],
+            teller=int(teller) if teller else None,
+            noemer=int(noemer) if noemer else None,
+            ontstaan_uit_id=ontstaan_uit or None,
+            betrokken_bij_id=betrokken_bij or None,
+            kadastraal_object_id=kot_id,
+            kadastraal_subject_id=kst_id,
+            kadastraal_object_status=row['KOT_STATUS_CODE'] or None,
+            app_rechtsplitstype=self.get_appartementsrechts_splits_type(row['ASG_APP_RECHTSPLITSTYPE_CODE'],
+                                                                        row['ASG_APP_RECHTSPLITSTYPE_OMS']),
+            _kadastraal_subject_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_NAAM'],
+            _kadastraal_object_aanduiding=(row['ZRT_BETREKKING_OP_KOT'] or '').replace('-', ' ')
         )
 
     def get_aardzakelijk_recht(self, code, omschrijving):
@@ -559,9 +554,8 @@ class ImportAantekeningTask(batch.BasicTask):
         self.kot.clear()
 
     def process(self):
-        atks = dict(uva2.process_csv(self.path, 'BRK_aantekening', self.process_row))
-
-        models.Aantekening.objects.bulk_create(atks.values(), batch_size=database.BATCH_SIZE)
+        atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row)
+        models.Aantekening.objects.bulk_create(atks, batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
         atk_id = row['BRK_ATG_ID']
@@ -584,14 +578,14 @@ class ImportAantekeningTask(batch.BasicTask):
             log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
             return
 
-        return atk_id, models.Aantekening(
-                pk=atk_id,
-                aard_aantekening=self.get_aard_aantekening(
-                    row['ATG_AARDAANTEKENING_CODE'],
-                    row['ATG_AARDAANTEKENING_OMS']),
-                omschrijving=row['ATG_OMSCHRIJVING'],
-                kadastraal_object_id=kot_id,
-                opgelegd_door_id=kst_id,
+        return models.Aantekening(
+            pk=atk_id,
+            aard_aantekening=self.get_aard_aantekening(
+                row['ATG_AARDAANTEKENING_CODE'],
+                row['ATG_AARDAANTEKENING_OMS']),
+            omschrijving=row['ATG_OMSCHRIJVING'],
+            kadastraal_object_id=kot_id,
+            opgelegd_door_id=kst_id,
         )
 
     def get_aard_aantekening(self, code, omschrijving):
@@ -647,8 +641,8 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
             return
 
         return models.KadastraalObjectVerblijfsobjectRelatie(
-                verblijfsobject_id=vbo_id,
-                kadastraal_object_id=kot_id,
+            verblijfsobject_id=vbo_id,
+            kadastraal_object_id=kot_id,
         )
 
 

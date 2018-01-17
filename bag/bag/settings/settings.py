@@ -41,7 +41,8 @@ DATABASE_OPTIONS = {
         'USER': os.getenv('DATABASE_USER', 'bag'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': 'database',
-        'PORT': '5432'
+        'PORT': '5432',
+        'CONN_MAX_AGE': 30,
     },
     LocationKey.local: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -49,7 +50,8 @@ DATABASE_OPTIONS = {
         'USER': os.getenv('DATABASE_USER', 'bag'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': get_docker_host(),
-        'PORT': '5434'
+        'PORT': '5434',
+        'CONN_MAX_AGE': 30,
     },
     LocationKey.override: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',

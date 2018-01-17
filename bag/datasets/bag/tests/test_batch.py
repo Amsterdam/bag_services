@@ -45,9 +45,9 @@ class ImportOvrTest(TaskTestCase):
         self.assertEqual(o.omschrijving, 'Verbouw door wijziging gebruiksdoel')
 
 
-class ImportBrnTest(TaskTestCase):
+class ImportBronTest(TaskTestCase):
     def task(self):
-        return batch.ImportBrnTask(BAG)
+        return batch.ImportBronTask(BAG)
 
     def test_import(self):
         self.run_task()
@@ -147,7 +147,7 @@ class ImportTggTest(TaskTestCase):
 
 class ImportStsTest(TaskTestCase):
     def task(self):
-        return batch.ImportStsTask(BAG)
+        return batch.ImportStatusTask(BAG)
 
     def test_import(self):
         self.run_task()
@@ -213,7 +213,7 @@ class ImportSdlTest(TaskTestCase):
         self.assertIsNotNone(s.geometrie)
 
 
-class ImportBrtTest(TaskTestCase):
+class ImportBuurtTest(TaskTestCase):
     def setUp(self):
         factories.StadsdeelFactory.create(pk='03630000000016')
         factories.BuurtcombinatieFactory.create(code='92')
@@ -238,12 +238,12 @@ class ImportBrtTest(TaskTestCase):
         self.assertEqual(b.buurtcombinatie.code, '92')
 
 
-class ImportBbkTest(TaskTestCase):
+class ImportBouwblokTest(TaskTestCase):
     def setUp(self):
         factories.BuurtFactory.create(pk='03630000000537')
 
     def task(self):
-        return batch.ImportBbkTask(GEBIEDEN, GEBIEDEN_SHP)
+        return batch.ImportBouwblokTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -434,14 +434,14 @@ class ImportOprTest(TaskTestCase):
         self.assertIsNotNone(o.geometrie)
 
 
-class ImportStaTest(TaskTestCase):
+class ImportStandplaatsenTest(TaskTestCase):
     def requires(self):
         return [
-            batch.ImportStsTask(BAG),
+            batch.ImportStatusTask(BAG),
         ]
 
     def task(self):
-        return batch.ImportStaTask(BAG, BAG_WKT)
+        return batch.ImportStandplaatsenTask(BAG, BAG_WKT)
 
     def test_import(self):
         self.run_task()
@@ -678,7 +678,7 @@ class ImportPndTest(TaskTestCase):
 class ImportVboPndTaskTest(TaskTestCase):
     def requires(self):
         return [
-            batch.ImportStsTask(BAG),
+            batch.ImportStatusTask(BAG),
             batch.ImportVboTask(BAG),
             batch.ImportPndTask(BAG, BAG_WKT),
         ]
@@ -711,15 +711,16 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
             batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
             batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
             batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP),
-            batch.ImportStsTask(BAG),
+            batch.ImportStatusTask(BAG),
             batch.ImportVboTask(BAG),
-            batch.ImportStaTask(BAG, BAG_WKT),
+            batch.ImportStandplaatsenTask(BAG, BAG_WKT),
             batch.ImportLigTask(BAG, BAG_WKT),
             batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP)
         ]
 
     def task(self):
         assert models.Verblijfsobject.objects.count() > 0
+        assert models.Standplaats.objects.count() > 0
         assert models.Gebiedsgerichtwerken.objects.count() > 0
         return batch.UpdateGebiedenAttributenTask()
 
@@ -734,8 +735,6 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
 
         vb_n = models.Verblijfsobject.objects.filter(
             _gebiedsgerichtwerken__isnull=True)
-
-        # print([v.id for v in vb_n])
 
         self.assertTrue(vb_n.count() == 0)
 
