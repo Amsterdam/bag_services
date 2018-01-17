@@ -1928,7 +1928,7 @@ class ImportBagJob(object):
 
 
 class IndexBagJob(object):
-    name = "Create new search-index for all BAG data from database"
+    name = "Delete and Fill Nummeraanduiding search-index"
 
     def tasks(self):
         return [
@@ -1938,7 +1938,7 @@ class IndexBagJob(object):
 
 
 class BuildIndexBagJob(object):
-    name = "Create new search-index for all BAG data from database"
+    name = "Fill Nummeraanduiding search-index"
 
     def tasks(self):
         return [

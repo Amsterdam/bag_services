@@ -52,6 +52,10 @@ class ImportWkpbBroncodeTask(batch.BasicTask):
         pass
 
     def after(self):
+        log.info(
+            '%d WKPB Broncodes Imported',
+            models.Broncode.objects.count()
+        )
         pass
 
     def process(self):
@@ -181,6 +185,10 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         filedate = datetime.date.today() - datetime.timedelta(days=1)
         self.update_metadata_date(filedate)
+        log.info(
+            '%d Beperking-Percelen Imported',
+            models.BeperkingKadastraalObject.objects.count()
+        )
 
     def process(self):
         with open(self.source) as f:
@@ -194,7 +202,8 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         beperking_id = int(r[5])
 
         if beperking_id not in self.beperkingen:
-            log.warning('WPB references non-existing beperking {}; skipping'.format(beperking_id))
+            log.warning(
+                'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id))
             return None
 
         if not aanduiding or aanduiding not in self.kot:
