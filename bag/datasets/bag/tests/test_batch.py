@@ -635,14 +635,14 @@ class SetHoofdAdressenTest(TaskTestCase):
         self.assertEqual(n2.verblijfsobject.id, v.id)
 
 
-class ImportPndTest(TaskTestCase):
+class ImportPandTest(TaskTestCase):
 
     def setUp(self):
         factories.StatusFactory.create(pk='31')
         factories.BouwblokFactory.create(pk='03630012102404')
 
     def task(self):
-        return batch.ImportPndTask(BAG, BAG_WKT)
+        return batch.ImportPandTask(BAG, BAG_WKT)
 
     def test_import(self):
         self.run_task()
@@ -675,16 +675,16 @@ class ImportPndTest(TaskTestCase):
         self.assertEqual(len(imported), 79)
 
 
-class ImportVboPndTaskTest(TaskTestCase):
+class ImportVboPandTaskTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportStatusTask(BAG),
             batch.ImportVboTask(BAG),
-            batch.ImportPndTask(BAG, BAG_WKT),
+            batch.ImportPandTask(BAG, BAG_WKT),
         ]
 
     def task(self):
-        return batch.ImportPndVboTask(BAG)
+        return batch.ImportPandVboTask(BAG)
 
     def test_import(self):
         self.run_task()

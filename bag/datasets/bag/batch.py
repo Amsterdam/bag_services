@@ -480,7 +480,7 @@ class ImportWplTask(batch.BasicTask):
 
 
 class ImportOprTask(batch.BasicTask):
-    name = "Import OPR"
+    name = "Import OPR - Openbare Ruimtes"
 
     def __init__(self, path, wkt_path):
         self.path = path
@@ -752,6 +752,8 @@ class ImportNumTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         self.update_metadata_uva2(self.path, 'NUM')
 
+        log.info('%d Nummeraanduiding Imported', models.Nummeraanduiding.objects.count())
+
     def process(self):
 
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "NUM")
@@ -993,7 +995,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
 
 class ImportVboTask(batch.BasicTask):
-    name = "Import VBO"
+    name = "Import VBO - Verblijfsobjecten"
 
     def __init__(self, path):
         self.path = path
@@ -1036,6 +1038,7 @@ class ImportVboTask(batch.BasicTask):
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
+        log.info('%d Verblijfsobjecten Imported', models.Verblijfsobject.objects.count())
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
@@ -1186,7 +1189,7 @@ class ImportVboTask(batch.BasicTask):
         )
 
 
-class ImportPndTask(batch.BasicTask):
+class ImportPandTask(batch.BasicTask):
     name = "Import PND"
 
     def __init__(self, bag_path, wkt_path):
@@ -1210,6 +1213,7 @@ class ImportPndTask(batch.BasicTask):
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.bag_path, "PND")
         self.panden = dict(uva2.process_uva2(self.bag_path, "PND", self.process_row))
+
         geo.process_wkt(self.wkt_path, "BAG_PAND_GEOMETRIE.dat", self.process_wkt_row)
 
         models.Pand.objects.bulk_create(self.panden.values(), batch_size=database.BATCH_SIZE)
@@ -1264,8 +1268,8 @@ class ImportPndTask(batch.BasicTask):
         self.panden[key].geometrie = geometrie
 
 
-class ImportPndVboTask(batch.BasicTask):
-    name = "Import PNDVBO"
+class ImportPandVboTask(batch.BasicTask):
+    name = "Import PNDVBO - Pand-Verblijfsobject relatie"
 
     def __init__(self, path):
         self.path = path
@@ -1283,6 +1287,7 @@ class ImportPndVboTask(batch.BasicTask):
     def after(self):
         self.panden = None
         self.vbos = None
+        log.info('%d VBO-PAND relaties', models.VerblijfsobjectPandRelatie.objects.count())
 
     def process(self):
         relaties = frozenset(
@@ -1911,10 +1916,10 @@ class ImportBagJob(object):
             # finising stuff.
             SetHoofdAdres(self.bag_path),
 
-            ImportPndTask(self.bag_path, self.bag_wkt_path),
+            ImportPandTask(self.bag_path, self.bag_wkt_path),
 
             # all vbo's
-            ImportPndVboTask(self.bag_path),
+            ImportPandVboTask(self.bag_path),
             DenormalizeDataTask(),
 
             UpdateGebiedenAttributenTask(),
