@@ -16,16 +16,17 @@ rm -rf ${DIR}/backups
 mkdir -p ${DIR}/backups
 
 echo "Building dockers"
-dc down
-dc pull
-dc build
+#dc down
+#dc pull
+#dc build
 
 dc up -d database
 dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
 # restore database bag backup.
-docker-compose -p bag exec -T database update-db.sh bag spreeker
+#docker-compose -p bag exec -T database update-db.sh bag spreeker
+dc exec -T database update-db.sh bag spreeker
 
 echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
