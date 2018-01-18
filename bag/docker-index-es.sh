@@ -5,7 +5,8 @@ set -e   # stop on any error
 set -x   # log every command.
 
 trap "kill 0" EXIT
-# source docker-wait.sh
+
+source docker-wait.sh
 
 # clear elasticindices and creates empty ones
 python manage.py elastic_indices --delete
