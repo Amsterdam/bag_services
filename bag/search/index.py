@@ -96,7 +96,7 @@ class ImportIndexTask(object):
         log.info("PART: %s OF %s" % (numerator+1, denominator))
 
         for qs_p, progres in self.return_qs_parts(qs, denominator, numerator):
-            yield qs_p, progres
+            yield qs_p, progres, numerator + 1
 
     def execute(self):
         """
@@ -110,15 +110,16 @@ class ImportIndexTask(object):
 
         start_time = time.time()
 
-        for qs, progress in self.batch_qs():
+        for qs, progress, task in self.batch_qs():
 
             elapsed = time.time() - start_time
 
             total_left = (1 / (progress + 0.001)) * elapsed - elapsed
 
             progres_msg = \
-                '%.3f : duration: %.2f left: %.2f' % (
-                    progress, elapsed, total_left
+                '%.3f : duration: %.2f left: %.2f task: %d' % (
+                    progress, elapsed, total_left,
+                    task
                 )
 
             log.info(progres_msg)
@@ -177,8 +178,6 @@ class ImportIndexTask(object):
         if not qs_count:
             raise StopIteration
 
-        log.debug(f'PART {modulo_value}/{modulo} {qs_count}')
-
         batch_size = settings.BATCH_SETTINGS['batch_size']
 
         for i in range(0, qs_count+batch_size, batch_size):
@@ -188,8 +187,10 @@ class ImportIndexTask(object):
             else:
                 qs_ss = qs_s[i:i+batch_size]
 
-            log.debug('Batch %4d %4d', i, i + batch_size)
+            log.debug(
+                'Batch %4d %4d %s',
+                i, i + batch_size, self.__class__.__name__)
 
-            yield qs_ss, i/qs_count
+            yield qs_ss, i/qs_count * 100
 
         raise StopIteration
