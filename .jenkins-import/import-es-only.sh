@@ -1,4 +1,3 @@
-#!/bin/bash
 
 set -e  # crash on all errors
 set -u  # crash on missing environment variables
@@ -24,15 +23,13 @@ dc up -d database
 dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
-echo "import new diva files into database"
-dc run --rm importer
+# restore database bag backup.
+dc exec database update-db.sh bag
 
 echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
 
-
-echo "Running backups"
-dc exec -T database backup-db.sh bag
+echo "Make es backup"
 dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
 
 echo "Done"
