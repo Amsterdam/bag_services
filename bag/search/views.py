@@ -1023,6 +1023,9 @@ class SearchPostcodeViewSet(SearchViewSet):
         if analyzer.is_postcode_huisnummer_prefix():
             return bag_qs.postcode_huisnummer_query(analyzer) \
                 .to_elasticsearch_object(elk_client)
-        else:
-            search = bag_qs.weg_query(analyzer)
+
+        elif analyzer.is_postcode_prefix():
+            search = bag_qs.postcode_query(analyzer)
             return search.to_elasticsearch_object(elk_client)
+
+        return []
