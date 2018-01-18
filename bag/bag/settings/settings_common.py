@@ -22,7 +22,6 @@ insecure_key = 'insecure'
 SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
 
 DEBUG = SECRET_KEY == insecure_key
-DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

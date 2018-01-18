@@ -738,8 +738,10 @@ class DeleteSubjectIndexTask(index.DeleteIndexTask):
 
 
 class IndexSubjectTask(index.ImportIndexTask):
+
     name = "index kadastraal subject"
     queryset = models.KadastraalSubject.objects
+    substring = len("NL.KAD.Persoon.") + 1
 
     def convert(self, obj):
         return documents.from_kadastraal_subject(obj)
@@ -748,6 +750,8 @@ class IndexSubjectTask(index.ImportIndexTask):
 class IndexObjectTask(index.ImportIndexTask):
 
     name = "index kadastraal object"
+    substring = len('NL.KAD.OnroerendeZaak.') + 1
+
     queryset = (
         models.KadastraalObject.objects
         .select_related('kadastrale_gemeente')
@@ -781,8 +785,8 @@ class BuildIndexKadasterJob(object):
 
     def tasks(self):
         return [
-            IndexSubjectTask(),
             IndexObjectTask(),
+            IndexSubjectTask(),
         ]
 
 
