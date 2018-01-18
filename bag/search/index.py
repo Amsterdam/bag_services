@@ -114,7 +114,7 @@ class ImportIndexTask(object):
 
             elapsed = time.time() - start_time
 
-            total_left = (1 / (progress + 0.001)) * elapsed - elapsed
+            total_left = (progress + 0.001) * elapsed - elapsed
 
             progres_msg = \
                 '%.3f : duration: %.2f left: %.2f task: %d' % (
