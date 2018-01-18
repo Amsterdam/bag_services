@@ -1,3 +1,4 @@
+#!/bin/bash
 
 set -e  # crash on all errors
 set -u  # crash on missing environment variables
