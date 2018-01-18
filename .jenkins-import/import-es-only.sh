@@ -26,7 +26,7 @@ dc run importer ./docker-wait.sh
 
 # restore database bag backup.
 #docker-compose -p bag exec -T database update-db.sh bag spreeker
-dc exec -T database update-db.sh bag spreeker
+dc exec -T database update-db.sh bag
 
 echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
