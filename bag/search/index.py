@@ -71,16 +71,20 @@ class ImportIndexTask(object):
 
     def batch_qs(self):
         """
-        Returns a (start, end, total, queryset) tuple
+        Returns a (queryset, progress) tuple
         for each batch in the given queryset.
+        by filtering out records by
+
+            id % modulo = modulo_value
+
+        now it's easy to devide the work acros a few workers
 
         Usage:
             # Make sure to order your querset!
             article_qs = Article.objects.order_by('id')
-            for start, end, total, qs in batch_qs(article_qs):
-                print "Now processing %s - %s of %s" % (start + 1, end, total)
-                for article in qs:
-                    print article.body
+            for qs progress in batch_qs(article_qs):
+                do_someting_with_batch(qs)
+
         """
         qs = self.get_queryset()
 
@@ -168,7 +172,7 @@ class ImportIndexTask(object):
 
         qs_count = qs_s.count()
 
-        log.debug('PART %d/%d Count: %d', modulo, modulo_value, qs.count())
+        log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs.count())
 
         if not qs_count:
             raise StopIteration
@@ -178,8 +182,6 @@ class ImportIndexTask(object):
         batch_size = settings.BATCH_SETTINGS['batch_size']
 
         for i in range(0, qs_count+batch_size, batch_size):
-
-            print(i)
 
             if i > qs_count:
                 qs_ss = qs_s[i:]
