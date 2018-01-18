@@ -706,8 +706,9 @@ class SearchViewSet(viewsets.ViewSet):
         response['count_hits'] = count
         response['count'] = count
 
-        response['results'] = [self.normalize_hit(h, request)
-                               for h in result.hits]
+        response['results'] = [
+            self.normalize_hit(h, request)
+                for h in result.hits]
 
         return Response(response)
 
@@ -726,7 +727,11 @@ class SearchViewSet(viewsets.ViewSet):
         if 'order' in hit:
             del(hit['order'])
 
-        result['type'] = hit.meta.doc_type
+        if hit.subtype:
+            result['type'] = hit.subtype
+        else:
+            result['type'] = hit.meta.doc_type
+
         result['dataset'] = hit.meta.index
 
         self.get_hit_data(result, hit)
