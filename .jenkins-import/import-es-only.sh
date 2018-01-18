@@ -25,7 +25,7 @@ dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
 # restore database bag backup.
-dc exec database update-db.sh bag
+docker-compose -p bag exec -T database update-db.sh bag spreeker
 
 echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
