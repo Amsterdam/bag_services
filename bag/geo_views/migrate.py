@@ -97,26 +97,26 @@ class ManageView(Operation):
     def _create_geo_indices(se, viewname, schema, prefix='geo_'):
         se.execute(
             'CREATE VIEW {} AS {}'.format(
-                quote_ident(viewname, se), schema
+                quote_ident(viewname, se.connection), schema
             )
         )
 
         # Todo: Bugfix in progress. Fails without this next line.
         se.execute(
             'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                quote_ident(f"{viewname}_mat", se)
+                quote_ident(f"{viewname}_mat", se.connection)
             )
         )
         se.execute(
             'CREATE MATERIALIZED VIEW {} AS {}'.format(
-                quote_ident(f"{viewname}_mat", se), schema
+                quote_ident(f"{viewname}_mat", se.connection), schema
             )
         )
 
         if not prefix or viewname.startswith(prefix):
             se.execute(
                 'CREATE INDEX {} ON {} USING  GIST (geometrie)'.format(
-                    quote_ident(f"{viewname}_mat_idx", se),
-                    quote_ident(f"{viewname}_mat", se)
+                    quote_ident(f"{viewname}_mat_idx", se.connection),
+                    quote_ident(f"{viewname}_mat", se.connection)
                 )
             )
