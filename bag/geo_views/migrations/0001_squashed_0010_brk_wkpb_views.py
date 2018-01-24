@@ -7,7 +7,7 @@ from geo_views import migrate
 
 from django.conf import settings
 
-from psycopg2 import sql
+from psycopg2.extensions import QuotedString
 
 URL = settings.DATAPUNT_API_URL
 
@@ -37,7 +37,7 @@ SELECT
   {} || 'gebieden/bouwblok/' || bb.id || '/' AS uri
 FROM
   bag_bouwblok bb
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_buurt',
@@ -51,7 +51,7 @@ SELECT
   'gebieden/buurt'::TEXT                          AS type,
   {} || 'gebieden/buurt/' || b.id || '/' AS uri
 FROM bag_buurt b
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_buurtcombinatie',
@@ -65,7 +65,7 @@ SELECT
   'gebieden/buurtcombinatie'::TEXT                           AS type,
   {} || 'gebieden/buurtcombinatie/' || bc.id || '/' AS uri
 FROM bag_buurtcombinatie bc
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_gebiedsgerichtwerken',
@@ -79,7 +79,7 @@ SELECT
   'gebieden/gebiedsgerichtwerken'::TEXT                          AS type,
   {} || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
 FROM bag_gebiedsgerichtwerken g
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_grootstedelijkgebied',
@@ -92,7 +92,7 @@ SELECT
   'gebieden/grootstedelijkgebied'::TEXT                           AS type,
   {} || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
 FROM bag_grootstedelijkgebied gg
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_ligplaats',
@@ -112,7 +112,7 @@ FROM bag_ligplaats l
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -136,7 +136,7 @@ SELECT
   {} || 'bag/openbareruimte/' || opr.id || '/' AS uri
 FROM
   bag_openbareruimte opr
-""".format(sql.Literal(URL))
+""".format(QuotedString(URL))
         ),
 
         migrate.ManageView(
@@ -150,7 +150,7 @@ SELECT
   {} || 'bag/pand/' || p.landelijk_id || '/'       AS uri
 FROM
   bag_pand p
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -165,7 +165,7 @@ SELECT
   'gebieden/stadsdeel'::TEXT                          AS type,
   {} || 'gebieden/stadsdeel/' || s.id || '/' AS uri
 FROM bag_stadsdeel s
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -186,7 +186,7 @@ FROM bag_standplaats s
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -200,7 +200,7 @@ SELECT
   'gebieden/unesco'::TEXT                          AS type,
   {} || 'gebieden/unesco/' || u.id || '/' AS uri
 FROM bag_unesco u
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -221,7 +221,7 @@ FROM bag_verblijfsobject v
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_lki_gemeente',
@@ -247,7 +247,7 @@ SELECT
   'kadaster/kadastraal_object'::TEXT                        AS type,
   {} || 'brk/object/' || ko.id || '/' AS uri
 FROM brk_kadastraalobject ko
-""".format(sql.Literal(URL)),
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
@@ -269,7 +269,7 @@ SELECT
 FROM brk_kadastraalobject ko
 LEFT JOIN brk_kadastralegemeente g ON g.id=ko.kadastrale_gemeente_id
 LEFT JOIN brk_kadastralesectie s ON s.id=ko.sectie_id
-""".format(sql.Literal(URL))
+""".format(QuotedString(URL))
         ),
 
         migrate.ManageView(
@@ -309,6 +309,6 @@ FROM
   LEFT JOIN wkpb_beperkingcode bc ON bc.code = bp.beperkingtype_id
 WHERE
   bp.beperkingtype_id <> 'HS'
-          """.format(sql.Literal(URL)),
+          """.format(QuotedString(URL)),
         ),
     ]

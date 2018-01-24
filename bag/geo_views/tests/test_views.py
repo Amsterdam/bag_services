@@ -7,7 +7,7 @@ from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
 from django.conf import settings
-from psycopg2 import sql
+from psycopg2.extensions import quote_ident
 
 URL = settings.DATAPUNT_API_URL
 
@@ -18,7 +18,7 @@ class ViewsTest(TestCase):
         with connection.cursor() as cursor:
             cursor.execute(
                 'SELECT * FROM {} LIMIT 1'.format(
-                    sql.Identifier(view_name)
+                    quote_ident(view_name, cursor)
                 )
             )
             result = cursor.fetchone()
