@@ -2,7 +2,6 @@ import logging
 
 from django.db import connection
 from django.db.migrations.operations.base import Operation
-from psycopg2.extensions import quote_ident
 
 view_history = dict()
 
@@ -64,14 +63,14 @@ class ManageView(Operation):
             cursor.execute(base_stmt, ['v', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP VIEW IF EXISTS {}'.format(quote_ident(relname, cursor))
+                    'DROP VIEW IF EXISTS {}'.format(se.quote_name(relname, cursor))
                 )
                 self.logger.info(f'View {relname} dropped.')
 
             cursor.execute(base_stmt, ['r', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP TABLE IF EXISTS {}'.format(quote_ident(relname, cursor))
+                    'DROP TABLE IF EXISTS {}'.format(se.quote_name(relname, cursor))
                 )
                 self.logger.info(f'Table {relname} dropped.')
 
@@ -79,7 +78,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                        quote_ident(f"{relname}_mat", cursor)
+                        se.quote_name(f"{relname}_mat", cursor)
                     )
                 )
                 self.logger.info(f'Materialised View {relname}_mat dropped.')
@@ -88,7 +87,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP TABLE IF EXISTS {}'.format(
-                        quote_ident(f"{relname}_mat", cursor)
+                        se.quote_name(f"{relname}_mat", cursor)
                     )
                 )
                 self.logger.info(f'Table {relname}_mat dropped.')
@@ -97,26 +96,26 @@ class ManageView(Operation):
     def _create_geo_indices(se, viewname, schema, prefix='geo_'):
         se.execute(
             'CREATE VIEW {} AS {}'.format(
-                viewname, schema
+                se.quote_name(viewname), schema
             )
         )
 
         # Todo: Bugfix in progress. Fails without this next line.
         se.execute(
             'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                f"{viewname}_mat"
+                se.quote_name(f"{viewname}_mat")
             )
         )
         se.execute(
             'CREATE MATERIALIZED VIEW {} AS {}'.format(
-                f"{viewname}_mat", schema
+                se.quote_name(f"{viewname}_mat"), schema
             )
         )
 
         if not prefix or viewname.startswith(prefix):
             se.execute(
                 'CREATE INDEX {} ON {} USING  GIST (geometrie)'.format(
-                    f"{viewname}_mat_idx",
-                    f"{viewname}_mat"
+                    se.quote_name(f"{viewname}_mat_idx"),
+                    se.quote_name(f"{viewname}_mat")
                 )
             )
