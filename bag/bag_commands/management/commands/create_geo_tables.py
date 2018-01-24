@@ -1,6 +1,7 @@
 from django.core.management import BaseCommand
 from django.db import ProgrammingError
 from django.db import connection
+from psycopg2 import sql
 
 
 class Command(BaseCommand):
@@ -14,18 +15,35 @@ class Command(BaseCommand):
         for table_info in tables:
             if table_info.type == 'v' and table_info.name[0:4] == 'geo_':
                 try:
-                    cursor.execute(f'DROP TABLE IF EXISTS {table_info.name}_mat')
+                    cursor.execute(
+                        'DROP TABLE IF EXISTS {}'.format(
+                            sql.Identifier(f"{table_info.name}_mat")
+                        )
+                    )
                 except ProgrammingError:
                     pass
 
                 cursor.execute(
-                    f'CREATE TABLE {table_info.name}_mat '
-                    f'AS SELECT * FROM {table_info.name}')
+                    'CREATE TABLE {} AS SELECT * FROM {}'.format(
+                        sql.Identifier(f"{table_info.name}_mat"),
+                        sql.Identifier(table_info.name)
+                    )
+                )
                 cursor.execute(
-                    f'CREATE INDEX {table_info.name}_idx '
-                    f'ON {table_info.name}_mat USING GIST(geometrie)')
+                    'CREATE INDEX {} ON {} USING GIST(geometrie)'.format(
+                        sql.Identifier(f"{table_info.name}_idx"),
+                        sql.Identifier(f"{table_info.name}_mat")
+                    )
+                )
                 cursor.execute(
-                    f'CLUSTER {table_info.name}_idx '
-                    f'ON {table_info.name}_mat')
-                cursor.execute(f'VACUUM ANALYZE {table_info.name}_mat')
+                    'CLUSTER {} ON {}'.format(
+                        sql.Identifier(f"{table_info.name}_idx"),
+                        sql.Identifier(f"{table_info.name}_mat")
+                    )
+                )
+                cursor.execute(
+                    'VACUUM ANALYZE {}'.format(
+                        sql.Identifier(f"{table_info.name}_mat"),
+                    )
+                )
                 self.stdout.write(f'Created geotable {table_info.name}_mat\n')

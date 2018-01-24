@@ -7,6 +7,7 @@ from datasets.brk.tests import factories as brk_factories
 from datasets.wkpb.tests import factories as wkpb_factories
 
 from django.conf import settings
+from psycopg2 import sql
 
 URL = settings.DATAPUNT_API_URL
 
@@ -15,7 +16,11 @@ class ViewsTest(TestCase):
 
     def get_row(self, view_name):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
+            cursor.execute(
+                'SELECT * FROM {} LIMIT 1'.format(
+                    sql.Identifier(view_name)
+                )
+            )
             result = cursor.fetchone()
             self.assertIsNotNone(result)
 

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
 from django.utils.text import slugify
+from psycopg2 import sql
 # import requests
 # Project
 from search import index
@@ -1531,13 +1532,12 @@ def log_details_wrong_geometry(model):
 
     table = model._meta.db_table
 
-    explain_error_sql = f"""
-
+    explain_error_sql = """
     SELECT id, reason(ST_IsValidDetail(geometrie)),
                ST_AsText(location(ST_IsValidDetail(geometrie))) as location
-    FROM {table}
+    FROM {}
     WHERE ST_IsValid(geometrie) = false;
-    """
+    """.format(sql.Identifier(table))
 
     with connection.cursor() as c:
         c.execute(explain_error_sql)

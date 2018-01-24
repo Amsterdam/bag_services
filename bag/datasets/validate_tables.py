@@ -3,6 +3,7 @@ Collect and validate bag, brk, gebieden and wkpb table counts
 """
 import logging
 from django.db import connection
+from psycopg2 import sql
 
 
 LOG = logging.getLogger(__name__)
@@ -10,11 +11,10 @@ LOG = logging.getLogger(__name__)
 
 def sql_count(table):
 
-    c_stmt = f"SELECT COUNT(*) FROM {table};"
     count = 0
 
     with connection.cursor() as c:
-        c.execute(c_stmt)
+        c.execute('SELECT COUNT(*) FROM {}'.format(sql.Identifier(table)))
         row = c.fetchone()
         count += row[0]
         # LOG.debug('COUNT %-6s %s', count, table)
