@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 from django.db import ProgrammingError
 from django.db import connection
-from psycopg2 import sql
+from psycopg2.extensions import quote_ident
 
 
 class Command(BaseCommand):
@@ -17,7 +17,7 @@ class Command(BaseCommand):
                 try:
                     cursor.execute(
                         'DROP TABLE IF EXISTS {}'.format(
-                            sql.Identifier(f"{table_info.name}_mat")
+                            quote_ident(f"{table_info.name}_mat", cursor)
                         )
                     )
                 except ProgrammingError:
@@ -25,25 +25,25 @@ class Command(BaseCommand):
 
                 cursor.execute(
                     'CREATE TABLE {} AS SELECT * FROM {}'.format(
-                        sql.Identifier(f"{table_info.name}_mat"),
-                        sql.Identifier(table_info.name)
+                        quote_ident(f"{table_info.name}_mat", cursor),
+                        quote_ident(table_info.name, cursor)
                     )
                 )
                 cursor.execute(
                     'CREATE INDEX {} ON {} USING GIST(geometrie)'.format(
-                        sql.Identifier(f"{table_info.name}_idx"),
-                        sql.Identifier(f"{table_info.name}_mat")
+                        quote_ident(f"{table_info.name}_idx", cursor),
+                        quote_ident(f"{table_info.name}_mat", cursor)
                     )
                 )
                 cursor.execute(
                     'CLUSTER {} ON {}'.format(
-                        sql.Identifier(f"{table_info.name}_idx"),
-                        sql.Identifier(f"{table_info.name}_mat")
+                        quote_ident(f"{table_info.name}_idx", cursor),
+                        quote_ident(f"{table_info.name}_mat", cursor)
                     )
                 )
                 cursor.execute(
                     'VACUUM ANALYZE {}'.format(
-                        sql.Identifier(f"{table_info.name}_mat"),
+                        quote_ident(f"{table_info.name}_mat", cursor),
                     )
                 )
                 self.stdout.write(f'Created geotable {table_info.name}_mat\n')

@@ -2,7 +2,7 @@ import logging
 
 from django.db import connection
 from django.db.migrations.operations.base import Operation
-from psycopg2 import sql
+from psycopg2.extensions import quote_ident
 
 view_history = dict()
 
@@ -64,14 +64,14 @@ class ManageView(Operation):
             cursor.execute(base_stmt, ['v', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP VIEW IF EXISTS {}'.format(sql.Identifier(relname))
+                    'DROP VIEW IF EXISTS {}'.format(quote_ident(relname, cursor))
                 )
                 self.logger.info(f'View {relname} dropped.')
 
             cursor.execute(base_stmt, ['r', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP TABLE IF EXISTS {}'.format(sql.Identifier(relname))
+                    'DROP TABLE IF EXISTS {}'.format(quote_ident(relname, cursor))
                 )
                 self.logger.info(f'Table {relname} dropped.')
 
@@ -79,7 +79,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                        sql.Identifier(f"{relname}_mat")
+                        quote_ident(f"{relname}_mat", cursor)
                     )
                 )
                 self.logger.info(f'Materialised View {relname}_mat dropped.')
@@ -88,7 +88,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP TABLE IF EXISTS {}'.format(
-                        sql.Identifier(f"{relname}_mat")
+                        quote_ident(f"{relname}_mat", cursor)
                     )
                 )
                 self.logger.info(f'Table {relname}_mat dropped.')
@@ -97,26 +97,26 @@ class ManageView(Operation):
     def _create_geo_indices(se, viewname, schema, prefix='geo_'):
         se.execute(
             'CREATE VIEW {} AS {}'.format(
-                sql.Identifier(viewname), schema
+                quote_ident(viewname, se), schema
             )
         )
 
         # Todo: Bugfix in progress. Fails without this next line.
         se.execute(
             'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                sql.Identifier(f"{viewname}_mat")
+                quote_ident(f"{viewname}_mat", se)
             )
         )
         se.execute(
             'CREATE MATERIALIZED VIEW {} AS {}'.format(
-                sql.Identifier(f"{viewname}_mat"), schema
+                quote_ident(f"{viewname}_mat", se), schema
             )
         )
 
         if not prefix or viewname.startswith(prefix):
             se.execute(
                 'CREATE INDEX {} ON {} USING  GIST (geometrie)'.format(
-                    sql.Identifier(f"{viewname}_mat_idx"),
-                    sql.Identifier(f"{viewname}_mat")
+                    quote_ident(f"{viewname}_mat_idx", se),
+                    quote_ident(f"{viewname}_mat", se)
                 )
             )
