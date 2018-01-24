@@ -2,6 +2,7 @@ import logging
 
 from django.db import connection
 from django.db.migrations.operations.base import Operation
+from psycopg2 import sql
 
 view_history = dict()
 
@@ -58,39 +59,64 @@ class ManageView(Operation):
         self.logger.info(f'Cleaning up: {relname}.')
         with connection.cursor() as cursor:
             base_stmt = "SELECT count(relname) FROM pg_class " \
-                        "WHERE relkind = '{type}' AND relname = '{relname}'"
+                        "WHERE relkind = %s AND relname = %s"
 
-            cursor.execute(base_stmt.format(type='v', relname=relname))
+            cursor.execute(base_stmt, ['v', relname])
             if cursor.fetchall()[0][0] > 0:
-                se.execute(f'DROP VIEW IF EXISTS {relname}')
+                se.execute(
+                    'DROP VIEW IF EXISTS {}'.format(sql.Identifier(relname))
+                )
                 self.logger.info(f'View {relname} dropped.')
 
-            cursor.execute(base_stmt.format(type='r', relname=relname))
+            cursor.execute(base_stmt, ['r', relname])
             if cursor.fetchall()[0][0] > 0:
-                se.execute(f'DROP TABLE IF EXISTS {relname}')
+                se.execute(
+                    'DROP TABLE IF EXISTS {}'.format(sql.Identifier(relname))
+                )
                 self.logger.info(f'Table {relname} dropped.')
 
-            cursor.execute(base_stmt.format(
-                type='v', relname=f'{relname}_mat'))
+            cursor.execute(base_stmt, ['v', f'{relname}_mat'])
             if cursor.fetchall()[0][0] > 0:
-                se.execute(f'DROP MATERIALIZED VIEW IF EXISTS {relname}_mat')
+                se.execute(
+                    'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
+                        sql.Identifier(f"{relname}_mat")
+                    )
+                )
                 self.logger.info(f'Materialised View {relname}_mat dropped.')
 
-            cursor.execute(
-                base_stmt.format(type='r', relname=f'{relname}_mat'))
+            cursor.execute(base_stmt, ['r', f'{relname}_mat'])
             if cursor.fetchall()[0][0] > 0:
-                se.execute(f'DROP TABLE IF EXISTS {relname}_mat')
+                se.execute(
+                    'DROP TABLE IF EXISTS {}'.format(
+                        sql.Identifier(f"{relname}_mat")
+                    )
+                )
                 self.logger.info(f'Table {relname}_mat dropped.')
 
     @staticmethod
-    def _create_geo_indices(se, viewname, sql, prefix='geo_'):
-        se.execute(f'CREATE VIEW {viewname} AS {sql}')
+    def _create_geo_indices(se, viewname, schema, prefix='geo_'):
+        se.execute(
+            'CREATE VIEW {} AS {}'.format(
+                sql.Identifier(viewname), schema
+            )
+        )
 
         # Todo: Bugfix in progress. Fails without this next line.
-        se.execute(f'DROP MATERIALIZED VIEW IF EXISTS {viewname}_mat')
-        se.execute(f'CREATE MATERIALIZED VIEW {viewname}_mat AS {sql}')
+        se.execute(
+            'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
+                sql.Identifier(f"{viewname}_mat")
+            )
+        )
+        se.execute(
+            'CREATE MATERIALIZED VIEW {} AS {}'.format(
+                sql.Identifier(f"{viewname}_mat"), schema
+            )
+        )
 
         if not prefix or viewname.startswith(prefix):
-            se.execute(f"""CREATE INDEX {viewname}_mat_idx
-                            ON {viewname}_mat
-                            USING  GIST (geometrie)""")
+            se.execute(
+                'CREATE INDEX {} ON {} USING  GIST (geometrie)'.format(
+                    sql.Identifier(f"{viewname}_mat_idx"),
+                    sql.Identifier(f"{viewname}_mat")
+                )
+            )
