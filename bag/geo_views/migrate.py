@@ -63,14 +63,14 @@ class ManageView(Operation):
             cursor.execute(base_stmt, ['v', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP VIEW IF EXISTS {}'.format(se.quote_name(relname, cursor))
+                    'DROP VIEW IF EXISTS {}'.format(se.quote_name(relname))
                 )
                 self.logger.info(f'View {relname} dropped.')
 
             cursor.execute(base_stmt, ['r', relname])
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
-                    'DROP TABLE IF EXISTS {}'.format(se.quote_name(relname, cursor))
+                    'DROP TABLE IF EXISTS {}'.format(se.quote_name(relname))
                 )
                 self.logger.info(f'Table {relname} dropped.')
 
@@ -78,7 +78,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP MATERIALIZED VIEW IF EXISTS {}'.format(
-                        se.quote_name(f"{relname}_mat", cursor)
+                        se.quote_name(f"{relname}_mat")
                     )
                 )
                 self.logger.info(f'Materialised View {relname}_mat dropped.')
@@ -87,7 +87,7 @@ class ManageView(Operation):
             if cursor.fetchall()[0][0] > 0:
                 se.execute(
                     'DROP TABLE IF EXISTS {}'.format(
-                        se.quote_name(f"{relname}_mat", cursor)
+                        se.quote_name(f"{relname}_mat")
                     )
                 )
                 self.logger.info(f'Table {relname}_mat dropped.')
