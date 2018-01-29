@@ -19,7 +19,7 @@ def health(request):
     # check database
     try:
         with connection.cursor() as cursor:
-            cursor.execute("select 1")
+            cursor.execute("SELECT 1")
             assert cursor.fetchone()
     except:
         log.exception("Database connectivity failed")

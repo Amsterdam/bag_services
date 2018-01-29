@@ -15,7 +15,11 @@ class ViewsTest(TestCase):
 
     def get_row(self, view_name):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM " + str(view_name) + " LIMIT 1")
+            cursor.execute(
+                'SELECT * FROM {} LIMIT 1'.format(
+                    connection.ops.quote_name(view_name)
+                )
+            )
             result = cursor.fetchone()
             self.assertIsNotNone(result)
 

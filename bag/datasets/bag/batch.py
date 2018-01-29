@@ -1531,13 +1531,12 @@ def log_details_wrong_geometry(model):
 
     table = model._meta.db_table
 
-    explain_error_sql = f"""
-
+    explain_error_sql = """
     SELECT id, reason(ST_IsValidDetail(geometrie)),
                ST_AsText(location(ST_IsValidDetail(geometrie))) as location
-    FROM {table}
+    FROM {}
     WHERE ST_IsValid(geometrie) = false;
-    """
+    """.format(connection.ops.quote_name(table))
 
     with connection.cursor() as c:
         c.execute(explain_error_sql)
