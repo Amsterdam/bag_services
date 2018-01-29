@@ -887,13 +887,10 @@ class SearchGebiedenViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        # parameters
-        # bouwblok
 
         if analyzer.is_bouwblok_prefix():
             search = bag_qs.bouwblok_query(analyzer)
             search = search.to_elasticsearch_object(elk_client)
-            search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
             search = bag_qs.gebied_query(
