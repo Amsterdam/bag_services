@@ -96,8 +96,21 @@ class ImportIndexTask(object):
 
         log.info("PART: %s OF %s" % (numerator+1, denominator))
 
-        for qs_p, progres in self.return_qs_parts(qs, denominator, numerator):
-            yield qs_p, progres, numerator + 1
+        return self.return_qs_parts(qs, denominator, numerator)
+
+    def convert_model_to_dict(self, qs):
+        """
+        Convert django models to elasticsearch documents
+        """
+
+        batch = list()
+
+        for obj in qs:
+            batch.append(self.convert(obj).to_dict(include_meta=True))
+            # store last id
+            self.last_id = obj.id
+
+        return batch
 
     def execute(self):
         """
@@ -109,24 +122,11 @@ class ImportIndexTask(object):
             refresh=True
         )
 
-        start_time = time.time()
-
-        for qs, progress, task in self.batch_qs():
-
-            elapsed = time.time() - start_time
-
-            total_left = (progress + 0.001) * elapsed - elapsed
-
-            progres_msg = \
-                '%.3f : duration: %.2f left: %.2f task: %d' % (
-                    progress, elapsed, total_left,
-                    task
-                )
-
-            log.info(progres_msg)
+        for qs in self.batch_qs():
 
             helpers.bulk(
-                client, (self.convert(obj).to_dict(include_meta=True) for obj in qs),
+                client,
+                self.convert_model_to_dict(qs),
                 raise_on_error=True,
                 refresh=True
             )
@@ -140,20 +140,21 @@ class ImportIndexTask(object):
 
     def return_qs_parts(self, qs, modulo, modulo_value):
         """
-        build qs
+        Build qs
 
         modulo and modulo_value determin which chuncks
         are teturned.
 
         if partial = 1/3
 
-        then this function only returns chuncks index i for which
-        modulo i % 3 == 1
+        then this function only returns chuncks index id for which
+        modulo id % 3 == 1
 
         Sometimes the ID field is a string with a number.
         In that case the Indexer can define a substring
         which will extract the number part of the ID field
         """
+        log.debug('BATCH id MODULO %d = %d', modulo, modulo_value)
 
         if modulo != 1:
             if self.substring:
@@ -181,17 +182,30 @@ class ImportIndexTask(object):
 
         batch_size = settings.BATCH_SETTINGS['batch_size']
 
-        for i in range(0, qs_count+batch_size, batch_size):
+        loopidx = 0
 
-            if i > qs_count:
-                qs_ss = qs_s[i:]
+        # gets updates when we save object in es
+        self.last_id = None
+
+        while True:
+
+            loopidx += 1
+
+            if not self.last_id:
+                qs_ss = qs_s[:batch_size]
             else:
-                qs_ss = qs_s[i:i+batch_size]
+                qs_ss = qs_s.filter(id__gt=self.last_id)[:batch_size]
 
             log.debug(
-                'Batch %4d %4d %s',
-                i, i + batch_size, self.__class__.__name__)
+                'Batch %4d %4d %s  %s',
+                loopidx, loopidx*batch_size, self.name,
+                self.last_id
+            )
 
-            yield qs_ss, i/qs_count * 100
+            yield qs_ss
+
+            if qs_ss.count() < batch_size:
+                # no more data
+                break
 
         raise StopIteration
