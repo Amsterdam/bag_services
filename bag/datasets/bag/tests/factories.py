@@ -171,8 +171,8 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     geometrie = Point(
         # Defaulting to 1000, 1000
         randint(1, 100), randint(1, 100), srid=28992)
-    ind_inonderzoek = False
-    ind_geconstateerd = None
+    indicatie_in_onderzoek = False
+    indicatie_geconstateerd = None
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):

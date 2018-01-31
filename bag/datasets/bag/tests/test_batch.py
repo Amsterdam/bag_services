@@ -518,20 +518,6 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(v.verhuurbare_eenheden, None)
         self.assertEqual(v.mutatie_gebruiker, 'DBI')
 
-    def test_non_existing_indicatie(self):
-        self.run_task()
-
-        # Test the non-existing indicatie code path (i.e. store None on object)
-        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000648915')
-        self.assertEqual(v.ind_inonderzoek, None)
-        self.assertEqual(v.ind_geconstateerd, None)
-
-        # In the test data this object has 'J' and 'N' for respectively
-        # ind_geconstateerd and ind_in_onderzoek
-        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000722592')
-        self.assertEqual(v.ind_geconstateerd, True)
-        self.assertEqual(v.ind_inonderzoek, False)
-
 
 class ImportNumTest(TaskTestCase):
 
