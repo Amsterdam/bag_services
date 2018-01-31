@@ -40,6 +40,91 @@ class CodeOmschrijvingUvaTask(batch.BasicTask):
         return self.model(pk=r['Code'], omschrijving=r['Omschrijving'])
 
 
+class ImportIndicatieAOTTask(batch.BasicTask):
+
+    name = "import Indicatie Onderzoek Adresseerbaar Objecten AOT"
+
+    def __init__(self, path):
+        self.path = path
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+        try:
+            self.indicaties = uva2.process_csv(
+                self.path, 'AOT_geconstateerd-inonderzoek', self.process_row,
+                with_header=False
+            )
+        except ValueError():
+            # when delivery is all AOT below can be removed
+            log.traceback('AOT missing trying old file')
+            self.indicaties = uva2.process_csv(
+                self.path, 'VBO_geconstateerd-inonderzoek', self.process_row,
+                with_header=False
+            )
+
+        models.IndicatieAdresseerbaarObject.objects.bulk_create(
+            self.indicaties, batch_size=database.BATCH_SIZE)
+
+    def process_row(self, indicatie):
+
+        landelijk_id = indicatie[0]
+        indicatie_geconstateerd = False
+        indicatie_in_onderzoek = False
+
+        if indicatie[1] == 'Y':
+            indicatie_geconstateerd = True
+
+        if indicatie[1] == 'Y':
+            indicatie_in_onderzoek = True
+
+        return models.IndicatieAdresseerbaarObject(
+            landelijk_id=landelijk_id,
+            indicatie_geconstateerd=indicatie_geconstateerd,
+            indicatie_in_onderzoek=indicatie_in_onderzoek
+        )
+
+
+class ImportPandNaamTask(batch.BasicTask):
+    name = "Some Panden have nice names. Import those"
+
+    def __init__(self, path):
+        self.path = path
+
+    def before(self):
+        assert models.Pand.objects.count() > 0
+
+    def after(self):
+        pass
+
+    def process(self):
+
+        self.pandnamen = uva2.process_csv(
+            self.path, 'PND_naam', self.process_row,
+            with_header=False
+        )
+
+        for pandnaam in self.pandnamen:
+            self.process_row(pandnaam)
+
+    def process_row(self, pand_naam):
+        p_id = pand_naam[0]
+        naam = pand_naam[1]
+
+        try:
+            pand = models.Pand.objects.get(landelijk_id=p_id)
+        except models.Pand.DoesNotExist:
+            log.info(f'Pand id does not exist! skipping. {p_id}')
+            return
+
+        pand.pandnaam = naam
+        pand.save()
+
+
 class ImportAvrTask(CodeOmschrijvingUvaTask):
     name = "Import AVR"
     code = "AVR"
@@ -146,7 +231,7 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
 
 
 class ImportGmeTask(batch.BasicTask):
-    name = "Import GME"
+    name = "Import GME Gemeente code / naam"
 
     def __init__(self, path):
         self.path = path
@@ -1011,7 +1096,6 @@ class ImportVboTask(batch.BasicTask):
         self.statussen = set()
         self.buurten = set()
         self.landelijke_ids = dict()
-        self.indicaties = dict()
 
     def before(self):
         self.redenen_afvoer = set(models.RedenAfvoer.objects.values_list("pk", flat=True))
@@ -1026,8 +1110,6 @@ class ImportVboTask(batch.BasicTask):
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
-        self.indicaties = uva2.read_indicaties(self.path)
-
     def after(self):
         self.redenen_afvoer.clear()
         self.redenen_opvoer.clear()
@@ -1040,8 +1122,6 @@ class ImportVboTask(batch.BasicTask):
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
-
-        self.indicaties.clear()
 
         log.info('%d Verblijfsobjecten Imported', models.Verblijfsobject.objects.count())
 
@@ -1142,15 +1222,6 @@ class ImportVboTask(batch.BasicTask):
             log.warning('Verblijfsobject {} references non-existing bron {}; ignoring'.format(pk, buurt_id))
             buurt_id = None
 
-        if landelijk_id not in self.indicaties:
-            log.warning(
-                'Verblijfsobject {} references non-existing ind_gecontateerd / ind_inonderzoek; ignoring'.format(
-                    landelijk_id))
-            ind_inonderzoek = None
-            ind_geconstateerd = None
-        else:
-            ind_geconstateerd, ind_inonderzoek = self.indicaties[landelijk_id]
-
         return models.Verblijfsobject(
             pk=pk,
             landelijk_id=landelijk_id,
@@ -1188,8 +1259,6 @@ class ImportVboTask(batch.BasicTask):
             einde_geldigheid=uva2.uva_datum(
                 r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
             mutatie_gebruiker=r['Mutatie-gebruiker'],
-            ind_geconstateerd=ind_geconstateerd,
-            ind_inonderzoek=ind_inonderzoek,
         )
 
 
@@ -1693,6 +1762,43 @@ class ImportUnescoTask(batch.BasicTask):
         ).save()
 
 
+class DenormalizeIndicatieTask(batch.BasicTask):
+    name = "Add indicatie to BAG vbo / standplaats / ligplaats data"
+
+    def before(self):
+        pass
+
+    def after(self):
+        pass
+
+    def process(self):
+        update_aot_sql = """
+UPDATE {tablename} vbo
+SET
+    indicatie_geconstateerd = i.indicatie_geconstateerd,
+    indicatie_in_onderzoek = i.indicatie_in_onderzoek
+FROM (
+    SELECT
+        ind.landelijk_id,
+        ind.indicatie_geconstateerd,
+        ind.indicatie_in_onderzoek
+    FROM bag_indicatieadresseerbaarobject ind
+    ) i
+WHERE i.landelijk_id = vbo.landelijk_id
+
+        """
+
+        aot_tables = [
+            'bag_verblijfsobject',
+            'bag_ligplaats',
+            'bag_standplaats'
+        ]
+
+        for aot in aot_tables:
+            with connection.cursor() as c:
+                c.execute(update_aot_sql.format(tablename=aot))
+
+
 class DenormalizeDataTask(batch.BasicTask):
     name = "Denormalize BAG vbo / standplaats / ligplaats data"
 
@@ -1878,8 +1984,11 @@ class ImportBagJob(object):
         self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
 
     def tasks(self):
+
         return [
             # no-dependencies.
+            ImportIndicatieAOTTask(self.bag_path),
+
             ImportAvrTask(self.bag_path),
             ImportOvrTask(self.bag_path),
             ImportBronTask(self.bag_path),
@@ -1896,7 +2005,7 @@ class ImportBagJob(object):
             ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
             ImportBuurtcombinatieTask(self.gebieden_shp_path),
 
-            # stads delen.
+            # stadsdelen.
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp_path),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),
             ImportUnescoTask(self.gebieden_shp_path),
@@ -1909,8 +2018,13 @@ class ImportBagJob(object):
             ImportLigTask(self.bag_path, self.bag_wkt_path),
             ImportStandplaatsenTask(self.bag_path, self.bag_wkt_path),
 
+            ImportPandTask(self.bag_path, self.bag_wkt_path),
+
+            ImportPandNaamTask(self.bag_path),
+
             # large. 500.000
             ImportVboTask(self.bag_path),
+
             ImportGebruiksdoelenTask(self.bag_path),
 
             # large. 500.000
@@ -1919,12 +2033,15 @@ class ImportBagJob(object):
             # finising stuff.
             SetHoofdAdres(self.bag_path),
 
-            ImportPandTask(self.bag_path, self.bag_wkt_path),
 
-            # all vbo's
+            # requires all vbo's to be there
             ImportPandVboTask(self.bag_path),
-            DenormalizeDataTask(),
 
+            # some sql copying fields
+            DenormalizeDataTask(),
+            DenormalizeIndicatieTask(),
+
+            # more denormalizeing sql
             UpdateGebiedenAttributenTask(),
             UpdateGrootstedelijkAttributenTask(),
         ]

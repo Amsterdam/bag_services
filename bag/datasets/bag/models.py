@@ -13,9 +13,24 @@ class Bron(mixins.CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Bronnen"
 
 
+class IndicatieAdresseerbaarObject(models.Model):
+    """
+    Verblijfsobjecten, Standplaatsen, Ligplaatsen
+    kunnen in onderzoek zijn.
+
+    Source table for indicaties
+
+    AOT. Adresseerbaar object
+    """
+    landelijk_id = models.CharField(max_length=16, primary_key=True, null=False)
+    indicatie_geconstateerd = models.BooleanField(null=False)
+    indicatie_in_onderzoek = models.BooleanField(null=False)
+
+
 class Status(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Status"
         verbose_name_plural = "Status"
@@ -627,8 +642,8 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
 
-    ind_geconstateerd = models.NullBooleanField(default=None)
-    ind_inonderzoek = models.NullBooleanField(default=None)
+    indicatie_geconstateerd = models.NullBooleanField(default=None)
+    indicatie_in_onderzoek = models.NullBooleanField(default=None)
 
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='ligplaatsen',
@@ -716,8 +731,8 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     date_modified = models.DateTimeField(auto_now=True)
 
-    ind_geconstateerd = models.NullBooleanField(default=None)
-    ind_inonderzoek = models.NullBooleanField(default=None)
+    indicatie_geconstateerd = models.NullBooleanField(default=None)
+    indicatie_in_onderzoek = models.NullBooleanField(default=None)
 
     _gebiedsgerichtwerken = models.ForeignKey(
         Gebiedsgerichtwerken, related_name='standplaatsen', null=True,
@@ -805,6 +820,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     reden_afvoer = models.ForeignKey(
         RedenAfvoer, null=True, on_delete=models.CASCADE)
 
+
     date_modified = models.DateTimeField(auto_now=True)
 
     reden_opvoer = models.ForeignKey(
@@ -831,8 +847,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         on_delete=models.CASCADE
     )
 
-    ind_geconstateerd = models.NullBooleanField(default=None)
-    ind_inonderzoek = models.NullBooleanField(default=None)
+    indicatie_geconstateerd = models.NullBooleanField(default=None)
+    indicatie_in_onderzoek = models.NullBooleanField(default=None)
 
     panden = models.ManyToManyField(
         'Pand', related_name='verblijfsobjecten',
@@ -947,6 +963,8 @@ class Pand(
     geometrie = geo.PolygonField(null=True, srid=28992)
 
     date_modified = models.DateTimeField(auto_now=True)
+
+    pandnaam = models.CharField(max_length=250, null=True)
 
     objects = geo.Manager()
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from collections import OrderedDict
+# from collections import OrderedDict
 
 from rest_framework_gis.fields import GeometryField
 
@@ -526,6 +526,9 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'status',
             'bron',
 
+            'indicatie_geconstateerd',
+            'indicatie_in_onderzoek',
+
             'geometrie',
             'hoofdadres',
             'adressen',
@@ -653,6 +656,9 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'status',
             'bron',
 
+            'indicatie_geconstateerd',
+            'indicatie_in_onderzoek',
+
             'geometrie',
             'hoofdadres',
             'adressen',
@@ -732,9 +738,6 @@ class VerblijfsobjectDetail(
     beperkingen = rest.RelatedSummaryField()
 
     bouwblok = Bouwblok()
-
-    indicatie_geconstateerd = serializers.ReadOnlyField(source='ind_geconstateerd')
-    indicatie_in_onderzoek = serializers.ReadOnlyField(source='ind_inonderzoek')
 
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()

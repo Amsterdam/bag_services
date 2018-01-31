@@ -61,6 +61,7 @@ class DeleteIndexTask(object):
 class ImportIndexTask(object):
     queryset = None
     substring = 0  # subtring of id field to parse to integer
+    last_id = None
 
     def get_queryset(self):
         return self.queryset.order_by('id')
