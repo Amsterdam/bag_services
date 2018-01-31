@@ -1026,6 +1026,8 @@ class ImportVboTask(batch.BasicTask):
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
+        self.indicaties = uva2.read_indicaties(self.path)
+
     def after(self):
         self.redenen_afvoer.clear()
         self.redenen_opvoer.clear()
@@ -1038,11 +1040,13 @@ class ImportVboTask(batch.BasicTask):
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
+
+        self.indicaties.clear()
+
         log.info('%d Verblijfsobjecten Imported', models.Verblijfsobject.objects.count())
 
     def process(self):
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "VBO")
-        self.indicaties = uva2.read_indicaties(self.path)
 
         verblijfsobjecten = uva2.process_uva2(self.path, "VBO", self.process_row)
 

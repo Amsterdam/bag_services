@@ -4,91 +4,104 @@ from django.db import models
 from datasets.generic import mixins
 
 
-class Bron(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-           models.Model):
+class Bron(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Bron"
         verbose_name_plural = "Bronnen"
 
 
-class Status(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-             models.Model):
+class Status(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name = "Status"
         verbose_name_plural = "Status"
 
 
-class RedenAfvoer(
-        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-        models.Model):
+class RedenAfvoer(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Reden Afvoer"
         verbose_name_plural = "Reden Afvoer"
 
 
-class RedenOpvoer(
-            mixins.ImportStatusMixin,
-            mixins.CodeOmschrijvingMixin, models.Model):
+class RedenOpvoer(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Reden Opvoer"
         verbose_name_plural = "Reden Opvoer"
 
 
-class Eigendomsverhouding(
-            mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-            models.Model):
+class Eigendomsverhouding(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Eigendomsverhouding"
         verbose_name_plural = "Eigendomsverhoudingen"
 
 
-class Financieringswijze(
-        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-        models.Model):
+class Financieringswijze(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Financieringswijze"
         verbose_name_plural = "Financieringswijzes"
 
 
-class Ligging(
-        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-        models.Model):
+class Ligging(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Ligging"
         verbose_name_plural = "Ligging"
 
 
-class Gebruik(
-        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-        models.Model):
+class Gebruik(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Gebruik"
         verbose_name_plural = "Gebruik"
 
 
-class LocatieIngang(
-        mixins.ImportStatusMixin,
-        mixins.CodeOmschrijvingMixin, models.Model):
+class LocatieIngang(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Locatie Ingang"
         verbose_name_plural = "Locaties Ingang"
 
 
-class Toegang(
-        mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-        models.Model):
+class Toegang(mixins.CodeOmschrijvingMixin, models.Model):
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Toegang"
         verbose_name_plural = "Toegang"
 
 
-class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
+class Gemeente(mixins.GeldigheidMixin, models.Model):
     """
     Burgelijke gemeenten
     """
 
     id = models.CharField(max_length=14, primary_key=True)
     code = models.CharField(max_length=4, unique=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
     naam = models.CharField(max_length=40)
     verzorgingsgebied = models.NullBooleanField(default=None)
     vervallen = models.NullBooleanField(default=None)
@@ -103,10 +116,11 @@ class Gemeente(mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
 
 class Woonplaats(
         mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-        mixins.ImportStatusMixin,
         mixins.DocumentStatusMixin, models.Model):
 
     id = models.CharField(max_length=14, primary_key=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
     naam_ptt = models.CharField(max_length=18, null=True)
@@ -122,7 +136,7 @@ class Woonplaats(
         return self.naam
 
 
-class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
+class Hoofdklasse(models.Model):
     """
     De hoofdklasse is een abstracte klasse waar sommige andere
     gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
@@ -132,6 +146,8 @@ class Hoofdklasse(mixins.ImportStatusMixin, models.Model):
     """
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     objects = geo.Manager()
 
@@ -238,8 +254,7 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
 
 
 class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-                     mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-                     models.Model):
+                     mixins.DocumentStatusMixin, models.Model):
     """
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
@@ -270,6 +285,8 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
     code = models.CharField(max_length=5, unique=True)
@@ -316,7 +333,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         return dct
 
 
-class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
+class Gebiedsgerichtwerken(models.Model):
     """
     model for data from shp files
 
@@ -329,6 +346,8 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
     id = models.CharField(max_length=4, primary_key=True)
     code = models.CharField(max_length=4)
     naam = models.CharField(max_length=100)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     stadsdeel = models.ForeignKey(
         Stadsdeel, related_name='gebiedsgerichtwerken',
@@ -348,7 +367,7 @@ class Gebiedsgerichtwerken(mixins.ImportStatusMixin, models.Model):
         return "{} ({})".format(self.naam, self.code)
 
 
-class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
+class Grootstedelijkgebied(models.Model):
     """
     model for data from shp files
 
@@ -361,6 +380,7 @@ class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
     naam = models.CharField(max_length=100)
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 
+    date_modified = models.DateTimeField(auto_now=True)
     objects = geo.Manager()
 
     class Meta:
@@ -372,8 +392,7 @@ class Grootstedelijkgebied(mixins.ImportStatusMixin, models.Model):
 
 
 class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-                       mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-                       models.Model):
+                       mixins.DocumentStatusMixin, models.Model):
     """
     Een nummeraanduiding, in de volksmond ook wel adres genoemd, is een door
     het bevoegde gemeentelijke orgaan als
@@ -413,6 +432,8 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         OpenbareRuimte, related_name='adressen',
         on_delete=models.CASCADE
     )
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     ligplaats = models.ForeignKey(
         'Ligplaats', null=True, related_name='adressen',
@@ -587,8 +608,7 @@ class AdresseerbaarObjectMixin(object):
 
 
 class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-                mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-                AdresseerbaarObjectMixin, models.Model):
+                mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een LIGPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig
     aangewezen plaats in het water al dan niet aangevuld met een op de
@@ -600,10 +620,15 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     """
 
     id = models.CharField(max_length=14, primary_key=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+
+    ind_geconstateerd = models.NullBooleanField(default=None)
+    ind_inonderzoek = models.NullBooleanField(default=None)
 
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='ligplaatsen',
@@ -669,8 +694,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
 
 class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-                  mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-                  AdresseerbaarObjectMixin, models.Model):
+                  mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een STANDPLAATS is een door het bevoegde gemeentelijke orgaan als zodanig
     aangewezen terrein of gedeelte daarvan dat bestemd is voor het permanent
@@ -689,6 +713,11 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         Buurt, null=True, related_name='standplaatsen',
         on_delete=models.CASCADE
     )
+
+    date_modified = models.DateTimeField(auto_now=True)
+
+    ind_geconstateerd = models.NullBooleanField(default=None)
+    ind_inonderzoek = models.NullBooleanField(default=None)
 
     _gebiedsgerichtwerken = models.ForeignKey(
         Gebiedsgerichtwerken, related_name='standplaatsen', null=True,
@@ -747,8 +776,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
 
 class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-                      mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-                      AdresseerbaarObjectMixin, models.Model):
+                      mixins.DocumentStatusMixin, AdresseerbaarObjectMixin, models.Model):
     """
     Een VERBLIJFSOBJECT is de kleinste binnen één of meer panden gelegen en
     voor woon-, bedrijfsmatige, of recreatieve
@@ -777,6 +805,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     reden_afvoer = models.ForeignKey(
         RedenAfvoer, null=True, on_delete=models.CASCADE)
 
+    date_modified = models.DateTimeField(auto_now=True)
+
     reden_opvoer = models.ForeignKey(
         RedenOpvoer, null=True, on_delete=models.CASCADE)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
@@ -800,6 +830,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         Buurt, null=True, related_name='verblijfsobjecten',
         on_delete=models.CASCADE
     )
+
     ind_geconstateerd = models.NullBooleanField(default=None)
     ind_inonderzoek = models.NullBooleanField(default=None)
 
@@ -892,8 +923,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
 class Pand(
         mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
-        mixins.ImportStatusMixin, mixins.DocumentStatusMixin,
-        models.Model):
+        mixins.DocumentStatusMixin, models.Model):
     """
     Een PAND is de kleinste bij de totstandkoming functioneel en
     bouwkundig-constructief zelfstandige eenheid die direct
@@ -915,6 +945,8 @@ class Pand(
         Bouwblok, null=True, related_name="panden", on_delete=models.CASCADE)
 
     geometrie = geo.PolygonField(null=True, srid=28992)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     objects = geo.Manager()
 
@@ -946,11 +978,13 @@ class Pand(
         return self
 
 
-class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
+class VerblijfsobjectPandRelatie(models.Model):
     id = models.CharField(max_length=29, primary_key=True)
     pand = models.ForeignKey(Pand, on_delete=models.CASCADE)
     verblijfsobject = models.ForeignKey(
         Verblijfsobject, on_delete=models.CASCADE)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Verblijfsobject-Pand relatie"
@@ -968,8 +1002,7 @@ class VerblijfsobjectPandRelatie(mixins.ImportStatusMixin, models.Model):
             self.pand_id, self.verblijfsobject_id)
 
 
-class Buurtcombinatie(
-        mixins.GeldigheidMixin, mixins.ImportStatusMixin, models.Model):
+class Buurtcombinatie(mixins.GeldigheidMixin, models.Model):
     """
     model for data from shp files
 
@@ -991,6 +1024,8 @@ class Buurtcombinatie(
         on_delete=models.CASCADE
     )
 
+    date_modified = models.DateTimeField(auto_now=True)
+
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
 
     objects = geo.Manager()
@@ -1008,7 +1043,7 @@ class Buurtcombinatie(
             return self.stadsdeel.gemeente
 
 
-class Unesco(mixins.ImportStatusMixin, models.Model):
+class Unesco(models.Model):
     """
     model for data from shp files
 
@@ -1020,6 +1055,8 @@ class Unesco(mixins.ImportStatusMixin, models.Model):
     id = models.SlugField(max_length=100, primary_key=True)
     naam = models.CharField(max_length=100)
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     objects = geo.Manager()
 

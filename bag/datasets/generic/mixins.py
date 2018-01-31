@@ -1,13 +1,6 @@
 from django.db import models
 
 
-class ImportStatusMixin(models.Model):
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
 class DocumentStatusMixin(models.Model):
     document_mutatie = models.DateField(null=True)
     document_nummer = models.CharField(max_length=20, null=True)

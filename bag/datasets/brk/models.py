@@ -7,12 +7,14 @@ from datasets.bag import models as bag
 from datasets.generic import mixins, kadaster
 
 
-class Gemeente(mixins.ImportStatusMixin):
+class Gemeente(models.Model):
     gemeente = models.CharField(max_length=50, primary_key=True)
 
     geometrie = geo.MultiPolygonField(srid=28992)
 
     objects = geo.Manager()
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Gemeente"
@@ -22,7 +24,7 @@ class Gemeente(mixins.ImportStatusMixin):
         return "{}".format(self.gemeente)
 
 
-class KadastraleGemeente(mixins.ImportStatusMixin):
+class KadastraleGemeente(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
     naam = models.CharField(max_length=100)
     gemeente = models.ForeignKey(
@@ -33,6 +35,8 @@ class KadastraleGemeente(mixins.ImportStatusMixin):
 
     objects = geo.Manager()
 
+    date_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name = "Kadastrale Gemeente"
         verbose_name_plural = "Kadastrale Gemeentes"
@@ -41,7 +45,7 @@ class KadastraleGemeente(mixins.ImportStatusMixin):
         return "{}".format(self.id)
 
 
-class KadastraleSectie(mixins.ImportStatusMixin):
+class KadastraleSectie(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
 
     sectie = models.CharField(max_length=2)
@@ -54,6 +58,8 @@ class KadastraleSectie(mixins.ImportStatusMixin):
     geometrie = geo.MultiPolygonField(srid=28992)
 
     objects = geo.Manager()
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Kadastrale Sectie"
@@ -116,7 +122,7 @@ class Adres(models.Model):
         Land, null=True, on_delete=models.CASCADE)
 
 
-class KadastraalSubject(mixins.ImportStatusMixin):
+class KadastraalSubject(models.Model):
     """
     Een Kadastraal Subject is een persoon die
     in de kadastrale registratie voorkomt.
@@ -143,6 +149,8 @@ class KadastraalSubject(mixins.ImportStatusMixin):
     beschikkingsbevoegdheid = models.ForeignKey(
         Beschikkingsbevoegdheid, null=True, on_delete=models.CASCADE
     )
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     voornamen = models.CharField(max_length=200, null=True)
     voorvoegsels = models.CharField(max_length=10, null=True)
@@ -232,7 +240,7 @@ class APerceelGPerceelRelatie(models.Model):
     )
 
 
-class KadastraalObject(mixins.ImportStatusMixin):
+class KadastraalObject(models.Model):
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=17)
 
@@ -245,6 +253,8 @@ class KadastraalObject(mixins.ImportStatusMixin):
         KadastraleSectie, related_name="kadastrale_objecten",
         on_delete=models.CASCADE
     )
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     perceelnummer = models.IntegerField()
     indexletter = models.CharField(max_length=1)
@@ -301,12 +311,14 @@ class KadastraalObject(mixins.ImportStatusMixin):
         )
 
 
-class KadastraalObjectVerblijfsobjectRelatie(mixins.ImportStatusMixin):
+class KadastraalObjectVerblijfsobjectRelatie(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     kadastraal_object = models.ForeignKey(
         KadastraalObject, on_delete=models.CASCADE)
     verblijfsobject = models.ForeignKey(
         bag.Verblijfsobject, null=True, on_delete=models.CASCADE)
+
+    date_modified = models.DateTimeField(auto_now=True)
 
 
 class AardZakelijkRecht(KadasterCodeOmschrijving):
@@ -317,8 +329,11 @@ class AppartementsrechtsSplitsType(KadasterCodeOmschrijving):
     pass
 
 
-class ZakelijkRecht(mixins.ImportStatusMixin):
+class ZakelijkRecht(models.Model):
     id = models.CharField(max_length=183, primary_key=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     zrt_id = models.CharField(max_length=60)
     aard_zakelijk_recht = models.ForeignKey(
         AardZakelijkRecht, null=True, on_delete=models.CASCADE)
@@ -400,11 +415,14 @@ class AardAantekening(KadasterCodeOmschrijving):
     pass
 
 
-class Aantekening(mixins.ImportStatusMixin):
+class Aantekening(models.Model):
+
     id = models.CharField(max_length=60, primary_key=True)
     aard_aantekening = models.ForeignKey(
         AardAantekening, on_delete=models.CASCADE)
     omschrijving = models.TextField()
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     kadastraal_object = models.ForeignKey(
         KadastraalObject, null=True, related_name="aantekeningen",

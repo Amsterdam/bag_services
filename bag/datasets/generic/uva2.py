@@ -101,6 +101,9 @@ def geldige_relaties(row, *relaties):
 
 
 def logging_callback(source_path, original_callback):
+    """
+    Provides callback function that logs errors on failure
+    """
 
     def result(r):
         try:
@@ -197,6 +200,7 @@ def read_indicaties(path):
     """
     file_code = 'VBO_geconstateerd-inonderzoek'
     filename = resolve_file(path, file_code, extension='csv')
+
 
     with open(filename, encoding='cp1252') as f:
         rows = csv.reader(f, delimiter=';')
