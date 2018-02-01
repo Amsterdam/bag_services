@@ -100,7 +100,6 @@ def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 Q('term', subtype='weg'),
             ],
         ),
-        sort_fields=['_display'],
         indexes=[BAG_GEBIED]
     )
 

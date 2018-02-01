@@ -82,7 +82,7 @@ ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
 ELASTIC_INDICES = {
     'BAG_GEBIED': 'bag_gebied',
     'BAG_BOUWBLOK': 'bag_bouwblok',
-    'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
+    # 'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
     'BRK_OBJECT': 'brk_object',
     'BRK_SUBJECT': 'brk_subject',
     'NUMMERAANDUIDING': 'nummeraanduiding',

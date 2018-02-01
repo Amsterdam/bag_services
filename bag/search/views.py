@@ -928,7 +928,11 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        search_data = bag_qs.openbare_ruimte_query(analyzer)
+        if analyzer.is_postcode_prefix():
+            search_data = bag_qs.postcode_query(analyzer)
+        else:
+            search_data = bag_qs.openbare_ruimte_query(analyzer)
+
         return search_data.to_elasticsearch_object(elk_client)
 
 
