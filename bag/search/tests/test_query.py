@@ -32,13 +32,13 @@ class QueryTest(APITransactionTestCase):
         We are not authorized. should fail
         """
         response = self.client.get(
-            "/search/kadastraalsubject/", {'q': "kikker"})
+            "/atlas/search/kadastraalsubject/", {'q': "kikker"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('results', response.data)
 
     def test_bouwblok(self):
         response = self.client.get(
-            "/search/bouwblok/", {'q': "RN3"})
+            "/atlas/search/bouwblok/", {'q': "RN3"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
@@ -48,7 +48,7 @@ class QueryTest(APITransactionTestCase):
 
     def test_adres(self):
         response = self.client.get(
-            "/search/postcode/", {'q': "1016 SZ 228 a 1"})
+            "/atlas/search/postcode/", {'q': "1016 SZ 228 a 1"})
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)

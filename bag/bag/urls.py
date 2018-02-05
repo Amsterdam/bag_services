@@ -143,7 +143,9 @@ def search_schema_view(request):
     )
     return response.Response(generator.get_schema(request=request))
 
+
 urlpatterns = []
+
 
 if settings.DEBUG:
     import debug_toolbar
@@ -151,15 +153,17 @@ if settings.DEBUG:
         url(r'^__debug__/', include(debug_toolbar.urls)),
     )
 
-urlpatterns.extend([
-                  url('^bag/docs/api-docs/bag/$', bag_schema_view),
-                  url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
-                  url('^bag/docs/api-docs/brk/$', brk_schema_view),
-                  url('^bag/docs/api-docs/wkpb/$', wkpb_schema_view),
-                  url('^bag/docs/api-docs/pcsearch/$', postcode_schema_view),
-                  url('^bag/docs/api-docs/search/$', search_schema_view),
-                  url('^bag/docs/api-docs/typeahead/$', typeahead_schema_view),
-              ] + [url for pattern_list in grouped_url_patterns.values()
-                   for url in pattern_list])
+
+urlpatterns.extend(
+    [
+        url('^bag/docs/api-docs/bag/$', bag_schema_view),
+        url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
+        url('^bag/docs/api-docs/brk/$', brk_schema_view),
+        url('^bag/docs/api-docs/wkpb/$', wkpb_schema_view),
+        url('^bag/docs/api-docs/pcsearch/$', postcode_schema_view),
+        url('^bag/docs/api-docs/search/$', search_schema_view),
+        url('^bag/docs/api-docs/typeahead/$', typeahead_schema_view),
+    ] + [p_url for pattern_list in grouped_url_patterns.values()
+         for p_url in pattern_list])
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

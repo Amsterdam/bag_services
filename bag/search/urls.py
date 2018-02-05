@@ -199,9 +199,11 @@ bag_search.register(
 bag_search.register(
     r'kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+
 bag_search.register(
     r'postcode',
     views.SearchPostcodeViewSet, base_name='search/postcode')
+
 bag_search.register(
     r'kadastraalsubject',
     views.SearchSubjectViewSet, base_name='search/kadastraalsubject')

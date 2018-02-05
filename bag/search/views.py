@@ -928,7 +928,6 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
         else:
