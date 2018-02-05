@@ -56,13 +56,13 @@ grouped_url_patterns = {
     'typeahead_patterns': [
         # atlas is depricated
         url(r'^atlas/typeahead/', include(search.urls.typeahead.urls)),
-        url(r'^typeahead/', include(search.urls.typeahead.urls)),
+        # url(r'^typeahead/', include(search.urls.typeahead.urls)),
     ],
 
     'search_patterns': [
         # atlas is depricated
         url(r'^atlas/search/', include(search.urls.bag_search.urls)),
-        url(r'^search/', include(search.urls.bag_search.urls)),
+        # url(r'^search/', include(search.urls.bag_search.urls)),
     ],
 }
 
