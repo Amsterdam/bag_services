@@ -44,7 +44,7 @@ class RandomShitTest(APITestCase):
             '/atlas/search/openbareruimte/',
             '/atlas/search/gebied/',
 
-            '/search/postcode/',
+            # '/search/postcode/',
         ]
 
         for url in search_endpoints:
@@ -65,4 +65,4 @@ class RandomShitTest(APITestCase):
             response = self.client.get(url, {
                 'q': "".join(query)})
 
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 200, url)

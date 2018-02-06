@@ -518,20 +518,6 @@ class ImportVboTest(TaskTestCase):
         self.assertEqual(v.verhuurbare_eenheden, None)
         self.assertEqual(v.mutatie_gebruiker, 'DBI')
 
-    def test_non_existing_indicatie(self):
-        self.run_task()
-
-        # Test the non-existing indicatie code path (i.e. store None on object)
-        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000648915')
-        self.assertEqual(v.ind_inonderzoek, None)
-        self.assertEqual(v.ind_geconstateerd, None)
-
-        # In the test data this object has 'J' and 'N' for respectively
-        # ind_geconstateerd and ind_in_onderzoek
-        v = models.Verblijfsobject.objects.get(landelijk_id='0363010000722592')
-        self.assertEqual(v.ind_geconstateerd, True)
-        self.assertEqual(v.ind_inonderzoek, False)
-
 
 class ImportNumTest(TaskTestCase):
 
@@ -673,6 +659,53 @@ class ImportPandTest(TaskTestCase):
 
         imported = models.Pand.objects.exclude(geometrie__isnull=True)
         self.assertEqual(len(imported), 79)
+
+
+class ImportPandNaamTest(TaskTestCase):
+
+    def requires(self):
+        return [
+            batch.ImportStatusTask(BAG),
+            batch.ImportVboTask(BAG),
+            batch.ImportPandTask(BAG, BAG_WKT),
+        ]
+
+    def task(self):
+        return batch.ImportPandNaamTask(BAG)
+
+    def test_import(self):
+        self.run_task()
+        # all panden should have names now
+        # in reality there are only 200..
+        naam_count = models.Pand.objects.filter(pandnaam__isnull=False).count()
+        self.assertTrue(naam_count > 0)
+
+
+class ImportIndicatieAOTTaskTest(TaskTestCase):
+
+    def requires(self):
+        return [
+            batch.ImportStatusTask(BAG),
+            batch.ImportStandplaatsenTask(BAG, BAG_WKT),
+            batch.ImportLigTask(BAG, BAG_WKT),
+            batch.ImportVboTask(BAG),
+            batch.ImportIndicatieAOTTask(BAG),
+        ]
+
+    def task(self):
+        return batch.DenormalizeIndicatieTask()
+
+    def test_indicaties(self):
+        self.run_task()
+
+        # check ligplaats, standplaatsen, vbo have indicaties.
+        lp_count = models.Ligplaats.objects.filter(indicatie_geconstateerd__isnull=False).count()
+        st_count = models.Standplaats.objects.filter(indicatie_geconstateerd__isnull=False).count()
+        vbo = models.Verblijfsobject.objects.filter(indicatie_geconstateerd__isnull=False).count()
+
+        self.assertTrue(lp_count > 0)
+        self.assertTrue(st_count > 0)
+        self.assertTrue(vbo > 0)
 
 
 class ImportVboPandTaskTest(TaskTestCase):

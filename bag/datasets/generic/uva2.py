@@ -49,6 +49,7 @@ def _wrap_row(r, headers):
 def _context_reader(
         source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE,
         with_header=True):
+
     if not os.path.exists(source):
         raise ValueError("File not found: {}".format(source))
 
@@ -103,12 +104,15 @@ def geldige_relaties(row, *relaties):
 def logging_callback(source_path, original_callback):
     """
     Provides callback function that logs errors on failure
+
+    Because the csv files provided contained all kinds of weird
+    data..
     """
 
     def result(r):
         try:
             return original_callback(r)
-        except:
+        except:  # noqa we reraise the exception.
             log.error("Could not process row while parsing %s", source_path)
             for k, v in r.items():
                 log.error("%s: '%s'", k, v)
@@ -192,26 +196,6 @@ def read_landelijk_id_mapping(path, file_code):
     return result
 
 
-def read_indicaties(path):
-    """
-    Read landelijk BAG id to (indicatie geconstateerd, in onderzoek) mapping.
-
-    :param path: path containing the CSV file
-    """
-    file_code = 'VBO_geconstateerd-inonderzoek'
-    filename = resolve_file(path, file_code, extension='csv')
-
-
-    with open(filename, encoding='cp1252') as f:
-        rows = csv.reader(f, delimiter=';')
-
-        mapping = {}
-        for _id, geconst, inonderz in rows:
-            mapping[_id] = (uva_indicatie(geconst), uva_indicatie(inonderz))
-
-        return mapping
-
-
 def read_gebruiksdoelen(path):
     """
     Read CSV file with gebruiksdoel, gebruiksdoel plus data.
@@ -219,7 +203,14 @@ def read_gebruiksdoelen(path):
     :param path: path containing the CSV file
     """
     file_code = 'VBO_gebruiksdoelen'
-    filename = resolve_file(path, file_code, extension='csv')
+    try:
+        file_code = 'AOT_geconstateerd'
+        filename = resolve_file(path, file_code, extension='csv')
+    except ValueError():
+        log.info('AOT_geconstateerd NOT FOUND. Using fallback')
+        # old one.
+        file_code = 'VBO_gebruiksdoelen'
+        filename = resolve_file(path, file_code, extension='csv')
 
     out = []
     with open(filename, encoding='cp1252') as f:

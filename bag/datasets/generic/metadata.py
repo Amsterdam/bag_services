@@ -3,10 +3,13 @@ import datetime
 import requests
 import socket
 import os
+import logging
 # Project
 from datasets.generic import uva2
 
 METADATA_URL = os.getenv('METADATA_URL', '')
+
+log = logging.getLogger(__name__)
 
 
 class UpdateDatasetMixin(object):
@@ -37,7 +40,15 @@ class UpdateDatasetMixin(object):
         return self.update_metadata_date(filedate)
 
     def update_metadata_date(self, date):
-        if not date or not METADATA_URL:
+
+        if not date:
+            return
+
+        log.warning('Substracting one day of import date!')
+        day1 = datetime.timedelta(days=1)
+        date = date - day1
+
+        if not METADATA_URL:
             return
 
         data = {
