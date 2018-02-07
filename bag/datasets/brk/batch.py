@@ -626,7 +626,13 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
 
     def process_row(self, row):
         kot_id = row['BRK_KOT_ID']
-        vbo_id = '0' + row['DIVA_VOT_ID']
+        vbo_id = row['DIVA_VOT_ID']
+
+        if not vbo_id:
+            # a lot of BRK_BAG objects do not have VBO's.
+            return
+
+        vbo_id = '0' + vbo_id
 
         if not kot_id or kot_id not in self.kot:
             log.warn(
@@ -634,7 +640,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
                 "object %s; skipping", kot_id)
             return
 
-        if not vbo_id or vbo_id not in self.vbo:
+        if vbo_id not in self.vbo:
             log.warn(
                 "BRK_BAG references non-existing "
                 "verblijfsobject %s; skipping", vbo_id)
