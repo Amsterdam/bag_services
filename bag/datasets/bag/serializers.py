@@ -845,6 +845,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
             'pandnummer',
+            'pandnaam',
 
             'verblijfsobjecten',
 
