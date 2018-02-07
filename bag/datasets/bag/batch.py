@@ -73,13 +73,14 @@ class ImportIndicatieAOTTask(batch.BasicTask):
     def process_row(self, indicatie):
 
         landelijk_id = indicatie[0]
+
         indicatie_geconstateerd = False
         indicatie_in_onderzoek = False
 
-        if indicatie[1] == 'Y':
+        if indicatie[1] == 'J':
             indicatie_geconstateerd = True
 
-        if indicatie[1] == 'Y':
+        if indicatie[2] == 'J':
             indicatie_in_onderzoek = True
 
         return models.IndicatieAdresseerbaarObject(

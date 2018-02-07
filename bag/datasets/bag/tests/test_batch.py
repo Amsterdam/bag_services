@@ -703,9 +703,21 @@ class ImportIndicatieAOTTaskTest(TaskTestCase):
         st_count = models.Standplaats.objects.filter(indicatie_geconstateerd__isnull=False).count()
         vbo = models.Verblijfsobject.objects.filter(indicatie_geconstateerd__isnull=False).count()
 
+        vb_count_i_f = models.Verblijfsobject.objects.filter(indicatie_in_onderzoek=False).count()
+        vb_count_i_t = models.Verblijfsobject.objects.filter(indicatie_in_onderzoek=True).count()
+
+        vb_count_g_f = models.Verblijfsobject.objects.filter(indicatie_geconstateerd=False).count()
+        vb_count_g_t = models.Verblijfsobject.objects.filter(indicatie_geconstateerd=True).count()
+
         self.assertTrue(lp_count > 0)
         self.assertTrue(st_count > 0)
         self.assertTrue(vbo > 0)
+
+        self.assertTrue(vb_count_i_f > 0)
+        self.assertTrue(vb_count_i_t > 0)
+
+        self.assertTrue(vb_count_g_f > 0)
+        self.assertTrue(vb_count_g_t > 0)
 
 
 class ImportVboPandTaskTest(TaskTestCase):
