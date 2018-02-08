@@ -120,7 +120,8 @@ class Migration(migrations.Migration):
 						 SELECT id FROM brk_eigenaar_natuurlijk
 				 ))
 		SELECT
-				eigenaar.cat_id,
+                row_number() over () AS id,
+   				eigenaar.cat_id,
 				recht.kadastraal_object_id,
 				eigendom.poly_geom,
 				eigendom.point_geom
@@ -210,5 +211,25 @@ from
                           [("DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_poly_mat;", None)]),
         migrations.RunSQL([("CREATE INDEX eigendom_poly ON brk_eigendom_poly_mat USING GIST (geometrie);", None)],
                           [("DROP INDEX IF EXISTS eigendom_poly;", None)]),
-
+        migrations.RunSQL([("""CREATE MATERIALIZED VIEW brk_eigendom_point_sectiecluster_mat AS SELECT
+pt.cat_id, ks.id, st_centroid(ks.geometrie) as geometrie, sum(pt.aantal) as aantal
+FROM brk_eigendom_point_mat pt, brk_kadastraalobject obj, brk_kadastralesectie ks
+		where pt.id = obj.id and obj.sectie_id = ks.id
+GROUP BY 1, 2;""", None)],
+                          [("DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_sectiecluster_mat;", None)]),
+        migrations.RunSQL([("""CREATE MATERIALIZED VIEW brk_eigendom_point_gemcluster_mat AS SELECT
+     pt.cat_id, kg.id, st_centroid(kg.geometrie) as geometrie, sum(pt.aantal) as aantal
+ FROM brk_eigendom_point_mat pt, brk_kadastraalobject obj, brk_kadastralegemeente kg
+ where pt.id = obj.id and obj.kadastrale_gemeente_id = kg.id
+ GROUP BY 1, 2;""", None)],
+                          [("DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_gemcluster_mat;", None)]),
+        migrations.RunSQL([("""CREATE MATERIALIZED VIEW brk_eigendom_point_niet_poly_mat AS Select
+     row_number() over () AS id,
+     cat_id,
+     gc as geometrie
+FROM (SELECT (ST_Dump(geom)).geom AS gc, cat_id from (SELECT st_union(poly_geom) geom, cat_id from brk_eigendom_point_mat group by cat_id) as inner_sub)
+		as subquery;""", None)],
+                          [("DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_niet_poly_mat;", None)]),
+        migrations.RunSQL([("CREATE INDEX eigendom_point_niet_poly_idx ON brk_eigendom_point_niet_poly_mat USING GIST (geometrie);", None)],
+                          [("DROP INDEX IF EXISTS eigendom_point_niet_poly_idx;", None)]),
     ]
