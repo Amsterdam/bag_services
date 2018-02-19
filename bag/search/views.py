@@ -253,7 +253,7 @@ def select_queries(
     return [q(analyzer) for q in queries]
 
 
-def get_possible_doc_value(hit, attribute, default):
+def _get_doc_attr(hit, attribute, default):
 
     if hasattr(hit, attribute):
         value = getattr(hit, attribute)
@@ -267,30 +267,24 @@ def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
     """
+    id = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
+    doc_type = _get_doc_attr(hit, 'type',  default=hit.meta.doc_type)
+    detail_type = _get_doc_attr(hit, 'subtype', doc_type)
 
-    doc_type, id = hit.meta.doc_type, hit.meta.id
+    # fallback for undefined detailview for subtype:
+    if detail_type not in _details:
+        detail_type = doc_type
 
-    id = get_possible_doc_value(hit, 'subtype_id', id)
-    doc_type = get_possible_doc_value(hit, 'type', doc_type)
+    #  if fallback also undefined:
+    if detail_type not in _details:
+        raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
-    if doc_type in _details:
-        return rest.get_links(
-            view_name=_details[doc_type],
-            kwargs={'pk': id}, request=request)
+    if hit.subtype in ['gemeente']:
+        id = hit.naam
 
-    # hit must have subtype
-    assert hit.subtype
-
-    if hit.subtype in _details:
-        if hit.subtype in ['gemeente']:
-            return rest.get_links(
-                view_name=_details[hit.subtype],
-                kwargs={'pk': hit.naam}, request=request)
-        return rest.get_links(
-            view_name=_details[hit.subtype],
-            kwargs={'pk': id}, request=request)
-
-    raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
+    return rest.get_links(
+        view_name=_details[detail_type],
+        kwargs={'pk': id}, request=request)
 
 
 class QueryMetadata(metadata.SimpleMetadata):

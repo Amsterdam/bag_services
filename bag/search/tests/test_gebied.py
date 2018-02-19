@@ -48,20 +48,24 @@ class GebiedSearchTest(APITransactionTestCase):
         self.assertIn('count', response.data)
         self.assertEqual(response.data['count'], 1)
         first = response.data['results'][0]
-
         self.assertEqual(first['naam'], naam)
+
+        return first
 
     def test_grootstedelijk_query(self):
         naam = self.gsg.naam
-        self.find(naam)
+        gsg = self.find(naam)
+        self.assertIn('gebieden/grootstedelijkgebied', gsg['_links']['self']['href'])
 
     def test_unseco(self):
         naam = self.unesco.naam
-        self.find(naam)
+        unesco = self.find(naam)
+        self.assertIn('gebieden/unesco', unesco['_links']['self']['href'])
 
     def test_ggw(self):
         naam = self.ggw.naam
-        self.find(naam)
+        ggw = self.find(naam)
+        self.assertIn('gebieden/gebiedsgerichtwerken', ggw['_links']['self']['href'])
 
     def test_bouwblok(self):
         code = self.bb.code
@@ -71,8 +75,8 @@ class GebiedSearchTest(APITransactionTestCase):
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         first = response.data['results'][0]
-
         self.assertEqual(first['code'], code)
+        self.assertIn('gebieden/bouwblok', first['_links']['self']['href'])
 
     def test_bouwblok_order(self):
         code = self.bb.code[0:3]  # 'YC0'
@@ -85,5 +89,5 @@ class GebiedSearchTest(APITransactionTestCase):
         self.assertIn('results', response.data)
         self.assertIn('count', response.data)
         first = response.data['results'][0]
-
+        self.assertIn('gebieden/bouwblok', first['_links']['self']['href'])
         self.assertEqual(first['code'], b2_code)
