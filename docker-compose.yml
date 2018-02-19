@@ -19,8 +19,6 @@ services:
       - "9300:9300"
     volumes:
       - ~/.ssh/datapunt.key:/root/.ssh/datapunt.key
-    environment:
-      LOCAL: 'True'
 
   bag:
     build: .
