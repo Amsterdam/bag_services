@@ -509,6 +509,8 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     class Meta:
         model = models.Ligplaats
@@ -527,7 +529,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'bron',
 
             'indicatie_geconstateerd',
-            'indicatie_in_onderzoek',
+            'aanduiding_in_onderzoek',
 
             'geometrie',
             'hoofdadres',
@@ -636,6 +638,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     class Meta:
         model = models.Standplaats
@@ -657,7 +661,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'bron',
 
             'indicatie_geconstateerd',
-            'indicatie_in_onderzoek',
+            'aanduiding_in_onderzoek',
 
             'geometrie',
             'hoofdadres',
@@ -749,6 +753,8 @@ class VerblijfsobjectDetail(
     verblijfsobjectidentificatie = serializers.CharField(
         source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     gebruiksdoelen = serializers.SerializerMethodField()
 
@@ -795,7 +801,7 @@ class VerblijfsobjectDetail(
             'bouwblok',
 
             'indicatie_geconstateerd',
-            'indicatie_in_onderzoek',
+            'aanduiding_in_onderzoek',
 
             '_buurtcombinatie',
             '_stadsdeel',
