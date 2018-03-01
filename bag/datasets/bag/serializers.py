@@ -913,7 +913,10 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+
     stadsdeel = Stadsdeel()
+
+    buurten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Gebiedsgerichtwerken
@@ -923,6 +926,7 @@ class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
             'naam',
             'code',
             'stadsdeel',
+            'buurten',
             'geometrie',
         )
 

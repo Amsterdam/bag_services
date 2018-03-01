@@ -622,7 +622,8 @@ class BuurtViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    filter_fields = ('stadsdeel', 'buurtcombinatie')
+    filter_fields = (
+        'stadsdeel', 'buurtcombinatie', 'gebiedsgerichtwerken')
 
 
 class BouwblokViewSet(rest.DatapuntViewSet):
