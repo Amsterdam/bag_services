@@ -776,6 +776,9 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
         # dus kan er geen vbo, standplaats, lig_n
         # zonder dit veld ingevuld.
 
+        # NOTE buurten coveren niet alleen de stad.
+        # alleen bijlmer area.
+
         # check that everything has a GGW code
 
         vb_n = models.Verblijfsobject.objects.filter(
@@ -792,6 +795,18 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
             _gebiedsgerichtwerken__isnull=True)
 
         self.assertTrue(lig_n.count() == 0)
+
+        # test GGW. DX20, DX21, DX22
+
+        # buurten coveren maar klein deel van de stad.
+        ggd_ids = ['DX20', 'DX21', 'DX22']
+
+        for ggw in (
+            models.Gebiedsgerichtwerken.objects
+                .filter(geometrie__isnull=False)
+                .filter(code__in=ggd_ids)):
+
+            self.assertTrue(ggw.buurten.count() > 0, ggw.naam)
 
 
 class UpdateGSGebiedenTaskTest(TaskTestCase):

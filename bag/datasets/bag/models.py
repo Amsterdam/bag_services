@@ -212,8 +212,13 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     brondocument_datum = models.DateField(null=True)
     stadsdeel = models.ForeignKey(
         Stadsdeel, related_name='buurten', on_delete=models.CASCADE)
+
     buurtcombinatie = models.ForeignKey(
         'Buurtcombinatie', related_name='buurten',
+        null=True, on_delete=models.CASCADE)
+
+    gebiedsgerichtwerken = models.ForeignKey(
+        'Gebiedsgerichtwerken', related_name='buurten',
         null=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -1037,6 +1042,7 @@ class Buurtcombinatie(mixins.GeldigheidMixin, models.Model):
     brondocument_naam = models.CharField(max_length=100, null=True)
     brondocument_datum = models.DateField(null=True)
     ingang_cyclus = models.DateField(null=True)
+
     stadsdeel = models.ForeignKey(
         Stadsdeel, null=True, related_name="buurtcombinaties",
         on_delete=models.CASCADE

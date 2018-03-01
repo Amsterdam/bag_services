@@ -1894,7 +1894,7 @@ WHERE opr.id = num.openbare_ruimte_id
 
 class UpdateGebiedenAttributenTask(batch.BasicTask):
     """
-    Denormalize gebieden attributen
+    Denormalize gebieden attributen op VBO / Nummeraanduidingen
     """
 
     name = "Denormalize gebiedsgericht werken data"
@@ -1907,6 +1907,14 @@ class UpdateGebiedenAttributenTask(batch.BasicTask):
 
     def process(self):
         for ggw in models.Gebiedsgerichtwerken.objects.all():
+
+            # add buurten to GGW
+            buurten = models.Buurt.objects.filter(
+                geometrie__within=ggw.geometrie)
+
+            for b in buurten:
+                ggw.buurten.add(b)
+
             vbos = models.Verblijfsobject.objects.filter(
                 geometrie__within=ggw.geometrie)
 
