@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 class Migration(migrations.Migration):
     dependencies = [
         ('geo_views', '0001_squashed_0010_brk_wkpb_views'),
@@ -25,13 +26,6 @@ class Migration(migrations.Migration):
 				 FROM brk_kadastraalsubject ks
 				 WHERE ks.rechtsvorm_id = '10' AND (upper(ks.statutaire_naam) LIKE '%AMSTERDAM%' OR
 				                                    upper(ks.statutaire_naam) LIKE '%STADSDEEL%')),
-						brk_eigenaar_overige_gemeente AS
-				(SELECT
-						 2                   AS cat_id,
-						 'Overige gemeenten' AS category,
-						 ks.*
-				 FROM brk_kadastraalsubject ks
-				 WHERE ks.rechtsvorm_id = '10' AND ks.id NOT IN (SELECT id FROM brk_eigenaar_gemeente)),
 						brk_eigenaar_staat AS
 				(SELECT
 						 3          AS cat_id,
@@ -56,7 +50,22 @@ class Migration(migrations.Migration):
 				 WHERE ks.rechtsvorm_id = '10' AND
 				       (upper(ks.statutaire_naam) LIKE '%WATERSCHAP%' OR
 				        upper(ks.statutaire_naam) LIKE '%HEEMRAADSCHAP%')),
-
+						brk_eigenaar_overige_gemeente AS
+				(SELECT
+						 2                   AS cat_id,
+						 'Overige gemeenten' AS category,
+						 ks.*
+				 FROM brk_kadastraalsubject ks
+				 WHERE ks.rechtsvorm_id='10' AND 
+				       upper(ks.statutaire_naam) like '%GEMEENTE%' AND 
+				       ks.id not in (
+                            select id from brk_eigenaar_gemeente
+                            UNION
+                            select id from brk_eigenaar_staat
+                            UNION
+                            select id from brk_eigenaar_provincie
+                            UNION
+                            select id from brk_eigenaar_waterschap)),
 						brk_eigenaar_woningcorporatie AS
 				(SELECT
 						 6                  AS cat_id,
