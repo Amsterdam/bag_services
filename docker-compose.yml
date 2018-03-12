@@ -18,7 +18,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     volumes:
-      - ~/.ssh/datapunt.key:/root/.ssh/datapunt.key
+      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
 
   bag:
     build: .
@@ -46,6 +46,8 @@ services:
       - UWSGI_OFFLOAD_THREADS=3
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
+    volumes:
+      - "$PWD/data/:/app/data/"
 
   swaggerui:
     image: amsterdam/oauth2swaggerui

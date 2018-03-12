@@ -13,7 +13,7 @@ from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
-
+from . import batch_eigendom_sql
 
 log = logging.getLogger(__name__)
 
@@ -698,6 +698,18 @@ class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
             """)
 
 
+class ImportEigendommenTask(batch.BasicTask):
+    name = "Create eigendommen informatiemodel"
+
+    def before(self):
+        pass
+
+    def process(self):
+        with db.connection.cursor() as c:
+            for sql_command in batch_eigendom_sql.sql_commands:
+                c.execute(sql_command)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -726,6 +738,7 @@ class ImportKadasterJob(object):
             ImportKadastraalObjectRelatiesTask(),
             # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
+            ImportEigendommenTask(),
         ]
 
 
