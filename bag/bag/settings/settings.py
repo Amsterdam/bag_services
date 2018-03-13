@@ -214,5 +214,6 @@ JWKS_TEST_KEY = """
 """
 
 DATAPUNT_AUTHZ = {
+    # 'ALWAYS_OK': True,  # disable authz. tests will fail...
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
 }

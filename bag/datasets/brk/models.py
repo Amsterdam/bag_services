@@ -296,10 +296,11 @@ class KadastraalObject(models.Model):
 
     objects = geo.Manager()
 
-    class Meta:
-        ordering = (
-            'kadastrale_gemeente__id', 'sectie', 'perceelnummer',
-            '-indexletter', 'indexnummer')
+    # BREAKS API ENDPOINTS! / slow queries.
+    # class Meta:
+    #    ordering = (
+    #        'kadastrale_gemeente__id', 'sectie', 'perceelnummer',
+    #        '-indexletter', 'indexnummer')
 
     def __str__(self):
         return self.get_aanduiding_spaties()

@@ -306,16 +306,18 @@ class KadastraalObjectViewSet(DatapuntViewSet):
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
 
     queryset = (
-        models.KadastraalObject.objects.select_related(
+        models.KadastraalObject.objects
+        .select_related(
             'sectie',
             'voornaamste_gerechtigde',
             'kadastrale_gemeente',
-            'kadastrale_gemeente__gemeente').prefetch_related(
-                'a_percelen',
-                'g_percelen',
-                'aantekeningen',
-                'beperkingen',
-            )
+            'kadastrale_gemeente__gemeente')
+        .prefetch_related(
+            'a_percelen',
+            'g_percelen',
+            'aantekeningen',
+            'beperkingen',
+        )
     )
 
     filter_class = KadastraalObjectFilter
