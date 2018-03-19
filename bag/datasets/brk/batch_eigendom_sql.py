@@ -189,7 +189,7 @@ sql_commands = ["DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_gemcluster_
                 "CREATE INDEX eigendommen_poly ON brk_eigendommen_mat USING GIST (poly_geom)",
                 "CREATE INDEX eigendommen_point ON brk_eigendommen_mat USING GIST (point_geom)",
                 #   Based on previous materialized view:
-                #       Materialized vier for cartographic layers, grouped point-geometries together per polygon
+                #       Materialized view for cartographic layers, grouped point-geometries together per polygon
                 #       Used for showing counts of point-geom properties (appartements and the like) per poly-geom
                 #       (usually land plots)
                 """CREATE MATERIALIZED VIEW brk_eigendom_point_mat AS Select
@@ -198,30 +198,26 @@ sql_commands = ["DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_gemcluster_
                and st_within(point.point_geom, poly.poly_geom) group by 1, 2, 3""",
                 "CREATE INDEX eigendom_point ON brk_eigendom_point_mat USING GIST (geometrie)",
                 #   Based on outright ownership categorized base materialized view:
-                #       Materialized vier for cartographic layers, grouped polygons (as unnested multipolygons)
+                #       Materialized view for cartographic layers, grouped polygons (as unnested multipolygons)
                 #       per category of the encompassing polygons by which the previous materialized view is grouped by
                 """CREATE MATERIALIZED VIEW brk_eigendom_filled_polygons_mat AS Select
                row_number() over () AS id,
                cat_id,
-               gc as geometrie
-       FROM (SELECT (ST_Dump(geom)).geom AS gc, cat_id from (SELECT st_union(poly_geom) geom, cat_id from brk_eigendom_point_mat group by cat_id) as inner_sub)
-               as subquery""",
+               ST_GeometryN(geom, generate_series(1, ST_NumGeometries(geom))) as geometrie
+       FROM (SELECT st_union(poly_geom) geom, cat_id from brk_eigendom_point_mat group by cat_id) as subquery""",
                 "CREATE INDEX eigendom_point_niet_poly ON brk_eigendom_filled_polygons_mat USING GIST (geometrie)",
                 #   Based on outright ownership categorized base materialized view:
-                #       Materialized vier for cartographic layers, grouped polygons (as unnested multipolygons) per category
+                #       Materialized view for cartographic layers, grouped polygons (as unnested multipolygons) per category
                 #       Used for showing lines around grouped counts of point-geom properties
                 #           (appartements and the like) per poly-geom (land plots) which have a mixed ownership
                 """CREATE MATERIALIZED VIEW brk_eigendom_poly_mat AS Select
                row_number() over () AS id,
                cat_id,
-               gc as geometrie
-       from
-               (SELECT (ST_Dump(geom)).geom AS gc, cat_id from
-                       (SELECT st_union(poly_geom) geom, cat_id from brk_eigendommen_mat group by cat_id) as inner_sub)
-                       as subquery""",
+               ST_GeometryN(geom, generate_series(1, ST_NumGeometries(geom))) as geometrie
+       FROM (SELECT st_union(poly_geom) geom, cat_id from brk_eigendommen_mat group by cat_id) as subquery""",
                 "CREATE INDEX eigendom_poly ON brk_eigendom_poly_mat USING GIST (geometrie)",
                 #   Based on outright ownership categorized base materialized view:
-                #       Materialized vier for cartographic layers, grouped polygons (as unnested multipolygons) per category
+                #       Materialized view for cartographic layers, grouped polygons (as unnested multipolygons) per category
                 #       Used for showing lines around grouped counts of point-geom properties
                 #           (appartements and the like) per poly-geom (land plots) which have a same type of ownership
                 """CREATE MATERIALIZED VIEW brk_eigendom_point_sectiecluster_mat AS SELECT
@@ -230,7 +226,7 @@ sql_commands = ["DROP MATERIALIZED VIEW IF EXISTS brk_eigendom_point_gemcluster_
        where pt.kadastraal_object_id = obj.id and obj.sectie_id = ks.id and pt.point_geom is not null
        GROUP BY 1, 2""",
                 #   Based on outright ownership categorized base materialized view:
-                #       Materialized vier for cartographic layers, grouped points per registry-municipality
+                #       Materialized view for cartographic layers, grouped points per registry-municipality
                 """CREATE MATERIALIZED VIEW brk_eigendom_point_gemcluster_mat AS SELECT
                pt.cat_id, kg.id, st_centroid(kg.geometrie) as geometrie, count(obj.*) as aantal
        FROM brk_eigendommen_mat pt, brk_kadastraalobject obj, brk_kadastralegemeente kg
