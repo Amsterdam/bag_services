@@ -113,7 +113,7 @@ class SubjectFilter(FilterSet):
         """
         recht_type = 2  # eigenaar
 
-        if self.request.GET['zakelijk_recht']:
+        if 'zakelijk_recht' in self.request.GET:
             recht_type = self.request.GET['zakelijk_recht']
 
         if len(value) != 4:
