@@ -1,6 +1,7 @@
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAuthenticated
+from rest_framework import serializers as drf_serializers
 
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
@@ -14,6 +15,10 @@ from django_filters.rest_framework import filters
 from django_filters.rest_framework import FilterSet
 
 import authorization_levels
+
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class GemeenteViewSet(DatapuntViewSet):
@@ -79,6 +84,58 @@ class KadastraleSectieViewSet(DatapuntViewSet):
     filter_fields = ('kadastrale_gemeente',)
 
 
+class SubjectFilter(FilterSet):
+    """
+    Filter subjecten.
+    """
+    buurt = filters.CharFilter(method="buurt_filter", label='buurt')
+
+    zakelijk_recht = filters.NumberFilter(
+        method="recht_filter", label='recht')
+
+    bewoners = filters.BooleanFilter(method="bewoners_filter")
+
+    class Meta(object):
+        model = models.KadastraalSubject
+
+        fields = (
+            'naam',
+            'type',
+            'buurt',
+            'kvknummer',
+            'statutaire_naam',
+            'zakelijk_recht',
+        )
+
+    def buurt_filter(self, queryset, _filter_name, value):
+        """
+        Buurt code 4 chars
+        """
+        recht_type = 2  # eigenaar
+
+        if self.request.GET['zakelijk_recht']:
+            recht_type = self.request.GET['zakelijk_recht']
+
+        if len(value) != 4:
+            raise drf_serializers.ValidationError('Buurt vollcode is 4 chars')
+
+        return queryset.filter(
+            rechten__verblijfsobjecten__buurt__vollcode=value,
+            rechten__aard_zakelijk_recht__code=recht_type
+        )
+
+    def recht_filter(self, queryset, _filter_name, value):
+
+        if self.request.GET['buurt']:
+            # will be recht filter will be done
+            # in buurt filter
+            return queryset
+
+        return queryset.filter(
+            rechten__aard_zakelijk_recht__code=value
+        )
+
+
 class KadastraalSubjectViewSet(DatapuntViewSet):
     """
     Kadastraal subject
@@ -112,6 +169,8 @@ class KadastraalSubjectViewSet(DatapuntViewSet):
     serializer_class = serializers.KadastraalSubject
     serializer_detail_class = serializers.KadastraalSubjectDetail
     lookup_value_regex = '[^/]+'
+
+    filter_class = SubjectFilter
 
     # NOTE in serializer there is MORE authorization code!!
 
@@ -343,12 +402,22 @@ class ZakelijkRechtFilter(FilterSet):
     kadastraal_object = filters.CharFilter(method="zakelijkrecht_filter")
     kadastraal_subject = filters.CharFilter(method="zakelijkrecht_filter")
 
+    verblijfsobject = filters.CharFilter(method="vbo_filter", label='vbo')
+    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter")
+    verblijfsobjecten__landelijk_id = filters.CharFilter(method="vbo_filter")
+
     class Meta:
         model = models.ZakelijkRecht
         fields = [
             'verblijfsobjecten__landelijk_id',
+            'verblijfsobjecten__id',
+            'verblijfsobjecten__buurt',
+            'verblijfsobject',
+            'aard_zakelijk_recht',
+
             'kadastraal_object',
             'kadastraal_subject',
+            'kadastraal_subject__type',
         ]
 
     def zakelijkrecht_filter(self, queryset, filter_name, value):
@@ -367,6 +436,13 @@ class ZakelijkRechtFilter(FilterSet):
 
         filtered = queryset.filter(**kwargs)
         return filtered
+
+    def vbo_filter(self, queryset, _filter_name, value):
+
+        if len(value) == 16:
+            return queryset.filter(verblijfsobjecten__landelijk_id=value)
+
+        return queryset.filter(verblijfsobjecten__id=value)
 
 
 class ZakelijkRechtViewSet(DatapuntViewSet):
@@ -400,7 +476,8 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         .all()
         .order_by(
             'aard_zakelijk_recht__code',
-            '_kadastraal_subject_naam'))
+            '_kadastraal_subject_naam')
+    )
 
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
@@ -423,7 +500,6 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
 
         # return empty qs
         return self.queryset.none()
-        # we should not get here..
 
     @detail_route(methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):

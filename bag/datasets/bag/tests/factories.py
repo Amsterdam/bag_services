@@ -113,6 +113,7 @@ class BuurtFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    vollcode = fuzzy.FuzzyText(length=4)
     stadsdeel = factory.SubFactory(StadsdeelFactory)
     buurtcombinatie = factory.SubFactory(BuurtcombinatieFactory)
 

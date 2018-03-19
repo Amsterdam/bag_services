@@ -118,8 +118,7 @@ class Adres(models.Model):
     buitenland_woonplaats = models.CharField(max_length=100, null=True)
     buitenland_regio = models.CharField(max_length=100, null=True)
     buitenland_naam = models.CharField(max_length=100, null=True)
-    buitenland_land = models.ForeignKey(
-        Land, null=True, on_delete=models.CASCADE)
+    buitenland_land = models.ForeignKey(Land, null=True, on_delete=models.CASCADE)
 
 
 class KadastraalSubject(models.Model):
@@ -323,6 +322,20 @@ class KadastraalObjectVerblijfsobjectRelatie(models.Model):
 
 
 class AardZakelijkRecht(KadasterCodeOmschrijving):
+    """
+    2	Eigendom (recht van)
+    3	Erfpacht (recht van)
+    4	Gebruik en bewoning (recht van)
+    12	Vruchtgebruik (recht van)
+    7	Opstal (recht van)
+    10	Privaatrechtelijke belemmering (als bedoeld in artikel 5, lid 3, onder b, Belemmeringenwet Privaatrecht)
+    14	Opstalrecht Nutsvoorzieningen
+    23	Opstalrecht Nutsvoorzieningen op gedeelte van perceel
+    24	Zakelijk recht als bedoeld in artikel 5, lid 3, onder b, van de Belemmeringenwet Privaatrecht op gedeelte van perceel   # noqa
+    20	Zakelijk recht na twee of meer zakelijke belastingen
+    13	Erfpacht en Opstal (recht van)
+    21	Zakelijke belasting derde of volgende
+    """
     pass
 
 

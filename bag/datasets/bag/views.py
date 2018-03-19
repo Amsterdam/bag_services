@@ -89,7 +89,7 @@ class LigplaatsViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
-    filter_fields = ('buurt', 'landelijk_id')
+    filter_fields = ('buurt', 'buurt__vollcode', 'landelijk_id')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -127,6 +127,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
     serializer_class = serializers.Standplaats
     filter_fields = (
         'buurt',
+        'buurt__vollcode',
         'landelijk_id'
     )
 
@@ -156,6 +157,8 @@ class VerblijfsobjectFilter(FilterSet):
             'panden__id',
             'panden__landelijk_id',
             'buurt',
+            'buurt__vollcode',
+            'oppervlakte',
         )
 
     def pand_filter(self, queryset, filter_name, value):

@@ -367,7 +367,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
         url = 'brk/object'
 
-        response = self.client.get('/{}/?format=api'.format(url))
+        response = self.client.get(f'/{url}/', {'format':' api'})
 
         test_id = response.data['results'][0]['id']
 
@@ -376,3 +376,11 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         detail = self.client.get(test_url)
 
         self.valid_response(test_url, detail)
+
+    def test_kos_filter(self):
+
+        url = 'brk/subject'
+
+        response = self.client.get(f'/{url}/', {'buurt': self.buurt.vollcode})
+
+        test_id = response.data['results'][0]['id']
