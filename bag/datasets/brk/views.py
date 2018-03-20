@@ -119,7 +119,11 @@ class SubjectFilter(FilterSet):
         if len(value) != 4:
             raise drf_serializers.ValidationError('Buurt vollcode is 4 chars')
 
-        return queryset.filter(
+        # remove ordering.
+        # SUPER SLOW because of some weirdness.
+        qs = queryset.order_by()
+
+        return qs.filter(
             rechten__verblijfsobjecten__buurt__vollcode=value,
             rechten__aard_zakelijk_recht__code=recht_type
         )
