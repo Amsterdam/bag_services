@@ -44,6 +44,7 @@ FROM
 SELECT
   b.id                                            AS id,
   b.code                                          AS code,
+  b.vollcode                                      AS vollcode,
   b.naam                                          AS naam,
   b.geometrie                                     AS geometrie,
   b.naam                                          AS display,
