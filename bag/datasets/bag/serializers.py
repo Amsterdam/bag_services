@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from collections import OrderedDict
+# from collections import OrderedDict
 
 from rest_framework_gis.fields import GeometryField
 
@@ -17,6 +17,10 @@ class BagMixin(rest.DataSetSerializerMixin):
 
 class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
+
+    def get_bbox(self, obj):
+        if obj.geometrie:
+            return obj.geometrie.extent
 
 
 class Status(serializers.ModelSerializer):
@@ -286,6 +290,8 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
     stadsdeel = Stadsdeel()
     buurten = rest.RelatedSummaryField()
 
+    bbox = serializers.SerializerMethodField()
+
     _gemeente = Gemeente()
 
     buurtcombinatie_identificatie = serializers.CharField(source='id')
@@ -307,7 +313,7 @@ class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
             'einde_geldigheid',
             'stadsdeel',
             'buurten',
-
+            'bbox',
             '_gemeente',
         )
 
@@ -336,6 +342,8 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
 
     _gemeente = Gemeente()
 
+    bbox = serializers.SerializerMethodField()
+
     buurtidentificatie = serializers.CharField(source='id')
     volledige_code = serializers.CharField(source='vollcode')
 
@@ -355,6 +363,7 @@ class BuurtDetail(GebiedenMixin, rest.HALSerializer):
             'brondocument_datum',
             'begin_geldigheid',
             'einde_geldigheid',
+            'bbox',
             'geometrie',
             'buurtcombinatie',
             'bouwblokken',
@@ -462,6 +471,8 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
     naam_17_posities = serializers.CharField(source='naam_ptt')
     naam_24_posities = serializers.CharField(source='naam_nen')
 
+    bbox = serializers.SerializerMethodField()
+
     class Meta:
         model = models.OpenbareRuimte
         fields = (
@@ -488,8 +499,13 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'woonplaats',
             'adressen',
 
+            'bbox',
             'geometrie',
         )
+
+    def get_bbox(self, obj):
+        if obj.geometrie:
+            return obj.geometrie.extent
 
 
 class LigplaatsDetail(BagMixin, rest.HALSerializer):

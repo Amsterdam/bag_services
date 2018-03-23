@@ -614,7 +614,7 @@ class BuurtViewSet(rest.DatapuntViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Buurt.objects.all()
+    queryset = models.Buurt.objects.all().order_by('naam')
     queryset_detail = models.Buurt.objects.select_related(
         'stadsdeel',
         'stadsdeel__gemeente',
@@ -622,7 +622,7 @@ class BuurtViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    filter_fields = ('stadsdeel', 'buurtcombinatie')
+    filter_fields = ('stadsdeel', 'buurtcombinatie', 'code', 'vollcode')
 
 
 class BouwblokViewSet(rest.DatapuntViewSet):
