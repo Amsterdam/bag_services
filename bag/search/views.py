@@ -253,7 +253,7 @@ def select_queries(
     return [q(analyzer) for q in queries]
 
 
-def get_possible_doc_value(hit, attribute, default):
+def _get_doc_attr(hit, attribute, default):
 
     if hasattr(hit, attribute):
         value = getattr(hit, attribute)
@@ -267,30 +267,24 @@ def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
     """
+    id = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
+    doc_type = _get_doc_attr(hit, 'type',  default=hit.meta.doc_type)
+    detail_type = _get_doc_attr(hit, 'subtype', doc_type)
 
-    doc_type, id = hit.meta.doc_type, hit.meta.id
+    # fallback for undefined detailview for subtype:
+    if detail_type not in _details:
+        detail_type = doc_type
 
-    id = get_possible_doc_value(hit, 'subtype_id', id)
-    doc_type = get_possible_doc_value(hit, 'type', doc_type)
+    #  if fallback also undefined:
+    if detail_type not in _details:
+        raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
-    if doc_type in _details:
-        return rest.get_links(
-            view_name=_details[doc_type],
-            kwargs={'pk': id}, request=request)
+    if hit.subtype in ['gemeente']:
+        id = hit.naam
 
-    # hit must have subtype
-    assert hit.subtype
-
-    if hit.subtype in _details:
-        if hit.subtype in ['gemeente']:
-            return rest.get_links(
-                view_name=_details[hit.subtype],
-                kwargs={'pk': hit.naam}, request=request)
-        return rest.get_links(
-            view_name=_details[hit.subtype],
-            kwargs={'pk': id}, request=request)
-
-    raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
+    return rest.get_links(
+        view_name=_details[detail_type],
+        kwargs={'pk': id}, request=request)
 
 
 class QueryMetadata(metadata.SimpleMetadata):
@@ -706,8 +700,9 @@ class SearchViewSet(viewsets.ViewSet):
         response['count_hits'] = count
         response['count'] = count
 
-        response['results'] = [self.normalize_hit(h, request)
-                               for h in result.hits]
+        response['results'] = [
+            self.normalize_hit(h, request)
+                for h in result.hits]
 
         return Response(response)
 
@@ -726,7 +721,11 @@ class SearchViewSet(viewsets.ViewSet):
         if 'order' in hit:
             del(hit['order'])
 
-        result['type'] = hit.meta.doc_type
+        if hit.subtype:
+            result['type'] = hit.subtype
+        else:
+            result['type'] = hit.meta.doc_type
+
         result['dataset'] = hit.meta.index
 
         self.get_hit_data(result, hit)
@@ -882,13 +881,10 @@ class SearchGebiedenViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        # parameters
-        # bouwblok
 
         if analyzer.is_bouwblok_prefix():
             search = bag_qs.bouwblok_query(analyzer)
             search = search.to_elasticsearch_object(elk_client)
-            search = search.filter('terms', subtype=['bouwblok'])
             return search
         else:
             search = bag_qs.gebied_query(
@@ -926,7 +922,11 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
-        search_data = bag_qs.openbare_ruimte_query(analyzer)
+        if analyzer.is_postcode_prefix():
+            search_data = bag_qs.postcode_query(analyzer)
+        else:
+            search_data = bag_qs.openbare_ruimte_query(analyzer)
+
         return search_data.to_elasticsearch_object(elk_client)
 
 
@@ -1023,6 +1023,9 @@ class SearchPostcodeViewSet(SearchViewSet):
         if analyzer.is_postcode_huisnummer_prefix():
             return bag_qs.postcode_huisnummer_query(analyzer) \
                 .to_elasticsearch_object(elk_client)
-        else:
-            search = bag_qs.weg_query(analyzer)
+
+        elif analyzer.is_postcode_prefix():
+            search = bag_qs.postcode_query(analyzer)
             return search.to_elasticsearch_object(elk_client)
+
+        return []

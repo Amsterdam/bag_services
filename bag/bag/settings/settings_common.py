@@ -22,7 +22,6 @@ insecure_key = 'insecure'
 SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
 
 DEBUG = SECRET_KEY == insecure_key
-DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -78,7 +77,6 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.messages.context_processors.messages',
             ],
         },
     },

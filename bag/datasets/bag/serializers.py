@@ -525,6 +525,8 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     class Meta:
         model = models.Ligplaats
@@ -541,6 +543,9 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'mutatie_gebruiker',
             'status',
             'bron',
+
+            'indicatie_geconstateerd',
+            'aanduiding_in_onderzoek',
 
             'geometrie',
             'hoofdadres',
@@ -649,6 +654,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     class Meta:
         model = models.Standplaats
@@ -668,6 +675,9 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'mutatie_gebruiker',
             'status',
             'bron',
+
+            'indicatie_geconstateerd',
+            'aanduiding_in_onderzoek',
 
             'geometrie',
             'hoofdadres',
@@ -749,9 +759,6 @@ class VerblijfsobjectDetail(
 
     bouwblok = Bouwblok()
 
-    indicatie_geconstateerd = serializers.ReadOnlyField(source='ind_geconstateerd')
-    indicatie_in_onderzoek = serializers.ReadOnlyField(source='ind_inonderzoek')
-
     _buurtcombinatie = Buurtcombinatie()
     _stadsdeel = Stadsdeel()
     _gebiedsgerichtwerken = Gebiedsgerichtwerken()
@@ -762,6 +769,8 @@ class VerblijfsobjectDetail(
     verblijfsobjectidentificatie = serializers.CharField(
         source='landelijk_id')
     sleutelverzendend = serializers.CharField(source='id')
+    aanduiding_in_onderzoek = serializers.BooleanField(
+        source='indicatie_in_onderzoek')
 
     gebruiksdoelen = serializers.SerializerMethodField()
 
@@ -808,7 +817,7 @@ class VerblijfsobjectDetail(
             'bouwblok',
 
             'indicatie_geconstateerd',
-            'indicatie_in_onderzoek',
+            'aanduiding_in_onderzoek',
 
             '_buurtcombinatie',
             '_stadsdeel',
@@ -858,6 +867,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
             'pandnummer',
+            'pandnaam',
 
             'verblijfsobjecten',
 
@@ -919,7 +929,10 @@ class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+
     stadsdeel = Stadsdeel()
+
+    buurten = rest.RelatedSummaryField()
 
     class Meta:
         model = models.Gebiedsgerichtwerken
@@ -929,6 +942,7 @@ class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
             'naam',
             'code',
             'stadsdeel',
+            'buurten',
             'geometrie',
         )
 

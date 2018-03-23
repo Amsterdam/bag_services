@@ -13,7 +13,7 @@ from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
-
+from . import batch_eigendom_sql
 
 log = logging.getLogger(__name__)
 
@@ -626,7 +626,13 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
 
     def process_row(self, row):
         kot_id = row['BRK_KOT_ID']
-        vbo_id = '0' + row['DIVA_VOT_ID']
+        vbo_id = row['DIVA_VOT_ID']
+
+        if not vbo_id:
+            # a lot of BRK_BAG objects do not have VBO's.
+            return
+
+        vbo_id = '0' + vbo_id
 
         if not kot_id or kot_id not in self.kot:
             log.warn(
@@ -634,7 +640,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
                 "object %s; skipping", kot_id)
             return
 
-        if not vbo_id or vbo_id not in self.vbo:
+        if vbo_id not in self.vbo:
             log.warn(
                 "BRK_BAG references non-existing "
                 "verblijfsobject %s; skipping", vbo_id)
@@ -692,6 +698,18 @@ class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
             """)
 
 
+class ImportEigendommenTask(batch.BasicTask):
+    name = "Create eigendommen informatiemodel"
+
+    def before(self):
+        pass
+
+    def process(self):
+        with db.connection.cursor() as c:
+            for sql_command in batch_eigendom_sql.sql_commands:
+                c.execute(sql_command)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -720,6 +738,7 @@ class ImportKadasterJob(object):
             ImportKadastraalObjectRelatiesTask(),
             # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
+            ImportEigendommenTask(),
         ]
 
 
@@ -738,8 +757,10 @@ class DeleteSubjectIndexTask(index.DeleteIndexTask):
 
 
 class IndexSubjectTask(index.ImportIndexTask):
+
     name = "index kadastraal subject"
-    queryset = models.KadastraalSubject.objects
+    queryset = models.KadastraalSubject.objects.all().order_by('id')
+    substring = len("NL.KAD.Persoon.") + 1
 
     def convert(self, obj):
         return documents.from_kadastraal_subject(obj)
@@ -748,11 +769,9 @@ class IndexSubjectTask(index.ImportIndexTask):
 class IndexObjectTask(index.ImportIndexTask):
 
     name = "index kadastraal object"
-    queryset = (
-        models.KadastraalObject.objects
-        .select_related('kadastrale_gemeente')
-        .select_related('sectie')
-    )
+    substring = len('NL.KAD.OnroerendeZaak.') + 1
+
+    queryset = models.KadastraalObject.objects.all().order_by('id')
 
     def convert(self, obj):
         return documents.from_kadastraal_object(obj)
@@ -781,8 +800,8 @@ class BuildIndexKadasterJob(object):
 
     def tasks(self):
         return [
-            IndexSubjectTask(),
             IndexObjectTask(),
+            IndexSubjectTask(),
         ]
 
 

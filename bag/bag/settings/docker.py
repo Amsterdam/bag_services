@@ -71,5 +71,8 @@ STATIC_URL = '/static/'
 
 DIVA_DIR = '/app/data/'
 
-# Generate https links
+# Generate h ttps links
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Setup support for proxy headers
+USE_X_FORWARDED_HOST = True

@@ -2,16 +2,16 @@
 
 def tryStep(String message, Closure block, Closure tearDown = null) {
     try {
-        block();
+        block()
     }
     catch (Throwable t) {
         slackSend message: "${env.JOB_NAME}: ${message} failure ${env.BUILD_URL}", channel: '#ci-channel', color: 'danger'
 
-        throw t;
+        throw t
     }
     finally {
         if (tearDown) {
-            tearDown();
+            tearDown()
         }
     }
 }
@@ -25,9 +25,9 @@ node {
     stage('Test') {
         tryStep "test", {
             withCredentials([[$class: 'StringBinding', credentialsId: 'BAG_OBJECTSTORE_PASSWORD', variable: 'BAG_OBJECTSTORE_PASSWORD']]) {
-            sh "docker-compose -p bag -f .jenkins-test/docker-compose.yml build && " +
-               "docker-compose -p bag -f .jenkins-test/docker-compose.yml run -u root --rm tests"
-        }
+                sh "docker-compose -p bag -f .jenkins-test/docker-compose.yml build && " +
+                        "docker-compose -p bag -f .jenkins-test/docker-compose.yml run -u root --rm tests"
+            }
         }, {
             sh "docker-compose -p bag -f .jenkins-test/docker-compose.yml down"
         }
@@ -41,7 +41,7 @@ node {
     }
 }
 
-String BRANCH = "${env.BRANCH_NAME}"
+String BRANCH = "${env.BRANCH_NAME}".toString()
 
 if (BRANCH == "master") {
 
@@ -59,10 +59,10 @@ if (BRANCH == "master") {
         stage("Deploy to ACC") {
             tryStep "deployment", {
                 build job: 'Subtask_Openstack_Playbook',
-                parameters: [
-                    [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
-                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
-                ]
+                        parameters: [
+                                [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
+                                [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
+                        ]
             }
         }
     }
@@ -88,10 +88,10 @@ if (BRANCH == "master") {
         stage("Deploy") {
             tryStep "deployment", {
                 build job: 'Subtask_Openstack_Playbook',
-                parameters: [
-                    [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
-                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
-                ]
+                        parameters: [
+                                [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
+                                [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
+                        ]
             }
         }
     }

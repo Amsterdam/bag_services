@@ -2,6 +2,7 @@
 
 set -u
 set -e
+set -x
 
 # wait for elastic
 while ! nc -z elasticsearch 9200

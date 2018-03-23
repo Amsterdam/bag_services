@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 from django.db import migrations
 
 from geo_views import migrate
 
 from django.conf import settings
+
+from psycopg2.extensions import QuotedString
 
 URL = settings.DATAPUNT_API_URL
 
@@ -25,35 +26,36 @@ class Migration(migrations.Migration):
     operations = [
         migrate.ManageView(
             view_name='geo_bag_bouwblok',
-            sql=f"""
+            sql="""
 SELECT
   bb.id                                               AS id,
   bb.code                                             AS code,
   bb.geometrie                                        AS geometrie,
   bb.code                                             AS display,
   'gebieden/bouwblok'::TEXT                           AS type,
-  '{URL}' || 'gebieden/bouwblok/' || bb.id || '/' AS uri
+  {} || 'gebieden/bouwblok/' || bb.id || '/' AS uri
 FROM
   bag_bouwblok bb
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_buurt',
-            sql=f"""
+            sql="""
 SELECT
   b.id                                            AS id,
   b.code                                          AS code,
+  b.vollcode                                      AS vollcode,
   b.naam                                          AS naam,
   b.geometrie                                     AS geometrie,
   b.naam                                          AS display,
   'gebieden/buurt'::TEXT                          AS type,
-  '{URL}' || 'gebieden/buurt/' || b.id || '/' AS uri
+  {} || 'gebieden/buurt/' || b.id || '/' AS uri
 FROM bag_buurt b
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_buurtcombinatie',
-            sql=f"""
+            sql="""
 SELECT
   bc.id                                                      AS id,
   bc.vollcode                                                AS vollcode,
@@ -61,13 +63,13 @@ SELECT
   bc.geometrie                                               AS geometrie,
   bc.naam                                                    AS display,
   'gebieden/buurtcombinatie'::TEXT                           AS type,
-  '{URL}' || 'gebieden/buurtcombinatie/' || bc.id || '/' AS uri
+  {} || 'gebieden/buurtcombinatie/' || bc.id || '/' AS uri
 FROM bag_buurtcombinatie bc
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_gebiedsgerichtwerken',
-            sql=f"""
+            sql="""
 SELECT
   g.id                                                           AS id,
   g.code                                                         AS code,
@@ -75,26 +77,26 @@ SELECT
   g.geometrie                                                    AS geometrie,
   g.naam                                                         AS display,
   'gebieden/gebiedsgerichtwerken'::TEXT                          AS type,
-  '{URL}' || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
+  {} || 'gebieden/gebiedsgerichtwerken/' || g.id || '/' AS uri
 FROM bag_gebiedsgerichtwerken g
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_grootstedelijkgebied',
-            sql=f"""
+            sql="""
 SELECT
   gg.id                                                           AS id,
   gg.naam                                                         AS naam,
   gg.geometrie                                                    AS geometrie,
   gg.naam                                                         AS display,
   'gebieden/grootstedelijkgebied'::TEXT                           AS type,
-  '{URL}' || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
+  {} || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
 FROM bag_grootstedelijkgebied gg
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_bag_ligplaats',
-            sql=f"""
+            sql="""
 SELECT
   l.landelijk_id                    AS id,
   l.geometrie                       AS geometrie,
@@ -103,19 +105,19 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                 AS display,
- '{URL}' || 'bag/ligplaats/' || l.landelijk_id || '/' AS uri
+  {} || 'bag/ligplaats/' || l.landelijk_id || '/' AS uri
 
 FROM bag_ligplaats l
   LEFT JOIN bag_nummeraanduiding n ON n.ligplaats_id = l.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""",
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
             view_name='geo_bag_openbareruimte',
-            sql=f"""
+            sql="""
 SELECT
   opr.landelijk_id                                      AS id,
   opr.naam                                              AS display,
@@ -131,27 +133,29 @@ SELECT
   END                                                   AS opr_type,
   opr.geometrie                                         AS geometrie,
   'bag/openbareruimte'::TEXT                            AS type,
-  '{URL}' || 'bag/openbareruimte/' || opr.id || '/' AS uri
+  {} || 'bag/openbareruimte/' || opr.id || '/' AS uri
 FROM
   bag_openbareruimte opr
-                """),
+""".format(QuotedString(URL))
+        ),
 
         migrate.ManageView(
             view_name='geo_bag_pand',
-            sql=f"""
+            sql="""
 SELECT
   p.landelijk_id                            AS id,
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
   'bag/pand'::TEXT                          AS type,
-  '{URL}' || 'bag/pand/' || p.landelijk_id || '/'       AS uri
+  {} || 'bag/pand/' || p.landelijk_id || '/'       AS uri
 FROM
   bag_pand p
-""",
+""".format(QuotedString(URL)),
         ),
+
         migrate.ManageView(
             view_name='geo_bag_stadsdeel',
-            sql=f"""
+            sql="""
 SELECT
   s.id                                                AS id,
   s.code                                              AS code,
@@ -159,13 +163,14 @@ SELECT
   s.geometrie                                         AS geometrie,
   s.naam                                              AS display,
   'gebieden/stadsdeel'::TEXT                          AS type,
-  '{URL}' || 'gebieden/stadsdeel/' || s.id || '/' AS uri
+  {} || 'gebieden/stadsdeel/' || s.id || '/' AS uri
 FROM bag_stadsdeel s
-""",
+""".format(QuotedString(URL)),
         ),
+
         migrate.ManageView(
             view_name='geo_bag_standplaats',
-            sql=f"""
+            sql="""
 SELECT
   s.landelijk_id                                AS id,
   s.geometrie                                   AS geometrie,
@@ -174,31 +179,33 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE(' ' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                             AS display,
- '{URL}' || 'bag/standplaats/' || s.landelijk_id || '/' AS uri
+  {} || 'bag/standplaats/' || s.landelijk_id || '/' AS uri
 
 FROM bag_standplaats s
   LEFT JOIN bag_nummeraanduiding n ON n.standplaats_id = s.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""",
+""".format(QuotedString(URL)),
         ),
+
         migrate.ManageView(
             view_name='geo_bag_unesco',
-            sql=f"""
+            sql="""
 SELECT
   u.id                                             AS id,
   u.naam                                           AS naam,
   u.geometrie                                      AS geometrie,
   u.naam                                           AS display,
   'gebieden/unesco'::TEXT                          AS type,
-  '{URL}' || 'gebieden/unesco/' || u.id || '/' AS uri
+  {} || 'gebieden/unesco/' || u.id || '/' AS uri
 FROM bag_unesco u
-""",
+""".format(QuotedString(URL)),
         ),
+
         migrate.ManageView(
             view_name='geo_bag_verblijfsobject',
-            sql=f"""
+            sql="""
 SELECT
   v.landelijk_id                          AS id,
   v.geometrie                             AS geometrie,
@@ -207,14 +214,14 @@ SELECT
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
   )                                       AS display,
-  '{URL}' || 'bag/verblijfsobject/' || v.landelijk_id || '/' AS uri
+  {} || 'bag/verblijfsobject/' || v.landelijk_id || '/' AS uri
 
 FROM bag_verblijfsobject v
   LEFT JOIN bag_nummeraanduiding n ON n.verblijfsobject_id = v.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
   n.hoofdadres
-""",
+""".format(QuotedString(URL)),
         ),
         migrate.ManageView(
             view_name='geo_lki_gemeente',
@@ -230,7 +237,7 @@ FROM brk_gemeente
 
         migrate.ManageView(
             view_name='geo_lki_kadastraalobject',
-            sql=f"""
+            sql="""
 SELECT
   ko.id                                                     AS id,
   ko.aanduiding                                             AS volledige_code,
@@ -238,14 +245,14 @@ SELECT
   coalesce(ko.point_geom, ko.poly_geom)                     AS geometrie,
   ko.aanduiding                                             AS display,
   'kadaster/kadastraal_object'::TEXT                        AS type,
-  '{URL}' || 'brk/object/' || ko.id || '/' AS uri
+  {} || 'brk/object/' || ko.id || '/' AS uri
 FROM brk_kadastraalobject ko
-""",
+""".format(QuotedString(URL)),
         ),
 
         migrate.ManageView(
             view_name='geo_lki_kadastraalobject',
-            sql=f"""
+            sql="""
 SELECT
   ko.id                                                     AS id,
   ko.aanduiding                                             AS volledige_code,
@@ -258,11 +265,11 @@ SELECT
   RIGHT('0000' || CAST(ko.indexnummer AS VARCHAR), 4)
                                                             AS display,
   'kadaster/kadastraal_object'::TEXT                        AS type,
-  '{URL}' || 'brk/object/' || ko.id || '/' AS uri
+  {} || 'brk/object/' || ko.id || '/' AS uri
 FROM brk_kadastraalobject ko
 LEFT JOIN brk_kadastralegemeente g ON g.id=ko.kadastrale_gemeente_id
 LEFT JOIN brk_kadastralesectie s ON s.id=ko.sectie_id
-"""
+""".format(QuotedString(URL))
         ),
 
         migrate.ManageView(
@@ -287,14 +294,14 @@ FROM brk_kadastralesectie
         ),
         migrate.ManageView(
             view_name='geo_wkpb',
-            sql=f"""
+            sql="""
 SELECT
   bk.id                                                 AS id,
   bp.beperkingtype_id                                   AS beperkingtype_id,
   coalesce(ko.point_geom, ko.poly_geom)                 AS geometrie,
   bp.inschrijfnummer || ' (' ||  bc.omschrijving || ')' AS display,
   'wkpb/beperking'::TEXT                                AS type,
-  '{URL}' || 'wkpb/beperking/' || bp.id || '/'          AS uri
+  {} || 'wkpb/beperking/' || bp.id || '/'          AS uri
 FROM
   wkpb_beperkingkadastraalobject bk
   LEFT JOIN wkpb_beperking bp ON bp.id = bk.beperking_id
@@ -302,6 +309,6 @@ FROM
   LEFT JOIN wkpb_beperkingcode bc ON bc.code = bp.beperkingtype_id
 WHERE
   bp.beperkingtype_id <> 'HS'
-          """,
+          """.format(QuotedString(URL)),
         ),
     ]

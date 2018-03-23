@@ -2,6 +2,7 @@
 
 set -u   # crash on missing env variables
 set -e   # stop on any error
+set -x
 
 echo Performing system check
 python manage.py check

@@ -8,11 +8,12 @@ from datasets.generic import mixins
 # Wkpb
 
 
-class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-                    models.Model):
+class Beperkingcode(mixins.CodeOmschrijvingMixin, models.Model):
     """
     Kadastrale code voor de type beperking.
     """
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Beperkingcode"
@@ -22,11 +23,12 @@ class Beperkingcode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
         return self.omschrijving
 
 
-class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
-               models.Model):
+class Broncode(mixins.CodeOmschrijvingMixin, models.Model):
     """
     Het orgaan dat de beperking heeft opgelegd.
     """
+
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Broncode"
@@ -36,7 +38,7 @@ class Broncode(mixins.ImportStatusMixin, mixins.CodeOmschrijvingMixin,
         return self.omschrijving
 
 
-class Beperking(mixins.ImportStatusMixin, models.Model):
+class Beperking(models.Model):
     """
     Beperking van de eigendom, zoals door een publiekrechtelijke
     beperking als beschermd monument of een aanschrijving op
@@ -46,6 +48,9 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     """
 
     id = models.IntegerField(null=False, primary_key=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     inschrijfnummer = models.IntegerField(null=False)
     beperkingtype = models.ForeignKey(
         Beperkingcode, null=False, on_delete=models.CASCADE)
@@ -53,8 +58,8 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
     datum_einde = models.DateField(null=True)
 
     kadastrale_objecten = models.ManyToManyField(
-            brk.KadastraalObject, through='BeperkingKadastraalObject',
-            related_name="beperkingen")
+        brk.KadastraalObject, through='BeperkingKadastraalObject',
+        related_name="beperkingen")
 
     verblijfsobjecten = models.ManyToManyField(
         bag.Verblijfsobject,
@@ -69,12 +74,14 @@ class Beperking(mixins.ImportStatusMixin, models.Model):
         return f"{self.inschrijfnummer} ({self.beperkingtype.omschrijving})"
 
 
-class Brondocument(mixins.ImportStatusMixin, models.Model):
+class Brondocument(models.Model):
     """
     Het document dat aan de beperking ten grondslag ligt.
     """
 
     id = models.IntegerField(null=False, primary_key=True)  # beperking id
+
+    date_modified = models.DateTimeField(auto_now=True)
     inschrijfnummer = models.IntegerField(null=False)
     bron = models.ForeignKey(
         Broncode, null=True, related_name="documenten",
@@ -101,12 +108,15 @@ class Brondocument(mixins.ImportStatusMixin, models.Model):
         return self.documentnaam
 
 
-class BeperkingKadastraalObject(mixins.ImportStatusMixin, models.Model):
+class BeperkingKadastraalObject(models.Model):
     """
     n:n-relaties: Beperking <> KadastraalObject
     """
 
     id = models.CharField(max_length=33, null=False, primary_key=True)
+
+    date_modified = models.DateTimeField(auto_now=True)
+
     beperking = models.ForeignKey(
         Beperking, null=False,
         on_delete=models.CASCADE

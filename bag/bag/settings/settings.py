@@ -80,10 +80,9 @@ ELASTIC_OPTIONS = {
 ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
 
 ELASTIC_INDICES = {
-    # 'BAG': 'bag',
     'BAG_GEBIED': 'bag_gebied',
     'BAG_BOUWBLOK': 'bag_bouwblok',
-    'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
+    # 'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
     'BRK_OBJECT': 'brk_object',
     'BRK_SUBJECT': 'brk_subject',
     'NUMMERAANDUIDING': 'nummeraanduiding',
@@ -95,7 +94,7 @@ if TESTING:
         ELASTIC_INDICES[k] += 'test'
 
 BATCH_SETTINGS = dict(
-    batch_size=1500
+    batch_size=5000
 )
 
 
@@ -215,5 +214,6 @@ JWKS_TEST_KEY = """
 """
 
 DATAPUNT_AUTHZ = {
+    # 'ALWAYS_OK': True,  # disable authz. tests will fail...
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
 }

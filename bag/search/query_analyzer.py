@@ -220,13 +220,15 @@ class QueryAnalyzer(object):
 
     def is_postcode_prefix(self) -> bool:
         """
-        Returns true if this query could refer to a postcode. This requires at
-        least 4 digits, followed by at most two non-digits.
+        Returns true if this query could refer to a postcode.
+        - This requires at most 4 digits for the first token
+        - Optional Followed by at most two non-digits.
         """
         if self._token_count == 1:
             cijfers = self._tokens[0]
             return (
-                len(cijfers) == 4
+                len(cijfers) <= 4
+                and len(cijfers) > 2
                 and cijfers.isdigit()
             )
 
@@ -235,7 +237,7 @@ class QueryAnalyzer(object):
             return (
                 len(cijfers) == 4
                 and cijfers.isdigit()
-                and len(letters) == 2
+                and len(letters) <= 2
                 and not letters.isdigit()
             )
 

@@ -5,6 +5,11 @@ from elasticsearch import helpers
 import elasticsearch
 import elasticsearch_dsl as es
 
+from django.db.models.functions import Cast
+from django.db.models import F
+from django.db.models.functions import Substr
+from django.db.models import BigIntegerField
+
 from elasticsearch.client import IndicesClient
 
 from elasticsearch.exceptions import NotFoundError
@@ -55,7 +60,8 @@ class DeleteIndexTask(object):
 
 class ImportIndexTask(object):
     queryset = None
-    # batch_size = 10000
+    substring = 0  # subtring of id field to parse to integer
+    last_id = None
 
     def get_queryset(self):
         return self.queryset.order_by('id')
@@ -66,51 +72,45 @@ class ImportIndexTask(object):
 
     def batch_qs(self):
         """
-        Returns a (start, end, total, queryset) tuple
+        Returns a (queryset, progress) tuple
         for each batch in the given queryset.
+        by filtering out records by
+
+            id % modulo = modulo_value
+
+        now it's easy to devide the work acros a few workers
 
         Usage:
             # Make sure to order your querset!
             article_qs = Article.objects.order_by('id')
-            for start, end, total, qs in batch_qs(article_qs):
-                print "Now processing %s - %s of %s" % (start + 1, end, total)
-                for article in qs:
-                    print article.body
+            for qs progress in batch_qs(article_qs):
+                do_someting_with_batch(qs)
+
         """
         qs = self.get_queryset()
 
-        batch_size = settings.BATCH_SETTINGS['batch_size']
+        log.info('ITEMS %d', qs.count())
+
         numerator = settings.PARTIAL_IMPORT['numerator']
         denominator = settings.PARTIAL_IMPORT['denominator']
 
         log.info("PART: %s OF %s" % (numerator+1, denominator))
 
-        end_part = count = total = qs.count()
-        chunk_size = batch_size
+        return self.return_qs_parts(qs, denominator, numerator)
 
-        start_index = 0
+    def convert_model_to_dict(self, qs):
+        """
+        Convert django models to elasticsearch documents
+        """
 
-        # Do partial import
-        if denominator > 1:
-            chunk_size = int(total / denominator)
-            start_index = numerator * chunk_size
-            # for the last part do not change end_part
-            if denominator > numerator+1:
-                end_part = (numerator + 1) * chunk_size
-            total = end_part - start_index
+        batch = list()
 
-        log.info("START: %s END %s COUNT: %s CHUNK %s TOTAL_COUNT: %s" % (
-            start_index, end_part, chunk_size, batch_size, count))
+        for obj in qs:
+            batch.append(self.convert(obj).to_dict(include_meta=True))
+            # store last id
+            self.last_id = obj.id
 
-        # total batches in this (partial) bacth job
-        total_batches = int(chunk_size / batch_size)
-
-        for i, start in enumerate(range(start_index, end_part, batch_size)):
-            end = min(start + batch_size, end_part)
-            t_start = time.time()
-            yield (i+1, total_batches+1, start, end, total, qs[start:end])
-            log.debug("CHUNK %5s - %-5s  in %.3f seconds" % (
-                start, end, time.time() - t_start))
+        return batch
 
     def execute(self):
         """
@@ -122,32 +122,14 @@ class ImportIndexTask(object):
             refresh=True
         )
 
-        start_time = time.time()
-        duration = time.time()
-        loop_time = elapsed = duration - start_time
-
-        for batch_i, total_batches, start, end, total, qs in self.batch_qs():
-
-            loop_start = time.time()
-            total_left = ((total_batches - batch_i) * loop_time) + 1 / 60
-
-            progres_msg = \
-                '%s of %s : %8s %8s %8s duration: %.2f left: %.2f' % (
-                    batch_i, total_batches, start, end, total, elapsed,
-                    total_left
-                )
-
-            log.debug(progres_msg)
+        for qs in self.batch_qs():
 
             helpers.bulk(
-                client, (self.convert(obj).to_dict(include_meta=True) for obj in qs),
+                client,
+                self.convert_model_to_dict(qs),
                 raise_on_error=True,
                 refresh=True
             )
-
-            now = time.time()
-            elapsed = now - start_time
-            loop_time = now - loop_start
 
         # When testing put all docs in one shard to make sure we have
         # correct scores/doc counts and test will succeed
@@ -155,3 +137,75 @@ class ImportIndexTask(object):
         if settings.TESTING:
             es_index = IndicesClient(client)
             es_index.forcemerge('*test', max_num_segments=1)
+
+    def return_qs_parts(self, qs, modulo, modulo_value):
+        """
+        Build qs
+
+        modulo and modulo_value determin which chuncks
+        are teturned.
+
+        if partial = 1/3
+
+        then this function only returns chuncks index id for which
+        modulo id % 3 == 1
+
+        Sometimes the ID field is a string with a number.
+        In that case the Indexer can define a substring
+        which will extract the number part of the ID field
+        """
+        log.debug('BATCH id MODULO %d = %d', modulo, modulo_value)
+
+        if modulo != 1:
+            if self.substring:
+                qs_s = (
+                    qs.annotate(idmod=Substr('id', self.substring))
+                    .annotate(idmod=Cast('idmod', BigIntegerField()))
+                    .annotate(idmod=F('idmod') % modulo)
+                    .filter(idmod=modulo_value)
+                )
+            else:
+                qs_s = (
+                    qs.annotate(idmod=Cast('id', BigIntegerField()))
+                    .annotate(idmod=F('idmod') % modulo)
+                    .filter(idmod=modulo_value)
+                )
+        else:
+            qs_s = qs
+
+        qs_count = qs_s.count()
+
+        log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs.count())
+
+        if not qs_count:
+            raise StopIteration
+
+        batch_size = settings.BATCH_SETTINGS['batch_size']
+
+        loopidx = 0
+
+        # gets updates when we save object in es
+        self.last_id = None
+
+        while True:
+
+            loopidx += 1
+
+            if not self.last_id:
+                qs_ss = qs_s[:batch_size]
+            else:
+                qs_ss = qs_s.filter(id__gt=self.last_id)[:batch_size]
+
+            log.debug(
+                'Batch %4d %4d %s  %s',
+                loopidx, loopidx*batch_size, self.name,
+                self.last_id
+            )
+
+            yield qs_ss
+
+            if qs_ss.count() < batch_size:
+                # no more data
+                break
+
+        raise StopIteration

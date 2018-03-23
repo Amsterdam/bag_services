@@ -100,7 +100,7 @@ def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 Q('term', subtype='weg'),
             ],
         ),
-        sort_fields=['_display'],
+        sort_fields=['naam.keyword'],
         indexes=[BAG_GEBIED]
     )
 
@@ -206,7 +206,9 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor gebieden.
     """
     return _basis_openbare_ruimte_query(
-        analyzer, useorder=False, must=[]
+        analyzer, useorder=False, must=[{
+            'term': {'type': 'gebied'},
+        }],
     )
 
 
