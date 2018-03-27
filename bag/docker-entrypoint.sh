@@ -15,5 +15,5 @@ ls -al /static/
 chmod -R 777 /static
 
 # run uwsgi
-exec uwsgi
+exec uwsgi -i
 
