@@ -11,17 +11,18 @@ from datasets.generic import rest
 from . import models
 
 
+class BboxMixin():
+
+    def get_bbox(self, obj):
+        if obj.geometrie:
+            return obj.geometrie.extent
+
 class BagMixin(rest.DataSetSerializerMixin):
     dataset = 'bag'
 
 
 class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
-
-    def get_bbox(self, obj):
-        if obj.geometrie:
-            return obj.geometrie.extent
-
 
 class Status(serializers.ModelSerializer):
     class Meta:
@@ -241,12 +242,14 @@ class Stadsdeel(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
+class StadsdeelDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     buurten = rest.RelatedSummaryField()
     gebiedsgerichtwerken = rest.RelatedSummaryField()
     buurtcombinaties = rest.RelatedSummaryField()
     gemeente = Gemeente()
+
+    bbox = serializers.SerializerMethodField()
 
     stadsdeelidentificatie = serializers.CharField(source='id')
 
@@ -265,6 +268,7 @@ class StadsdeelDetail(GebiedenMixin, rest.HALSerializer):
             'gemeente',
             'brondocument_naam',
             'brondocument_datum',
+            'bbox',
             'geometrie',
             'buurten',
             'buurtcombinaties',
@@ -285,7 +289,7 @@ class Buurtcombinatie(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class BuurtcombinatieDetail(GebiedenMixin, rest.HALSerializer):
+class BuurtcombinatieDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     stadsdeel = Stadsdeel()
     buurten = rest.RelatedSummaryField()
@@ -331,7 +335,7 @@ class Buurt(GebiedenMixin, rest.HALSerializer):
         )
 
 
-class BuurtDetail(GebiedenMixin, rest.HALSerializer):
+class BuurtDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     bouwblokken = rest.RelatedSummaryField()
     ligplaatsen = rest.RelatedSummaryField()
@@ -385,6 +389,49 @@ class Bouwblok(GebiedenMixin, rest.HALSerializer):
             '_display',
             'id',
         )
+
+
+class BouwblokDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+    panden = rest.RelatedSummaryField()
+    buurt = Buurt()
+    meetbouten = serializers.SerializerMethodField()
+
+    _buurtcombinatie = Buurtcombinatie()
+    _stadsdeel = Stadsdeel()
+    _gemeente = Gemeente()
+
+    bouwblokidentificatie = serializers.CharField(source='id')
+
+    bbox = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Bouwblok
+        fields = (
+            '_links',
+            '_display',
+            'bouwblokidentificatie',
+            'code',
+            'buurt',
+            'begin_geldigheid',
+            'einde_geldigheid',
+            'bbox',
+            'geometrie',
+            'panden',
+            'meetbouten',
+
+            '_buurtcombinatie',
+            '_stadsdeel',
+            '_gemeente',
+        )
+
+    def get_meetbouten(self, obj):
+        link = "/meetbouten/meetbout/?bouwbloknummer={}".format(obj.code)
+        req = self.context.get('request')
+        if req:
+            return req.build_absolute_uri(link)
+
+        return link
 
 
 class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
@@ -457,7 +504,7 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
         )
 
 
-class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
+class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     type = serializers.CharField(source='get_type_display')
@@ -503,12 +550,8 @@ class OpenbareRuimteDetail(BagMixin, rest.HALSerializer):
             'geometrie',
         )
 
-    def get_bbox(self, obj):
-        if obj.geometrie:
-            return obj.geometrie.extent
 
-
-class LigplaatsDetail(BagMixin, rest.HALSerializer):
+class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
     status = Status()
@@ -527,6 +570,8 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
     sleutelverzendend = serializers.CharField(source='id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
+
+    bbox = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Ligplaats
@@ -547,6 +592,7 @@ class LigplaatsDetail(BagMixin, rest.HALSerializer):
             'indicatie_geconstateerd',
             'aanduiding_in_onderzoek',
 
+            'bbox',
             'geometrie',
             'hoofdadres',
             'adressen',
@@ -638,7 +684,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
         )
 
 
-class StandplaatsDetail(BagMixin, rest.HALSerializer):
+class StandplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     adressen = rest.RelatedSummaryField()
@@ -656,6 +702,8 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
     sleutelverzendend = serializers.CharField(source='id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
+
+    bbox = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Standplaats
@@ -679,6 +727,7 @@ class StandplaatsDetail(BagMixin, rest.HALSerializer):
             'indicatie_geconstateerd',
             'aanduiding_in_onderzoek',
 
+            'bbox',
             'geometrie',
             'hoofdadres',
             'adressen',
@@ -734,7 +783,8 @@ class VerblijfsobjectDetailMixin(object):
 
 
 class VerblijfsobjectDetail(
-        VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
+        VerblijfsobjectDetailMixin, BagMixin,
+        BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
@@ -774,6 +824,8 @@ class VerblijfsobjectDetail(
 
     gebruiksdoelen = serializers.SerializerMethodField()
 
+    bbox = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Verblijfsobject
         fields = (
@@ -790,6 +842,7 @@ class VerblijfsobjectDetail(
             'status',
             'bron',
 
+            'bbox',
             'geometrie',
             'oppervlakte',
             'bouwlaag_toegang',
@@ -830,7 +883,7 @@ class VerblijfsobjectDetail(
         )
 
 
-class PandDetail(BagMixin, rest.HALSerializer):
+class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
@@ -848,6 +901,8 @@ class PandDetail(BagMixin, rest.HALSerializer):
     sleutelverzendend = serializers.CharField(source='id')
     oorspronkelijk_bouwjaar = serializers.CharField(source='bouwjaar')
 
+    bbox = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Pand
         fields = (
@@ -860,6 +915,7 @@ class PandDetail(BagMixin, rest.HALSerializer):
             'document_nummer',
             'status',
 
+            'bbox',
             'geometrie',
 
             'oorspronkelijk_bouwjaar',
@@ -887,52 +943,15 @@ class PandDetail(BagMixin, rest.HALSerializer):
         )
 
 
-class BouwblokDetail(GebiedenMixin, rest.HALSerializer):
-    _display = rest.DisplayField()
-    panden = rest.RelatedSummaryField()
-    buurt = Buurt()
-    meetbouten = serializers.SerializerMethodField()
 
-    _buurtcombinatie = Buurtcombinatie()
-    _stadsdeel = Stadsdeel()
-    _gemeente = Gemeente()
-
-    bouwblokidentificatie = serializers.CharField(source='id')
-
-    class Meta:
-        model = models.Bouwblok
-        fields = (
-            '_links',
-            '_display',
-            'bouwblokidentificatie',
-            'code',
-            'buurt',
-            'begin_geldigheid',
-            'einde_geldigheid',
-            'geometrie',
-            'panden',
-            'meetbouten',
-
-            '_buurtcombinatie',
-            '_stadsdeel',
-            '_gemeente',
-        )
-
-    def get_meetbouten(self, obj):
-        link = "/meetbouten/meetbout/?bouwbloknummer={}".format(obj.code)
-        req = self.context.get('request')
-        if req:
-            return req.build_absolute_uri(link)
-
-        return link
-
-
-class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
+class GebiedsgerichtwerkenDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
     stadsdeel = Stadsdeel()
 
     buurten = rest.RelatedSummaryField()
+
+    bbox = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Gebiedsgerichtwerken
@@ -943,12 +962,15 @@ class GebiedsgerichtwerkenDetail(GebiedenMixin, rest.HALSerializer):
             'code',
             'stadsdeel',
             'buurten',
+            'bbox',
             'geometrie',
         )
 
 
-class GrootstedelijkgebiedDetail(GebiedenMixin, rest.HALSerializer):
+class GrootstedelijkgebiedDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+
+    bbox = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Grootstedelijkgebied
@@ -956,12 +978,15 @@ class GrootstedelijkgebiedDetail(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'naam',
+            'bbox',
             'geometrie',
         )
 
 
-class UnescoDetail(GebiedenMixin, rest.HALSerializer):
+class UnescoDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
+
+    bbox = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Unesco
@@ -969,6 +994,7 @@ class UnescoDetail(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'naam',
+            'bbox',
             'geometrie',
         )
 
