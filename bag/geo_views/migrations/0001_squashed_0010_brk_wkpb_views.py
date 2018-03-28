@@ -38,6 +38,7 @@ FROM
   bag_bouwblok bb
 """.format(QuotedString(URL)),
         ),
+
         migrate.ManageView(
             view_name='geo_bag_buurt',
             sql="""
@@ -53,6 +54,23 @@ SELECT
 FROM bag_buurt b
 """.format(QuotedString(URL)),
         ),
+
+        migrate.ManageView(
+            view_name='geo_bag_buurt_simple',
+            sql="""
+SELECT
+  b.id                                             AS id,
+  b.code                                           AS code,
+  b.vollcode                                       AS vollcode,
+  b.naam                                           AS naam,
+  ST_SimplifyPreserveTopology(b.geometrie, 0.1) AS geometrie,
+  b.naam                                           AS display,
+  'gebieden/buurt'::TEXT                           AS type,
+  {} || 'gebieden/buurt/' || b.id || '/' AS uri
+FROM bag_buurt b
+""".format(QuotedString(URL)),
+        ),
+
         migrate.ManageView(
             view_name='geo_bag_buurtcombinatie',
             sql="""
