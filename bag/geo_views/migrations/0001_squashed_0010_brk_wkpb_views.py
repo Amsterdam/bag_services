@@ -63,7 +63,7 @@ SELECT
   b.code                                           AS code,
   b.vollcode                                       AS vollcode,
   b.naam                                           AS naam,
-  ST_SimplifyPreserveTopology(b.geometrie, 0.1) AS geometrie,
+  ST_SimplifyPreserveTopology(b.geometrie, 0.1)    AS geometrie,
   b.naam                                           AS display,
   'gebieden/buurt'::TEXT                           AS type,
   {} || 'gebieden/buurt/' || b.id || '/' AS uri
@@ -85,6 +85,22 @@ SELECT
 FROM bag_buurtcombinatie bc
 """.format(QuotedString(URL)),
         ),
+
+        migrate.ManageView(
+            view_name='geo_bag_buurtcombinatie_simple',
+            sql="""
+SELECT
+  bc.id                                                      AS id,
+  bc.vollcode                                                AS vollcode,
+  bc.naam                                                    AS naam,
+  ST_SimplifyPreserveTopology(bc.geometrie, 0.1)             AS geometrie,
+  bc.naam                                                    AS display,
+  'gebieden/buurtcombinatie'::TEXT                           AS type,
+  {} || 'gebieden/buurtcombinatie/' || bc.id || '/' AS uri
+FROM bag_buurtcombinatie bc
+""".format(QuotedString(URL)),
+        ),
+
         migrate.ManageView(
             view_name='geo_bag_gebiedsgerichtwerken',
             sql="""
