@@ -544,6 +544,7 @@ class AantekeningenFilter(FilterSet):
     class Meta:
         model = models.Aantekening
         fields = [
+            'aantekening_id',
             'aard_aantekening',
             'opgelegd_door',
             'kadastraal_object'
@@ -558,6 +559,9 @@ class AantekeningViewSet(DatapuntViewSet):
     een Kadastraal Object en geeft aanvullende informatie over een bestaand
     feit, genoemd in een stuk, dat betrekking heeft op een object en dat
     gevolgen kan hebben voor de uitoefening van rechten op het object.
+
+    LET OP. Aantekening_id SAMEN met subject is uniek.
+    het ID veld is gegenereerd.
 
     [Stelselpedia]
     (https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/objectklasse-aant/)
