@@ -589,10 +589,9 @@ class AantekeningViewSet(DatapuntViewSet):
             # django id.
             obj = get_object_or_404(models.Aantekening, pk=pk)
         else:
-            # officieal brk id.
-            # which is not always unique
+            # official brk id.
+            # which is not always unique..
             obj = get_object_or_404(models.Aantekening, aantekening_id=pk)
-
         return obj
 
 
