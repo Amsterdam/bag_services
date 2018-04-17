@@ -579,7 +579,7 @@ class ImportAantekeningTask(batch.BasicTask):
             return
 
         return models.Aantekening(
-            pk=atk_id,
+            aantekening_id=atk_id,
             aard_aantekening=self.get_aard_aantekening(
                 row['ATG_AARDAANTEKENING_CODE'],
                 row['ATG_AARDAANTEKENING_OMS']),

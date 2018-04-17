@@ -431,7 +431,7 @@ class AardAantekening(KadasterCodeOmschrijving):
 
 class Aantekening(models.Model):
 
-    id = models.CharField(max_length=60, primary_key=True)
+    aantekening_id = models.CharField(max_length=60, db_index=True)
     aard_aantekening = models.ForeignKey(
         AardAantekening, on_delete=models.CASCADE)
     omschrijving = models.TextField()
@@ -451,4 +451,4 @@ class Aantekening(models.Model):
     def __str__(self):
         if self.aard_aantekening.omschrijving:
             return self.aard_aantekening.omschrijving
-        return self.id
+        return self.aantekening_id

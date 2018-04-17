@@ -962,6 +962,7 @@ class Pand(
     pandnummer = models.CharField(max_length=10, null=True)
     vervallen = models.NullBooleanField(default=None)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+
     bouwblok = models.ForeignKey(
         Bouwblok, null=True, related_name="panden", on_delete=models.CASCADE)
 

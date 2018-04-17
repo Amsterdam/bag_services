@@ -564,7 +564,7 @@ class AantekeningViewSet(DatapuntViewSet):
     """
     queryset = (models.Aantekening.objects
                 .select_related('aard_aantekening', 'opgelegd_door')
-                .all().order_by('id'))
+                .all().order_by('aantekening_id'))
 
     queryset_detail = (
         models.Aantekening.objects.select_related(

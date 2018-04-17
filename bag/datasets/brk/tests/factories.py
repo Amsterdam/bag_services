@@ -169,7 +169,7 @@ class AantekeningFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Aantekening
 
-    pk = fuzzy.FuzzyText(length=60)
+    aantekening_id = fuzzy.FuzzyText(length=60)
     aard_aantekening = factory.SubFactory(AardAantekeningFactory)
 
     kadastraal_object = factory.SubFactory(KadastraalObjectFactory)

@@ -229,6 +229,7 @@ class Aantekening(BrkMixin, rest.HALSerializer):
             '_links',
             '_display',
             'id',
+            'aantekening_id',
             'opgelegd_door',
         )
 
