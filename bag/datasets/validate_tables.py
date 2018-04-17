@@ -85,7 +85,7 @@ def check_table_targets():
         (505141 ,"bag_verblijfsobjectpandrelatie"),
         (1      ,"bag_woonplaats"),
         (4      ,"brk_aanduidingnaam"),
-        (446968 ,"brk_aantekening"),
+        (436968 ,"brk_aantekening"),
         (32     ,"brk_aardaantekening"),
         (12     ,"brk_aardzakelijkrecht"),
         (224420 ,"brk_adres"),
