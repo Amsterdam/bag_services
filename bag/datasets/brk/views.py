@@ -1,14 +1,13 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework import serializers as drf_serializers
-
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
 from datasets.brk import models, serializers, custom_serializers
-
 from datasets.generic.rest import DatapuntViewSet
-
 from datasets.generic import rest
 
 from django_filters.rest_framework import filters
@@ -583,6 +582,18 @@ class AantekeningViewSet(DatapuntViewSet):
     filter_class = AantekeningenFilter
 
     lookup_value_regex = '[^/]+'
+
+    def get_object(self):
+        pk = self.kwargs['pk']
+        if pk.isdigit():
+            # django id.
+            obj = get_object_or_404(models.Aantekening, pk=pk)
+        else:
+            # officieal brk id.
+            # which is not always unique
+            obj = get_object_or_404(models.Aantekening, aantekening_id=pk)
+
+        return obj
 
 
 class KadastraalObjectWkpbView(DatapuntViewSet):

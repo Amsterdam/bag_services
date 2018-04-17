@@ -162,7 +162,8 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             kadastraal_object=kot,
             kadastraal_subject=sub
         )
-        brk_factories.AantekeningFactory.create(
+        self.aantekening = brk_factories.AantekeningFactory.create(
+            aantekening_id='NL.KAD.Aantekening.AKR1.100000007082195',
             kadastraal_object=kot,
             opgelegd_door=sub
         )
@@ -384,4 +385,16 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
         response = self.client.get(f'/{url}/', {'buurt': self.buurt.vollcode})
 
+        self.assertEqual(response.status_code, 200)
+
+    def test_aantekening_id(self):
+
+        url = 'brk/aantekening'
+
+        aantekening_id = self.aantekening.aantekening_id
+        _id = self.aantekening.id
+
+        response = self.client.get(f'/{url}/{_id}/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(f'/{url}/{aantekening_id}/')
         self.assertEqual(response.status_code, 200)
