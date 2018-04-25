@@ -143,7 +143,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
 
 class VerblijfsobjectFilter(FilterSet):
 
-    pand = filters.CharFilter(method="pand_filter", name="pand")
+    pand = filters.CharFilter(method="pand_filter", name="pand", label="pand")
     panden__id = filters.CharFilter(method="pand_filter")
     panden__landelijk_id = filters.CharFilter(method="pand_filter")
 
@@ -279,18 +279,11 @@ class NummeraanduidingFilter(FilterSet):
         point, radius = parse_xyr(value)
 
         # Creating one big queryset
-        verblijfsobjecten = queryset.filter(
-            verblijfsobject__geometrie__dwithin=(point, D(m=radius))
-        ).annotate(afstand=Distance('verblijfsobject__geometrie', point))
-        ligplaatsen = queryset.filter(
-            ligplaats__geometrie__dwithin=(point, D(m=radius))
-        ).annotate(afstand=Distance('ligplaats__geometrie', point))
-        standplaatsen = queryset.filter(
-            standplaats__geometrie__dwithin=(point, D(m=radius))
-        ).annotate(afstand=Distance('standplaats__geometrie', point))
-        results = verblijfsobjecten | ligplaatsen | standplaatsen
+        qs = queryset.filter(
+            _geom__dwithin=(point, D(m=radius))
+        ).annotate(afstand=Distance('_geom', point))
 
-        return results.order_by('afstand')
+        return qs.order_by('afstand')
 
     def pand_filter(self, queryset, _filter_name, value):
         """
@@ -351,10 +344,20 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Nummeraanduiding.objects.all().order_by('id')
+    queryset = (
+        models.Nummeraanduiding.objects.all().order_by('id')
+        .select_related(
+            'verblijfsobject',
+            'standplaats',
+            'ligplaats',
+            'verblijfsobject__status',
+            'standplaats__status',
+            'ligplaats__status',
+        )
+    )
     queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
         Prefetch('verblijfsobject__panden',
-                 queryset=models.Pand.objects.select_related('bouwblok'))
+         queryset=models.Pand.objects.select_related('bouwblok'))
     ).select_related(
         'status',
         'openbare_ruimte',

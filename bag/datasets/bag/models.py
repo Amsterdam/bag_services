@@ -475,6 +475,10 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     # gedenormaliseerde velden
     _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
 
+    _geom = geo.GeometryField(null=True, srid=28992)
+
+    objects = geo.Manager()
+
     class Meta:
         verbose_name = "Nummeraanduiding"
         verbose_name_plural = "Nummeraanduidingen"

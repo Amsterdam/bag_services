@@ -6,6 +6,7 @@ from rest_framework.test import APITransactionTestCase
 
 from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
+from datasets.bag.batch import DenormalizeDataTask
 
 LOG = logging.getLogger(__name__)
 
@@ -15,10 +16,10 @@ class Numfilter(APITransactionTestCase):
     def setUp(self):
 
         vierkantje = Polygon([
-                (121849.65, 487303.93),
-                (121889.65, 487303.93),
-                (121889.65, 487373.93),
-                (121849.65, 487303.93)
+            (121849.65, 487303.93),
+            (121889.65, 487303.93),
+            (121889.65, 487373.93),
+            (121849.65, 487303.93)
         ], srid=28992)
 
         self.opr = bag_factories.OpenbareRuimteFactory(
@@ -27,7 +28,6 @@ class Numfilter(APITransactionTestCase):
 
         self.vbo = bag_factories.VerblijfsobjectFactory.create(
             geometrie=Point(121849.65, 487303.93, srid=28992))
-            # (52.3726097, 4.9004161)
 
         self.num = bag_factories.NummeraanduidingFactory.create(
             postcode='1000AN',  # default postcode..
@@ -73,6 +73,9 @@ class Numfilter(APITransactionTestCase):
         # this should be expanded to a full item
         self.bad_na = bag_factories.NummeraanduidingFactory.create(
             postcode='2000ZZ')
+
+        # fill _geom at nummeraanduiding
+        DenormalizeDataTask().process()
 
     def test_kot_filter(self):
         url = f'/bag/nummeraanduiding/?kadastraalobject={self.kot.id}'

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-# from collections import OrderedDict
 
 from rest_framework_gis.fields import GeometryField
 
@@ -941,7 +940,6 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
             '_gemeente',
 
         )
-
 
 
 class GebiedsgerichtwerkenDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):

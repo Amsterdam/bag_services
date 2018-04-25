@@ -135,21 +135,25 @@ LOGGING = {
         'datasets.validate_table': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': False,
         },
 
         'django.db': {
             'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': False,
         },
 
         'django': {
             'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': False,
         },
 
         'django.template': {
             'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': False,
         },
 
         'doc': {

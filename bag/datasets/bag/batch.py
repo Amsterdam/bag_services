@@ -1891,6 +1891,34 @@ WHERE opr.id = num.openbare_ruimte_id
             log.debug(update_nummeraanduiding_sql)
             c.execute(update_nummeraanduiding_sql)
 
+            update_geom_num_vbo_sql = """
+UPDATE bag_nummeraanduiding num
+SET _geom = vbo.geometrie
+FROM bag_verblijfsobject vbo
+WHERE num.verblijfsobject_id = vbo.id
+            """
+
+            log.debug(update_geom_num_vbo_sql)
+            c.execute(update_geom_num_vbo_sql)
+
+            update_geom_num_standplaats_sql = """
+UPDATE bag_nummeraanduiding num
+SET _geom = std.geometrie
+FROM bag_standplaats std
+WHERE num.standplaats_id = std.id
+            """
+            log.debug(update_geom_num_standplaats_sql)
+            c.execute(update_geom_num_standplaats_sql)
+
+            update_geom_num_ligplaats_sql = """
+UPDATE bag_nummeraanduiding num
+SET _geom = lig.geometrie
+FROM bag_ligplaats lig
+WHERE num.ligplaats_id = lig.id
+        """
+            log.debug(update_geom_num_standplaats_sql)
+            c.execute(update_geom_num_standplaats_sql)
+
 
 class UpdateGebiedenAttributenTask(batch.BasicTask):
     """
