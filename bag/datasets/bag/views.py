@@ -357,7 +357,7 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     )
     queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
         Prefetch('verblijfsobject__panden',
-         queryset=models.Pand.objects.select_related('bouwblok'))
+                 queryset=models.Pand.objects.select_related('bouwblok'))
     ).select_related(
         'status',
         'openbare_ruimte',
