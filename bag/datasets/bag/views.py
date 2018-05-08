@@ -289,8 +289,12 @@ class NummeraanduidingFilter(FilterSet):
         """
         Filter using a pand landelijk id
         """
+        queryset = queryset.prefetch_related(None)
+        queryset = queryset.select_related(None)
+        # ligplaatsen en standplaatsen hebben we NIET nodig.
+        queryset = queryset.select_related('verblijfsobject__status')
         m_po = models.Pand.objects
-        pand = m_po.prefetch_related('verblijfsobjecten').get(landelijk_id=value)   # noqa
+        pand = m_po.get(landelijk_id=value)   # noqa
         ids = pand.verblijfsobjecten.values_list(
             'adressen__landelijk_id', flat=True)
         return queryset.filter(landelijk_id__in=ids)
