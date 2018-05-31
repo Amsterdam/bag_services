@@ -108,7 +108,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                 """create table brk_bebouwde_g_percelen as
                SELECT *
                FROM brk_zakelijkrecht
-               WHERE substring(_kadastraal_object_aanduiding FROM 15 FOR 1) = 'G'
+               WHERE kadastraal_object_id in (select id from brk_kadastraalobject where indexletter='G')
                      AND (kadastraal_object_id IN (SELECT kadastraal_object_id
                                                    FROM brk_kadastraalobjectverblijfsobjectrelatie
                                                    WHERE verblijfsobject_id IS NOT NULL)
@@ -122,7 +122,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                 """create table brk_bebouwde_a_percelen as
                SELECT *
                FROM brk_zakelijkrecht
-               WHERE substring(_kadastraal_object_aanduiding FROM 15 FOR 1) = 'A'
+               WHERE  kadastraal_object_id in (select id from brk_kadastraalobject where indexletter='A')
                      AND (kadastraal_object_id IN (SELECT kadastraal_object_id
                                                    FROM brk_kadastraalobjectverblijfsobjectrelatie
                                                    WHERE verblijfsobject_id IS NOT NULL)
@@ -137,7 +137,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                AS
                        select zr.id, zr.kadastraal_subject_id, zr.kadastraal_object_id, zr.aard_zakelijk_recht_akr, eig.cat_id, false::boolean as grondeigenaar, false::boolean as aanschrijfbaar, false::boolean as appartementeigenaar
                      from brk_eigenaar eig, brk_zakelijkrecht  zr where zr.kadastraal_subject_id = eig.id""",
-                "update brk_eigendom set grondeigenaar = true where id in (select id from brk_zakelijkrecht where aard_zakelijk_recht_id = '2' and substring(_kadastraal_object_aanduiding from 15 for 1) = 'G')",
+                "update brk_eigendom set grondeigenaar = true where id in (select id from brk_zakelijkrecht where aard_zakelijk_recht_id = '2' and kadastraal_object_id in (select id from brk_kadastraalobject where indexletter='G'))",
                 "update brk_eigendom set aanschrijfbaar = true where id in (select id from brk_bebouwde_g_percelen where aard_zakelijk_recht_id in ('3','4','7','12','13'))",
                 """update brk_eigendom set aanschrijfbaar = true where id in (select id from brk_bebouwde_g_percelen bbgp where aard_zakelijk_recht_id = '2' and kadastraal_object_id not in (
                select kadastraal_object_id from brk_bebouwde_g_percelen bbgp where bbgp.aard_zakelijk_recht_id in ('3','4','7','12','13')
