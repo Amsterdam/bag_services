@@ -34,7 +34,6 @@ services:
       - DATABASE_USER=bag
       - DATABASE_PASSWORD=insecure
       - BAG_OBJECTSTORE_PASSWORD=insecure
-      - JWT_SHARED_SECRET_KEY=atleast16characters
       - UWSGI_HTTP=0.0.0.0:8080
       - UWSGI_MODULE=bag.wsgi
       - UWSGI_CALLABLE=application
