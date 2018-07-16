@@ -32,7 +32,7 @@ def check_table_counts(table_data: list):
 
     for target, table in table_data:
         count = sql_count(table)
-        if count < target - 4000 or count == 0:
+        if count < target - 5000 or count == 0:
             status = '<FAIL>'
             error = True
         else:
@@ -85,7 +85,7 @@ def check_table_targets():
         (505141 ,"bag_verblijfsobjectpandrelatie"),
         (1      ,"bag_woonplaats"),
         (4      ,"brk_aanduidingnaam"),
-        (436968 ,"brk_aantekening"),
+        (430968 ,"brk_aantekening"),
         (32     ,"brk_aardaantekening"),
         (12     ,"brk_aardzakelijkrecht"),
         (224420 ,"brk_adres"),
