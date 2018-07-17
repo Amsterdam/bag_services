@@ -438,10 +438,10 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     id = models.CharField(max_length=14, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
-    huisnummer = models.IntegerField()
+    huisnummer = models.IntegerField(db_index=True)
     huisletter = models.CharField(max_length=1, null=True)
-    huisnummer_toevoeging = models.CharField(max_length=4, null=True)
-    postcode = models.CharField(max_length=6, null=True)
+    huisnummer_toevoeging = models.CharField(max_length=4, null=True, db_index=True)
+    postcode = models.CharField(max_length=6, null=True, db_index=True)
     type = models.CharField(
         max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     adres_nummer = models.CharField(max_length=10, null=True)
@@ -829,7 +829,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     reden_afvoer = models.ForeignKey(
         RedenAfvoer, null=True, on_delete=models.CASCADE)
 
-
     date_modified = models.DateTimeField(auto_now=True)
 
     reden_opvoer = models.ForeignKey(
@@ -876,8 +875,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     )
 
     # gedenormaliseerde velden
-    _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
-    _huisnummer = models.IntegerField(null=True)
+    _openbare_ruimte_naam = models.CharField(max_length=150, db_index=True, null=True)
+    _huisnummer = models.IntegerField(null=True, db_index=True)
     _huisletter = models.CharField(max_length=1, null=True)
     _huisnummer_toevoeging = models.CharField(max_length=4, null=True)
 

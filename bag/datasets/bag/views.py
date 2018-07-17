@@ -159,6 +159,10 @@ class VerblijfsobjectFilter(FilterSet):
             'buurt',
             'buurt__vollcode',
             'oppervlakte',
+            '_huisnummer',
+            '_huisletter',
+            '_huisnummer_toevoeging',
+            '_openbare_ruimte_naam',
         )
 
     def pand_filter(self, queryset, filter_name, value):
@@ -229,6 +233,7 @@ class NummeraanduidingFilter(FilterSet):
     postcode = filters.CharFilter(method="postcode_filter")
     huisnummer = filters.NumberFilter()
     huisletter = filters.CharFilter()
+    huisnummer_toevoeging = filters.CharFilter()
     openbare_ruimte = filters.CharFilter(method="openbare_ruimte_filter")
     locatie = filters.CharFilter(method="locatie_filter", label='x,y,r')
 
@@ -245,6 +250,10 @@ class NummeraanduidingFilter(FilterSet):
             'landelijk_id',
             'openbare_ruimte',
             'postcode',
+            'hoofdadres',
+            'huisnummer',
+            'huisletter',
+            'huisnummer_toevoeging',
             'pand',
             'kadastraalobject',
             'locatie',
@@ -491,6 +500,10 @@ class OpenbareRuimteFilter(FilterSet):
             'code',
             'type',
             'locatie',
+            'adressen__postcode',
+            'adressen__huisnummer',
+            'adressen__huisletter',
+            'adressen__huisnummer_toevoeging',
         )
 
     def locatie_filter(self, queryset, _filter_name, value):
@@ -531,7 +544,7 @@ class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     """  # noqa
 
     metadata_class = ExpansionMetadata
-    queryset = models.OpenbareRuimte.objects.all()
+    queryset = models.OpenbareRuimte.objects.distinct()
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
 
