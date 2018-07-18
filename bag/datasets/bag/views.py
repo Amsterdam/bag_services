@@ -143,7 +143,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
 
 class VerblijfsobjectFilter(FilterSet):
 
-    pand = filters.CharFilter(method="pand_filter", name="pand", label="pand")
+    pand = filters.CharFilter(method="pand_filter", label="pand")
     panden__id = filters.CharFilter(method="pand_filter")
     panden__landelijk_id = filters.CharFilter(method="pand_filter")
 
@@ -406,10 +406,10 @@ class PandenFilter(FilterSet):
     Filter panden met landelijke ids
     """
 
-    verblijfsobject = filters.CharFilter(method="vbo_filter", name="verblijfsobject")
-    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter", name="vbo_id")
+    verblijfsobject = filters.CharFilter(method="vbo_filter", label="verblijfsobject")
+    verblijfsobjecten__id = filters.CharFilter(method="vbo_filter", label="vbo_id")
 
-    locatie = filters.CharFilter(method="locatie_filter", name='locatie')
+    locatie = filters.CharFilter(method="locatie_filter", label='locatie')
 
     class Meta:
         model = models.Pand
@@ -489,7 +489,7 @@ class OpenbareRuimteFilter(FilterSet):
     Filter openbare ruimte
     """
 
-    locatie = filters.CharFilter(method="locatie_filter", name='locatie')
+    locatie = filters.CharFilter(method="locatie_filter", label='locatie')
 
     class Meta:
         model = models.OpenbareRuimte

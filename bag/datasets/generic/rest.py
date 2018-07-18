@@ -11,7 +11,17 @@ from rest_framework.utils.urls import replace_query_param
 
 from rest_framework_extensions.mixins import DetailSerializerMixin
 
-DEFAULT_RENDERERS = (renderers.JSONRenderer, renderers.BrowsableAPIRenderer)
+from rest_framework_xml.renderers import XMLRenderer
+from .renderers import PaginatedCSVRenderer
+
+
+DEFAULT_RENDERERS = (
+    renderers.JSONRenderer,
+    renderers.BrowsableAPIRenderer,
+    PaginatedCSVRenderer,
+    XMLRenderer,
+)
+
 FORMATS = [dict(format=r.format, type=r.media_type) for r in DEFAULT_RENDERERS]
 
 
@@ -137,7 +147,6 @@ class DatapuntViewSet(DetailSerializerMixin, viewsets.ReadOnlyModelViewSet):
     renderer_classes = DEFAULT_RENDERERS
     pagination_class = HALPagination
     filter_backends = (DjangoFilterBackend,)
-
 
     # default ordering
     ordering = ('id',)

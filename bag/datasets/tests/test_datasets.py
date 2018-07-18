@@ -58,6 +58,13 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         'brk/aantekening',
     ]
 
+    formats = [
+        ('api', 'text/html; charset=utf-8'),
+        ('json', 'application/json'),
+        ('xml', 'application/xml; charset=utf-8'),
+        ('csv', 'text/csv; charset=utf-8'),
+    ]
+
     def setUp(self):
         """
         This create a graph of objects that point to
@@ -186,49 +193,41 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
         for url in urls:
             response = self.client.get('/{}/'.format(url))
-            self.valid_response(url, response)
+            self.valid_response(url, response, 'application/json')
 
     def makesuperuser(self):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_employee_plus))
 
-    def valid_response(self, url, response):
+    def valid_response(
+            self, url, response,
+            content_type='text/html; charset=utf-8'):
         """
         Helper method to check common status/json
         """
 
         self.assertEqual(
-            200, response.status_code,
-            'Wrong response code for {}'.format(url))
+            200, response.status_code, "Wrong response code for {}".format(url)
+        )
 
         self.assertEqual(
-            'application/json', response['Content-Type'],
-            'Wrong Content-Type for {}'.format(url))
-
-    def valid_html_response(self, url, response):
-        """
-        Helper method to check common status/json
-        """
-
-        self.assertEqual(
-            200, response.status_code,
-            'Wrong response code for {}'.format(url))
-
-        self.assertEqual(
-            'text/html; charset=utf-8', response['Content-Type'],
-            'Wrong Content-Type for {}'.format(url))
+            f"{content_type}",
+            response["Content-Type"],
+            "Wrong Content-Type for {}".format(url),
+        )
 
     def test_lists(self):
-        for url in self.datasets:
-            response = self.client.get('/{}/'.format(url))
+        for _format, encoding in self.formats:
+            for url in self.datasets:
+                response = self.client.get(f'/{url}/', {'format': _format})
 
-            self.valid_response(url, response)
+                self.valid_response(url, response, encoding)
 
-            self.assertIn(
-                'count', response.data, 'No count attribute in {}'.format(url))
-            self.assertNotEqual(
-                response.data['count'],
-                0, 'Wrong result count for {}'.format(url))
+                self.assertIn(
+                    'count', response.data, 'No count attribute in {}'.format(url))
+                self.assertNotEqual(
+                    response.data['count'],
+                    0, 'Wrong result count for {}'.format(url))
 
     def test_details(self):
         for url in self.datasets:
@@ -237,7 +236,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
-            self.valid_response(url, detail)
+            self.valid_response(url, detail, 'application/json')
 
             self.assertIn('_display', detail.data)
 
@@ -250,7 +249,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
             detail = self.client.get(url)
 
-            self.valid_response(url, detail)
+            self.valid_response(url, detail, 'application/json')
 
             self.assertIn('_display', detail.data)
 
@@ -319,7 +318,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         self.assertEqual(result.status_code, 200, url)
         LOG.debug('test url %s', url)
 
-        self.valid_response(url, result)
+        self.valid_response(url, result, 'application/json')
 
         if 'count' in result.data:
             pdata = pretty_data(result.data)
@@ -329,10 +328,12 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
                 f'\n\n {jsondata} \n\n {pdata} \n\n')
 
     def test_lists_html(self):
-        for url in self.datasets:
-            response = self.client.get('/{}/?format=api'.format(url))
 
-            self.valid_html_response(url, response)
+        for url in self.datasets:
+            response = self.client.get(
+                f'/{url}/', {'format': 'api'})
+
+            self.valid_response(url, response, 'text/html; charset=utf-8')
 
             self.assertIn(
                 'count', response.data, 'No count attribute in {}'.format(url))
@@ -347,7 +348,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             url = response.data['results'][0]['_links']['self']['href']
             detail = self.client.get(url)
 
-            self.valid_html_response(url, detail)
+            self.valid_response(url, detail)
 
             self.assertIn('_display', detail.data)
 
@@ -363,7 +364,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
         detail = self.client.get(test_url)
 
-        self.valid_response(test_url, detail)
+        self.valid_response(test_url, detail, 'application/json')
 
     def test_brk_object_wkpb_html(self):
 
@@ -375,9 +376,9 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
         test_url = reverse('brk-object-wkpb', args=[test_id])
 
-        detail = self.client.get(test_url)
+        detail = self.client.get(test_url, {'format': 'api'})
 
-        self.valid_response(test_url, detail)
+        self.valid_response(test_url, detail, 'text/html; charset=utf-8')
 
     def test_kos_filter(self):
 
