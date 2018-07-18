@@ -1,6 +1,4 @@
-
 from rest_framework_csv.renderers import CSVRenderer
-# from rest_framework_xml.renderers import XMLRenderer
 
 
 class PaginatedCSVRenderer(CSVRenderer):
@@ -10,5 +8,3 @@ class PaginatedCSVRenderer(CSVRenderer):
         if not isinstance(data, list):
             data = data.get(self.results_field, [])
         return super(PaginatedCSVRenderer, self).render(data, *args, **kwargs)
-
-
