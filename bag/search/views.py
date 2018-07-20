@@ -344,6 +344,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
     """
     metadata_class = QueryMetadata
+    renderer_classes = rest.DEFAULT_RENDERERS
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -594,6 +595,7 @@ class SearchViewSet(viewsets.ViewSet):
     url_name = 'search-list'
     page_limit = 10
 
+    renderer_classes = rest.DEFAULT_RENDERERS
     filter_backends = [QFilter]
 
     def search_query(self, request,

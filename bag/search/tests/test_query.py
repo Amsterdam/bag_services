@@ -8,6 +8,13 @@ class QueryTest(APITransactionTestCase):
     Testing commonly used datasets
     """
 
+    formats = [
+        ('api', 'text/html; charset=utf-8'),
+        ('json', 'application/json'),
+        ('xml', 'application/xml; charset=utf-8'),
+        ('csv', 'text/csv; charset=utf-8'),
+    ]
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -101,6 +108,7 @@ class QueryTest(APITransactionTestCase):
         self.assertIn('Centrum', str(response.data))
 
     def test_typeahead_bag_postcode(self):
+
         response = self.client.get(
             "/atlas/typeahead/bag/", {'q': "1016 SZ"})
         self.assertEqual(response.status_code, 200)
@@ -108,11 +116,22 @@ class QueryTest(APITransactionTestCase):
         self.assertIn('Rozenstraat', str(response.data))
 
     def test_typeahead_bag_adres(self):
-        response = self.client.get(
-            "/atlas/typeahead/bag/", {'q': "Rozenstraat 228"})
-        self.assertEqual(response.status_code, 200)
 
-        self.assertIn('Rozenstraat 228', str(response.data))
+        for fmt, content_type in self.formats:
+
+            url = "/atlas/typeahead/bag/"
+            response = self.client.get(
+                url, {'q': "Rozenstraat 228", 'format': fmt})
+
+            self.assertEqual(
+                f"{content_type}",
+                response["Content-Type"],
+                "Wrong Content-Type for {}".format(url),
+            )
+
+            self.assertEqual(response.status_code, 200)
+
+            self.assertIn('Rozenstraat 228', str(response.data))
 
     def test_typeahead_subject(self):
         """

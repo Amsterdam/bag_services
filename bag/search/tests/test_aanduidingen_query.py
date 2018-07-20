@@ -1,6 +1,6 @@
 # Python
 # Package
-#from rest_framework.test import APITestCase
+
 from rest_framework.test import APITransactionTestCase
 # Project
 from batch import batch
@@ -10,6 +10,13 @@ import datasets.brk.batch
 
 
 class SubjectSearchTest(APITransactionTestCase):
+
+    formats = [
+        ('api', 'text/html; charset=utf-8'),
+        ('json', 'application/json'),
+        ('xml', 'application/xml; charset=utf-8'),
+        ('csv', 'text/csv; charset=utf-8'),
+    ]
 
     @classmethod
     def setUpClass(cls):
@@ -83,16 +90,28 @@ class SubjectSearchTest(APITransactionTestCase):
         self.assertEqual(response.data['count'], 0)
 
     def test_straat_query(self):
-        response = self.client.get(
-            '/atlas/search/adres/', {'q': 'anjel'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
+        for fmt, content_type in self.formats:
 
-        self.assertEqual(response.data['count'], 2)
+            url = '/atlas/search/adres/'
 
-        first = response.data['results'][0]
-        self.assertEqual(first['straatnaam'], "Anjeliersstraat")
+            response = self.client.get(
+                '/atlas/search/adres/', {'q': 'anjel', 'format': fmt}
+            )
+
+            self.assertEqual(
+                f"{content_type}",
+                response["Content-Type"],
+                "Wrong Content-Type for {}".format(url),
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('results', response.data)
+            self.assertIn('count', response.data)
+
+            self.assertEqual(response.data['count'], 2)
+
+            first = response.data['results'][0]
+            self.assertEqual(first['straatnaam'], "Anjeliersstraat")
 
     def test_straat_vbo_status(self):
         response = self.client.get(
