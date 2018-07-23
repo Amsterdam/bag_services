@@ -952,7 +952,20 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
 
-    """  #noqa
+    LET OP !!  toevoeging is de toevoeging achter een straatnaam !!
+    -----
+
+    gebruik
+
+    straatnaam huisnummer
+
+    of
+    ==
+
+    straatnaam toevoeging, als er meer dan een huisnummer betrokken is bij
+    het adres / nummeraanduiding.
+
+    """   # noqa
     url_name = 'search/adres-list'
     filter_backends = [NummeraanduidingQ]
     custom_sort = True
