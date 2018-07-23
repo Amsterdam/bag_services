@@ -153,8 +153,8 @@ class Nummeraanduiding(es.DocType):
     subtype = es.Keyword()
     _display = es.Keyword()
 
-    class Meta:
-        index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    class Index:
+        name = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
 
 class Bouwblok(es.DocType):
@@ -172,8 +172,8 @@ class Bouwblok(es.DocType):
 
     _display = es.Keyword()
 
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
+    class Index:
+        name = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 
 
 class Gebied(es.DocType):
@@ -231,8 +231,8 @@ class Gebied(es.DocType):
 
     centroid = es.GeoPoint()
 
-    class Meta:
-        index = settings.ELASTIC_INDICES['BAG_GEBIED']
+    class Index:
+        name = settings.ELASTIC_INDICES['BAG_GEBIED']
 
 
 def get_centroid(geom, transform=None):

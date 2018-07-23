@@ -73,7 +73,7 @@ pies==2.6.7
 pip-review==1.0
 pip-tools==2.0.2
 positional==1.2.1
-psycopg2==2.7.5
+psycopg2-binary==2.7.5
 pycodestyle==2.4.0
 pycparser==2.18
 pyflakes==2.0.0

@@ -60,8 +60,8 @@ class KadastraalObject(es.DocType):
     subtype = es.Keyword()
     _display = es.Keyword()
 
-    class Meta:
-        index = settings.ELASTIC_INDICES['BRK_OBJECT']
+    class Index:
+        name = settings.ELASTIC_INDICES['BRK_OBJECT']
 
 
 class KadastraalSubject(es.DocType):
@@ -80,8 +80,8 @@ class KadastraalSubject(es.DocType):
     subtype = es.Keyword()
     _display = es.Keyword()
 
-    class Meta:
-        index = settings.ELASTIC_INDICES['BRK_SUBJECT']
+    class Index:
+        name = settings.ELASTIC_INDICES['BRK_SUBJECT']
 
 
 def from_kadastraal_subject(ks):
