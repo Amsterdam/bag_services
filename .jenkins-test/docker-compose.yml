@@ -5,7 +5,7 @@ database:
     POSTGRES_USER: bag
 
 elasticsearch:
-  image: amsterdam/elasticsearch5
+  image: amsterdam/elasticsearch6
   volumes:
     - ./backups/elasticsearch:/tmp/backups
   command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1

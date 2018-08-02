@@ -1,11 +1,11 @@
 """
-Collect and validate bag, brk, gebieden and wkpb table counts
+collect and validate bag, brk, gebieden and wkpb table counts
 """
 import logging
 from django.db import connection
 
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getlogger(__name__)
 
 
 def sql_count(table):
@@ -52,7 +52,7 @@ def check_table_targets():
     """
     Check if tables have a specific count
     """
-    LOG.debug('validating table counts..')
+    LOG.debug('Validating table counts..')
 
     # Count  table
     tables_targets = [
