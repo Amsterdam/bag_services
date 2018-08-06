@@ -47,6 +47,9 @@ def clean_tokenize(query_string):
 
     Nieuwe achtergracht 105-3 HA2
     ['Nieuwe', 'achtergracht', '105', '3', 'HA', '2']
+
+    Koningin Wilhelminaplein 19-h 17
+    ['Koningin', 'Wilhelminaplein', '19', 'H', '17']
     """
     # clear all wrong useless data
 

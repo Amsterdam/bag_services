@@ -33,6 +33,11 @@ class SubjectSearchTest(APITransactionTestCase):
             naam_nen="S Maker wg",
             type='01')
 
+        kon_straat = bag_factories.OpenbareRuimteFactory.create(
+            naam="Koningin Wilhelminaplein",
+            naam_nen="K Wilhem pl",
+            type='01')
+
         straat = bag_factories.OpenbareRuimteFactory.create(
             naam="Anjeliersstraat", type='01')
 
@@ -75,6 +80,15 @@ class SubjectSearchTest(APITransactionTestCase):
             postcode='1234AB',
             type='01',  # Verblijfsobject
             openbare_ruimte=nen_straat
+        )
+
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=29,
+            huisletter='H',
+            huisnummer_toevoeging=17,
+            postcode='1234AB',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=kon_straat
         )
 
         batch.execute(datasets.bag.batch.IndexBagJob())
@@ -176,3 +190,14 @@ class SubjectSearchTest(APITransactionTestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Marius Cornelis straat 99")
+
+    def test_meercijferige_toevoeging(self):
+        response = self.client.get(
+            "/atlas/search/adres/", {'q': "Koningin Wilhelminaplein 29H 17"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Koningin Wilhelminaplein 29H-17")

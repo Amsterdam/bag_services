@@ -541,6 +541,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
 
     @property
     def toevoeging(self):
+        """Toevoeging samen voeging.
+
+        Toevoeing represents the total added string to
+        a street/openbareruimte name.
+        """
 
         toevoegingen = []
 
@@ -552,9 +557,32 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         if self.huisletter:
             toevoegingen.append(str(self.huisletter))
 
+        def addnumber(lastdigits, split_tv):
+            digits = "".join(lastdigits)
+            if digits:
+                split_tv.append(digits)
+
+            split_tv = " ".join(split_tv)
+            return split_tv
+
         if toevoeging:
             tv = str(toevoeging)
-            split_tv = " ".join([c for c in tv])
+            split_tv = []
+            lastdigits = []
+            prev = ""
+
+            for c in tv:
+                if c.isdigit():
+                    lastdigits.append(c)
+                    continue
+                else:
+                    addnumber(lastdigits, split_tv)
+                    if digits:
+                        split_tv.append(digits)
+                    lastdigits = []
+
+            # add leftover digits if any.
+            addnumber(lastdigits, split_tv)
             toevoegingen.append(split_tv)
 
         return ' '.join(toevoegingen)
