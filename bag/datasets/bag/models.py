@@ -576,13 +576,11 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                     lastdigits.append(c)
                     continue
                 else:
-                    addnumber(lastdigits, split_tv)
-                    if digits:
-                        split_tv.append(digits)
+                    split_tv = addnumber(lastdigits, split_tv)
                     lastdigits = []
 
             # add leftover digits if any.
-            addnumber(lastdigits, split_tv)
+            split_tv = addnumber(lastdigits, split_tv)
             toevoegingen.append(split_tv)
 
         return ' '.join(toevoegingen)

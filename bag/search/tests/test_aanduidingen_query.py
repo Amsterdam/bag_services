@@ -1,7 +1,7 @@
 # Python
 # Package
 
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 # Project
 from batch import batch
 import datasets.bag.batch
@@ -9,7 +9,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-class SubjectSearchTest(APITransactionTestCase):
+class SubjectSearchTest(APITestCase):
 
     formats = [
         ('api', 'text/html; charset=utf-8'),
