@@ -12,6 +12,9 @@ from datasets.wkpb.tests import factories as wkpb_factories
 
 from datasets.generic.tests.authorization import AuthorizationSetup
 
+from django.core.management import call_command
+
+
 
 LOG = logging.getLogger(__name__)
 
@@ -399,3 +402,12 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         self.assertEqual(response.status_code, 200)
         response = self.client.get(f'/{url}/{aantekening_id}/')
         self.assertEqual(response.status_code, 200)
+
+    def test_validate_tables(self):
+        """Make sure validation command runs.
+        """
+        try:
+            output = call_command('run_import', '--validate')
+        except ValueError:
+            # should fail. the tables are not filled.
+            pass

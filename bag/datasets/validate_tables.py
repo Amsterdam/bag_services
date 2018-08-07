@@ -5,7 +5,7 @@ import logging
 from django.db import connection
 
 
-LOG = logging.getlogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def sql_count(table):
