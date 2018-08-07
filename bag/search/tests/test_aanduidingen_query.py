@@ -91,6 +91,15 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=kon_straat
         )
 
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=122,
+            huisletter='B',
+            huisnummer_toevoeging='1A',
+            postcode='1234AB',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=kon_straat
+        )
+
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -201,3 +210,14 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Koningin Wilhelminaplein 29H-17")
+
+    def test_complexe_toevoeging(self):
+        response = self.client.get(
+            "/atlas/search/adres/", {'q': "Koningin Wilhelminaplein 122B 1A"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "Koningin Wilhelminaplein 122B-1A")

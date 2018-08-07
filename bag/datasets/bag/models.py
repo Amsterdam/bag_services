@@ -562,9 +562,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
             if digits:
                 split_tv.append(digits)
 
-            split_tv = " ".join(split_tv)
-            return split_tv
-
         if toevoeging:
             tv = str(toevoeging)
             split_tv = []
@@ -576,12 +573,15 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
                     lastdigits.append(c)
                     continue
                 else:
-                    split_tv = addnumber(lastdigits, split_tv)
+                    addnumber(lastdigits, split_tv)
                     lastdigits = []
+                    split_tv.append(c)
 
-            # add leftover digits if any.
-            split_tv = addnumber(lastdigits, split_tv)
-            toevoegingen.append(split_tv)
+            # add left-over digits if any.
+            addnumber(lastdigits, split_tv)
+
+            # create the toevoeging
+            toevoegingen.extend(split_tv)
 
         return ' '.join(toevoegingen)
 
