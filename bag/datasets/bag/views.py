@@ -354,6 +354,9 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
 
     bag/nummeraanduiding/?pand=0363100012171966
+
+    TIP! detailed=1 if you want all fields in the list view!
+
     """
 
     metadata_class = ExpansionMetadata
@@ -639,7 +642,7 @@ class BuurtViewSet(rest.DatapuntViewSet):
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all().order_by('naam')
     queryset_detail = models.Buurt.objects.select_related(
-            'stadsdeel',
+        'stadsdeel',
         'stadsdeel__gemeente',
         'buurtcombinatie',
     )
