@@ -97,7 +97,7 @@ class ImportPandNaamTask(batch.BasicTask):
         self.path = path
 
     def before(self):
-        assert models.Pand.objects.count() > 0
+        assert models.Pand.objects.count() > 0, "No panden present!"
 
     def after(self):
         pass
@@ -998,6 +998,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
         self.landelijke_ids = dict()
 
     def before(self):
+        log.info('Importing standplaatsen')
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
         self.statussen = set(models.Status.objects.values_list("pk", flat=True))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
@@ -1010,7 +1011,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
         validate_geometry(models.Standplaats)
 
         assert models.Standplaats.objects.filter(
-            geometrie__isnull=True).count() == 0
+            geometrie__isnull=True).count() == 0, "Standplaats zonder geometrie!"
 
         log.info(
             '%s Standplaatsen',
@@ -1661,7 +1662,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         self.stadsdelen = dict(
             models.Stadsdeel.objects.values_list("code", "pk"))
 
-        assert self.stadsdelen
+        assert self.stadsdelen, "No stadsdelen found!"
 
     def after(self):
         """

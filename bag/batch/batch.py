@@ -38,6 +38,7 @@ class BasicTask(object):
     * ``after``
 
     """
+    name = "Basic Task"
 
     class Meta:
         __class__ = ABCMeta
