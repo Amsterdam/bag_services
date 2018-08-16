@@ -24,3 +24,5 @@ reports/
 .venv
 /out/
 /data/
+
+.vscode
