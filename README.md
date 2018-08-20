@@ -60,7 +60,10 @@ Importing the latest backup
 ---------------------------
 
 To import the latest database from acceptance (replace `<username>` with your
-username, assumes your SSH key is known and you have appropriate level of access):
+username, assumes your public SSH key is known and you have appropriate level of access.
+
+This command expects the private SSH key to be found in the ~/.ssh T†folder,
+in a file with the name datapunt.key (chmod 600):
 
     docker-compose exec database update-db.sh bag <username>
 

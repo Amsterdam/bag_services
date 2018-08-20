@@ -8,15 +8,15 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                 "DROP VIEW IF EXISTS brk_eigenaar_staat",
                 "DROP VIEW IF EXISTS brk_eigenaar_gemeente",
                 "DROP VIEW IF EXISTS brk_eigenaar_natuurlijk",
-                """CREATE VIEW brk_eigenaar_natuurlijk AS SELECT 0 as cat_id, 'Natuurlijke persoon'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_natuurlijk AS SELECT 10 as cat_id, 'Overig natuurlijke personen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id is null""",
-                """CREATE VIEW brk_eigenaar_gemeente AS SELECT 1 as cat_id, 'Amsterdam'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_gemeente AS SELECT 1 as cat_id, 'Gemeente Amsterdam'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id='10' and (upper(ks.statutaire_naam) like '%AMSTERDAM%' or upper(ks.statutaire_naam) like '%STADSDEEL%')""",
-                """CREATE VIEW brk_eigenaar_staat AS SELECT 3 as cat_id, 'De staat'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_staat AS SELECT 3 as cat_id, 'Staat'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where (ks.rechtsvorm_id='5' or ks.rechtsvorm_id='10') and upper(ks.statutaire_naam) like '%DE STAAT%'""",
-                """CREATE VIEW brk_eigenaar_provincie AS SELECT 4 as cat_id, 'Provincie'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_provincie AS SELECT 4 as cat_id, 'Provincies'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id='10' and upper(ks.statutaire_naam) like '%PROVINCIE%'""",
-                """CREATE VIEW brk_eigenaar_waterschap AS SELECT 5 as cat_id, 'Waterschap'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_waterschap AS SELECT 5 as cat_id, 'Waterschappen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id='10' and (upper(ks.statutaire_naam) like '%WATERSCHAP%' or upper(ks.statutaire_naam) like '%HEEMRAADSCHAP%')""",
                 """CREATE VIEW brk_eigenaar_overige_gemeente AS SELECT 2 as cat_id, 'Overige gemeenten'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id='10' and upper(ks.statutaire_naam) like '%GEMEENTE%' and ks.id not in (
@@ -28,7 +28,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                UNION
                select id from brk_eigenaar_waterschap
        )""",
-                """CREATE VIEW brk_eigenaar_woningcorporatie AS SELECT 6 as cat_id, 'Woningcorporatie'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_woningcorporatie AS SELECT 6 as cat_id, 'Woningbouwcorporaties'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where id in ('NL.KAD.Persoon.252140640','NL.KAD.Persoon.503138989','NL.KAD.Persoon.499112361',
        'NL.KAD.Persoon.172211115','NL.KAD.Persoon.478316430','NL.KAD.Persoon.11734470','NL.KAD.Persoon.519506319',
        'NL.KAD.Persoon.462322843','NL.KAD.Persoon.422423013','NL.KAD.Persoon.122930769','NL.KAD.Persoon.122912658',
@@ -40,13 +40,13 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
        'NL.KAD.Persoon.122620316','NL.KAD.Persoon.172209052','NL.KAD.Persoon.172090014','NL.KAD.Persoon.459362889',
        'NL.KAD.Persoon.406261333','NL.KAD.Persoon.172013385','NL.KAD.Persoon.331501954','NL.KAD.Persoon.260334994',
        'NL.KAD.Persoon.184029003','NL.KAD.Persoon.197352789','NL.KAD.Persoon.172219833','NL.KAD.Persoon.172107996')""",
-                """CREATE VIEW brk_eigenaar_vve AS SELECT 7 as cat_id, 'VVE'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_vve AS SELECT 7 as cat_id, 'Verenigingen van eigenaren'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where (ks.rechtsvorm_id='13' or ks.rechtsvorm_id='21')""",
-                """CREATE VIEW brk_eigenaar_spoorwegen AS SELECT 8 as cat_id, 'Spoorwegen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_spoorwegen AS SELECT 8 as cat_id, 'Spoorwegen/ProRail'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id not in ('13', '21', '27') and
              (upper(ks.statutaire_naam) like 'NS VAST%' or upper(ks.statutaire_naam) like '%SPOORWEGEN%' OR
               upper(ks.statutaire_naam) like '%RAILINFRA%' or upper(ks.statutaire_naam) like '%PRORAIL%')""",
-                """CREATE VIEW brk_eigenaar_niet_natuurlijk AS SELECT 9 as cat_id, 'Overig niet natuurlijk'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_niet_natuurlijk AS SELECT 9 as cat_id, 'Overige niet-natuurlijke personen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.id not in (
                select id from brk_eigenaar_gemeente
                UNION
