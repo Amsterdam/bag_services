@@ -2,7 +2,11 @@
 # end sets it to the geometrie of the first related verblijfsobject if :
 # 1) the  point_geom of the kadastraal_object is NOT in the union of related g-percelen
 # 2) the geometrie of the verblijfsobject is in the  union of related g-percelen
-
+#
+# The clause AND kot1.sectie_id = kot2.sectie_id was added to filter out
+# G-percelen that are not in the same sectie. These are sometimes added
+# as a error and they are the cause of very wrong locations of kadastrale objecten
+# of type A
 
 sql_command = """
 WITH kot_g_poly AS (
@@ -12,6 +16,7 @@ WITH kot_g_poly AS (
         JOIN brk_aperceelgperceelrelatie ag ON ag.a_perceel_id = kot1.id	
         JOIN brk_kadastraalobject kot2 ON kot2.id =  ag.g_perceel_id
         WHERE kot1.indexletter = 'A'
+        AND kot1.sectie_id = kot2.sectie_id
         GROUP BY kot1.id, kot1.point_geom) q1
      WHERE ST_Within( point, g_poly) = false),
      vbo_kot_geometrie AS (
