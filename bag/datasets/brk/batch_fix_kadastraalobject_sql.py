@@ -10,15 +10,14 @@
 
 sql_command = """
 WITH kot_g_poly AS (
-    SELECT id, point, g_poly FROM (	 
-        SELECT kot1.id AS id, kot1.point_geom AS point, ST_Union(kot2.poly_geom) AS g_poly
+    SELECT id, g_poly FROM (
+        SELECT kot1.id AS id, ST_Union(kot2.poly_geom) AS g_poly
         FROM brk_kadastraalobject kot1	 
         JOIN brk_aperceelgperceelrelatie ag ON ag.a_perceel_id = kot1.id	
         JOIN brk_kadastraalobject kot2 ON kot2.id =  ag.g_perceel_id
         WHERE kot1.indexletter = 'A'
         AND kot1.sectie_id = kot2.sectie_id
-        GROUP BY kot1.id, kot1.point_geom) q1
-     WHERE ST_Within( point, g_poly) = false),
+        GROUP BY kot1.id) q1),
      vbo_kot_geometrie AS (
          SELECT distinct on(kot.id) kot.id AS id, vbo.geometrie AS geometrie
          FROM brk_kadastraalobject kot
