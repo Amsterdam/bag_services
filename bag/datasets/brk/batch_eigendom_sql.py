@@ -137,8 +137,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                AS
                        select zr.id, zr.kadastraal_subject_id, zr.kadastraal_object_id, zr.aard_zakelijk_recht_akr, eig.cat_id, 
                               false::boolean as grondeigenaar, false::boolean as aanschrijfbaar, false::boolean as appartementeigenaar
-                     from brk_eigenaar eig, brk_zakelijkrecht zr where zr.kadastraal_subject_id = eig.id 
-                       and zr.kadastraal_object_id in (select id from brk_kadastraalobject where kadastrale_gemeente_id in (select id from brk_kadastralegemeente where gemeente_id='Amsterdam'))""",
+                     from brk_eigenaar eig, brk_zakelijkrecht zr where zr.kadastraal_subject_id = eig.id""",
                 "update brk_eigendom set grondeigenaar = true where id in (select id from brk_zakelijkrecht where aard_zakelijk_recht_id = '2' and kadastraal_object_id in (select id from brk_kadastraalobject where indexletter='G'))",
                 "update brk_eigendom set aanschrijfbaar = true where id in (select id from brk_bebouwde_g_percelen where aard_zakelijk_recht_id in ('3','4','7','12','13'))",
                 """update brk_eigendom set aanschrijfbaar = true where id in (select id from brk_bebouwde_g_percelen bbgp where aard_zakelijk_recht_id = '2' and kadastraal_object_id not in (
