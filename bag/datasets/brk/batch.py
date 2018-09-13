@@ -13,7 +13,7 @@ from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
-from . import batch_eigendom_sql
+from . import batch_eigendom_sql, batch_fix_kadastraalobject_sql
 
 log = logging.getLogger(__name__)
 
@@ -710,6 +710,17 @@ class ImportEigendommenTask(batch.BasicTask):
                 c.execute(sql_command)
 
 
+class FixKadastraalObjectAppartementGeometrie(batch.BasicTask):
+    name = "If geometrie for apartments is not correct, use geometrie from related verblijfsobject"
+
+    def before(self):
+        pass
+
+    def process(self):
+        with db.connection.cursor() as c:
+            c.execute(batch_fix_kadastraalobject_sql.sql_command)
+
+
 class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
@@ -739,6 +750,7 @@ class ImportKadasterJob(object):
             # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
             ImportEigendommenTask(),
+            FixKadastraalObjectAppartementGeometrie()
         ]
 
 
