@@ -83,5 +83,3 @@ Your own elastic index import takes approximately 2 hours.
 To run your own elastic index:
 
     docker-compose exec bag /app/manage.py run_import --no-import
-   
-test
