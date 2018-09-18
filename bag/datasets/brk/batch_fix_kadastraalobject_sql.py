@@ -24,7 +24,8 @@ WITH kot_g_poly AS (
          JOIN brk_kadastraalobjectverblijfsobjectrelatie kov ON kov.kadastraal_object_id = kot.id
          JOIN bag_verblijfsobject vbo on kov.verblijfsobject_id = vbo.id
          JOIN kot_g_poly ON kot_g_poly.id = kot.id        	
-         WHERE vbo.geometrie IS NOT NULL AND ST_Within( vbo.geometrie, g_poly) = true)
+         WHERE vbo.geometrie IS NOT NULL AND
+           (g_poly IS NULL OR ST_Within( vbo.geometrie, g_poly) = true))
 UPDATE brk_kadastraalobject SET point_geom = vbo_kot_geometrie.geometrie  
 FROM vbo_kot_geometrie
 WHERE  brk_kadastraalobject.id = vbo_kot_geometrie.id  
