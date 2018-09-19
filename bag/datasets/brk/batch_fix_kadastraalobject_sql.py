@@ -7,7 +7,14 @@
 # G-percelen that are not in the same sectie. These are sometimes added
 # as a error and they are the cause of very wrong locations of kadastrale objecten
 # of type A
-
+#
+# If for a specific kadastraalobject of type 'A' the g-percelen are not valid then
+# g-poly will be NULL. In that case the point_geometrie for was zero (because it is based on
+# G-percelen) and we can also set it by using the geometrie of verblijfsobject.
+#
+# G-percelen in the brk_aperceelgperceelrelatie are not always valid G-percelen because
+# sometimes there are multiple zakelijkrecht relations in between the A-perceel and
+# original G-perceel
 sql_command = """
 WITH kot_g_poly AS (
     SELECT id, g_poly FROM (
