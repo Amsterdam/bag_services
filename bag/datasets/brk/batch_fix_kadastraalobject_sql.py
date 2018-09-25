@@ -142,6 +142,25 @@ SET point_geom = kot_new_geom1.geometrie
 FROM kot_new_geom1
 WHERE brk_kadastraalobject.id = kot_new_geom1.id
     """,
+    # For the last 23 locations we look at the complex for the A-perceel. The complex
+    # is identified by the aanduiding minus last 4 characters. If there is another
+    # A-perceel in the complex with a location, then we also use the location for that
+    # A-perceel for the missing location.
+    """
+CREATE TEMPORARY TABLE kot_new_geom2 AS
+SELECT distinct on(kot1.id) kot1.id, kot2.point_geom
+FROM brk_kadastraalobject kot1
+JOIN brk_kadastraalobject kot2 on LEFT(kot1.aanduiding, -4) = LEFT(kot2.aanduiding, -4)
+WHERE kot1.point_geom IS NULL
+  AND kot1.indexletter = 'A'
+  AND kot2.point_geom IS NOT NULL
+    """,
+    """
+UPDATE brk_kadastraalobject
+SET point_geom = kot_new_geom2.point_geom
+FROM kot_new_geom2
+WHERE brk_kadastraalobject.id = kot_new_geom2.id
+    """,
     # Report number of changed locations
     """
 DO $$DECLARE c int;
@@ -153,7 +172,7 @@ BEGIN
     RAISE NOTICE 'Changed % locations for kadastrale objecten', c;
 END$$;
    """,
-    # Report A-kadastrale objects without location
+    # Report A-kadastrale objects without location. This should now be 0
    """
 DO $$DECLARE c int;
 BEGIN
