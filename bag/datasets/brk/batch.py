@@ -718,7 +718,7 @@ class FixKadastraalObjectAppartementGeometrie(batch.BasicTask):
 
     def process(self):
         with db.connection.cursor() as c:
-            for sql_command in batch_fix_kadastraalobject_sql.sql_command:
+            for sql_command in batch_fix_kadastraalobject_sql.sql_commands:
                 c.execute(sql_command)
 
 
