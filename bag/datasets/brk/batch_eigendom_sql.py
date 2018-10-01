@@ -8,7 +8,7 @@ sql_commands = ["DROP VIEW IF EXISTS brk_eigenaar_niet_natuurlijk",
                 "DROP VIEW IF EXISTS brk_eigenaar_staat",
                 "DROP VIEW IF EXISTS brk_eigenaar_gemeente",
                 "DROP VIEW IF EXISTS brk_eigenaar_natuurlijk",
-                """CREATE VIEW brk_eigenaar_natuurlijk AS SELECT 10 as cat_id, 'Overig natuurlijke personen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
+                """CREATE VIEW brk_eigenaar_natuurlijk AS SELECT 10 as cat_id, 'Overige natuurlijke personen'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id is null""",
                 """CREATE VIEW brk_eigenaar_gemeente AS SELECT 1 as cat_id, 'Gemeente Amsterdam'::varchar as categorie, ks.* from brk_kadastraalsubject ks
        where ks.rechtsvorm_id='10' and (upper(ks.statutaire_naam) like '%AMSTERDAM%' or upper(ks.statutaire_naam) like '%STADSDEEL%')""",
