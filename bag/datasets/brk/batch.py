@@ -720,6 +720,9 @@ class FixKadastraalObjectAppartementGeometrie(batch.BasicTask):
         with db.connection.cursor() as c:
             for sql_command in batch_fix_kadastraalobject_sql.sql_commands:
                 c.execute(sql_command)
+            if len(c.db.connection.notices) > 0:
+                for notice in c.db.connection.notices:
+                    log.info(notice)
 
 
 class ImportKadasterJob(object):
