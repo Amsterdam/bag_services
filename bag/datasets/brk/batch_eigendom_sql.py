@@ -282,8 +282,8 @@ CREATE TABLE brk_erfpacht AS
 SELECT zr_ei.kadastraal_object_id
 	 , CASE WHEN ks.rechtsvorm_id='10'
 	            AND ((UPPER(ks.statutaire_naam) LIKE '%AMSTERDAM%')
-                    OR (UPPER(ks.statutaire_naam) LIKE '%STADSDEEL%')) THEN 'Amsterdam'
-            ELSE 'Overige'
+                    OR (UPPER(ks.statutaire_naam) LIKE '%STADSDEEL%')) THEN 'Amsterdam'::varchar(24)
+            ELSE 'Overige'::varchar(24)
        END AS uitgegeven_door
 FROM brk_zakelijkrecht zr_ei
 JOIN brk_kadastraalsubject ks on zr_ei.kadastraal_subject_id = ks.id
