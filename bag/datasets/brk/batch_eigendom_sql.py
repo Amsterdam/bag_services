@@ -273,4 +273,24 @@ WHERE id IN (
           HAVING count(a.aard_zakelijk_recht_id) = 1 ))
   AND appartementeigenaar = false::boolean
     """,
+    "DROP TABLE IF EXISTS brk_erfpacht",
+    # Create table brk_erfpacht by finding two zakelijkrecht relations for the same kadastraal object
+    #  where one is Erfpacht (3) or Erfpacht and Opstal (13) and the other is Eigendom (2)
+    # Also store if uitgegeven_door is (part) of Amsterdam or otherwise
+    """
+CREATE TABLE brk_erfpacht AS
+SELECT zr_ei.kadastraal_object_id
+	 , CASE WHEN ks.rechtsvorm_id='10'
+	            AND ((UPPER(ks.statutaire_naam) LIKE '%AMSTERDAM%')
+                    OR (UPPER(ks.statutaire_naam) LIKE '%STADSDEEL%')) THEN 'Amsterdam'
+            ELSE 'Overige'
+       END AS uitgegeven_door
+FROM brk_zakelijkrecht zr_ei
+JOIN brk_kadastraalsubject ks on zr_ei.kadastraal_subject_id = ks.id
+JOIN brk_zakelijkrecht zr_ep on zr_ep.kadastraal_object_id = zr_ei.kadastraal_object_id
+WHERE zr_ep.aard_zakelijk_recht_id in ('3', '13')
+  AND zr_ep.aard_zakelijk_recht_akr in ('EP', 'EO')
+  AND zr_ei.aard_zakelijk_recht_id = '2'
+GROUP BY 1,2
+    """,
 ]
