@@ -222,6 +222,10 @@ class ImportGebruiksdoelenTask(batch.BasicTask):
 
         target_pk = self.vbo_bag_ids[landelijk_id]
 
+        # DP-5955 code_plus and omschrijving_plus is only valid for code 1000 or 1300
+        if not (doel[1] == '1000' or doel[1] == '1300') and (doel[3] != '' or doel[4] != ''):
+            doel[3] = doel[4] = ''
+
         return models.Gebruiksdoel(
             verblijfsobject_id=target_pk,
             code=doel[1],
