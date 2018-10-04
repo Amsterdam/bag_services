@@ -850,3 +850,12 @@ class ImportGebruiksdoelenTaskTest(TaskTestCase):
         # check that several Gebruiksdoelen were imported:
         g = list(models.Gebruiksdoel.objects.all())
         self.assertTrue(g)
+        g_special = models.Gebruiksdoel.objects.filter(verblijfsobject_id='03630000716895')[0]
+        self.assertEqual(g_special.code, '1100')
+        self.assertEqual(g_special.code_plus, '')
+        self.assertEqual(g_special.omschrijving_plus, '')
+        g_special_plus = models.Gebruiksdoel.objects.filter(verblijfsobject_id='03630000712887')[0]
+        self.assertEqual(g_special_plus.code, '1000')
+        self.assertEqual(g_special_plus.code_plus, '1010')
+        self.assertEqual(g_special_plus.omschrijving_plus, 'BEST-woning')
+
