@@ -78,7 +78,6 @@
 0363010000719881;1000;woonfunctie;1010;BEST-woning
 0363010000713762;1000;woonfunctie;1010;BEST-woning
 0363010000716903;1000;woonfunctie;1010;BEST-woning
-0363010000716895;0800;winkelfunctie;nan;nan
 0363010000714423;1000;woonfunctie;1010;BEST-woning
 0363010000713462;1000;woonfunctie;1010;BEST-woning
 0363010000716845;1000;woonfunctie;1010;BEST-woning
@@ -108,9 +107,8 @@
 0363010000837044;1000;woonfunctie;1011;BEST-bejaarden/aanleunwoning
 0363010000644015;1100;bijeenkomstfunctie;nan;nan
 0363010000713462;1100;bijeenkomstfunctie;nan;nan
-0363010000716895;1000;woonfunctie;1010;BEST-woning
 0363010000722665;1000;woonfunctie;1010;BEST-woning
 0363010000712887;1000;woonfunctie;1010;BEST-woning
 0363010000626750;1000;woonfunctie;1010;BEST-woning
 0363010000712887;1000;woonfunctie;1010;BEST-woning
-0363010000716895;0800;winkelfunctie;nan;nan
+0363010000716895;1100;bijeenkomstfunctie;1020;gemengde panden
