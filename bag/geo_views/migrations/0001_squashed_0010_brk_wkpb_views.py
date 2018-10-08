@@ -155,6 +155,7 @@ WHERE
 SELECT
   opr.landelijk_id                                      AS id,
   opr.naam                                              AS display,
+  opr.code                                              AS code,
   CASE opr.type
     WHEN '01' THEN 'Weg'
         WHEN '02' THEN 'Water'
