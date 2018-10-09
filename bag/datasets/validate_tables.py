@@ -66,7 +66,7 @@ def check_table_targets():
         (19     ,  2000, "bag_financieringswijze"),
         (22     ,  2000, "bag_gebiedsgerichtwerken"),
         (320    ,  2000, "bag_gebruik"),
-        (506720 ,  8000, "bag_gebruiksdoel"),
+        (516720 ,  8000, "bag_gebruiksdoel"),
         (1      ,  2000, "bag_gemeente"),
         (27     ,  2000, "bag_grootstedelijkgebied"),
         (6      ,  2000, "bag_ligging"),
