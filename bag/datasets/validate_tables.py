@@ -7,6 +7,66 @@ from django.db import connection
 
 LOG = logging.getLogger(__name__)
 
+TABLE_TARGETS = [
+    # counts from 15-10-2018
+    (8597       ,"bag_bouwblok"),
+    (100        ,"bag_bron"),
+    (481        ,"bag_buurt"),
+    (99         ,"bag_buurtcombinatie"),
+    (2          ,"bag_eigendomsverhouding"),
+    (19         ,"bag_financieringswijze"),
+    (22         ,"bag_gebiedsgerichtwerken"),
+    (320        ,"bag_gebruik"),
+    (515178     ,"bag_gebruiksdoel"),
+    (1          ,"bag_gemeente"),
+    (36         ,"bag_grootstedelijkgebied"),
+    (515370     ,"bag_indicatieadresseerbaarobject"),
+    (6          ,"bag_ligging"),
+    (2913       ,"bag_ligplaats"),
+    (5          ,"bag_locatieingang"),
+    (517683     ,"bag_nummeraanduiding"),
+    (6191       ,"bag_openbareruimte"),
+    (184345     ,"bag_pand"),
+    (44         ,"bag_redenafvoer"),
+    (44         ,"bag_redenopvoer"),
+    (8          ,"bag_stadsdeel"),
+    (323        ,"bag_standplaats"),
+    (43         ,"bag_status"),
+    (9          ,"bag_toegang"),
+    (2          ,"bag_unesco"),
+    (512154     ,"bag_verblijfsobject"),
+    (513315     ,"bag_verblijfsobjectpandrelatie"),
+    (1          ,"bag_woonplaats"),
+    (4          ,"brk_aanduidingnaam"),
+    (386955     ,"brk_aantekening"),
+    (31         ,"brk_aardaantekening"),
+    (12         ,"brk_aardzakelijkrecht"),
+    (225800     ,"brk_adres"),
+    (971430     ,"brk_aperceelgperceelrelatie"),
+    (6          ,"brk_appartementsrechtssplitstype"),
+    (8          ,"brk_beschikkingsbevoegdheid"),
+    (65         ,"brk_cultuurcodebebouwd"),
+    (23         ,"brk_cultuurcodeonbebouwd"),
+    (19         ,"brk_gemeente"),
+    (3          ,"brk_geslacht"),
+    (587902     ,"brk_kadastraalobject"),
+    (521751     ,"brk_kadastraalobjectverblijfsobjectrelatie"),
+    (342886     ,"brk_kadastraalsubject"),
+    (65         ,"brk_kadastralegemeente"),
+    (170        ,"brk_kadastralesectie"),
+    (253        ,"brk_land"),
+    (20         ,"brk_rechtsvorm"),
+    (2          ,"brk_soortgrootte"),
+    (921260     ,"brk_zakelijkrecht"),
+    (872015     ,"brk_zakelijkrechtverblijfsobjectrelatie"),
+    (5184       ,"wkpb_beperking"),
+    (20         ,"wkpb_beperkingcode"),
+    (314047     ,"wkpb_beperkingkadastraalobject"),
+    (338702     ,"wkpb_beperkingverblijfsobject"),
+    (6          ,"wkpb_broncode"),
+    (7354       ,"wkpb_brondocument"),
+]
+
 
 def sql_count(table):
 
@@ -28,17 +88,19 @@ def check_table_counts(table_data: list):
     """
     error = False
     all_msg = ("Table count errors \n"
-               "Count,    Target,    Table,           Status \n")
+               "Count ,   Target,  Deviation-Allowed,      Table,           Status \n")
 
-    for target, deviation, table in table_data:
+    for target, table in table_data:
         count = sql_count(table)
-        if abs(count - target) > deviation or count == 0:
+        delta = abs(count - target)
+        deviation = int(0.05 * target)
+        if delta > deviation or count == 0:
             status = '<FAIL>'
             error = True
         else:
             status = '< OK >'
 
-        msg = f"{count:>6} ~= {target:<6} {table:<42} {status} \n"
+        msg = f"{count:>6} ~= {target:<11} {delta:>6}-{deviation:<6} {table:<42} {status} \n"
         all_msg += msg
 
     if error:
@@ -54,65 +116,5 @@ def check_table_targets():
     """
     LOG.debug('Validating table counts..')
 
-    # Count  table
-    tables_targets = [
-        # counts from 15-01-2018
-        # counts, allowed deviation, table
-        (8597   ,  2000, "bag_bouwblok"),
-        (100    ,  2000, "bag_bron"),
-        (481    ,  2000, "bag_buurt"),
-        (99     ,  2000, "bag_buurtcombinatie"),
-        (2      ,  2000, "bag_eigendomsverhouding"),
-        (19     ,  2000, "bag_financieringswijze"),
-        (22     ,  2000, "bag_gebiedsgerichtwerken"),
-        (320    ,  2000, "bag_gebruik"),
-        (516720 ,  8000, "bag_gebruiksdoel"),
-        (1      ,  2000, "bag_gemeente"),
-        (27     ,  2000, "bag_grootstedelijkgebied"),
-        (6      ,  2000, "bag_ligging"),
-        (2921   ,  2000, "bag_ligplaats"),
-        (5      ,  2000, "bag_locatieingang"),
-        (519463 ,  8000, "bag_nummeraanduiding"),
-        (6102   ,  2000, "bag_openbareruimte"),
-        (183308 ,  2000, "bag_pand"),
-        (44     ,  2000, "bag_redenafvoer"),
-        (44     ,  2000, "bag_redenopvoer"),
-        (8      ,  2000, "bag_stadsdeel"),
-        (321    ,  2000, "bag_standplaats"),
-        (43     ,  2000, "bag_status"),
-        (9      ,  2000, "bag_toegang"),
-        (2      ,  2000, "bag_unesco"),
-        (513903 ,  9000, "bag_verblijfsobject"),
-        (505141 ,  9000, "bag_verblijfsobjectpandrelatie"),
-        (1      ,  2000, "bag_woonplaats"),
-        (4      ,  2000, "brk_aanduidingnaam"),
-        (400968 ,  40000, "brk_aantekening"),
-        (32     ,  2000, "brk_aardaantekening"),
-        (12     ,  2000, "brk_aardzakelijkrecht"),
-        (224420 ,  5000, "brk_adres"),
-        (967779 ,  9000, "brk_aperceelgperceelrelatie"),
-        (6      ,  2000, "brk_appartementsrechtssplitstype"),
-        (7      ,  2000, "brk_beschikkingsbevoegdheid"),
-        (64     ,  2000, "brk_cultuurcodebebouwd"),
-        (23     ,  2000, "brk_cultuurcodeonbebouwd"),
-        (19     ,  2000, "brk_gemeente"),
-        (3      ,  2000, "brk_geslacht"),
-        (580221 ,  9000, "brk_kadastraalobject"),
-        (518644 ,  9000, "brk_kadastraalobjectverblijfsobjectrelatie"),
-        (339324 ,  9000, "brk_kadastraalsubject"),
-        (66     ,  2000, "brk_kadastralegemeente"),
-        (177    ,  2000, "brk_kadastralesectie"),
-        (252    ,  2000, "brk_land"),
-        (21     ,  2000, "brk_rechtsvorm"),
-        (2      ,  2000, "brk_soortgrootte"),
-        (912675 ,  9000, "brk_zakelijkrecht"),
-        (877108 ,  9000, "brk_zakelijkrechtverblijfsobjectrelatie"),
-        (4969   ,  2000, "wkpb_beperking"),
-        (20     ,  2000, "wkpb_beperkingcode"),
-        (313870 ,  5000, "wkpb_beperkingkadastraalobject"),
-        (334844 ,  5000, "wkpb_beperkingverblijfsobject"),
-        (6      ,  2000, "wkpb_broncode"),
-        (7041   ,  2000, "wkpb_brondocument"),
-    ]
-
-    check_table_counts(tables_targets)
+    # Count,   table
+    check_table_counts(TABLE_TARGETS)
