@@ -13,7 +13,7 @@ from datasets.generic import rest
 from django_filters.rest_framework import filters
 from django_filters.rest_framework import FilterSet
 
-import authorization_levels
+from bag import authorization_levels
 
 import logging
 

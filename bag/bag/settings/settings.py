@@ -4,6 +4,7 @@ import sys
 from bag.settings.settings_common import DEBUG
 from bag.settings.settings_common import BASE_DIR
 from bag.settings.settings_common import *  # noqa F403
+from bag.authorization_levels import all_options
 
 
 from bag.settings.settings_databases import LocationKey,\
@@ -133,6 +134,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 
+
+swag_path = 'https://acc.api.data.amsterdam.nl/bag/docs'
+
+if DEBUG:
+    swag_path = '127.0.0.1:8000/bag/docs'
+
+
 SWAGGER_SETTINGS = {
     'exclude_namespaces': [],
     'api_version': '0.1',
@@ -149,11 +157,12 @@ SWAGGER_SETTINGS = {
     'is_authenticated': False,
     'is_superuser': False,
 
+    'unauthenticated_user': 'django.contrib.auth.models.AnonymousUser',
     'permission_denied_handler': None,
     'resource_access_handler': None,
 
     'protocol': 'https' if not DEBUG else '',
-    'base_path': 'acc.api.data.amsterdam.nl/bag/docs' if DEBUG else '127.0.0.1:8000/bag/docs',  # noqa
+    'base_path': swag_path,
 
     'info': {
         'contact': 'atlas.basisinformatie@amsterdam.nl',
@@ -165,7 +174,18 @@ SWAGGER_SETTINGS = {
     },
 
     'doc_expansion': 'list',
+
+    'SECURITY_DEFINITIONS': {
+        'oauth2': {
+            'type': 'oauth2',
+            'authorizationUrl':
+                DATAPUNT_API_URL + "oauth2/authorize",
+            'flow': 'implicit',
+            'scopes': all_options
+        }
+    }
 }
+
 
 OBJECTSTORE = {
     'auth_version': '2.0',

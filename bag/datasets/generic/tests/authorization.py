@@ -3,7 +3,7 @@ import jwt
 
 from authorization_django.config import settings as middleware_settings
 
-import authorization_levels
+from bag import authorization_levels
 
 
 class AuthorizationSetup(object):
@@ -47,11 +47,12 @@ class AuthorizationSetup(object):
         now = int(time.time())
 
         token_default = jwt.encode({
-            'scopes':[],
+            'scopes': [],
             'iat': now, 'exp': now + 600}, key.key, algorithm=key.alg, headers={'kid': kid})
         token_employee_plus = jwt.encode({
-            'scopes':[authorization_levels.SCOPE_BRK_RSN, authorization_levels.SCOPE_BRK_RS,
-                      authorization_levels.SCOPE_BRK_RO, authorization_levels.SCOPE_WKPB_RBDU],
+            'scopes': [
+                authorization_levels.SCOPE_BRK_RSN, authorization_levels.SCOPE_BRK_RS,
+                authorization_levels.SCOPE_BRK_RO, authorization_levels.SCOPE_WKPB_RBDU],
             'iat': now, 'exp': now + 600}, key.key, algorithm=key.alg, headers={'kid': kid})
         token_scope_brk_rs = jwt.encode({
             'scopes': [authorization_levels.SCOPE_BRK_RS],
@@ -72,4 +73,3 @@ class AuthorizationSetup(object):
         self.token_scope_brk_rsn = str(token_scope_brk_rsn, 'utf-8')
         self.token_scope_brk_ro = str(token_scope_brk_ro, 'utf-8')
         self.token_scope_wkpd_rdbu = str(token_scope_wkpd_rdbu, 'utf-8')
-
