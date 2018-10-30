@@ -707,7 +707,8 @@ class BuurtcombinatieViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
-    filter_fields = ('stadsdeel', )
+    filter_fields = (
+        'stadsdeel', 'vollcode', 'code', 'naam', 'buurten')
 
 
 class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
