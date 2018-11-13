@@ -539,6 +539,7 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
             'type',
             'naam',
+            'omschrijving',
             'naam_17_posities',
             'naam_24_posities',
             'straat_nummer',

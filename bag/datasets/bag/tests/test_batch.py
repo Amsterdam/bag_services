@@ -10,6 +10,7 @@ from batch.test import TaskTestCase
 
 BAG = 'diva/bag'
 BAG_WKT = 'diva/bag_wkt'
+OPR_BESCHRIJVING = 'diva/bag_openbareruimte_beschrijving'
 GEBIEDEN = 'diva/gebieden'
 GEBIEDEN_SHP = 'diva/gebieden_shp'
 
@@ -408,14 +409,16 @@ class ImportOprTest(TaskTestCase):
         factories.WoonplaatsFactory.create(id='03630022796658')
 
     def task(self):
-        return batch.ImportOprTask(BAG, BAG_WKT)
+        return batch.ImportOpenbareRuimteTask(BAG, BAG_WKT, OPR_BESCHRIJVING)
 
     def test_import(self):
         self.run_task()
 
         o = models.OpenbareRuimte.objects.get(pk='03630000002701')
         self.assertEqual(o.id, '03630000002701')
-        self.assertEqual(o.landelijk_id, '0363300000002701')
+        self.assertEqual(o.landelijk_id, '0363300000000879')
+        self.assertEqual(
+            o.omschrijving, 'Dark Code Lords Preeker en Bert.')
         self.assertEqual(o.type, models.OpenbareRuimte.TYPE_WEG)
         self.assertEqual(o.naam, 'Amstel')
         self.assertEqual(o.code, '02186')

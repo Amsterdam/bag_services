@@ -461,7 +461,6 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def after(self):
         self.buurten.clear()
         self.update_metadata_uva2(self.uva_path, 'BBK')
-
         validate_geometry(models.Bouwblok)
         log.info('%s Bouwblokken imported', models.Bouwblok.objects.count())
 
@@ -483,10 +482,12 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         pk = r['sleutelVerzendend']
         buurt_id = r['BBKBRT/BRT/sleutelVerzendend'] or None
+
         if buurt_id not in self.buurten:
             log.warning("""
-            Bouwblok {} references non-existing buurt {}; ignoring
+            Bouwblok {} references non-existing buurt {}; fixing later.
             """.format(pk, buurt_id))
+
             buurt_id = None
 
         code = r['Bouwbloknummer']
@@ -569,17 +570,22 @@ class ImportWplTask(batch.BasicTask):
         )
 
 
-class ImportOprTask(batch.BasicTask):
+class ImportOpenbareRuimteTask(batch.BasicTask):
     name = "Import OPR - Openbare Ruimtes"
 
-    def __init__(self, path, wkt_path):
+    def __init__(self, path, wkt_path, opr_beschrijving_path):
         self.path = path
         self.wkt_path = wkt_path
+        self.opr_beschrijving_path = opr_beschrijving_path
         self.bronnen = set()
         self.statussen = set()
         self.woonplaatsen = set()
         self.landelijke_ids = dict()
         self.openbare_ruimtes = dict()
+        self.omschijvingen = set()
+
+    def store_opr_omschijving(self, row):
+        return row['Openbareruimtenummer'], row['Omschrijving']
 
     def before(self):
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
@@ -587,6 +593,15 @@ class ImportOprTask(batch.BasicTask):
             models.Status.objects.values_list("pk", flat=True))
         self.woonplaatsen = set(
             models.Woonplaats.objects.values_list("pk", flat=True))
+
+        source = os.path.join(self.opr_beschrijving_path, 'OPR_beschrijving.csv')
+
+        self.omschrijvingen = dict(
+            uva2.process_csv(
+                self.opr_beschrijving_path,
+                'OPR_beschrijving', self.store_opr_omschijving,
+                quotechar='$', source=source)
+        )
 
     def after(self):
         self.bronnen.clear()
@@ -598,6 +613,7 @@ class ImportOprTask(batch.BasicTask):
     def process(self):
 
         self.landelijke_ids = uva2.read_landelijk_id_mapping(self.path, "OPR")
+
         self.openbare_ruimtes = dict(
             uva2.process_uva2(self.path, "OPR", self.process_row))
 
@@ -647,12 +663,17 @@ class ImportOprTask(batch.BasicTask):
             """.format(pk, woonplaats_id))
             return None
 
+        omschrijving = None
+        if landelijk_id:
+            omschrijving = self.omschrijvingen.get(landelijk_id, None)
+
         return pk, models.OpenbareRuimte(
             pk=pk,
             landelijk_id=landelijk_id,
             type=r['TypeOpenbareRuimteDomein'],
             naam=r['NaamOpenbareRuimte'],
             code=r['Straatcode'],
+            omschrijving=omschrijving,
             document_nummer=r['DocumentnummerMutatieOpenbareRuimte'],
             document_mutatie=uva2.uva_datum(
                 r['DocumentdatumMutatieOpenbareRuimte']),
@@ -1921,13 +1942,15 @@ SET _geom = lig.geometrie
 FROM bag_ligplaats lig
 WHERE num.ligplaats_id = lig.id
         """
-            log.debug(update_geom_num_standplaats_sql)
-            c.execute(update_geom_num_standplaats_sql)
+            log.debug(update_geom_num_ligplaats_sql)
+            c.execute(update_geom_num_ligplaats_sql)
 
 
 class UpdateGebiedenAttributenTask(batch.BasicTask):
     """
     Denormalize gebieden attributen op VBO / Nummeraanduidingen
+
+    Add missing buurten aan bouwblokken.
     """
 
     name = "Denormalize gebiedsgericht werken data"
@@ -2021,6 +2044,7 @@ class ImportBagJob(object):
         if not os.path.exists(diva):
             raise ValueError("DIVA_DIR not found: {}".format(diva))
         self.bag_path = os.path.join(diva, 'bag')
+        self.opr_beschijving_path = os.path.join(diva, 'bag_openbareruimte_beschrijving')
         self.bag_wkt_path = os.path.join(diva, 'bag_wkt')
         self.gebieden_path = os.path.join(diva, 'gebieden')
         self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
@@ -2055,7 +2079,11 @@ class ImportBagJob(object):
             ImportBuurtTask(self.gebieden_path, self.gebieden_shp_path),
             # depends on buurten.
             ImportBouwblokTask(self.gebieden_path, self.gebieden_shp_path),
-            ImportOprTask(self.bag_path, self.bag_wkt_path),
+
+            ImportOpenbareRuimteTask(
+                self.bag_path, self.bag_wkt_path,
+                self.opr_beschijving_path
+            ),
 
             ImportLigTask(self.bag_path, self.bag_wkt_path),
             ImportStandplaatsenTask(self.bag_path, self.bag_wkt_path),
