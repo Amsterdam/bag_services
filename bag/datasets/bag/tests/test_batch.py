@@ -240,8 +240,14 @@ class ImportBuurtTest(TaskTestCase):
 
 
 class ImportBouwblokTest(TaskTestCase):
-    def setUp(self):
-        factories.BuurtFactory.create(pk='03630000000537')
+
+    def requires(self):
+        return [
+            batch.ImportGmeTask(GEBIEDEN),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportBuurtcombinatieTask(GEBIEDEN_SHP),
+            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP),
+        ]
 
     def task(self):
         return batch.ImportBouwblokTask(GEBIEDEN, GEBIEDEN_SHP)
@@ -250,7 +256,7 @@ class ImportBouwblokTest(TaskTestCase):
         self.run_task()
 
         imported = models.Bouwblok.objects.all()
-        self.assertEqual(len(imported), 96)
+        self.assertEqual(len(imported), 99)
 
         b = models.Bouwblok.objects.get(pk='03630012100449')
 
@@ -260,6 +266,15 @@ class ImportBouwblokTest(TaskTestCase):
         self.assertIsNotNone(b.geometrie)
         self.assertEqual(b.begin_geldigheid, datetime.date(2006, 6, 12))
         self.assertIsNone(b.einde_geldigheid)
+
+        b9 = models.Bouwblok.objects.get(pk='03630012101999')
+        b8 = models.Bouwblok.objects.get(pk='03630012101888')
+        b7 = models.Bouwblok.objects.get(pk='03630012101777')
+
+        # test the auto fixing of buurten
+        self.assertEqual(b9.buurt.code, '92a')
+        self.assertEqual(b8.buurt.code, '92c')
+        self.assertEqual(b7.buurt.code, '93f')
 
 
 # gebieden shp
