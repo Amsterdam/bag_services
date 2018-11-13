@@ -465,6 +465,7 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         log.info('%s Bouwblokken imported', models.Bouwblok.objects.count())
 
     def process(self):
+        # loads the csv
         for bb in uva2.process_uva2(self.uva_path, "BBK", self.process_row):
             bb.save()
 
@@ -515,6 +516,22 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             return
 
         bouwblok.geometrie = geo.get_multipoly(feat.geom.wkt)
+
+        # add buurt to bouwblok if missing.
+        # now dependent  objects like panden have
+        # 'gebiedsinformation'
+        if bouwblok.buurt is None:
+
+            buurt = models.Buurt.objects.filter(
+                geometrie__contains=bouwblok.geometrie)
+
+            if buurt.count():
+                buurt = buurt.first()
+                bouwblok.buurt = buurt
+                log.warning(
+                    "Bouwblok %s connected to buurt %s;.",
+                    bouwblok.id, buurt.naam)
+
         bouwblok.save()
 
 
