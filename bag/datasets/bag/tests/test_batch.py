@@ -418,7 +418,7 @@ class ImportOprTest(TaskTestCase):
         self.assertEqual(o.id, '03630000002701')
         self.assertEqual(o.landelijk_id, '0363300000000879')
         self.assertEqual(
-            o.omschrijving, 'Dark Code Lords Preeker en Bert.')
+            o.omschrijving, 'Lord Edward Benjamin Britten (1913-1976), Engelse componist en pianist.')
         self.assertEqual(o.type, models.OpenbareRuimte.TYPE_WEG)
         self.assertEqual(o.naam, 'Amstel')
         self.assertEqual(o.code, '02186')
