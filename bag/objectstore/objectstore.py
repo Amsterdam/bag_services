@@ -170,6 +170,7 @@ path_mapping = {
     'BAG/BAG_LandelijkeSleutel/ASCII': 'bag',
     'WKPB/beperkingen/ASCII': 'beperkingen',
     'BAG/BAG_Authentiek/ASCII': 'bag',
+    'bestaatnietinzip': 'bag_openbareruimte_beschrijving',
 }
 
 
@@ -215,6 +216,7 @@ exception_list = [
     ('gebieden_shp/GBD_gebiedsgerichtwerken.shp', ''),
     ('gebieden_shp/GBD_grootstedelijke_projecten.shp', ''),
     ('gebieden_shp/GBD_unesco.shp', ''),
+    ('bag_openbareruimte_beschrijving/OPR_beschrijving.csv', ''),
 ]
 
 

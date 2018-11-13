@@ -321,6 +321,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         on_delete=models.CASCADE
     )
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
+    omschrijving = models.TextField(null=True)
 
     objects = geo.Manager()
 

@@ -55,6 +55,7 @@ def _context_reader(
 
     with open(source, encoding='cp1252') as f:
         rows = csv.reader(f, delimiter=';', quotechar=quotechar, quoting=quoting)
+
         for i in range(skip):
             next(rows)
 
@@ -158,6 +159,7 @@ def process_uva2(path, file_code, process_row_callback):
     :param process_row_callback: function taking one parameter that is called on every row
     :return: an iterable over the results of process_row_callback
     """
+
     source = resolve_file(path, file_code)
 
     cb = logging_callback(source, process_row_callback)
@@ -169,17 +171,23 @@ def process_uva2(path, file_code, process_row_callback):
                 yield result
 
 
-def process_csv(path, file_code, process_row_callback, with_header=True):
-    source = resolve_file(path, file_code, extension='csv')
+def process_csv(
+        path, file_code, process_row_callback,
+        with_header=True, quotechar='"', source=None):
+
+    if not source:
+        source = resolve_file(path, file_code, extension='csv')
 
     cb = logging_callback(source, process_row_callback)
 
     with _context_reader(
-            source, skip=0, quotechar='"',
+            source, skip=0, quotechar=quotechar,
             quoting=csv.QUOTE_MINIMAL, with_header=with_header) as rows:
+
         for row in rows:
             result = cb(row)
             if result:
+
                 yield result
 
 
