@@ -8,7 +8,7 @@ Basis Administratie Kadaster
 
 This repository contains Django application that serves the BAG (buildings and
 addresses), BBGA (areas), BRK (land register) and WKPB (extra municipal
-restrictiond on real estate use) REST APIs on
+restrictions on real estate use) REST APIs on
 [https://api.data.amsterdam.nl](https://api.data.amsterdam.nl).
 These APIs are used among other things to power the City data portal website
 and maps, available on [https://data.amsterdam.nl](https://data.amsterdam.nl)
@@ -31,18 +31,22 @@ Requirements
 Developing
 ----------
 
-Use `docker-compose` to start a local database and Elastic Search service. Use
+Use `docker-compose` to start a local database and Elasticsearch service. Use
 `sudo` if you're running on Linux.
 
 	docker-compose up -d --build database elasticsearch
 
-Create a new virtual env, and execute the following:
+Then, create and activate a new virtual environment in the `.venv` directory:
+
+	python3 -m venv .venv
+	source .venv/bin/activate
+
+In this virtual environment, execute the following commands:
 
 	pip install -r requirements.txt
 	export DJANGO_SETTINGS_MODULE=bag.settings.settings
 	./bag/manage.py migrate
 	./bag/manage.py runserver
-
 
 The BAG API should now be available on http://localhost:8000/
 
