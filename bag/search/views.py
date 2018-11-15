@@ -60,6 +60,8 @@ _details = {
 # autocomplete_group_sizes
 _autocomplete_group_sizes = {
     'Straatnamen': 8,
+    'Kunstwerk': 8,
+    'Water': 3,
     'Adres': 8,
     'Gebieden': 5,
     'Kadastrale objecten': 8,
@@ -71,6 +73,8 @@ _autocomplete_group_order = [
     'Straatnamen',
     'Adres',
     'Gebieden',
+    'Kunstwerk',
+    'Water',
     'Kadastrale objecten',
     'Kadastrale subjecten',
     'Bouwblok'
@@ -139,7 +143,10 @@ all_query_selectors = [
 ]
 
 default_queries = {
-    'bag': [bag_qs.weg_query],
+    'bag': [
+        # bag_qs.weg_query
+        bag_qs.openbare_ruimte_query
+    ],
     'gebieden': [bag_qs.gebied_query],
 }
 
@@ -172,7 +179,7 @@ def collect_queries(query_selectors, analyzer):
     decide by using the analyzer if the
     typed in content / querystring could possibly be valid
 
-    example stoepjpe != postcode so we do not need to
+    example stoepje != postcode so we do not need to
     do a elastic search.
     """
 

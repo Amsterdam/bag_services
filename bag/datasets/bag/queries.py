@@ -187,9 +187,10 @@ def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     Maak een query voor openbare ruimtes van het type 'weg'.
     """
 
-    return _basis_openbare_ruimte_query(analyzer, must=[{
-        'term': {'subtype': 'weg'}
-    }])
+    return _basis_openbare_ruimte_query(
+        analyzer,
+        must=[{'term': {'subtype': 'weg'}}]
+    )
 
 
 def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
