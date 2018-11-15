@@ -1004,6 +1004,8 @@ class Pand(
 
     objects = geo.Manager()
 
+    cached_buurt = None
+
     class Meta:
         verbose_name = "Pand"
         verbose_name_plural = "Panden"
@@ -1013,7 +1015,21 @@ class Pand(
 
     @property
     def _buurt(self):
-        return self.bouwblok.buurt if self.bouwblok else None
+        if self.bouwblok:
+            buurt = self.bouwblok.buurt
+            if buurt:
+                return buurt
+
+        # saves about 10 queries.
+        if self.cached_buurt:
+            return self.cached_buurt
+
+        buurt = Buurt.objects.filter(
+            geometrie__contains=self.geometrie).first()
+
+        self.cached_buurt = buurt
+
+        return buurt
 
     @property
     def _buurtcombinatie(self):
