@@ -423,6 +423,8 @@ class PandenFilter(FilterSet):
             'verblijfsobjecten__landelijk_id',
             'landelijk_id',
             'bouwblok',
+            'bouwblok__buurt',
+            'bouwblok__buurt__stadsdeel',
             'locatie',
         )
 
@@ -461,21 +463,30 @@ class PandViewSet(rest.DatapuntViewSet):
 
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/)
+
+    TIP! detailed=1 if you want all fields in the list view!
     """
 
     metadata_class = ExpansionMetadata
-    queryset = models.Pand.objects.all().order_by('id')
-    queryset_detail = models.Pand.objects.select_related(
+    queryset = models.Pand.objects.all().order_by('id').select_related(
         'status',
         'bouwblok',
         'bouwblok__buurt',
         'bouwblok__buurt__stadsdeel',
+        'bouwblok__buurt__buurtcombinatie',
         'bouwblok__buurt__stadsdeel__gemeente',
+    ).prefetch_related(
+        'verblijfsobjecten'
     )
+
+    queryset_detail = queryset
+
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
 
     filter_class = PandenFilter
+
+    detailed_keyword = 'detailed'
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -485,6 +496,12 @@ class PandViewSet(rest.DatapuntViewSet):
             obj = get_object_or_404(models.Pand, pk=pk)
 
         return obj
+
+    def list(self, request, *args, **kwargs):
+        # Checking if a detailed response is required
+        if request.GET.get(self.detailed_keyword, False):
+            self.serializer_class = self.serializer_detail_class
+        return super().list(request, *args, **kwargs)
 
 
 class OpenbareRuimteFilter(FilterSet):
