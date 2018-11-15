@@ -60,10 +60,9 @@ _details = {
 # autocomplete_group_sizes
 _autocomplete_group_sizes = {
     'Straatnamen': 8,
-    'Kunstwerk': 8,
-    'Water': 3,
     'Adres': 8,
-    'Gebieden': 5,
+    'Kunstwerk': 8,
+    'Overige openbare ruimtes': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
     'Bouwblok': 5
@@ -72,9 +71,8 @@ _autocomplete_group_sizes = {
 _autocomplete_group_order = [
     'Straatnamen',
     'Adres',
-    'Gebieden',
     'Kunstwerk',
-    'Water',
+    'Overige openbare ruimtes',
     'Kadastrale objecten',
     'Kadastrale subjecten',
     'Bouwblok'
@@ -82,12 +80,12 @@ _autocomplete_group_order = [
 
 _subtype_mapping = {
     'weg': 'Straatnamen',
-    'water': 'Water',
     'kunstwerk': 'Kunstwerk',
-    'terrein': 'Gebieden',
-    'administratief gebied': 'Gebieden',
-    'spoorbaan': 'Gebieden',
-    'landschappelijk gebied': 'Gebieden',
+    'water': 'Overige openbare ruimtes',
+    'terrein': 'Overige openbare ruimtes',
+    'administratief gebied': 'Overige openbare ruimtes',
+    'spoorbaan': 'Overige openbare ruimtes',
+    'landschappelijk gebied': 'Overige openbare ruimtes',
     'verblijfsobject': 'Adres',
     'ligplaats': 'Adres',
     'standplaats': 'Adres',
