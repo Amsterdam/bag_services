@@ -74,6 +74,7 @@ _autocomplete_group_order = [
     'Adressen',
     'Kunstwerken',
     'Overige openbare ruimtes',
+    'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
     'Bouwblokken'
