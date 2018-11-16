@@ -60,37 +60,37 @@ _details = {
 # autocomplete_group_sizes
 _autocomplete_group_sizes = {
     'Straatnamen': 8,
-    'Kunstwerk': 8,
-    'Water': 3,
-    'Adres': 8,
+    'Adressen': 8,
+    'Kunstwerken': 8,
+    'Overige openbare ruimtes': 5,
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
-    'Bouwblok': 5
+    'Bouwblokken': 5
 }
 
 _autocomplete_group_order = [
     'Straatnamen',
-    'Adres',
+    'Adressen',
+    'Kunstwerken',
+    'Overige openbare ruimtes',
     'Gebieden',
-    'Kunstwerk',
-    'Water',
     'Kadastrale objecten',
     'Kadastrale subjecten',
-    'Bouwblok'
+    'Bouwblokken'
 ]
 
 _subtype_mapping = {
     'weg': 'Straatnamen',
-    'water': 'Water',
-    'kunstwerk': 'Kunstwerk',
-    'terrein': 'Gebieden',
-    'administratief gebied': 'Gebieden',
-    'spoorbaan': 'Gebieden',
-    'landschappelijk gebied': 'Gebieden',
-    'verblijfsobject': 'Adres',
-    'ligplaats': 'Adres',
-    'standplaats': 'Adres',
+    'kunstwerk': 'Kunstwerken',
+    'water': 'Overige openbare ruimtes',
+    'terrein': 'Overige openbare ruimtes',
+    'administratief gebied': 'Overige openbare ruimtes',
+    'spoorbaan': 'Overige openbare ruimtes',
+    'landschappelijk gebied': 'Overige openbare ruimtes',
+    'verblijfsobject': 'Adressen',
+    'ligplaats': 'Adressen',
+    'standplaats': 'Adressen',
     'kadastraal_object': 'Kadastrale objecten',
     'kadastraal_subject': 'Kadastrale subjecten',
     'gemeente': 'Gebieden',
@@ -103,7 +103,7 @@ _subtype_mapping = {
     'overig terrein': 'Gebieden',
     'overig gebouwd object': 'Gebieden',
     'buurt': 'Gebieden',
-    'bouwblok': 'Bouwblok',
+    'bouwblok': 'Bouwblokken',
 }
 
 
