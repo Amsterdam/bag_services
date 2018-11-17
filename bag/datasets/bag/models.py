@@ -387,6 +387,33 @@ class Gebiedsgerichtwerken(models.Model):
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
 
+class GebiedsgerichtwerkenPraktijkgebieden(models.Model):
+    """
+    model for data from shp files
+
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    id = models.CharField(max_length=100, primary_key=True)
+    naam = models.CharField(max_length=100)
+
+    date_modified = models.DateTimeField(auto_now=True)
+
+    geometrie = geo.MultiPolygonField(null=True, srid=28992)
+
+    objects = geo.Manager()
+
+    class Meta:
+        verbose_name = "Gebiedsgerichtwerken praktijkgebieden"
+        verbose_name_plural = "Gebiedsgerichtwerken praktijkgebieden"
+        ordering = ('naam',)
+
+    def __str__(self):
+        return "{}".format(self.naam)
+
+
 
 class Grootstedelijkgebied(models.Model):
     """
