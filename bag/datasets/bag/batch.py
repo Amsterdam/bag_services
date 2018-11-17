@@ -1739,6 +1739,44 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         ).save()
 
 
+class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
+    """
+    layer.fields:
+
+    ['NAAM']
+    """
+
+    name = "Import GBD Gebiedsgerichtwerken praktijkgebieden"
+
+    def __init__(self, shp_path):
+        self.shp_path = shp_path
+
+    def before(self):
+        log.debug('[TODO] Starting import ggw praktijkgebieden %s', 'before')
+
+    def after(self):
+        """
+        Validate geometry
+        """
+        validate_geometry(models.GebiedsgerichtwerkenPraktijkgebieden)
+        log.debug(
+            '%d Gebiedsgerichtwerken praktijkgebieden', models.GebiedsgerichtwerkenPraktijkgebieden.objects.count())
+
+    def process(self):
+        geo.process_shp(
+            self.shp_path, "GBD_gebiedsgerichtwerken_praktijk.shp",
+            self.process_feature)
+
+    def process_feature(self, feat):
+        naam = feat.get('NAAM')
+
+        models.GebiedsgerichtwerkenPraktijkgebieden(
+            id=naam,
+            naam=naam,
+            geometrie=geo.get_multipoly(feat.geom.wkt),
+        ).save()
+
+
 class ImportGrootstedelijkgebiedTask(batch.BasicTask):
     """
     layer.fields:
