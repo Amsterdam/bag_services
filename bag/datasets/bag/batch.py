@@ -1760,7 +1760,8 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
         self.shp_path = shp_path
 
     def before(self):
-        log.debug('[TODO] Starting import ggw praktijkgebieden %s', 'before')
+        log.debug('Starting import ggw praktijkgebieden: %s', 'delete old data')
+        models.GebiedsgerichtwerkenPraktijkgebieden.objects.all().delete()
 
     def after(self):
         """
@@ -2137,6 +2138,7 @@ class ImportBagJob(object):
 
             # stadsdelen.
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp_path),
+            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path),
             ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),
             ImportUnescoTask(self.gebieden_shp_path),
 
@@ -2246,5 +2248,20 @@ class IndexGebiedenJob(object):
             IndexStadsdeelTask(),
             IndexGrootstedelijkgebiedTask(),
             IndexGebiedsgerichtWerkenTask(),
+            IndexGebiedsgerichtwerkenPraktijkgebiedenTask(),
             IndexGemeenteTask()
+        ]
+
+class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
+    name = "Delete and Fill the ggw praktijkgebieden "
+
+    def __init__(self):
+        diva = settings.DIVA_DIR
+        if not os.path.exists(diva):
+            raise ValueError("DIVA_DIR not found: {}".format(diva))
+        self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
+
+    def tasks(self):
+        return [
+            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path)
         ]
