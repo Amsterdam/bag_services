@@ -447,6 +447,19 @@ class Gebiedsgerichtwerken(GebiedenMixin, rest.HALSerializer):
         )
 
 
+class GebiedsgerichtwerkenPraktijkgebieden(GebiedenMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    class Meta:
+        model = models.GebiedsgerichtwerkenPraktijkgebieden
+
+        fields = (
+            '_links',
+            '_display',
+            'naam',
+        )
+
+
 class Grootstedelijkgebied(GebiedenMixin, rest.HALSerializer):
     _display = rest.DisplayField()
 
@@ -961,6 +974,22 @@ class GebiedsgerichtwerkenDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
             'code',
             'stadsdeel',
             'buurten',
+            'bbox',
+            'geometrie',
+        )
+
+
+class GebiedsgerichtwerkenPraktijkgebiedenDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
+    _display = rest.DisplayField()
+
+    bbox = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.GebiedsgerichtwerkenPraktijkgebieden
+        fields = (
+            '_links',
+            '_display',
+            'naam',
             'bbox',
             'geometrie',
         )

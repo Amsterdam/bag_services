@@ -145,6 +145,18 @@ class ViewsTest(TestCase):
             row['uri'],
             '{}gebieden/gebiedsgerichtwerken/{}/'.format(URL, g.id))
 
+    def test_bag_gebiedsgerichtwerken_praktijkgebieden(self):
+        g = bag_factories.GebiedsgerichtwerkenPraktijkgebiedenFactory.create()
+        row = self.get_row('geo_bag_gebiedsgerichtwerkenpraktijkgebieden')
+        self.assertEqual(row['id'], g.id)
+        self.assertIn("geometrie", row)
+        self.assertEqual(row['naam'], g.naam)
+        self.assertEqual(row['display'], g.naam)
+        self.assertEqual(row['type'], 'gebieden/gebiedsgerichtwerkenpraktijkgebieden')
+        self.assertEqual(
+            row['uri'],
+            '{}gebieden/gebiedsgerichtwerkenpraktijkgebieden/{}/'.format(URL, g.id))
+
     def test_bag_grootstedelijkgebied(self):
         gg = bag_factories.GrootstedelijkGebiedFactory.create()
         row = self.get_row('geo_bag_grootstedelijkgebied')

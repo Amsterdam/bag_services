@@ -750,6 +750,25 @@ class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     filter_fields = ('stadsdeel__id', 'stadsdeel')
 
 
+class GebiedsgerichtwerkenPraktijkgebiedenViewSet(rest.DatapuntViewSet):
+    """
+    Gebiedsgerichtwerken praktijkgebieden
+
+    Gebiedsgericht werken praktijkgebieden is een manier van werken om samenwerken in
+    de stad te verbeteren. De samenwerking betreft
+    gemeente, bewoners, ondernemers, (lokale) partners
+    en maatschappelijke organisaties.
+
+    [Stelselpedia]
+    (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/gebiedsgericht/)
+    """
+
+    metadata_class = ExpansionMetadata
+    queryset = models.GebiedsgerichtwerkenPraktijkgebieden.objects.all().order_by('naam')
+    serializer_detail_class = serializers.GebiedsgerichtwerkenPraktijkgebiedenDetail
+    serializer_class = serializers.GebiedsgerichtwerkenPraktijkgebieden
+
+
 class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
     """
     Grootstedelijkgebied

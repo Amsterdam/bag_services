@@ -387,6 +387,7 @@ class Gebiedsgerichtwerken(models.Model):
     def __str__(self):
         return "{} ({})".format(self.naam, self.code)
 
+
 class GebiedsgerichtwerkenPraktijkgebieden(models.Model):
     """
     model for data from shp files
