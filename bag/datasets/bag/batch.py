@@ -523,7 +523,7 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         if bouwblok.buurt is None:
 
             buurt = models.Buurt.objects.filter(
-                geometrie__contains=bouwblok.geometrie)
+                geometrie__dwithin=(bouwblok.geometrie, 0))
 
             if buurt.count():
                 buurt = buurt.first()

@@ -1025,7 +1025,7 @@ class Pand(
             return self.cached_buurt
 
         buurt = Buurt.objects.filter(
-            geometrie__contains=self.geometrie).first()
+            geometrie__dwithin=(self.geometrie, 0)).first()
 
         self.cached_buurt = buurt
 
