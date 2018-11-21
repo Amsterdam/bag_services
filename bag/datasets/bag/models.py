@@ -397,8 +397,7 @@ class GebiedsgerichtwerkenPraktijkgebieden(models.Model):
     ['NAAM']
     """
 
-    id = models.CharField(max_length=100, primary_key=True)
-    naam = models.CharField(max_length=100)
+    naam = models.CharField(max_length=100, unique=True)
 
     date_modified = models.DateTimeField(auto_now=True)
 

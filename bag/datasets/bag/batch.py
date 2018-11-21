@@ -1780,7 +1780,6 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
         naam = feat.get('NAAM')
 
         models.GebiedsgerichtwerkenPraktijkgebieden(
-            id=naam,
             naam=naam,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         ).save()
