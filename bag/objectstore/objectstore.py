@@ -214,6 +214,7 @@ exception_list = [
     ('bag_geometrie/BAG_OPENBARERUIMTE_GEOMETRIE.dat',
      'bag_wkt/BAG_OPENBARERUIMTE_GEOMETRIE.dat'),
     ('gebieden_shp/GBD_gebiedsgerichtwerken.shp', ''),
+    ('gebieden_shp/GBD_gebiedsgerichtwerken_praktijk.shp', ''),
     ('gebieden_shp/GBD_grootstedelijke_projecten.shp', ''),
     ('gebieden_shp/GBD_unesco.shp', ''),
     ('bag_openbareruimte_beschrijving/OPR_beschrijving.csv', ''),
