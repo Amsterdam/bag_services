@@ -256,5 +256,4 @@ class GebiedsgerichtwerkenPraktijkgebiedenFactory(factory.DjangoModelFactory):
         model = models.GebiedsgerichtwerkenPraktijkgebieden
         django_get_or_create = ('naam',)
 
-    id = fuzzy.FuzzyText(length=100)
     naam = fuzzy.FuzzyText(length=100)
