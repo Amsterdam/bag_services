@@ -321,6 +321,24 @@ class ImportGebiedsgerichtwerkenTest(TaskTestCase):
         self.assertEqual(b.stadsdeel.id, '03630011872037')
 
 
+class ImportGebiedsgerichtwerkenPraktijkgebiedenTest(TaskTestCase):
+    def requires(self):
+        return []
+
+    def task(self):
+        return batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP)
+
+    def test_import(self):
+        self.run_task()
+
+        imported = models.GebiedsgerichtwerkenPraktijkgebieden.objects.all()
+        self.assertEqual(len(imported), 25)
+
+        b = models.GebiedsgerichtwerkenPraktijkgebieden.objects.get(naam='Centrum-Oost')
+
+        self.assertIsInstance(b, models.GebiedsgerichtwerkenPraktijkgebieden)
+
+
 class ImportGrootstedelijkgebiedTest(TaskTestCase):
     def task(self):
         return batch.ImportGrootstedelijkgebiedTask(GEBIEDEN_SHP)
@@ -778,7 +796,8 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
             batch.ImportVboTask(BAG),
             batch.ImportStandplaatsenTask(BAG, BAG_WKT),
             batch.ImportLigTask(BAG, BAG_WKT),
-            batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP)
+            batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP),
+            batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP)
         ]
 
     def task(self):

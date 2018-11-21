@@ -249,3 +249,11 @@ class GebiedsgerichtwerkenFactory(factory.DjangoModelFactory):
     naam = fuzzy.FuzzyText(length=50)
     code = fuzzy.FuzzyText(length=4)
     stadsdeel = factory.SubFactory(StadsdeelFactory)
+
+
+class GebiedsgerichtwerkenPraktijkgebiedenFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.GebiedsgerichtwerkenPraktijkgebieden
+        django_get_or_create = ('naam',)
+
+    naam = fuzzy.FuzzyText(length=100)

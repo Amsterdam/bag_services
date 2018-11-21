@@ -433,6 +433,19 @@ def from_gebiedsgerichtwerken(gg: models.Gebiedsgerichtwerken):
     return d
 
 
+def from_gebiedsgerichtwerken_prijktijkgebieden(gg: models.GebiedsgerichtwerkenPraktijkgebieden):
+    d = Gebied(_id='gebiedsgericht_praktijk{}'.format(gg.id))
+    d.subtype = 'gebiedsgerichtwerken_praktijk'
+    d.type = 'gebied'
+
+    d.subtype_id = gg.id
+    d.naam = gg.naam
+    d._display = '{} ({})'.format(gg.naam, 'gebiedsgericht werken praktijk gebied')
+    d.centroid = get_centroid(gg.geometrie, 'wgs84')
+    d.order = 4
+    return d
+
+
 def from_stadsdeel(sd: models.Stadsdeel):
     d = Gebied(_id='stadsdeel{}'.format(sd.id))
     d.subtype = 'stadsdeel'
