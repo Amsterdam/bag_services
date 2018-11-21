@@ -56,7 +56,7 @@ TABLE_TARGETS = [
     (170       ,0 ,"brk_kadastralesectie"),
     (253       ,0 ,"brk_land"),
     (20        ,0 ,"brk_rechtsvorm"),
-    (2         ,0 ,"brk_soortgrootte"),
+    (3         ,0 ,"brk_soortgrootte"),
     (921260    ,0 ,"brk_zakelijkrecht"),
     (872015    ,0 ,"brk_zakelijkrechtverblijfsobjectrelatie"),
     (5184      ,0 ,"wkpb_beperking"),
