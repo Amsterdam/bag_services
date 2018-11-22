@@ -1535,14 +1535,6 @@ class IndexGebiedsgerichtWerkenTask(index.ImportIndexTask):
         return documents.from_gebiedsgerichtwerken(obj)
 
 
-class IndexGebiedsgerichtwerkenPraktijkgebiedenTask(index.ImportIndexTask):
-    name = "index gebiedsgerichtwerken prijktijkgebieden"
-    queryset = models.GebiedsgerichtwerkenPraktijkgebieden.objects.all()
-
-    def convert(self, obj):
-        return documents.from_gebiedsgerichtwerken_praktijkgebieden(obj)
-
-
 class IndexStadsdeelTask(index.ImportIndexTask):
     name = "index stadsdeel"
     queryset = models.Stadsdeel.objects.all()
@@ -2247,7 +2239,6 @@ class IndexGebiedenJob(object):
             IndexStadsdeelTask(),
             IndexGrootstedelijkgebiedTask(),
             IndexGebiedsgerichtWerkenTask(),
-            IndexGebiedsgerichtwerkenPraktijkgebiedenTask(),
             IndexGemeenteTask()
         ]
 
