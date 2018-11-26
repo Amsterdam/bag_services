@@ -61,8 +61,7 @@ _details = {
 _autocomplete_group_sizes = {
     'Straatnamen': 8,
     'Adressen': 8,
-    'Kunstwerken': 8,
-    'Overige openbare ruimtes': 5,
+    'Openbare ruimtes': 5,
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
@@ -72,8 +71,7 @@ _autocomplete_group_sizes = {
 _autocomplete_group_order = [
     'Straatnamen',
     'Adressen',
-    'Kunstwerken',
-    'Overige openbare ruimtes',
+    'Openbare ruimtes',
     'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
@@ -82,12 +80,12 @@ _autocomplete_group_order = [
 
 _subtype_mapping = {
     'weg': 'Straatnamen',
-    'kunstwerk': 'Kunstwerken',
-    'water': 'Overige openbare ruimtes',
-    'terrein': 'Overige openbare ruimtes',
-    'administratief gebied': 'Overige openbare ruimtes',
-    'spoorbaan': 'Overige openbare ruimtes',
-    'landschappelijk gebied': 'Overige openbare ruimtes',
+    'kunstwerk': 'Openbare ruimtes',
+    'water': 'Openbare ruimtes',
+    'terrein': 'Openbare ruimtes',
+    'administratief gebied': 'Openbare ruimtes',
+    'spoorbaan': 'Openbare ruimtes',
+    'landschappelijk gebied': 'Openbare ruimtes',
     'verblijfsobject': 'Adressen',
     'ligplaats': 'Adressen',
     'standplaats': 'Adressen',
@@ -104,6 +102,16 @@ _subtype_mapping = {
     'overig gebouwd object': 'Gebieden',
     'buurt': 'Gebieden',
     'bouwblok': 'Bouwblokken',
+}
+
+
+_add_subtype_display = {
+    'kunstwerk',
+    'water',
+    'terrein',
+    'administratief gebied',
+    'spoorbaan',
+    'landschappelijk gebied',
 }
 
 
@@ -274,7 +282,7 @@ def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
     """
-    id = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
+    subtype_id = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
     doc_type = _get_doc_attr(hit, 'type',  default=hit.meta.doc_type)
     detail_type = _get_doc_attr(hit, 'subtype', doc_type)
 
@@ -287,11 +295,11 @@ def _get_url(request, hit):
         raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
     if hit.subtype in ['gemeente']:
-        id = hit.naam
+        subtype_id = hit.naam
 
     return rest.get_links(
         view_name=_details[detail_type],
-        kwargs={'pk': id}, request=request)
+        kwargs={'pk': subtype_id}, request=request)
 
 
 class QueryMetadata(metadata.SimpleMetadata):
@@ -318,6 +326,9 @@ class QFilter(object):
     search_title = 'search title'
     search_description = 'search description'
 
+    subtype_title = 'search subtype'
+    subtype_description = 'search only in subtype or negation with not_'
+
     def get_schema_fields(self, _view):
         """
         return Q parameter documentation
@@ -330,6 +341,15 @@ class QFilter(object):
                 schema=coreschema.String(
                     title=force_text(self.search_title),
                     description=force_text(self.search_description)
+                )
+            ),
+            coreapi.Field(
+                name='subtype',
+                required=False,
+                location='query',
+                schema=coreschema.String(
+                    title=force_text(self.subtype_title),
+                    description=force_text(self.subtype_description)
                 )
             )
         ]
@@ -421,12 +441,27 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         for hit in flat_results:
             group = _subtype_mapping[hit.subtype]
+            display = hit._display
+            if hit.subtype in _add_subtype_display:
+                display += f' ({hit.subtype})'
             result_groups[group].append({
-                '_display': hit._display,
+                '_display': display,
                 'uri': self._get_uri(request, hit)
             })
 
         return result_groups
+
+    @staticmethod
+    def _kunstwerk_on_top(old_list: List) -> List:
+        kunstwerk_index = 0
+        new_list = []
+        for item in old_list:
+            if item['_display'].endswith('(kunstwerk)'):
+                new_list.insert(kunstwerk_index, item)
+                kunstwerk_index += 1
+            else:
+                new_list.append(item)
+        return new_list
 
     def _order_results(self, results, request):
         """
@@ -446,6 +481,9 @@ class TypeaheadViewSet(viewsets.ViewSet):
         for group in _autocomplete_group_order:
             if group not in result_groups:
                 continue
+
+            if group == 'Openbare ruimtes':
+                result_groups[group] = self._kunstwerk_on_top(result_groups[group])
 
             size = _autocomplete_group_sizes[group]
 
@@ -692,7 +730,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
-        except(TransportError):
+        except TransportError:
             log.exception("Could not execute search query " + query)
             log.debug(json.dumps(search.to_dict(), indent=4))
             # Todo fix this
@@ -709,11 +747,13 @@ class SearchViewSet(viewsets.ViewSet):
         response['count_hits'] = count
         response['count'] = count
 
-        response['results'] = [
-            self.normalize_hit(h, request)
-                for h in result.hits]
+        results = [self.normalize_hit(h, request) for h in result.hits]
+        response['results'] = self.list_results(results)
 
         return Response(response)
+
+    def list_results(self, results):
+        return results
 
     def get_url(self, request, hit):
         """
@@ -931,12 +971,29 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         Execute search in Objects
         """
+        if 'subtype' in request.query_params:
+            subtype = request.query_params['subtype']
+        else:
+            subtype = None
+
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
         else:
-            search_data = bag_qs.openbare_ruimte_query(analyzer)
+            search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
         return search_data.to_elasticsearch_object(elk_client)
+
+    def list_results(self, old_results: List) -> List:
+        new_results = []
+        # Put subtype kunstwerk on top of list
+        subtype_index = 0
+        for result in old_results:
+            if result['subtype'] == 'kunstwerk':
+                new_results.insert(subtype_index, result)
+                subtype_index += 1
+            else:
+                new_results.append(result)
+        return new_results
 
 
 class NummeraanduidingQ(QFilter):
