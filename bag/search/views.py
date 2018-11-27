@@ -6,6 +6,7 @@ Search    bag, brk
 
 import json
 import logging
+import re
 from collections import OrderedDict
 from collections import defaultdict
 from typing import AbstractSet, List
@@ -973,6 +974,8 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         """
         if 'subtype' in request.query_params:
             subtype = request.query_params['subtype']
+            if not re.match("^[a-z_]{3,30}$", subtype):
+                subtype = None
         else:
             subtype = None
 
