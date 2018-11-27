@@ -178,7 +178,7 @@ def _basis_openbare_ruimte_query(
         },
         indexes=[BAG_GEBIED],
         sort_fields=sort_fields,
-        size=10,
+        size=100,
     )
 
 
