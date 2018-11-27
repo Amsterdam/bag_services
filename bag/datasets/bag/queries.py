@@ -193,13 +193,20 @@ def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
     """
     Maak een query voor openbare ruimte.
     """
-    return _basis_openbare_ruimte_query(analyzer, must=[{
-        'term': {'type': 'openbare_ruimte'}}],
-    )
+    dq = {
+        'must': [{'term': {'type': 'openbare_ruimte'}}]
+    }
+    if subtype:
+        if subtype.startswith("not_"):
+            subtype = subtype[4:]
+            dq['must_not'] = [{'term': {'subtype': subtype}}]
+        else:
+            dq['must'].append({'term': {'subtype': subtype}})
+    return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
 def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
