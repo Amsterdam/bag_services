@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import os
+from collections import Counter
 
 from django import db
 from django.conf import settings
@@ -125,6 +126,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         self.source = os.path.join(source_path, 'wpb_brondocument.dat')
         self.codes = set()
         self.beperkingen = dict()
+        self.warnings = Counter()
 
     def before(self):
         self.codes = set(models.Broncode.objects.values_list('pk', flat=True))
@@ -133,6 +135,10 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
     def after(self):
         self.codes.clear()
         self.beperkingen.clear()
+        for w in self.warnings.most_common():
+            log.warning(f'{w[0]} ({w[1]})')
+        self.warnings.clear()
+
 
     def process(self):
         with open(self.source) as f:
@@ -151,8 +157,10 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         beperking_id = self.beperkingen.get(inschrijfnummer)
 
         if not beperking_id:
-            log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
-                                                                                                inschrijfnummer))
+            self.warnings[
+                'Brondocument {} references non-existing beperking; ignoring'.format(inschrijfnummer)] += 1
+            # log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
+            #                                                                                     inschrijfnummer))
 
         return models.Brondocument(
             pk=inschrijfnummer,
@@ -174,6 +182,7 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
         self.beperkingen = set()
         self.kot = dict()
+        self.warnings = Counter()
 
     def before(self):
         self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
@@ -185,6 +194,10 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         filedate = datetime.date.today() - datetime.timedelta(days=1)
         self.update_metadata_date(filedate)
+
+        for w in self.warnings.most_common():
+            log.warning(f'{w[0]} ({w[1]})')
+        self.warnings.clear()
         log.info(
             '%d Beperking-Percelen Imported',
             models.BeperkingKadastraalObject.objects.count()
@@ -202,13 +215,17 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         beperking_id = int(r[5])
 
         if beperking_id not in self.beperkingen:
-            log.warning(
-                'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id))
+            self.warnings[
+                'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id)] += 1
+            # log.warning(
+            #    'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id))
             return None
 
         if not aanduiding or aanduiding not in self.kot:
-            log.warning('Beperking {} references non-existing kadastraal object {}; skipping'
-                        .format(beperking_id, aanduiding))
+            self.warnings[
+                'Beperking {} references non-existing kadastraal object; skipping'.format(beperking_id)] += 1
+            # log.warning('Beperking {} references non-existing kadastraal object {}; skipping'
+            #             .format(beperking_id, aanduiding))
             return None
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)
