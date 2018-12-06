@@ -4,6 +4,8 @@ import hashlib
 import logging
 import os
 # Packages
+from collections import Counter
+
 from django import db
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
@@ -79,7 +81,7 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
         gemeente_id = feat.get('GEMEENTE')
 
         if gemeente_id not in self.gemeentes:
-            log.warn("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
+            log.warning("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
             return
 
         models.KadastraleGemeente(
@@ -113,7 +115,7 @@ class ImportKadastraleSectieTask(batch.BasicTask):
         pk = "{}{}".format(kad_gem_id, sectie)
 
         if kad_gem_id not in self.gemeentes:
-            log.warn(
+            log.warning(
                 "Kadastrale sectie %s references non-existing "
                 "Kadastrale Gemeente %s; skipping", pk, kad_gem_id)
             return
@@ -257,8 +259,8 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         return _get_related(code, omschrijving, self.rechtsvorm, models.Rechtsvorm)
 
     def save_adres(self, openbareruimte_naam, huisnummer, huisletter, toevoeging, postcode, woonplaats, postbus_nummer,
-                  postbus_postcode, postbus_woonplaats, buitenland_adres, buitenland_woonplaats, buitenland_regio,
-                  buitenland_naam, buitenland_code, buitenland_omschrijving):
+                   postbus_postcode, postbus_woonplaats, buitenland_adres, buitenland_woonplaats, buitenland_regio,
+                   buitenland_naam, buitenland_code, buitenland_omschrijving):
 
         values = [openbareruimte_naam, huisnummer, huisletter, toevoeging, postcode, woonplaats, postbus_nummer,
                   postbus_postcode, postbus_woonplaats, buitenland_adres, buitenland_woonplaats, buitenland_regio,
@@ -349,7 +351,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         kg_id = row['KOT_KADASTRALEGEMEENTE_CODE']
         sectie = row['KOT_SECTIE']
         if (kg_id, sectie) not in self.secties:
-            log.warn(
+            log.warning(
                 "Kadastraal Object {} references non-existing Kadastrale Gemeente {}, Sectie {}; skipping".format(
                     kot_id, kg_id, sectie))
             return
@@ -381,14 +383,14 @@ class ImportKadastraalObjectTask(batch.BasicTask):
         try:
             toestands_datum = datetime.datetime.strptime(toestands_datum_str, "%Y%m%d%H%M%S").date()
         except ValueError:
-            log.warn("Could not parse toestandsdatum {} for Kadastraal Object {}; ignoring".format(toestands_datum_str,
+            log.warning("Could not parse toestandsdatum {} for Kadastraal Object {}; ignoring".format(toestands_datum_str,
                                                                                                    kot_id))
             pass
 
         subject_id = row['BRK_SJT_ID'] or None
 
         if subject_id and subject_id not in self.subjects:
-            log.warn("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
+            log.warning("Kadastraal Object {} references non-existing Subject {}; ignoring".format(kot_id, subject_id))
             subject_id = None
 
         vrlpg = row['KOT_IND_VOORLOPIGE_KADGRENS'].lower() != 'definitieve grens'
@@ -452,6 +454,7 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.splits_type = dict()
         self.kst = set()
         self.kot = set()
+        self.warnings = Counter()
 
     def before(self):
         self.kst = set(
@@ -465,6 +468,9 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.kot.clear()
         self.splits_type.clear()
         self.update_metadata_onedate(self.path, 'BRK_zakelijk_recht')
+        for w in self.warnings.most_common():
+            log.warning(f'{w[0]} ({w[1]})')
+        self.warnings.clear()
 
     def process(self):
         zrts = dict(
@@ -480,31 +486,33 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         betrokken_bij = row['ZRT_BETROKKEN_BIJ']
 
         if not tng_id and not betrokken_bij:
-            log.warn(
-                "Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
+            self.warnings["Zakelijk recht {} has no unique ID; skipping".format(zrt_id)] += 1
             return
 
         kot_id = row['BRK_KOT_ID']
         if kot_id and kot_id not in self.kot:
-            log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
+            self.warnings["Zakelijk recht references non-existing object {}; skipping".format(kot_id)] += 1
+            # log.warn("Zakelijk recht {} references non-existing object {}; skipping".format(tng_id, kot_id))
             return
 
         pk = zrt_id + "-" + kot_id + "-" + (tng_id or betrokken_bij)
 
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
+            self.warnings["Zakelijk recht references non-existing subject {}; skipping".format(kst_id)] += 1
             return
 
         ontstaan_uit = row['ZRT_ONTSTAAN_UIT']
         if ontstaan_uit and ontstaan_uit not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(
-                tng_id, ontstaan_uit))
+            self.warnings[
+                "Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(
+                    tng_id, ontstaan_uit)] += 1
             return
 
         if betrokken_bij and betrokken_bij not in self.kst:
-            log.warn("Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(
-                tng_id, betrokken_bij))
+            self.warnings[
+                "Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(
+                    tng_id, betrokken_bij)] += 1
             return
 
         teller = row['TNG_AANDEEL_TELLER']
@@ -543,6 +551,7 @@ class ImportAantekeningTask(batch.BasicTask):
         self.aard_aantekening = dict()
         self.kst = set()
         self.kot = set()
+        self.warnings = Counter()
 
     def before(self):
         self.kst = set(models.KadastraalSubject.objects.values_list("id", flat=True))
@@ -552,6 +561,9 @@ class ImportAantekeningTask(batch.BasicTask):
         self.aard_aantekening.clear()
         self.kst.clear()
         self.kot.clear()
+        for w in self.warnings.most_common():
+            log.warning(f'{w[0]} ({w[1]})')
+        self.warnings.clear()
 
     def process(self):
         atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row)
@@ -565,17 +577,17 @@ class ImportAantekeningTask(batch.BasicTask):
             return
 
         if atk_type != "Aantekening Kadastraal object (O)":
-            log.warn("Aantekening {} has unknown type {}; skipping".format(atk_id, atk_type))
+            self.warnings["Aantekening has unknown type {}; skipping".format(atk_type)] += 1
             return
 
         kot_id = row['BRK_KOT_ID'] or None
         if kot_id and kot_id not in self.kot:
-            log.warn("Aantekening {} references non-existing object {}; skipping".format(atk_id, kot_id))
+            self.warnings["Aantekening references non-existing object {}; skipping".format(kot_id)] += 1
             return
 
         kst_id = row['BRK_SJT_ID'] or None
         if kst_id and kst_id not in self.kst:
-            log.warn("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
+            self.warnings["Aantekening references non-existing subject {}; skipping".format(kst_id)] += 1
             return
 
         return models.Aantekening(
@@ -635,13 +647,13 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         vbo_id = '0' + vbo_id
 
         if not kot_id or kot_id not in self.kot:
-            log.warn(
+            log.warning(
                 "BRK_BAG references non-existing kadastraal" +
                 "object %s; skipping", kot_id)
             return
 
         if vbo_id not in self.vbo:
-            log.warn(
+            log.warning(
                 "BRK_BAG references non-existing "
                 "verblijfsobject %s; skipping", vbo_id)
             return
@@ -656,6 +668,9 @@ class ImportKadastraalObjectRelatiesTask(batch.BasicTask):
     name = "Import Kadaster - KOT-KOT"
 
     def before(self):
+        pass
+
+    def after(self):
         pass
 
     def process(self):
@@ -682,6 +697,9 @@ class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
     def before(self):
         pass
 
+    def after(self):
+        pass
+
     def process(self):
         with db.connection.cursor() as c:
             c.execute("""
@@ -704,6 +722,9 @@ class ImportEigendommenTask(batch.BasicTask):
     def before(self):
         pass
 
+    def after(self):
+        pass
+
     def process(self):
         with db.connection.cursor() as c:
             for sql_command in batch_eigendom_sql.sql_commands:
@@ -714,6 +735,9 @@ class FixKadastraalObjectAppartementGeometrie(batch.BasicTask):
     name = "If geometrie for apartments is not correct, use geometrie from related verblijfsobject"
 
     def before(self):
+        pass
+
+    def after(self):
         pass
 
     def process(self):
