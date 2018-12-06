@@ -452,6 +452,16 @@ class PandenFilter(FilterSet):
         return opr.order_by('afstand')
 
 
+class PandPager(rest.HALPagination):
+    """Detailed PAND objects are rather "heavy" so put limits on pagination.
+
+    when detailed=1 is used these limits are needed
+    """
+
+    page_size = 10
+    max_page_size = 100
+
+
 class PandViewSet(rest.DatapuntViewSet):
     """
     Pand
@@ -468,7 +478,14 @@ class PandViewSet(rest.DatapuntViewSet):
     """
 
     metadata_class = ExpansionMetadata
+
     queryset = models.Pand.objects.all().order_by('id').select_related(
+        'status',
+        'bouwblok',
+        'bouwblok__buurt',
+    )
+
+    queryset_detail = models.Pand.objects.all().order_by('id').select_related(
         'status',
         'bouwblok',
         'bouwblok__buurt',
@@ -479,10 +496,9 @@ class PandViewSet(rest.DatapuntViewSet):
         'verblijfsobjecten'
     )
 
-    queryset_detail = queryset
-
     serializer_detail_class = serializers.PandDetail
     serializer_class = serializers.Pand
+    pagination_class = PandPager
 
     filter_class = PandenFilter
 
