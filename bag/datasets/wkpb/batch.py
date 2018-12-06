@@ -159,8 +159,6 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         if not beperking_id:
             self.warnings[
                 'Brondocument {} references non-existing beperking; ignoring'.format(inschrijfnummer)] += 1
-            # log.warning('Brondocument {} references non-existing beperking {}; ignoring'.format(inschrijfnummer,
-            #                                                                                     inschrijfnummer))
 
         return models.Brondocument(
             pk=inschrijfnummer,
@@ -217,15 +215,11 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         if beperking_id not in self.beperkingen:
             self.warnings[
                 'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id)] += 1
-            # log.warning(
-            #    'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id))
             return None
 
         if not aanduiding or aanduiding not in self.kot:
             self.warnings[
                 'Beperking {} references non-existing kadastraal object; skipping'.format(beperking_id)] += 1
-            # log.warning('Beperking {} references non-existing kadastraal object {}; skipping'
-            #             .format(beperking_id, aanduiding))
             return None
 
         uid = '{0}_{1}'.format(beperking_id, aanduiding)

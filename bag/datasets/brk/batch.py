@@ -487,8 +487,6 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
         if not tng_id and not betrokken_bij:
             self.warnings["Zakelijk recht {} has no unique ID; skipping".format(zrt_id)] += 1
-            # log.warning(
-            #     "Zakelijk recht {} has no unique ID; skipping".format(zrt_id))
             return
 
         kot_id = row['BRK_KOT_ID']
@@ -502,7 +500,6 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         kst_id = row['BRK_SJT_ID']
         if kst_id and kst_id not in self.kst:
             self.warnings["Zakelijk recht references non-existing subject {}; skipping".format(kst_id)] += 1
-            # log.warning("Zakelijk recht {} references non-existing subject {}; skipping".format(tng_id, kst_id))
             return
 
         ontstaan_uit = row['ZRT_ONTSTAAN_UIT']
@@ -510,16 +507,12 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             self.warnings[
                 "Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(
                     tng_id, ontstaan_uit)] += 1
-            # log.warning("Zakelijk recht {} references non-existing subject ontstaan uit {}; skipping".format(
-            #     tng_id, ontstaan_uit))
             return
 
         if betrokken_bij and betrokken_bij not in self.kst:
             self.warnings[
                 "Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(
                     tng_id, betrokken_bij)] += 1
-            # log.warning("Zakelijk recht {} references non-existing subject betrokken bij {}; skipping".format(
-            #     tng_id, betrokken_bij))
             return
 
         teller = row['TNG_AANDEEL_TELLER']
@@ -585,19 +578,16 @@ class ImportAantekeningTask(batch.BasicTask):
 
         if atk_type != "Aantekening Kadastraal object (O)":
             self.warnings["Aantekening has unknown type {}; skipping".format(atk_type)] += 1
-            # log.warning("Aantekening {} has unknown type {}; skipping".format(atk_id, atk_type))
             return
 
         kot_id = row['BRK_KOT_ID'] or None
         if kot_id and kot_id not in self.kot:
             self.warnings["Aantekening references non-existing object {}; skipping".format(kot_id)] += 1
-            # log.warning("Aantekening {} references non-existing object {}; skipping".format(atk_id, kot_id))
             return
 
         kst_id = row['BRK_SJT_ID'] or None
         if kst_id and kst_id not in self.kst:
             self.warnings["Aantekening references non-existing subject {}; skipping".format(kst_id)] += 1
-            # log.warning("Aantekening {} references non-existing subject {}; skipping".format(atk_id, kst_id))
             return
 
         return models.Aantekening(
