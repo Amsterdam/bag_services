@@ -160,13 +160,13 @@ class ImportIndexTask(object):
                 chunk_size = int(total / modulo)
                 start = chunk_size * modulo_value
                 all_ids = qs.all().values('id')
-                start_id = all_ids[start]
-                qs_s = qs.filter(pk__gte=start_id)
+                start_id = all_ids[start]['id']
+                qs_s = qs.filter(id__gte=start_id)
 
                 if modulo > modulo_value + 1:
                     end = chunk_size * (modulo_value + 1)
-                    end_id = all_ids[end]
-                    qs_s = qs_s.filter(pk__lt=end_id)
+                    end_id = all_ids[end]['id']
+                    qs_s = qs_s.filter(id__lt=end_id)
                     log.info('PART %d/%d start_id : %s end_id : %s', modulo_value + 1, modulo, start_id, end_id)
                 else:
                     log.info('PART %d/%d start_id : %s ', modulo_value + 1, modulo, start_id)
@@ -182,7 +182,7 @@ class ImportIndexTask(object):
 
         qs_count = qs_s.count()
 
-        log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs.count())
+        log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs_count)
 
         if not qs_count:
             return
