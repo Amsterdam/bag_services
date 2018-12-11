@@ -7,7 +7,6 @@ import elasticsearch_dsl as es
 
 from django.db.models.functions import Cast
 from django.db.models import F
-from django.db.models.functions import Substr
 from django.db.models import BigIntegerField
 
 from elasticsearch.client import IndicesClient
@@ -60,7 +59,7 @@ class DeleteIndexTask(object):
 
 class ImportIndexTask(object):
     queryset = None
-    substring = 0  # subtring of id field to parse to integer
+    sequential = False  # Non integer PK
     last_id = None
 
     def get_queryset(self):
@@ -154,16 +153,23 @@ class ImportIndexTask(object):
         In that case the Indexer can define a substring
         which will extract the number part of the ID field
         """
-        log.debug('BATCH id MODULO %d = %d', modulo, modulo_value)
 
         if modulo != 1:
-            if self.substring:
-                qs_s = (
-                    qs.annotate(idmod=Substr('id', self.substring))
-                    .annotate(idmod=Cast('idmod', BigIntegerField()))
-                    .annotate(idmod=F('idmod') % modulo)
-                    .filter(idmod=modulo_value)
-                )
+            if self.sequential:
+                total = qs.count()
+                chunk_size = int(total / modulo)
+                start = chunk_size * modulo_value
+                start_id = qs.all()[start].pk
+                qs_s = qs.filter(pk__gte=start_id)
+
+                if modulo > modulo_value + 1:
+                    end = chunk_size * (modulo_value + 1)
+                    end_id = qs.all()[end].pk
+                    qs_s = qs_s.filter(pk__lt=end_id)
+                    log.info('PART %d/%d start_id : %s end_id : %s', modulo_value + 1, modulo, start_id, end_id)
+                else:
+                    log.info('PART %d/%d start_id : %s ', modulo_value + 1, modulo, start_id)
+
             else:
                 qs_s = (
                     qs.annotate(idmod=Cast('id', BigIntegerField()))

@@ -800,7 +800,7 @@ class IndexSubjectTask(index.ImportIndexTask):
 
     name = "index kadastraal subject"
     queryset = models.KadastraalSubject.objects.all().order_by('id')
-    substring = len("NL.KAD.Persoon.") + 1
+    sequential = True
 
     def convert(self, obj):
         return documents.from_kadastraal_subject(obj)
@@ -809,7 +809,7 @@ class IndexSubjectTask(index.ImportIndexTask):
 class IndexObjectTask(index.ImportIndexTask):
 
     name = "index kadastraal object"
-    substring = len('NL.KAD.OnroerendeZaak.') + 1
+    sequential = True
 
     queryset = models.KadastraalObject.objects.all().order_by('id')
 
