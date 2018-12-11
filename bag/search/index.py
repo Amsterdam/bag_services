@@ -159,12 +159,13 @@ class ImportIndexTask(object):
                 total = qs.count()
                 chunk_size = int(total / modulo)
                 start = chunk_size * modulo_value
-                start_id = qs.all()[start].pk
+                all_ids = qs.all().values('id')
+                start_id = all_ids[start]
                 qs_s = qs.filter(pk__gte=start_id)
 
                 if modulo > modulo_value + 1:
                     end = chunk_size * (modulo_value + 1)
-                    end_id = qs.all()[end].pk
+                    end_id = all_ids[end]
                     qs_s = qs_s.filter(pk__lt=end_id)
                     log.info('PART %d/%d start_id : %s end_id : %s', modulo_value + 1, modulo, start_id, end_id)
                 else:
@@ -184,7 +185,7 @@ class ImportIndexTask(object):
         log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs.count())
 
         if not qs_count:
-            raise StopIteration
+            return
 
         batch_size = settings.BATCH_SETTINGS['batch_size']
 
@@ -214,4 +215,3 @@ class ImportIndexTask(object):
                 # no more data
                 break
 
-        raise StopIteration
