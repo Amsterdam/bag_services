@@ -8,9 +8,13 @@ class ImportKadastraleGemeenteTaskTest(TaskTestCase):
     def setUp(self):
         super().setUp()
         factories.GemeenteFactory.create(gemeente="Amsterdam")
+        self.stash = {}
 
     def task(self):
-        return batch.ImportKadastraleGemeenteTask("diva/brk_shp")
+        return [
+            batch.ImportKadastraleGemeenteTaskLines("diva/brk_shp", self.stash),
+            batch.ImportKadastraleGemeenteTask("diva/brk_shp", self.stash)
+        ]
 
     def test_import(self):
         self.run_task()
@@ -20,4 +24,5 @@ class ImportKadastraleGemeenteTaskTest(TaskTestCase):
         self.assertIsNotNone(kg.gemeente)
         self.assertEqual(kg.gemeente.gemeente, 'Amsterdam')
         self.assertIsNotNone(kg.geometrie)
+        self.assertIsNotNone(kg.geometrie_lines)
 
