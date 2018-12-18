@@ -314,7 +314,8 @@ LEFT JOIN brk_kadastralesectie s ON s.id=ko.sectie_id
 SELECT
   id,
   id as code,
-  geometrie
+  geometrie,
+  geometrie_lines
 FROM brk_kadastralegemeente""",
         ),
         migrate.ManageView(
@@ -324,7 +325,8 @@ SELECT
     id,
     CONCAT(kadastrale_gemeente_id, ' ', sectie) AS volledige_code,
     sectie as code,
-    geometrie
+    geometrie,
+    geometrie_lines
 FROM brk_kadastralesectie
 """,
         ),
