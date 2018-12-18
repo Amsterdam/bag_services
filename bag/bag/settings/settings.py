@@ -1,5 +1,7 @@
 import os
 import sys
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from bag.settings.settings_common import DEBUG
 from bag.settings.settings_common import BASE_DIR
@@ -70,6 +72,7 @@ DATABASES = {
 }
 
 EL_HOST_VAR = os.getenv('ELASTIC_HOST_OVERRIDE')
+
 EL_PORT_VAR = os.getenv('ELASTIC_PORT_OVERRIDE', '9200')
 
 ELASTIC_OPTIONS = {
@@ -237,3 +240,10 @@ DATAPUNT_AUTHZ = {
     # 'ALWAYS_OK': True,  # disable authz. tests will fail...
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
 }
+
+SENTRY_DSN = os.getenv('SENTRY_DSN'),
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()]
+    )
