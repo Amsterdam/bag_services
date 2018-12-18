@@ -241,7 +241,7 @@ DATAPUNT_AUTHZ = {
     'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
 }
 
-SENTRY_DSN = os.getenv('SENTRY_DSN'),
+SENTRY_DSN = os.getenv('SENTRY_DSN')
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
