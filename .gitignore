@@ -22,7 +22,6 @@ reports/
 
 # venv
 .venv
-venv
 .env
 /out/
 /data/

@@ -205,7 +205,6 @@ class ViewsTest(TestCase):
         row = self.get_row('geo_lki_kadastralegemeente')
         self.assertEqual(row['id'], g.id)
         self.assertIn("geometrie", row)
-        self.assertIn("geometrie_lines", row)
         self.assertEqual(row["code"], g.id)
 
     def test_lki_sectie(self):
@@ -216,7 +215,6 @@ class ViewsTest(TestCase):
                                                     s.kadastrale_gemeente_id,
                                                     s.sectie))
         self.assertIn("geometrie", row)
-        self.assertIn("geometrie_lines", row)
         self.assertEqual(row["code"], s.sectie)
 
     def test_lki_kadastraal_object(self):

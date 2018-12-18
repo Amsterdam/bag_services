@@ -32,7 +32,6 @@ class KadastraleGemeente(models.Model):
         on_delete=models.CASCADE)
 
     geometrie = geo.MultiPolygonField(srid=28992)
-    geometrie_lines = geo.MultiLineStringField(srid=28992, null=True)
 
     objects = geo.Manager()
 
@@ -57,7 +56,6 @@ class KadastraleSectie(models.Model):
     )
 
     geometrie = geo.MultiPolygonField(srid=28992)
-    geometrie_lines = geo.MultiLineStringField(srid=28992, null=True)
 
     objects = geo.Manager()
 

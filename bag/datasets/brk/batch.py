@@ -57,34 +57,11 @@ class ImportGemeenteTask(batch.BasicTask):
         ).save()
 
 
-class ImportKadastraleGemeenteTaskLines(batch.BasicTask):
-    name = "Import Kadastrale Gemeente Lines"
-
-    def __init__(self, path, stash):
-        self.path = path
-        self.stash = stash
-        self.stash['KADGEM'] = {}
-
-    def before(self):
-        pass
-
-    def after(self):
-        pass
-
-    def process(self):
-        geo.process_shp(self.path, 'BRK_KAD_GEMEENTE_L.shp', self.process_feature)
-
-    def process_feature(self, feat):
-        pk = feat.get('KADGEMCODE')
-        self.stash['KADGEM'][pk] = geo.get_multiline(feat.geom.wkt)
-
-
 class ImportKadastraleGemeenteTask(batch.BasicTask):
     name = "Import Kadastrale Gemeente"
 
-    def __init__(self, path, stash):
+    def __init__(self, path):
         self.path = path
-        self.stash = stash
         self.gemeentes = set()
 
     def before(self):
@@ -92,11 +69,9 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
             models.Gemeente.objects.values_list('gemeente', flat=True))
 
         assert self.gemeentes
-        assert self.stash['KADGEM']
 
     def after(self):
         self.gemeentes.clear()
-        self.stash['KADGEM'].clear()
 
     def process(self):
         geo.process_shp(self.path, 'BRK_KAD_GEMEENTE.shp', self.process_feature)
@@ -109,59 +84,27 @@ class ImportKadastraleGemeenteTask(batch.BasicTask):
             log.warning("Kadastrale Gemeente {} references non-existing Gemeente {}; skipping".format(pk, gemeente_id))
             return
 
-        geometrie_lines = self.stash['KADGEM'].get(pk, None)
-        if not geometrie_lines:
-            log.warning(f"Missing geometrie_lines for kadastrale gemeente {pk}")
-
         models.KadastraleGemeente(
             id=pk,
             naam=feat.get('KADGEM'),
             gemeente_id=gemeente_id,
-            geometrie=geo.get_multipoly(feat.geom.wkt),
-            geometrie_lines=geometrie_lines
+            geometrie=geo.get_multipoly(feat.geom.wkt)
         ).save()
-
-
-class ImportKadastraleSectieTaskLines(batch.BasicTask):
-    name = "Import Kadastrale Sectie Lines"
-
-    def __init__(self, path, stash):
-        self.path = path
-        self.stash = stash
-        self.stash['KADSECT'] = {}
-
-    def before(self):
-        pass
-
-    def after(self):
-        pass
-
-    def process(self):
-        geo.process_shp(self.path, 'BRK_KAD_SECTIE_L.shp', self.process_feature)
-
-    def process_feature(self, feat):
-        kad_gem_id = feat.get('KADGEMCODE')
-        sectie = feat.get('SECTIE')
-        pk = "{}{}".format(kad_gem_id, sectie)
-        self.stash['KADSECT'][pk] = geo.get_multiline(feat.geom.wkt)
 
 
 class ImportKadastraleSectieTask(batch.BasicTask):
     name = "Import Kadastrale Sectie"
 
-    def __init__(self, path, stash):
+    def __init__(self, path):
         self.path = path
-        self.stash = stash
         self.gemeentes = set()
 
     def before(self):
         self.gemeentes = set(
             models.KadastraleGemeente.objects.values_list('pk', flat=True))
-        assert self.stash['KADSECT']
 
     def after(self):
         self.gemeentes.clear()
-        self.stash['KADSECT'].clear()
 
     def process(self):
         geo.process_shp(self.path, 'BRK_KAD_SECTIE.shp', self.process_feature)
@@ -177,16 +120,11 @@ class ImportKadastraleSectieTask(batch.BasicTask):
                 "Kadastrale Gemeente %s; skipping", pk, kad_gem_id)
             return
 
-        geometrie_lines = self.stash['KADSECT'].get(pk, None)
-        if not geometrie_lines:
-            log.warning(f"Missing geometrie_lines for kadastrale sectie {pk}")
-
         models.KadastraleSectie(
             pk=pk,
             sectie=sectie,
             kadastrale_gemeente_id=kad_gem_id,
-            geometrie=geo.get_multipoly(feat.geom.wkt),
-            geometrie_lines=geometrie_lines
+            geometrie=geo.get_multipoly(feat.geom.wkt)
         ).save()
 
 
@@ -821,15 +759,12 @@ class ImportKadasterJob(object):
 
         self.brk = os.path.join(diva, 'brk')
         self.brk_shp = os.path.join(diva, 'brk_shp')
-        self.stash = {}
 
     def tasks(self):
         return [
             ImportGemeenteTask(self.brk_shp),
-            ImportKadastraleGemeenteTaskLines(self.brk_shp, self.stash),
-            ImportKadastraleGemeenteTask(self.brk_shp, self.stash),
-            ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
-            ImportKadastraleSectieTask(self.brk_shp, self.stash),
+            ImportKadastraleGemeenteTask(self.brk_shp),
+            ImportKadastraleSectieTask(self.brk_shp),
             ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
             # needs Subject and Object
