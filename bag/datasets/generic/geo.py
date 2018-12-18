@@ -4,7 +4,7 @@ import os.path
 import sys
 from django.contrib.gis.gdal import DataSource
 
-from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point, MultiLineString, LineString
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
 
 # sommige WKT-velden zijn best wel groot
 csv.field_size_limit(sys.maxsize)
@@ -53,24 +53,6 @@ def get_multipoly(wkt):
         return MultiPolygon(geom)
 
     if isinstance(geom, Point):
-        return None
-
-    return geom
-
-
-def get_multiline(wkt):
-    if not wkt:
-        return None
-
-    geom = GEOSGeometry(wkt)
-
-    if not geom:
-        return None
-
-    if isinstance(geom, LineString):
-        geom = MultiLineString(geom)
-
-    if not isinstance(geom, MultiLineString):
         return None
 
     return geom
