@@ -354,7 +354,7 @@ class KadastraalObjectViewSet(DatapuntViewSet):
     lookup_value_regex = '[^/]+'
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == 'list' or self.action is None:
             return serializers.KadastraalObject
 
         elif self.action == 'retrieve':
