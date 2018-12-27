@@ -19,7 +19,7 @@ TABLE_TARGETS = [
     (320       ,0 ,"bag_gebruik"),
     (515178    ,0 ,"bag_gebruiksdoel"),
     (1         ,0 ,"bag_gemeente"),
-    (36        ,0 ,"bag_grootstedelijkgebied"),
+    (46        ,0 ,"bag_grootstedelijkgebied"),
     (515370    ,0 ,"bag_indicatieadresseerbaarobject"),
     (6         ,0 ,"bag_ligging"),
     (2913      ,0 ,"bag_ligplaats"),
@@ -64,7 +64,7 @@ TABLE_TARGETS = [
     (314047    ,0 ,"wkpb_beperkingkadastraalobject"),
     (338702    ,0 ,"wkpb_beperkingverblijfsobject"),
     (6         ,0 ,"wkpb_broncode"),
-    (7354      ,0 ,"wkpb_brondocument"),
+    (7435      ,0 ,"wkpb_brondocument"),
 ]
 
 
