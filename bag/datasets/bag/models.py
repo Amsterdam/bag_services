@@ -620,7 +620,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     @property
     def vbo_status(self):
         a = self.adresseerbaar_object
-        return a.status
+        return a.status if a else None
 
     @property
     def buurt(self):
