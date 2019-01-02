@@ -15,7 +15,7 @@ cryptography==2.3
 datapunt-authorization-django==0.2.22
 debtcollector==1.20.0
 defusedxml==0.5.0
-Django==2.0.7
+Django==2.1.2
 django-debug-toolbar==1.9.1
 django-extensions==2.1.0
 django-filter==2.0.0
@@ -84,7 +84,7 @@ python-keystoneclient==3.17.0
 python-swiftclient==3.5.0
 pytz==2018.5
 PyYAML==3.13
-requests==2.19.1
+requests==2.20.0
 rfc3986==1.1.0
 sentry-sdk==0.6.2
 simplejson==3.16.0
