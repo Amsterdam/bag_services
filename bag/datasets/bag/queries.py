@@ -286,6 +286,6 @@ def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 {'prefix': {'landelijk_id': landelijk_id}},
             ],
         ),
-        sort_fields=['landelijk_id.keyword'],
+        sort_fields=['_id'],
         indexes=[LANDELIJK_ID]
     )

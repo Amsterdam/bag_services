@@ -2273,6 +2273,7 @@ class DeleteIndexBagJob(object):
     def tasks(self):
         return [
             DeleteNummerAanduidingIndexTask(),
+            DeleteLandelijkIdTask(),
         ]
 
 

@@ -1131,7 +1131,7 @@ class LandelijkIdQ(QFilter):
 
 
 class SearchLandelijkIdViewSet(SearchViewSet):
-    url_name = 'search/landelijk_id'
+    url_name = 'search/landelijk_id-list'
     filter_backends = [LandelijkIdQ]
 
     def search_query(self, request, elk_client,
@@ -1143,4 +1143,9 @@ class SearchLandelijkIdViewSet(SearchViewSet):
                 .to_elasticsearch_object(elk_client)
 
         return []
+
+    def normalize_hit(self, hit, request):
+        # Use original landelijk_id in case zeros were removed
+        hit.landelijk_id = hit.meta.id
+        return super().normalize_hit(hit, request)
 
