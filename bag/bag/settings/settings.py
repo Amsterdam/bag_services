@@ -90,6 +90,7 @@ ELASTIC_INDICES = {
     'BRK_OBJECT': 'brk_object',
     'BRK_SUBJECT': 'brk_subject',
     'NUMMERAANDUIDING': 'nummeraanduiding',
+    'LANDELIJK_ID': 'landelijk_id',
 }
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
@@ -245,5 +246,6 @@ SENTRY_DSN = os.getenv('SENTRY_DSN')
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()]
+        integrations=[DjangoIntegration()],
+        ignore_errors=['ExpiredSignatureError']
     )

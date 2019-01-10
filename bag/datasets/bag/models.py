@@ -1175,3 +1175,11 @@ class Gebruiksdoel(models.Model):
     omschrijving = models.CharField(max_length=150)
     code_plus = models.CharField(max_length=4, null=True)
     omschrijving_plus = models.CharField(max_length=150, null=True)
+
+
+class LandelijkId(models.Model):
+    id = models.CharField(max_length=16, primary_key=True)
+    type = models.CharField(max_length=32)
+
+    class Meta:
+        managed = False
