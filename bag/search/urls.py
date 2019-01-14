@@ -213,3 +213,7 @@ bag_search.register(
 bag_search.register(
     r'openbareruimte',
     views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
+bag_search.register(
+    r'landelijk_id',
+    views.SearchLandelijkIdViewSet, base_name='search/landelijk_id')
+

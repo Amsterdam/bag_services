@@ -327,3 +327,17 @@ class QueryAnalyzer(object):
         straatnaam.
         """
         return " ".join(self._tokens)
+
+    def is_landelijk_id_prefix(self) -> bool:
+        if len(self.query) < 5:
+            return False
+
+        return re.match('^\d+$', self.query) is not None
+
+    def get_landelijk_id(self) -> str:
+        assert self.is_landelijk_id_prefix()
+
+        # strip leading zeros from query. All the landelijk id's have
+        # been indexed without leading zero's
+        return self.query.lstrip('0')
+

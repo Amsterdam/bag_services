@@ -150,3 +150,16 @@ class QueryTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertIn("RN35", str(response.data))
+
+    def test_search_landelijk_id_pand(self):
+        q = '12345678'
+        res = self.client.get(f'/atlas/search/landelijk_id/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals('0123456789012345', res.data['results'][0]['landelijk_id'])
+        self.assertEquals('openbare_ruimte', res.data['results'][0]['subtype'])
+
+    def test_typeahead_landelijk_id_na(self):
+        q = '543210987'
+        res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals('bag/nummeraanduiding/5432109876543210/', res.data[0]['content'][0]['uri'])

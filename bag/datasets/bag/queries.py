@@ -22,6 +22,7 @@ log = logging.getLogger('bag_Q')
 BAG_BOUWBLOK = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+LANDELIJK_ID = settings.ELASTIC_INDICES['LANDELIJK_ID']
 
 
 def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
@@ -270,4 +271,21 @@ def straatnaam_huisnummer_query(
         },
         sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING]
+    )
+
+
+def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """ create query/aggregation for public area"""
+
+    landelijk_id = analyzer.get_landelijk_id()
+
+    return ElasticQueryWrapper(
+        query=Q(
+            'bool',
+            must=[
+                {'prefix': {'landelijk_id': landelijk_id}},
+            ],
+        ),
+        sort_fields=['_id'],
+        indexes=[LANDELIJK_ID]
     )

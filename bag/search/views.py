@@ -40,6 +40,8 @@ _details = {
     'standplaats': 'standplaats-detail',
     'verblijfsobject': 'verblijfsobject-detail',
     'openbare_ruimte': 'openbareruimte-detail',
+    'nummeraanduiding': 'nummeraanduiding-detail',
+    'pand': 'pand-detail',
     'kadastraal_subject': 'kadastraalsubject-detail',
     'kadastraal_object': 'kadastraalobject-detail',
     'bouwblok': 'bouwblok-detail',
@@ -87,6 +89,9 @@ _subtype_mapping = {
     'administratief gebied': 'Openbare ruimtes',
     'spoorbaan': 'Openbare ruimtes',
     'landschappelijk gebied': 'Openbare ruimtes',
+    'nummeraanduiding': 'Adressen',
+    'pand': 'Adressen',
+    'openbare_ruimte': 'Adressen',
     'verblijfsobject': 'Adressen',
     'ligplaats': 'Adressen',
     'standplaats': 'Adressen',
@@ -149,6 +154,12 @@ all_query_selectors = [
         # 'query': bag_qs.weg_query,
         'query': bag_qs.gebied_query,
     },
+    {
+        'labels': {'landelijk_id'},
+        'testfunction': 'is_landelijk_id_prefix',
+        'query': bag_qs.landelijk_id_query,
+    },
+
 ]
 
 default_queries = {
@@ -532,7 +543,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
     filter_backends = [BagQ]
 
     def list(self, request):
-        return self._abstr_list(request, {'bag', 'nummeraanduiding'})
+        return self._abstr_list(request, {'bag', 'nummeraanduiding', 'landelijk_id'})
 
 
 def authorized_subject_queries(request, analyzer):
@@ -1111,3 +1122,30 @@ class SearchPostcodeViewSet(SearchViewSet):
             return search.to_elasticsearch_object(elk_client)
 
         return []
+
+
+class LandelijkIdQ(QFilter):
+
+     search_description = 'Zoek op landelijk ID'
+     search_title = 'Landelijk ID'
+
+
+class SearchLandelijkIdViewSet(SearchViewSet):
+    url_name = 'search/landelijk_id-list'
+    filter_backends = [LandelijkIdQ]
+
+    def search_query(self, request, elk_client,
+                     analyzer: QueryAnalyzer) -> Search:
+        """Creating the actual query to ES"""
+
+        if analyzer.is_landelijk_id_prefix():
+            return bag_qs.landelijk_id_query(analyzer) \
+                .to_elasticsearch_object(elk_client)
+
+        return []
+
+    def normalize_hit(self, hit, request):
+        # Use original landelijk_id in case zeros were removed
+        hit.landelijk_id = hit.meta.id
+        return super().normalize_hit(hit, request)
+

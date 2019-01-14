@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db.models.query import RawQuerySet
 from elasticsearch import helpers
 import elasticsearch
 import elasticsearch_dsl as es

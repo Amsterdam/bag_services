@@ -235,6 +235,17 @@ class Gebied(es.DocType):
         name = settings.ELASTIC_INDICES['BAG_GEBIED']
 
 
+class LandelijkId(es.DocType):
+    id = es.Keyword()
+    type = es.Keyword
+    subtype = es.Keyword()
+    landelijk_id = es.Keyword()
+    _display = es.Keyword()
+
+    class Index:
+        name = settings.ELASTIC_INDICES['LANDELIJK_ID']
+
+
 def get_centroid(geom, transform=None):
     """
     Finds the centroid of a geometrie object
@@ -483,4 +494,15 @@ def from_woonplaats(w: models.Woonplaats):
     d._display = '{} ({})'.format(w.naam, d.subtype)
     d.g_code = w.landelijk_id
     d.order = 2
+    return d
+
+
+def from_landelijk_id(l, subtype):
+    landelijk_id = l.landelijk_id
+    d = LandelijkId(_id=landelijk_id)
+    d.type = 'landelijk_id'
+    d.subtype = subtype
+    landelijk_id_no_zero = landelijk_id.lstrip('0')
+    d.landelijk_id = landelijk_id_no_zero
+    d._display = '{} ({})'.format(landelijk_id, d.subtype)
     return d

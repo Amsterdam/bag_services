@@ -19,7 +19,7 @@ def load_docs():
         naam='Centrum')
 
     bag_factories.OpenbareRuimteFactory.create(
-        naam="Prinsengracht", type='02')
+        naam="Prinsengracht", type='02', landelijk_id='0123456789012345')
 
     # Create brug objects
     bag_factories.OpenbareRuimteFactory.create(
@@ -37,6 +37,7 @@ def load_docs():
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=anjeliersstraat, huisnummer=11, huisletter='A',
         type='01',
+        landelijk_id='5432109876543210',
         postcode=1001)
 
     bag_factories.NummeraanduidingFactory.create(
