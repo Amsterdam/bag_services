@@ -128,6 +128,10 @@ class Nummeraanduiding(es.DocType):
         fields={'keyword': es.Keyword()}
     )
 
+    # to return official bag fields
+    bag_toevoeging = es.Keyword()
+    bag_huisletter = es.Keyword()
+
     postcode = es.Text(
         analyzer=analyzers.postcode,
         fields=postcode_fields,
@@ -319,6 +323,9 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
+
+    doc.bag_huisletter = n.huisletter
+    doc.bag_toevoeging = n.huisnummer_toevoeging
 
     doc.hoofdadres = n.hoofdadres
 
