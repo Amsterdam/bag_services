@@ -171,15 +171,10 @@ class RelatedSummaryField(serializers.Field):
             # if not filter_name.endswith('__id'):
             parent_pk = landelijk_id
 
- #       scheme, netloc, path, query_string, fragment = urlsplit(url)
- #       query_params = parse_qs(query_string)
- #       query_params[filter_name] = [parent_pk]
- #       new_query_string = urlencode(query_params, doseq=True)
- #       href = urlunsplit((scheme, netloc, path, new_query_string, fragment))
         separator = '&' if '?' in url else '?'
         return {
             'count': count,
-             'href': "{}{}{}={}".format(url, separator, filter_name, parent_pk),
+            'href': f"{url}{separator}{filter_name}={parent_pk}",
         }
 
 
@@ -221,9 +216,9 @@ class AdresFilterField(serializers.Field):
         else:
             landelijk_id = obj.id
 
+        separator = '&' if '?' in url else '?'
         return {
-            'href': '{}?{}={}'.format(
-                url, filterkey, landelijk_id)
+            'href': f'{url}{separator}{filterkey}={landelijk_id}'
         }
 
 
