@@ -18,7 +18,7 @@ class QueryTest(APITransactionTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        load_docs()
+        load_docs(cls)
 
     def test_openbare_ruimte(self):
         response = self.client.get(
@@ -151,15 +151,38 @@ class QueryTest(APITransactionTestCase):
 
         self.assertIn("RN35", str(response.data))
 
-    def test_search_landelijk_id_pand(self):
-        q = '12345678'
-        res = self.client.get(f'/atlas/search/landelijk_id/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals('0123456789012345', res.data['results'][0]['landelijk_id'])
-        self.assertEquals('openbare_ruimte', res.data['results'][0]['subtype'])
-
     def test_typeahead_landelijk_id_na(self):
-        q = '543210987'
+        q = self.na.landelijk_id[0:9]
+        vbo_id = self.na.verblijfsobject.id
         res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
         self.assertEquals(200, res.status_code)
-        self.assertEquals('bag/nummeraanduiding/5432109876543210/', res.data[0]['content'][0]['uri'])
+        self.assertEquals(f'bag/verblijfsobject/{vbo_id}/', res.data[0]['content'][0]['uri'])
+
+    def test_typeahead_adresseerbaar_object_id_na(self):
+        adresseerbaar_object_id = self.na.verblijfsobject.landelijk_id
+        q = adresseerbaar_object_id.lstrip('0')[0:9]
+        vbo_id = self.na.verblijfsobject.id
+        res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals(f'bag/verblijfsobject/{vbo_id}/', res.data[0]['content'][0]['uri'])
+
+    def test_typeahead_opr_landelijk_id(self):
+        q = self.prinsengracht.landelijk_id[0:6]
+        opr_id = self.prinsengracht.id
+        res = self.client.get(f'/atlas/typeahead/gebieden/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals(f'bag/openbareruimte/{opr_id}/', res.data[0]['content'][0]['uri'])
+
+    def test_typeahead_pand_landelijk_id(self):
+        q = self.pand1.landelijk_id[0:9]
+        res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals(f'bag/pand/{self.pand1.id}/', res.data[0]['content'][0]['uri'])
+
+    # Add if pand_naam search was added to bag typeahead endpoint
+    # def test_typeahead_pand_pandnaam(self):
+    #     q = self.pand1.pandnaam[0:6]
+    #     res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
+    #     self.assertEquals(200, res.status_code)
+    #     self.assertEquals(f'bag/pand/{self.pand1.id}/', res.data[0]['content'][0]['uri'])
+

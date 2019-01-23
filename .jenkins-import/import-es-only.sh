@@ -32,6 +32,6 @@ echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
 
 echo "Make es backup"
-dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding,landelijk_id
+dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding,pand
 
 echo "Done"

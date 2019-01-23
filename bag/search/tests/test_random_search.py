@@ -15,7 +15,7 @@ class RandomShitTest(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        load_docs()
+        load_docs(cls)
 
     def test_random_shit_typeahead(self):
         """

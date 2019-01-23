@@ -90,7 +90,7 @@ ELASTIC_INDICES = {
     'BRK_OBJECT': 'brk_object',
     'BRK_SUBJECT': 'brk_subject',
     'NUMMERAANDUIDING': 'nummeraanduiding',
-    'LANDELIJK_ID': 'landelijk_id',
+    'BAG_PAND': 'bag_pand',
 }
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'

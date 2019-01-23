@@ -157,6 +157,21 @@ class Nummeraanduiding(es.DocType):
     subtype = es.Keyword()
     _display = es.Keyword()
 
+    landelijk_id = es.Text(
+        analyzer=analyzers.autocomplete,
+        fields={
+            'raw': es.Keyword(),
+            'nozero': es.Text(analyzer=analyzers.nozero)
+        }
+    )
+    adresseerbaar_object_id = es.Text(  # Is landelijk_id for related verblijfsobject, ligplaats of standplaats
+        analyzer=analyzers.autocomplete,
+        fields={
+            'raw': es.Keyword(),
+            'nozero': es.Text(analyzer=analyzers.nozero)
+        }
+    )
+
     class Index:
         name = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 
@@ -235,19 +250,35 @@ class Gebied(es.DocType):
 
     centroid = es.GeoPoint()
 
+    landelijk_id = es.Text(  # Only for voor openbare_ruimte
+        analyzer=analyzers.autocomplete,
+        fields={
+            'raw': es.Keyword(),
+            'nozero': es.Text(analyzer=analyzers.nozero)
+        }
+    )
+
     class Index:
         name = settings.ELASTIC_INDICES['BAG_GEBIED']
 
 
-class LandelijkId(es.DocType):
+class Pand(es.DocType):
     id = es.Keyword()
-    type = es.Keyword
-    subtype = es.Keyword()
-    landelijk_id = es.Keyword()
+    landelijk_id = es.Text(
+        analyzer=analyzers.autocomplete,
+        fields={
+            'raw': es.Keyword(),
+            'nozero': es.Text(analyzer=analyzers.nozero)
+        }
+    )
+    pandnaam = es.Text(
+        analyzer=analyzers.adres,
+        fields=naam_fields
+    )
     _display = es.Keyword()
 
     class Index:
-        name = settings.ELASTIC_INDICES['LANDELIJK_ID']
+        name = settings.ELASTIC_INDICES['BAG_PAND']
 
 
 def get_centroid(geom, transform=None):
@@ -335,12 +366,16 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
             'omschrijving': n.status.omschrijving
         })
 
+    doc.landelijk_id = n.landelijk_id
+
     # verblijfsobject status
-    if n.adresseerbaar_object and n.adresseerbaar_object.status:
-        doc.vbo_status.append({
-            'code': n.adresseerbaar_object.status.code,
-            'omschrijving': n.adresseerbaar_object.status.omschrijving
-        })
+    if n.adresseerbaar_object:
+        if n.adresseerbaar_object.status:
+            doc.vbo_status.append({
+                'code': n.adresseerbaar_object.status.code,
+                'omschrijving': n.adresseerbaar_object.status.omschrijving
+            })
+        doc.adresseerbaar_object_id = n.adresseerbaar_object.landelijk_id
 
     if n.bron:
         doc.bron = n.bron.omschrijving
@@ -389,6 +424,8 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
     d._display = d.naam
 
     d.centroid = get_centroid(o.geometrie, 'wgs84')
+
+    d.landelijk_id = o.landelijk_id
 
     return d
 
@@ -504,12 +541,11 @@ def from_woonplaats(w: models.Woonplaats):
     return d
 
 
-def from_landelijk_id(l, subtype):
-    landelijk_id = l.landelijk_id
-    d = LandelijkId(_id=landelijk_id)
-    d.type = 'landelijk_id'
-    d.subtype = subtype
-    landelijk_id_no_zero = landelijk_id.lstrip('0')
-    d.landelijk_id = landelijk_id_no_zero
-    d._display = '{} ({})'.format(landelijk_id, d.subtype)
+def from_pand(l):
+    d = Pand(_id=l.id)
+    d.type = 'pand'
+    d.subtype = 'pand'
+    d.landelijk_id = l.landelijk_id
+    d.pandnaam = l.pandnaam
+    d._display = '{} ({})'.format(l.pandnaam if l.pandnaam else l.landelijk_id, d.subtype)
     return d

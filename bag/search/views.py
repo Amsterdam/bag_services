@@ -155,11 +155,20 @@ all_query_selectors = [
         'query': bag_qs.gebied_query,
     },
     {
-        'labels': {'landelijk_id'},
+        'labels': {'nummeraanduiding'},
         'testfunction': 'is_landelijk_id_prefix',
-        'query': bag_qs.landelijk_id_query,
+        'query': bag_qs.landelijk_id_nummeraanduiding_query,
     },
-
+    {
+        'labels': {'gebieden'},
+        'testfunction': 'is_landelijk_id_prefix',
+        'query': bag_qs.landelijk_id_openbare_ruimte_query,
+    },
+    {
+        'labels': {'pand'},
+        'testfunction': 'is_landelijk_id_prefix',
+        'query': bag_qs.landelijk_id_pand_query,
+    },
 ]
 
 default_queries = {
@@ -543,7 +552,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
     filter_backends = [BagQ]
 
     def list(self, request):
-        return self._abstr_list(request, {'bag', 'nummeraanduiding', 'landelijk_id'})
+        return self._abstr_list(request, {'bag', 'nummeraanduiding', 'pand'})
 
 
 def authorized_subject_queries(request, analyzer):
@@ -992,6 +1001,8 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
+        elif analyzer.is_landelijk_id_prefix():
+            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer)
         else:
             search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
@@ -1042,6 +1053,16 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     straatnaam toevoeging, als er meer dan een huisnummer betrokken is bij
     het adres / nummeraanduiding.
+    
+    Het is ook mogelijk om te zoeken op prefix van het landelijk_id van nummeraanduiding of bijbehorend
+    verblijfsobject, ligplaats of standplaats.
+    
+    [/search/adres/?q=03630100010317](https://api.data.amsterdam.nl/atlas/search/adres/?q=03630100010317)
+    
+    of 
+    
+    [/search/adres/?q=3630100](https://api.data.amsterdam.nl/atlas/search/adres/?q=3630100)
+
 
     """   # noqa
     url_name = 'search/adres-list'
@@ -1060,6 +1081,9 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
         elif analyzer.is_straatnaam_huisnummer_prefix():
             q = bag_qs.straatnaam_huisnummer_query(analyzer)
+
+        elif analyzer.is_landelijk_id_prefix():
+            q = bag_qs.landelijk_id_nummeraanduiding_query(analyzer)
 
         if not q:
             q = bag_qs.straatnaam_query(analyzer)
@@ -1124,28 +1148,20 @@ class SearchPostcodeViewSet(SearchViewSet):
         return []
 
 
-class LandelijkIdQ(QFilter):
+class PandQ(QFilter):
+    search_description = 'Zoek op pand'
+    search_title = 'Pand'
 
-     search_description = 'Zoek op landelijk ID'
-     search_title = 'Landelijk ID'
 
+class SearchPandViewSet(SearchViewSet):
+    url_name = 'search/pand-list'
+    filter_backends = [PandQ]
 
-class SearchLandelijkIdViewSet(SearchViewSet):
-    url_name = 'search/landelijk_id-list'
-    filter_backends = [LandelijkIdQ]
-
-    def search_query(self, request, elk_client,
-                     analyzer: QueryAnalyzer) -> Search:
-        """Creating the actual query to ES"""
-
+    def search_query(self, request,
+                     elk_client, analyzer: QueryAnalyzer) -> Search:
         if analyzer.is_landelijk_id_prefix():
-            return bag_qs.landelijk_id_query(analyzer) \
-                .to_elasticsearch_object(elk_client)
+            return bag_qs.landelijk_id_pand_query(analyzer).to_elasticsearch_object(elk_client)
+        else:
+            return bag_qs.pandnaam_query(analyzer).to_elasticsearch_object(elk_client)
 
         return []
-
-    def normalize_hit(self, hit, request):
-        # Use original landelijk_id in case zeros were removed
-        hit.landelijk_id = hit.meta.id
-        return super().normalize_hit(hit, request)
-
