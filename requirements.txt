@@ -69,8 +69,6 @@ oslo.utils==3.40.0
 packaging==18.0
 pbr==5.1.1
 pies==2.6.7
-pip-review==1.0
-pip-tools==3.2.0
 positional==1.2.1
 psycopg2-binary==2.7.6.1
 pycodestyle==2.4.0
