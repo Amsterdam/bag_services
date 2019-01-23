@@ -2202,7 +2202,6 @@ class BuildIndexBagJob(object):
     def tasks(self):
         return [
             IndexNummerAanduidingTask(),
-            IndexPandTask(),
         ]
 
 
@@ -2213,7 +2212,6 @@ class DeleteIndexBagJob(object):
     def tasks(self):
         return [
             DeleteNummerAanduidingIndexTask(),
-            DeletePandTask(),
         ]
 
 
