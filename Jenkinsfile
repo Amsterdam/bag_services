@@ -24,9 +24,7 @@ node {
 
     stage('Test') {
         tryStep "test", {
-            {
-                sh ".jenkins-test/test.sh"
-            }
+            sh ".jenkins-test/test.sh"
         }
     }
 
