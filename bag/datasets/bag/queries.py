@@ -22,7 +22,7 @@ log = logging.getLogger('bag_Q')
 BAG_BOUWBLOK = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-LANDELIJK_ID = settings.ELASTIC_INDICES['LANDELIJK_ID']
+BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
 
 def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
@@ -274,7 +274,24 @@ def straatnaam_huisnummer_query(
     )
 
 
-def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """ create query/aggregation for public area"""
+
+    landelijk_id = analyzer.get_landelijk_id()
+
+    return ElasticQueryWrapper(
+        query=Q(
+            'bool',
+            should=[
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+                {'prefix': {'adresseerbaar_object_id.nozero': landelijk_id}}
+            ],
+        ),
+        sort_fields=['_id'],
+        indexes=[NUMMERAANDUIDING]
+    )
+
+def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -283,9 +300,48 @@ def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         query=Q(
             'bool',
             must=[
-                {'prefix': {'landelijk_id': landelijk_id}},
-            ],
+                {'term': {'type': 'openbare_ruimte'}},
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+            ]
         ),
         sort_fields=['_id'],
-        indexes=[LANDELIJK_ID]
+        indexes=[BAG_GEBIED]
+    )
+
+
+def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """ create query/aggregation for public area"""
+
+    landelijk_id = analyzer.get_landelijk_id()
+
+    return ElasticQueryWrapper(
+        query=Q(
+            'bool',
+            must=[
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+            ]
+        ),
+        sort_fields=['_id'],
+        indexes=[BAG_PAND]
+    )
+
+
+def pandnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """
+    Maak een query voor pand op pandnaam.
+    """
+    pandnaam = analyzer.get_straatnaam()
+
+    return ElasticQueryWrapper(
+        query={
+            'multi_match': {
+                'query': pandnaam,
+                'type': 'phrase_prefix',
+                'fields': [
+                    'pandnaam',
+                ]
+            },
+        },
+        sort_fields=['_display'],
+        indexes=[BAG_PAND]
     )

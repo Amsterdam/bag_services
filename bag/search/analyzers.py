@@ -97,6 +97,13 @@ lowercase = analysis.normalizer(
     filter=['lowercase']
 )
 
+strip_zero = analysis.CustomCharFilter(
+    "strip_zero",
+    builtin_type="pattern_replace",
+    pattern="^0+(.*)",
+    replacement="$1"
+)
+
 ####################################
 #           Analyzers              #
 ####################################
@@ -217,3 +224,10 @@ kad_obj_aanduiding_keyword = es.analyzer(
         token_chars=['letter', 'digit']),
     filter=['lowercase']
 )
+
+
+nozero = es.analyzer(
+    'nozero',
+    tokenizer='standard',
+    filter=[edge_ngram_filter],
+    char_filter=[strip_zero])

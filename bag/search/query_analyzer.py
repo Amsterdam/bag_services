@@ -337,7 +337,6 @@ class QueryAnalyzer(object):
     def get_landelijk_id(self) -> str:
         assert self.is_landelijk_id_prefix()
 
-        # strip leading zeros from query. All the landelijk id's have
-        # been indexed without leading zero's
+        # strip leading zeros from query. Match against landelijk_if__nozero
         return self.query.lstrip('0')
 

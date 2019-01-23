@@ -12,13 +12,13 @@ import datasets.brk.batch
 from datasets.brk.tests import factories as brk_factories
 
 
-def load_docs():
+def load_docs(cls):
 
     bag_factories.StadsdeelFactory(
         id='test_query',
         naam='Centrum')
 
-    bag_factories.OpenbareRuimteFactory.create(
+    cls.prinsengracht = bag_factories.OpenbareRuimteFactory.create(
         naam="Prinsengracht", type='02', landelijk_id='0123456789012345')
 
     # Create brug objects
@@ -34,7 +34,7 @@ def load_docs():
     anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
         naam="Anjeliersstraat", type='01')
 
-    bag_factories.NummeraanduidingFactory.create(
+    cls.na = bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=anjeliersstraat, huisnummer=11, huisletter='A',
         type='01',
         landelijk_id='5432109876543210',
@@ -117,12 +117,16 @@ def load_docs():
         woonadres=adres
     )
 
+    cls.pand1 = bag_factories.PandFactory.create()
+
     batch.execute(datasets.bag.batch.DeleteIndexBagJob())
     batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())
+    batch.execute(datasets.bag.batch.DeleteIndexPandJob())
     batch.execute(datasets.brk.batch.DeleteIndexKadasterJob())
 
     batch.execute(datasets.bag.batch.IndexBagJob())
     batch.execute(datasets.bag.batch.IndexGebiedenJob())
+    batch.execute(datasets.bag.batch.IndexPandJob())
     batch.execute(datasets.brk.batch.IndexKadasterJob())
 
     es = Elasticsearch(hosts=settings.ELASTIC_SEARCH_HOSTS)

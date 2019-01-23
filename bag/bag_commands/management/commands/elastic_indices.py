@@ -10,13 +10,14 @@ from batch import batch
 
 
 class Command(BaseCommand):
-    ordered = ['bag', 'brk', 'wkpb', 'gebieden']
+    ordered = ['bag', 'brk', 'wkpb', 'gebieden', 'pand']
 
     indexes = {
         'bag': [datasets.bag.batch.BuildIndexBagJob],
         'brk': [datasets.brk.batch.BuildIndexKadasterJob],
         'wkpb': [],
         'gebieden': [datasets.bag.batch.IndexGebiedenJob],
+        'pand': [datasets.bag.batch.IndexPandJob],
     }
 
     delete_indexes = {
@@ -24,6 +25,7 @@ class Command(BaseCommand):
         'brk': [datasets.brk.batch.DeleteIndexKadasterJob],
         'wkpb': [],  # has no elastic index
         'gebieden': [datasets.bag.batch.DeleteIndexGebiedJob],
+        'pand': [datasets.bag.batch.DeleteIndexPandJob],
     }
 
     def add_arguments(self, parser):

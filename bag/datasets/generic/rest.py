@@ -2,8 +2,6 @@
 from collections import OrderedDict
 import json
 # Packages
-from urllib.parse import urlsplit, parse_qs, urlencode, urlunsplit
-
 from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import renderers, serializers
@@ -173,15 +171,15 @@ class RelatedSummaryField(serializers.Field):
             # if not filter_name.endswith('__id'):
             parent_pk = landelijk_id
 
-        scheme, netloc, path, query_string, fragment = urlsplit(url)
-        query_params = parse_qs(query_string)
-        query_params[filter_name] = [parent_pk]
-        new_query_string = urlencode(query_params, doseq=True)
-        href = urlunsplit((scheme, netloc, path, new_query_string, fragment))
-
+ #       scheme, netloc, path, query_string, fragment = urlsplit(url)
+ #       query_params = parse_qs(query_string)
+ #       query_params[filter_name] = [parent_pk]
+ #       new_query_string = urlencode(query_params, doseq=True)
+ #       href = urlunsplit((scheme, netloc, path, new_query_string, fragment))
+        separator = '&' if '?' in url else '?'
         return {
             'count': count,
-            'href': href,
+             'href': "{}{}{}={}".format(url, separator, filter_name, parent_pk),
         }
 
 
