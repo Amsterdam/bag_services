@@ -682,8 +682,8 @@ class SearchViewSet(viewsets.ViewSet):
         # Finding link to self via reverse url search
         followup_url = reverse(self.url_name, request=request)
 
-        self_url = "{}?q={}&page={}".format(
-            followup_url, url_query, page)
+        separator = '&' if '?' in followup_url else '?'
+        self_url = f"{followup_url}{separator}q={url_query}&page={page}"
 
         response['_links'] = OrderedDict([
             ('self', {'href': self_url}),
@@ -695,14 +695,11 @@ class SearchViewSet(viewsets.ViewSet):
         if end < result.hits.total:
             if end < (self.page_size * self.page_limit):
                 # There should be a next
-                response['_links']['next']['href'] = "{}?q={}&page={}".format(
-                    followup_url, url_query, page + 1)
+                response['_links']['next']['href'] = f"{followup_url}{separator}q={url_query}&page={page + 1}"
         if page == 2:
-            response['_links']['prev']['href'] = "{}?q={}".format(
-                followup_url, url_query)
+            response['_links']['prev']['href'] = f"{followup_url}{separator}q={url_query}"
         elif page > 2:
-            response['_links']['prev']['href'] = "{}?q={}&page={}".format(
-                followup_url, url_query, page - 1)
+            response['_links']['prev']['href'] = f"{followup_url}{separator}q={url_query}&page={page - 1}"
 
     def list(self, request, *args, **kwargs):
         """
