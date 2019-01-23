@@ -6,8 +6,6 @@ database:
 
 elasticsearch:
   image: amsterdam/elasticsearch6
-  volumes:
-    - ./backups/elasticsearch:/tmp/backups
   command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
 tests:
