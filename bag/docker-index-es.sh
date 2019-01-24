@@ -11,11 +11,11 @@ source docker-wait.sh
 # clear elasticindices and creates empty ones
 python manage.py elastic_indices --delete
 
-python manage.py elastic_indices gebieden wkpb --build
+python manage.py elastic_indices gebieden wkpb pand --build
 
 python manage.py elastic_indices bag brk --partial=1/3 --build &
 python manage.py elastic_indices bag brk --partial=2/3 --build &
-python manage.py elastic_indices bag brk --partial=3/3 --build
+python manage.py elastic_indices bag brk --partial=3/3 --build &
 
 
 FAIL=0
