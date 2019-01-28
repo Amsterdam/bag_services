@@ -194,6 +194,14 @@ def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
+def _add_subtype(q : dict, subtype: str):
+    if subtype:
+        if subtype.startswith("not_"):
+            subtype = subtype[4:]
+            q['must_not'] = [{'term': {'subtype': subtype}}]
+        else:
+            q['must'].append({'term': {'subtype': subtype}})
+
 def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
     """
     Maak een query voor openbare ruimte.
@@ -201,12 +209,8 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Elast
     dq = {
         'must': [{'term': {'type': 'openbare_ruimte'}}]
     }
-    if subtype:
-        if subtype.startswith("not_"):
-            subtype = subtype[4:]
-            dq['must_not'] = [{'term': {'subtype': subtype}}]
-        else:
-            dq['must'].append({'term': {'subtype': subtype}})
+
+    _add_subtype(dq, subtype)
     return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
@@ -303,12 +307,7 @@ def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = N
                 {'prefix': {'landelijk_id.nozero': landelijk_id}},
             ]
     }
-    if subtype:
-        if subtype.startswith("not_"):
-            subtype = subtype[4:]
-            kwargs['must_not'] = [{'term': {'subtype': subtype}}]
-        else:
-            kwargs['must'].append({'term': {'subtype': subtype}})
+    _add_subtype(kwargs, subtype)
 
     query = Q(
             'bool',

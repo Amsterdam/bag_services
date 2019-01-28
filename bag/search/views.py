@@ -971,7 +971,11 @@ class OpenbareRuimteQ(QFilter):
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
-    of all openabare ruimte objects that match the elastic search query.
+    of all openbare ruimte objects that match the elastic search query.
+
+    The optional parameter `subtype` limits the query to a openbare ruimte
+    of a specific subtype, or, if the negation was specified with for example
+    `subtype=not_weg` all subtypes except `weg` are returned.
 
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
