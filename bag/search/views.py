@@ -68,7 +68,8 @@ _autocomplete_group_sizes = {
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
-    'Bouwblokken': 5
+    'Bouwblokken': 5,
+    'Panden': 5,
 }
 
 _autocomplete_group_order = [
@@ -78,7 +79,8 @@ _autocomplete_group_order = [
     'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
-    'Bouwblokken'
+    'Bouwblokken',
+    'Panden',
 ]
 
 _subtype_mapping = {
@@ -90,7 +92,7 @@ _subtype_mapping = {
     'spoorbaan': 'Openbare ruimtes',
     'landschappelijk gebied': 'Openbare ruimtes',
     'nummeraanduiding': 'Adressen',
-    'pand': 'Adressen',
+    'pand': 'Panden',
     'openbare_ruimte': 'Adressen',
     'verblijfsobject': 'Adressen',
     'ligplaats': 'Adressen',
@@ -969,7 +971,11 @@ class OpenbareRuimteQ(QFilter):
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
-    of all openabare ruimte objects that match the elastic search query.
+    of all openbare ruimte objects that match the elastic search query.
+
+    The optional parameter `subtype` limits the query to a openbare ruimte
+    of a specific subtype, or, if the negation was specified with for example
+    `subtype=not_weg` all subtypes except `weg` are returned.
 
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
@@ -999,7 +1005,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
         elif analyzer.is_landelijk_id_prefix():
-            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer)
+            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer, subtype)
         else:
             search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
