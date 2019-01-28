@@ -1001,7 +1001,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
         elif analyzer.is_landelijk_id_prefix():
-            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer)
+            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer, subtype)
         else:
             search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
