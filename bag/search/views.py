@@ -68,7 +68,8 @@ _autocomplete_group_sizes = {
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
-    'Bouwblokken': 5
+    'Bouwblokken': 5,
+    'Panden': 5,
 }
 
 _autocomplete_group_order = [
@@ -78,7 +79,8 @@ _autocomplete_group_order = [
     'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
-    'Bouwblokken'
+    'Bouwblokken',
+    'Panden',
 ]
 
 _subtype_mapping = {
@@ -90,7 +92,7 @@ _subtype_mapping = {
     'spoorbaan': 'Openbare ruimtes',
     'landschappelijk gebied': 'Openbare ruimtes',
     'nummeraanduiding': 'Adressen',
-    'pand': 'Adressen',
+    'pand': 'Panden',
     'openbare_ruimte': 'Adressen',
     'verblijfsobject': 'Adressen',
     'ligplaats': 'Adressen',

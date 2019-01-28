@@ -547,5 +547,5 @@ def from_pand(l):
     d.subtype = 'pand'
     d.landelijk_id = l.landelijk_id
     d.pandnaam = l.pandnaam
-    d._display = '{} ({})'.format(l.pandnaam if l.pandnaam else l.landelijk_id, d.subtype)
+    d._display = '{}'.format(l.pandnaam if l.pandnaam else l.landelijk_id)
     return d
