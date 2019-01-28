@@ -512,7 +512,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             ordered_results.append({
                 'label': group,
-                'content': result_groups[group][:size]
+                'content': result_groups[group][:size],
+                'total_results': len(result_groups[group])
             })
 
         return ordered_results
