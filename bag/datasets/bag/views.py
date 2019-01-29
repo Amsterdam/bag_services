@@ -241,6 +241,8 @@ class NummeraanduidingFilter(FilterSet):
 
     kadastraalobject = filters.CharFilter(method="kot_filter", label='kot')
 
+    detailed = filters.BooleanFilter(method="dummy_filter", label='detailed', help_text='Show all fields')
+
     class Meta:
         model = models.Nummeraanduiding
         fields = [
@@ -340,6 +342,10 @@ class NummeraanduidingFilter(FilterSet):
         else:
             return queryset.filter(standplaats__id=value)
 
+    def dummy_filter(self, queryset, _filter_name, value):
+        """Dummy filter to add detailed parameter to Swagger"""
+        return queryset
+
 
 class NummeraanduidingViewSet(rest.DatapuntViewSet):
     """
@@ -414,6 +420,8 @@ class PandenFilter(FilterSet):
 
     locatie = filters.CharFilter(method="locatie_filter", label='locatie')
 
+    detailed = filters.BooleanFilter(method="dummy_filter", label='detailed', help_text='Show all fields')
+
     class Meta:
         model = models.Pand
 
@@ -450,6 +458,10 @@ class PandenFilter(FilterSet):
         ).annotate(afstand=Distance('geometrie', point))
 
         return opr.order_by('afstand')
+
+    def dummy_filter(self, queryset, _filter_name, value):
+        """Dummy filter to add detailed parameter to Swagger"""
+        return queryset
 
 
 class PandPager(rest.HALPagination):
