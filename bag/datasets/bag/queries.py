@@ -22,7 +22,7 @@ log = logging.getLogger('bag_Q')
 BAG_BOUWBLOK = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
 BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-LANDELIJK_ID = settings.ELASTIC_INDICES['LANDELIJK_ID']
+BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
 
 def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
@@ -194,6 +194,14 @@ def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
+def _add_subtype(q : dict, subtype: str):
+    if subtype:
+        if subtype.startswith("not_"):
+            subtype = subtype[4:]
+            q['must_not'] = [{'term': {'subtype': subtype}}]
+        else:
+            q['must'].append({'term': {'subtype': subtype}})
+
 def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
     """
     Maak een query voor openbare ruimte.
@@ -201,12 +209,8 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Elast
     dq = {
         'must': [{'term': {'type': 'openbare_ruimte'}}]
     }
-    if subtype:
-        if subtype.startswith("not_"):
-            subtype = subtype[4:]
-            dq['must_not'] = [{'term': {'subtype': subtype}}]
-        else:
-            dq['must'].append({'term': {'subtype': subtype}})
+
+    _add_subtype(dq, subtype)
     return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
@@ -274,7 +278,50 @@ def straatnaam_huisnummer_query(
     )
 
 
-def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """ create query/aggregation for public area"""
+
+    landelijk_id = analyzer.get_landelijk_id()
+
+    return ElasticQueryWrapper(
+        query=Q(
+            'bool',
+            should=[
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+                {'prefix': {'adresseerbaar_object_id.nozero': landelijk_id}}
+            ],
+        ),
+        sort_fields=['_id'],
+        indexes=[NUMMERAANDUIDING]
+    )
+
+
+def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
+    """ create query/aggregation for public area"""
+
+    landelijk_id = analyzer.get_landelijk_id()
+
+    kwargs = {
+            'must' : [
+                {'term': {'type': 'openbare_ruimte'}},
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+            ]
+    }
+    _add_subtype(kwargs, subtype)
+
+    query = Q(
+            'bool',
+            **kwargs
+        )
+
+    return ElasticQueryWrapper(
+        query=query,
+        sort_fields=['_id'],
+        indexes=[BAG_GEBIED]
+    )
+
+
+def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -283,9 +330,30 @@ def landelijk_id_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         query=Q(
             'bool',
             must=[
-                {'prefix': {'landelijk_id': landelijk_id}},
-            ],
+                {'prefix': {'landelijk_id.nozero': landelijk_id}},
+            ]
         ),
         sort_fields=['_id'],
-        indexes=[LANDELIJK_ID]
+        indexes=[BAG_PAND]
+    )
+
+
+def pandnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+    """
+    Maak een query voor pand op pandnaam.
+    """
+    pandnaam = analyzer.get_straatnaam()
+
+    return ElasticQueryWrapper(
+        query={
+            'multi_match': {
+                'query': pandnaam,
+                'type': 'phrase_prefix',
+                'fields': [
+                    'pandnaam',
+                ]
+            },
+        },
+        sort_fields=['_display'],
+        indexes=[BAG_PAND]
     )

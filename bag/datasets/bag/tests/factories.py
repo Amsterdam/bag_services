@@ -156,6 +156,7 @@ class PandFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
+    pandnaam = fuzzy.FuzzyText(length=20)
     bouwblok = factory.SubFactory(BouwblokFactory)
 
 

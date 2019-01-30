@@ -1,6 +1,4 @@
 # Python
-# import datetime
-# import json
 import logging
 import os
 # Packages
@@ -9,7 +7,6 @@ from django.contrib.gis.geos import Point
 from django.db import connection
 from django.db.models import Value, CharField
 from django.utils.text import slugify
-# import requests
 # Project
 from search import index
 from batch import batch
@@ -1460,9 +1457,9 @@ class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
     doc_types = [documents.Nummeraanduiding]
 
 
-class DeleteLandelijkIdTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['LANDELIJK_ID']
-    doc_types = [documents.LandelijkId]
+class DeletePandTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_PAND']
+    doc_types = [documents.Pand]
 
 
 class IndexLigplaatsTask(index.ImportIndexTask):
@@ -1593,58 +1590,13 @@ class IndexNummerAanduidingTask(index.ImportIndexTask):
         return documents.from_nummeraanduiding_ruimte(obj)
 
 
-class IndexLandelijkIdNummeraanduidingTask(index.ImportIndexTask):
-    name = "index landelijk id met nummeraanduiding"
+class IndexPandTask(index.ImportIndexTask):
+    name = "index pand"
 
-    queryset = models.Nummeraanduiding.objects.only('landelijk_id')
-
-    def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'nummeraanduiding')
-
-
-class IndexLandelijkIdOpenbareRuimteTask(index.ImportIndexTask):
-    name = "index landelijk id met openbare ruimte"
-
-    queryset = models.OpenbareRuimte.objects.only('landelijk_id')
+    queryset = models.Pand.objects.only('landelijk_id', 'pandnaam')
 
     def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'openbare_ruimte')
-
-
-class IndexLandelijkIdLigplaatsTask(index.ImportIndexTask):
-    name = "index landelijk id met ligplaats"
-
-    queryset = models.Ligplaats.objects.only('landelijk_id')
-
-    def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'ligplaats')
-
-
-class IndexLandelijkIdStandplaatsTask(index.ImportIndexTask):
-    name = "index landelijk id met standplaats"
-
-    queryset = models.Standplaats.objects.only('landelijk_id')
-
-    def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'standplaats')
-
-
-class IndexLandelijkIdPandTask(index.ImportIndexTask):
-    name = "index landelijk id met pand"
-
-    queryset = models.Pand.objects.only('landelijk_id')
-
-    def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'pand')
-
-
-class IndexLandelijkIdVerblijfsObjectTask(index.ImportIndexTask):
-    name = "index landelijk id met verblijfsobject"
-
-    queryset = models.Verblijfsobject.objects.only('landelijk_id')
-
-    def convert(self, obj):
-        return documents.from_landelijk_id(obj, 'verblijfsobject')
+        return documents.from_pand(obj)
 
 
 class IndexBouwblokTask(index.ImportIndexTask):
@@ -2241,13 +2193,6 @@ class IndexBagJob(object):
         return [
             DeleteNummerAanduidingIndexTask(),
             IndexNummerAanduidingTask(),
-            DeleteLandelijkIdTask(),
-            IndexLandelijkIdNummeraanduidingTask(),
-            IndexLandelijkIdOpenbareRuimteTask(),
-            IndexLandelijkIdLigplaatsTask(),
-            IndexLandelijkIdStandplaatsTask(),
-            IndexLandelijkIdPandTask(),
-            IndexLandelijkIdVerblijfsObjectTask(),
         ]
 
 
@@ -2257,12 +2202,6 @@ class BuildIndexBagJob(object):
     def tasks(self):
         return [
             IndexNummerAanduidingTask(),
-            IndexLandelijkIdNummeraanduidingTask(),
-            IndexLandelijkIdOpenbareRuimteTask(),
-            IndexLandelijkIdLigplaatsTask(),
-            IndexLandelijkIdStandplaatsTask(),
-            IndexLandelijkIdPandTask(),
-            IndexLandelijkIdVerblijfsObjectTask(),
         ]
 
 
@@ -2273,7 +2212,35 @@ class DeleteIndexBagJob(object):
     def tasks(self):
         return [
             DeleteNummerAanduidingIndexTask(),
-            DeleteLandelijkIdTask(),
+        ]
+
+
+class IndexPandJob(object):
+    name = "Delete and Fill Pand search-index"
+
+    def tasks(self):
+        return [
+            DeletePandTask(),
+            IndexPandTask(),
+        ]
+
+
+class BuildIndexPandJob(object):
+    name = "Fill Pand search-index"
+
+    def tasks(self):
+        return [
+            IndexPandTask(),
+        ]
+
+
+class DeleteIndexPandJob(object):
+
+    name = "Delete Pand related indexes"
+
+    def tasks(self):
+        return [
+            DeletePandTask(),
         ]
 
 

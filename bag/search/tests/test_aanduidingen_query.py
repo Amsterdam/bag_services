@@ -82,7 +82,7 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=nen_straat
         )
 
-        bag_factories.NummeraanduidingFactory.create(
+        cls.na1 = bag_factories.NummeraanduidingFactory.create(
             huisnummer=29,
             huisletter='H',
             huisnummer_toevoeging=17,
@@ -221,3 +221,23 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Koningin Wilhelminaplein 122B-1A")
+
+    def test_query_landelijk_id(self):
+        landelijk_id =  self.na1.landelijk_id.lstrip('0')[0:12]
+        response = self.client.get(
+            "/atlas/search/adres/", {'q': landelijk_id})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['landelijk_id'], self.na1.landelijk_id)
+
+    def test_query_addresseerbaar_object_id_id(self):
+        adresseerbaar_object_id = self.na1.verblijfsobject.landelijk_id
+        response = self.client.get(
+            "/atlas/search/adres/", {'q': adresseerbaar_object_id})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['adresseerbaar_object_id'], adresseerbaar_object_id )

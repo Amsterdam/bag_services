@@ -68,7 +68,8 @@ _autocomplete_group_sizes = {
     'Gebieden': 5,
     'Kadastrale objecten': 8,
     'Kadastrale subjecten': 5,
-    'Bouwblokken': 5
+    'Bouwblokken': 5,
+    'Panden': 5,
 }
 
 _autocomplete_group_order = [
@@ -78,7 +79,8 @@ _autocomplete_group_order = [
     'Gebieden',
     'Kadastrale objecten',
     'Kadastrale subjecten',
-    'Bouwblokken'
+    'Bouwblokken',
+    'Panden',
 ]
 
 _subtype_mapping = {
@@ -90,7 +92,7 @@ _subtype_mapping = {
     'spoorbaan': 'Openbare ruimtes',
     'landschappelijk gebied': 'Openbare ruimtes',
     'nummeraanduiding': 'Adressen',
-    'pand': 'Adressen',
+    'pand': 'Panden',
     'openbare_ruimte': 'Adressen',
     'verblijfsobject': 'Adressen',
     'ligplaats': 'Adressen',
@@ -155,11 +157,20 @@ all_query_selectors = [
         'query': bag_qs.gebied_query,
     },
     {
-        'labels': {'landelijk_id'},
+        'labels': {'nummeraanduiding'},
         'testfunction': 'is_landelijk_id_prefix',
-        'query': bag_qs.landelijk_id_query,
+        'query': bag_qs.landelijk_id_nummeraanduiding_query,
     },
-
+    {
+        'labels': {'gebieden'},
+        'testfunction': 'is_landelijk_id_prefix',
+        'query': bag_qs.landelijk_id_openbare_ruimte_query,
+    },
+    {
+        'labels': {'pand'},
+        'testfunction': 'is_landelijk_id_prefix',
+        'query': bag_qs.landelijk_id_pand_query,
+    },
 ]
 
 default_queries = {
@@ -501,7 +512,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
             ordered_results.append({
                 'label': group,
-                'content': result_groups[group][:size]
+                'content': result_groups[group][:size],
+                'total_results': len(result_groups[group])
             })
 
         return ordered_results
@@ -543,7 +555,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
     filter_backends = [BagQ]
 
     def list(self, request):
-        return self._abstr_list(request, {'bag', 'nummeraanduiding', 'landelijk_id'})
+        return self._abstr_list(request, {'bag', 'nummeraanduiding', 'pand'})
 
 
 def authorized_subject_queries(request, analyzer):
@@ -673,8 +685,8 @@ class SearchViewSet(viewsets.ViewSet):
         # Finding link to self via reverse url search
         followup_url = reverse(self.url_name, request=request)
 
-        self_url = "{}?q={}&page={}".format(
-            followup_url, url_query, page)
+        separator = '&' if '?' in followup_url else '?'
+        self_url = f"{followup_url}{separator}q={url_query}&page={page}"
 
         response['_links'] = OrderedDict([
             ('self', {'href': self_url}),
@@ -686,14 +698,11 @@ class SearchViewSet(viewsets.ViewSet):
         if end < result.hits.total:
             if end < (self.page_size * self.page_limit):
                 # There should be a next
-                response['_links']['next']['href'] = "{}?q={}&page={}".format(
-                    followup_url, url_query, page + 1)
+                response['_links']['next']['href'] = f"{followup_url}{separator}q={url_query}&page={page + 1}"
         if page == 2:
-            response['_links']['prev']['href'] = "{}?q={}".format(
-                followup_url, url_query)
+            response['_links']['prev']['href'] = f"{followup_url}{separator}q={url_query}"
         elif page > 2:
-            response['_links']['prev']['href'] = "{}?q={}&page={}".format(
-                followup_url, url_query, page - 1)
+            response['_links']['prev']['href'] = f"{followup_url}{separator}q={url_query}&page={page - 1}"
 
     def list(self, request, *args, **kwargs):
         """
@@ -963,7 +972,11 @@ class OpenbareRuimteQ(QFilter):
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
-    of all openabare ruimte objects that match the elastic search query.
+    of all openbare ruimte objects that match the elastic search query.
+
+    The optional parameter `subtype` limits the query to a openbare ruimte
+    of a specific subtype, or, if the negation was specified with for example
+    `subtype=not_weg` all subtypes except `weg` are returned.
 
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
@@ -992,6 +1005,8 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
 
         if analyzer.is_postcode_prefix():
             search_data = bag_qs.postcode_query(analyzer)
+        elif analyzer.is_landelijk_id_prefix():
+            search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer, subtype)
         else:
             search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
@@ -1042,6 +1057,16 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     straatnaam toevoeging, als er meer dan een huisnummer betrokken is bij
     het adres / nummeraanduiding.
+    
+    Het is ook mogelijk om te zoeken op prefix van het landelijk_id van nummeraanduiding of bijbehorend
+    verblijfsobject, ligplaats of standplaats.
+    
+    [/search/adres/?q=03630100010317](https://api.data.amsterdam.nl/atlas/search/adres/?q=03630100010317)
+    
+    of 
+    
+    [/search/adres/?q=3630100](https://api.data.amsterdam.nl/atlas/search/adres/?q=3630100)
+
 
     """   # noqa
     url_name = 'search/adres-list'
@@ -1060,6 +1085,9 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
         elif analyzer.is_straatnaam_huisnummer_prefix():
             q = bag_qs.straatnaam_huisnummer_query(analyzer)
+
+        elif analyzer.is_landelijk_id_prefix():
+            q = bag_qs.landelijk_id_nummeraanduiding_query(analyzer)
 
         if not q:
             q = bag_qs.straatnaam_query(analyzer)
@@ -1124,28 +1152,20 @@ class SearchPostcodeViewSet(SearchViewSet):
         return []
 
 
-class LandelijkIdQ(QFilter):
+class PandQ(QFilter):
+    search_description = 'Zoek op pand'
+    search_title = 'Pand'
 
-     search_description = 'Zoek op landelijk ID'
-     search_title = 'Landelijk ID'
 
+class SearchPandViewSet(SearchViewSet):
+    url_name = 'search/pand-list'
+    filter_backends = [PandQ]
 
-class SearchLandelijkIdViewSet(SearchViewSet):
-    url_name = 'search/landelijk_id-list'
-    filter_backends = [LandelijkIdQ]
-
-    def search_query(self, request, elk_client,
-                     analyzer: QueryAnalyzer) -> Search:
-        """Creating the actual query to ES"""
-
+    def search_query(self, request,
+                     elk_client, analyzer: QueryAnalyzer) -> Search:
         if analyzer.is_landelijk_id_prefix():
-            return bag_qs.landelijk_id_query(analyzer) \
-                .to_elasticsearch_object(elk_client)
+            return bag_qs.landelijk_id_pand_query(analyzer).to_elasticsearch_object(elk_client)
+        else:
+            return bag_qs.pandnaam_query(analyzer).to_elasticsearch_object(elk_client)
 
         return []
-
-    def normalize_hit(self, hit, request):
-        # Use original landelijk_id in case zeros were removed
-        hit.landelijk_id = hit.meta.id
-        return super().normalize_hit(hit, request)
-
