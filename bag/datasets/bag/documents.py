@@ -131,6 +131,7 @@ class Nummeraanduiding(es.DocType):
     # to return official bag fields
     bag_toevoeging = es.Keyword()
     bag_huisletter = es.Keyword()
+    woonplaats = es.Keyword()
 
     postcode = es.Text(
         analyzer=analyzers.postcode,
@@ -302,7 +303,7 @@ def update_adres(dest, adres: models.Nummeraanduiding):  # flake8: noqa
         dest.postcode = adres.postcode
         dest.straatnaam = adres.openbare_ruimte.naam
         dest.straatnaam_raw = adres.openbare_ruimte.naam
-
+        dest.woonplaats = adres.woonplaats
         dest.huisnummer = adres.huisnummer
 
 
