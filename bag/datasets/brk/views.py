@@ -387,7 +387,7 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
     pagination_class = rest.LimitedHALPagination
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == 'list' or self.action is None:
             if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
                 return serializers.KadastraalObjectDetailExpand
             return serializers.KadastraalObjectDetailExpandPublic
