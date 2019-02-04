@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework import serializers as drf_serializers
@@ -354,15 +354,13 @@ class KadastraalObjectViewSet(DatapuntViewSet):
     lookup_value_regex = '[^/]+'
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action is None:
-            return serializers.KadastraalObject
-
-        elif self.action == 'retrieve':
-
+        if self.action == 'retrieve':
             if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
                 return serializers.KadastraalObjectDetail
-
-            return serializers.KadastraalObjectDetailPublic
+            else:
+                return serializers.KadastraalObjectDetailPublic
+        else:
+            return serializers.KadastraalObject
 
 
 class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
@@ -387,14 +385,9 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
     pagination_class = rest.LimitedHALPagination
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
-                return serializers.KadastraalObjectDetailExpand
-            return serializers.KadastraalObjectDetailExpandPublic
-
-        elif self.action == 'retrieve':
-            if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
-                return serializers.KadastraalObjectDetailExpand
+        if self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
+            return serializers.KadastraalObjectDetailExpand
+        else:
             return serializers.KadastraalObjectDetailExpandPublic
 
 
@@ -424,18 +417,18 @@ class ZakelijkRechtFilter(FilterSet):
         ]
 
     def zakelijkrecht_filter(self, queryset, filter_name, value):
-        kwargs = { filter_name:value }
+        kwargs = {filter_name: value}
         if filter_name == 'kadastraal_subject':
             try:
                 subject = models.KadastraalSubject.objects.get(pk=value)
             except models.KadastraalSubject.DoesNotExist:
                 subject = None
-            if not subject or (subject.type == models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK and \
-                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN) ) or \
+            if not subject or (subject.type == models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK and
+                    not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN)) or \
                     not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
-                raise NotAuthenticated;
+                raise NotAuthenticated
         elif filter_name == 'kadastraal_object' and not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RO):
-            raise NotAuthenticated;
+            raise NotAuthenticated
 
         filtered = queryset.filter(**kwargs)
         return filtered
@@ -504,7 +497,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
         # return empty qs
         return self.queryset.none()
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def subject(self, request, pk=None, *args, **kwargs):
 
         if not self.request.is_authorized_for(authorization_levels.SCOPE_BRK_RS):
