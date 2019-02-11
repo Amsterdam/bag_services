@@ -101,7 +101,7 @@ class BrondocumentView(DatapuntViewSet):
     filter_fields = ('bron', 'beperking', )
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == 'list' or self.action is None:
             if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
                 return serializers.Brondocument
 
