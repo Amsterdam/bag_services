@@ -1046,6 +1046,11 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
 
     LET OP !!  toevoeging is de toevoeging achter een straatnaam !!
+
+    gebruik:
+
+    bag_toevoeging is toevoeging na huisnummer.
+    bag_huisletter
     -----
 
     gebruik
@@ -1057,14 +1062,14 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
 
     straatnaam toevoeging, als er meer dan een huisnummer betrokken is bij
     het adres / nummeraanduiding.
-    
+
     Het is ook mogelijk om te zoeken op prefix van het landelijk_id van nummeraanduiding of bijbehorend
     verblijfsobject, ligplaats of standplaats.
-    
+
     [/search/adres/?q=03630100010317](https://api.data.amsterdam.nl/atlas/search/adres/?q=03630100010317)
-    
-    of 
-    
+
+    of
+
     [/search/adres/?q=3630100](https://api.data.amsterdam.nl/atlas/search/adres/?q=3630100)
 
 
