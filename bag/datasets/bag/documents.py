@@ -297,16 +297,6 @@ def get_centroid(geom, transform=None):
     return result.coords
 
 
-def update_adres(dest, adres: models.Nummeraanduiding):  # flake8: noqa
-    if adres:
-        dest.adres = adres.adres()
-        dest.postcode = adres.postcode
-        dest.straatnaam = adres.openbare_ruimte.naam
-        dest.straatnaam_raw = adres.openbare_ruimte.naam
-        dest.woonplaats = adres.woonplaats
-        dest.huisnummer = adres.huisnummer
-
-
 def add_verblijfsobject(doc, vo: models.Verblijfsobject):
     if vo:
         doc.centroid = get_centroid(vo.geometrie, 'wgs84')
@@ -358,7 +348,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
     doc.bag_huisletter = n.huisletter
     doc.bag_toevoeging = n.huisnummer_toevoeging
-    doc.woonplaats = n.woonplaats
+    doc.woonplaats = n.woonplaats.naam
 
     doc.hoofdadres = n.hoofdadres
 
