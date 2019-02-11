@@ -358,6 +358,7 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
 
     doc.bag_huisletter = n.huisletter
     doc.bag_toevoeging = n.huisnummer_toevoeging
+    doc.woonplaats = n.woonplaats
 
     doc.hoofdadres = n.hoofdadres
 
