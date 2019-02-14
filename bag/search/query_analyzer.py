@@ -340,3 +340,10 @@ class QueryAnalyzer(object):
         # strip leading zeros from query. Match against landelijk_if__nozero
         return self.query.lstrip('0')
 
+    def is_naam(self) -> bool:
+        """
+        If the string contains only numbers or the string
+        contains more then 5 consecutive numbers it is not
+        a name
+        """
+        return re.search('(^\d+$|\d{5})', self.query) is None

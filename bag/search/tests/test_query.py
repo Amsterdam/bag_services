@@ -179,10 +179,9 @@ class QueryTest(APITransactionTestCase):
         self.assertEquals(200, res.status_code)
         self.assertEquals(f'bag/pand/{self.pand1.id}/', res.data[0]['content'][0]['uri'])
 
-    # Add if pand_naam search was added to bag typeahead endpoint
-    # def test_typeahead_pand_pandnaam(self):
-    #     q = self.pand1.pandnaam[0:6]
-    #     res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
-    #     self.assertEquals(200, res.status_code)
-    #     self.assertEquals(f'bag/pand/{self.pand1.id}/', res.data[0]['content'][0]['uri'])
+    def test_typeahead_pand_pandnaam(self):
+        q = self.pand1.pandnaam[0:6]
+        res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
+        self.assertEquals(200, res.status_code)
+        self.assertEquals(f'bag/pand/{self.pand1.id}/', res.data[0]['content'][0]['uri'])
 
