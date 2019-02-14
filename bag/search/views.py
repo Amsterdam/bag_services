@@ -152,7 +152,7 @@ all_query_selectors = [
     },
     {
         'labels': {'gebieden'},
-        'testfunction': None,
+        'testfunction': 'is_naam',
         # 'query': bag_qs.weg_query,
         'query': bag_qs.gebied_query,
     },
@@ -170,6 +170,11 @@ all_query_selectors = [
         'labels': {'pand'},
         'testfunction': 'is_landelijk_id_prefix',
         'query': bag_qs.landelijk_id_pand_query,
+    },
+    {
+        'labels': {'pand'},
+        'testfunction': 'is_naam',
+        'query': bag_qs.pandnaam_query,
     },
 ]
 
