@@ -469,6 +469,7 @@ class Grootstedelijkgebied(GebiedenMixin, rest.HALSerializer):
             '_links',
             '_display',
             'naam',
+            'gsg_type',
         )
 
 
@@ -1006,6 +1007,7 @@ class GrootstedelijkgebiedDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
             '_links',
             '_display',
             'naam',
+            'gsg_type',
             'bbox',
             'geometrie',
         )

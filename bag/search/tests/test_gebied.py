@@ -54,8 +54,10 @@ class GebiedSearchTest(APITransactionTestCase):
 
     def test_grootstedelijk_query(self):
         naam = self.gsg.naam
+        gsg_type = self.gsg.gsg_type
         gsg = self.find(naam)
         self.assertIn('gebieden/grootstedelijkgebied', gsg['_links']['self']['href'])
+        self.assertEqual(gsg['gsg_type'], gsg_type)
 
     def test_unseco(self):
         naam = self.unesco.naam

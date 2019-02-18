@@ -347,7 +347,7 @@ class ImportGrootstedelijkgebiedTest(TaskTestCase):
         self.run_task()
 
         imported = models.Grootstedelijkgebied.objects.all()
-        self.assertEqual(len(imported), 27)
+        self.assertEqual(len(imported), 46)
 
         b = models.Grootstedelijkgebied.objects.get(naam='Overamstel')
 
