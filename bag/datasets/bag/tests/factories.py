@@ -232,6 +232,7 @@ class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
+    gsg_type = fuzzy.FuzzyText(length=5)
 
 
 class UnescoFactory(factory.DjangoModelFactory):

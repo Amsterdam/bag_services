@@ -259,6 +259,8 @@ class Gebied(es.DocType):
         }
     )
 
+    gsg_type = es.Keyword()
+
     class Index:
         name = settings.ELASTIC_INDICES['BAG_GEBIED']
 
@@ -501,6 +503,7 @@ def from_grootstedelijk(gs: models.Grootstedelijkgebied):
 
     d.subtype_id = gs.id
     d.naam = gs.naam
+    d.gsg_type = gs.gsg_type
     d._display = '{} ({})'.format(gs.naam, 'grootstedelijk gebied')
     d.centroid = get_centroid(gs.geometrie, 'wgs84')
     d.order = 2
