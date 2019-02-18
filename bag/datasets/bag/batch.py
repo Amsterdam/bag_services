@@ -1794,6 +1794,7 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
     layer.fields:
 
     ['NAAM']
+    ['TYPE']
     """
 
     name = "Import GBD Grootstedelijkgebied"
@@ -1817,9 +1818,11 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
 
     def process_feature(self, feat):
         naam = feat.get('NAAM')
+        gsg_type = feat.get('TYPE')
         models.Grootstedelijkgebied(
             id=slugify(naam),
             naam=naam,
+            gsg_type=gsg_type,
             geometrie=geo.get_multipoly(feat.geom.wkt),
         ).save()
 
