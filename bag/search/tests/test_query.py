@@ -133,6 +133,24 @@ class QueryTest(APITransactionTestCase):
 
             self.assertIn('Rozenstraat 228', str(response.data))
 
+    def test_typeahead_bag_openbare_ruimte(self):
+
+        for fmt, content_type in self.formats:
+
+            url = "/atlas/typeahead/bag/"
+            response = self.client.get(
+                url, {'q': "Rozenstraat", 'format': fmt})
+
+            self.assertEqual(
+                f"{content_type}",
+                response["Content-Type"],
+                "Wrong Content-Type for {}".format(url),
+            )
+
+            self.assertEqual(response.status_code, 200)
+
+            self.assertIn('Rozenstraat', str(response.data))
+
     def test_typeahead_subject(self):
         """
         We are not authorized. should fail
