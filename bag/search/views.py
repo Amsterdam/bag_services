@@ -124,6 +124,9 @@ _add_subtype_display = {
 
 
 # A collection of regex and the query they generate
+# IMPORTANT : if items are added to all_query_selectors it can have the negative  side effect
+# that default_queries are no longer selected.  Only add a new query selectors here if it does
+# not clash with the queries in default queries
 all_query_selectors = [
     {
         'labels': {'bag'},
@@ -152,7 +155,7 @@ all_query_selectors = [
     },
     {
         'labels': {'gebieden'},
-        'testfunction': 'is_naam',
+        'testfunction': None,
         # 'query': bag_qs.weg_query,
         'query': bag_qs.gebied_query,
     },
@@ -171,19 +174,12 @@ all_query_selectors = [
         'testfunction': 'is_landelijk_id_prefix',
         'query': bag_qs.landelijk_id_pand_query,
     },
-    {
-        'labels': {'pand'},
-        'testfunction': 'is_naam',
-        'query': bag_qs.pandnaam_query,
-    },
 ]
 
 default_queries = {
-    'bag': [
-        # bag_qs.weg_query
-        bag_qs.openbare_ruimte_query
-    ],
+    'bag': [bag_qs.openbare_ruimte_query],
     'gebieden': [bag_qs.gebied_query],
+    'pand': [bag_qs.pandnaam_query]
 }
 
 
