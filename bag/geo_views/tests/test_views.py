@@ -54,7 +54,7 @@ class ViewsTest(TestCase):
         self.assertEqual(row['type'], 'bag/openbareruimte')
         self.assertEqual(row['opr_type'], 'Water')
         self.assertEqual(
-            row['uri'], '{}bag/openbareruimte/{}/'.format(URL, ob.id))
+            row['uri'], '{}bag/openbareruimte/{}/'.format(URL, ob.landelijk_id))
 
     def test_bag_standplaats(self):
         s = bag_factories.StandplaatsFactory.create()
