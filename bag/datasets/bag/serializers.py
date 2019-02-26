@@ -631,14 +631,17 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     stadsdeel = Stadsdeel()
     openbare_ruimte = OpenbareRuimte()
     verblijfsobject = serializers.HyperlinkedRelatedField(allow_null=True,
-        queryset=models.Verblijfsobject.objects.all(), required=False, view_name='verblijfsobject-detail',
-        lookup_field='landelijk_id', lookup_url_kwarg='pk')
+                                                          queryset=models.Verblijfsobject.objects.all(), required=False,
+                                                          view_name='verblijfsobject-detail',
+                                                          lookup_field='landelijk_id', lookup_url_kwarg='pk')
     ligplaats = serializers.HyperlinkedRelatedField(allow_null=True,
-        queryset=models.Ligplaats.objects.all(), required=False, view_name='ligplaats-detail',
-        lookup_field='landelijk_id', lookup_url_kwarg='pk')
+                                                    queryset=models.Ligplaats.objects.all(), required=False,
+                                                    view_name='ligplaats-detail',
+                                                    lookup_field='landelijk_id', lookup_url_kwarg='pk')
     standplaats = serializers.HyperlinkedRelatedField(allow_null=True,
-       queryset=models.Standplaats.objects.all(), required=False, view_name='standplaats-detail',
-       lookup_field='landelijk_id', lookup_url_kwarg='pk')
+                                                      queryset=models.Standplaats.objects.all(), required=False,
+                                                      view_name='standplaats-detail',
+                                                      lookup_field='landelijk_id', lookup_url_kwarg='pk')
 
     woonplaats = Woonplaats()
     bouwblok = Bouwblok()
