@@ -169,7 +169,7 @@ SELECT
   END                                                   AS opr_type,
   opr.geometrie                                         AS geometrie,
   'bag/openbareruimte'::TEXT                            AS type,
-  {} || 'bag/openbareruimte/' || opr.id || '/' AS uri
+  {} || 'bag/openbareruimte/' || opr.landelijk_id || '/' AS uri
 FROM
   bag_openbareruimte opr
 """.format(QuotedString(URL))

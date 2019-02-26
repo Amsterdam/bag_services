@@ -306,7 +306,6 @@ def _get_url(request, hit):
     """
     Given an elk hit determine the uri for each hit
     """
-    subtype_id = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
     doc_type = _get_doc_attr(hit, 'type',  default=hit.meta.doc_type)
     detail_type = _get_doc_attr(hit, 'subtype', doc_type)
 
@@ -318,12 +317,16 @@ def _get_url(request, hit):
     if detail_type not in _details:
         raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
-    if hit.subtype in ['gemeente']:
-        subtype_id = hit.naam
+    if detail_type in ('ligplaats', 'standplaats', 'verblijfsobject'):
+        pk = _get_doc_attr(hit, 'adresseerbaar_object_id', default=None)
+    else:
+        pk = _get_doc_attr(hit, 'landelijk_id', default=None)
+    if pk is None:
+        pk = _get_doc_attr(hit, 'subtype_id', default=hit.meta.id)
 
     return rest.get_links(
         view_name=_details[detail_type],
-        kwargs={'pk': subtype_id}, request=request)
+        kwargs={'pk': pk}, request=request)
 
 
 class QueryMetadata(metadata.SimpleMetadata):
