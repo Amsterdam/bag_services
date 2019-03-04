@@ -319,6 +319,9 @@ def _get_url(request, hit):
 
     if detail_type in ('ligplaats', 'standplaats', 'verblijfsobject'):
         pk = _get_doc_attr(hit, 'adresseerbaar_object_id', default=None)
+        if pk is None:  # The link to adresseerbaar_object_id is missing, this should not happen but it does
+            detail_type = 'nummeraanduiding'
+            pk = _get_doc_attr(hit, 'landelijk_id', default=None)
     else:
         pk = _get_doc_attr(hit, 'landelijk_id', default=None)
     if pk is None:
