@@ -1555,7 +1555,7 @@ class IndexGrootstedelijkgebiedTask(index.ImportIndexTask):
 
 
 class IndexGemeenteTask(index.ImportIndexTask):
-    name = "index gemeebten"
+    name = "index gemeenten"
     queryset = models.Gemeente.objects.all()
 
     def convert(self, obj):
@@ -1563,7 +1563,7 @@ class IndexGemeenteTask(index.ImportIndexTask):
 
 
 class IndexWoonplaatsTask(index.ImportIndexTask):
-    name = "index gemeebten"
+    name = "index woonplatsen"
     queryset = models.Woonplaats.objects.all()
 
     def convert(self, obj):
@@ -2283,7 +2283,7 @@ class IndexGebiedenJob(object):
             IndexStadsdeelTask(),
             IndexGrootstedelijkgebiedTask(),
             IndexGebiedsgerichtWerkenTask(),
-            IndexGemeenteTask()
+            IndexWoonplaatsTask(),
         ]
 
 class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
