@@ -531,6 +531,7 @@ def from_woonplaats(w: models.Woonplaats):
     d.subtype_id = w.id
     d.naam = w.naam
     d._display = '{} ({})'.format(w.naam, d.subtype)
+    d.landelijk_id = w.landelijk_id
     d.g_code = w.landelijk_id
     d.order = 2
     return d
