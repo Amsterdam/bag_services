@@ -976,6 +976,10 @@ class OpenbareRuimteQ(QFilter):
     search_title = 'Openbare ruimte'
 
 
+def _subtype_contains_weg(subtype):
+    return subtype is None or subtype == 'weg' or (subtype[0:4] == 'not_' and subtype[4:] != 'weg')
+
+
 class SearchOpenbareRuimteViewSet(SearchViewSet):
     """
     Given a query parameter `q`, this function returns a subset
@@ -1010,7 +1014,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         else:
             subtype = None
 
-        if analyzer.is_postcode_prefix():
+        if analyzer.is_postcode_prefix() and _subtype_contains_weg(subtype):
             search_data = bag_qs.postcode_query(analyzer)
         elif analyzer.is_landelijk_id_prefix():
             search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer, subtype)
