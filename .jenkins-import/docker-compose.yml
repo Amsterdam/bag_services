@@ -24,6 +24,8 @@ services:
       - elasticsearch:elasticsearch
     user: root
     environment:
+      HTTP_PROXY:
+      HTTPS_PROXY:
       DATABASE_NAME: bag
       DATABASE_USER: bag
       DATABASE_PASSWORD: insecure
