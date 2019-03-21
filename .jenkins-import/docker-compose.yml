@@ -1,7 +1,7 @@
-version: "3.0"
+version: "3.5"
 services:
   database:
-    image: amsterdam/postgres
+    image: amsterdam/postgres11
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag
@@ -9,6 +9,7 @@ services:
       - ./backups:/tmp/backups
     extra_hosts:
       admin.datapunt.amsterdam.nl: 10.99.157.24
+    shm_size: '4gb'
 
   elasticsearch:
     image: amsterdam/elasticsearch6
@@ -18,12 +19,14 @@ services:
     command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
   importer:
-    image: build.datapunt.amsterdam.nl:5000/datapunt/bag:${ENVIRONMENT}
+    image: repo.data.amsterdam.nl/datapunt/bag:${ENVIRONMENT}
     links:
       - database:database
       - elasticsearch:elasticsearch
     user: root
     environment:
+      HTTP_PROXY:
+      HTTPS_PROXY:
       DATABASE_NAME: bag
       DATABASE_USER: bag
       DATABASE_PASSWORD: insecure

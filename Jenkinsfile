@@ -30,22 +30,27 @@ node {
 
     stage("Build image") {
         tryStep "build", {
-            def image = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
-            image.push()
+            docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                def image = docker.build("datapunt/bag:${env.BUILD_NUMBER}", "--build-arg http_proxy=${JENKINS_HTTP_PROXY_STRING} --build-arg https_proxy=${JENKINS_HTTP_PROXY_STRING} .")
+                image.push()
+            }
         }
     }
 }
 
-String BRANCH = "${env.BRANCH_NAME}".toString()
 
-if (BRANCH == "master") {
+String BRANCH = "${env.BRANCH_NAME}"
+
+if (BRANCH == "develop") {
 
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
-                image.pull()
-                image.push("acceptance")
+                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                    def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
+                    image.pull()
+                    image.push("acceptance")
+                }
             }
         }
     }
@@ -54,14 +59,13 @@ if (BRANCH == "master") {
         stage("Deploy to ACC") {
             tryStep "deployment", {
                 build job: 'Subtask_Openstack_Playbook',
-                        parameters: [
-                                [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
-                                [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
-                        ]
+                    parameters: [
+                        [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
+                        [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag-thanos.yml'],
+                    ]
             }
         }
     }
-
 
     stage('Waiting for approval') {
         slackSend channel: '#ci-channel', color: 'warning', message: 'BAG is waiting for Production Release - please confirm'
@@ -71,10 +75,12 @@ if (BRANCH == "master") {
     node {
         stage('Push production image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/bag:${env.BUILD_NUMBER}")
-                image.pull()
-                image.push("production")
-                image.push("latest")
+                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
+                    image.pull()
+                    image.push("production")
+                    image.push("latest")
+                }
             }
         }
     }
@@ -85,7 +91,7 @@ if (BRANCH == "master") {
                 build job: 'Subtask_Openstack_Playbook',
                         parameters: [
                                 [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
-                                [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag.yml'],
+                                [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-bag-thanos.yml'],
                         ]
             }
         }
