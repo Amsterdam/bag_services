@@ -38,7 +38,7 @@ TABLE_TARGETS = [
     (513315    ,0 ,"bag_verblijfsobjectpandrelatie"),
     (1         ,20 ,"bag_woonplaats"),      # Er mogen meer woonplaatsen worden geleverd
     (4         ,0 ,"brk_aanduidingnaam"),
-    (362900    ,0 ,"brk_aantekening"),
+    (362900    ,50000 ,"brk_aantekening"),
     (31        ,5 ,"brk_aardaantekening"),
     (12        ,0 ,"brk_aardzakelijkrecht"),
     (225800    ,0 ,"brk_adres"),
@@ -55,7 +55,7 @@ TABLE_TARGETS = [
     (65        ,0 ,"brk_kadastralegemeente"),
     (170       ,0 ,"brk_kadastralesectie"),
     (253       ,0 ,"brk_land"),
-    (20        ,0 ,"brk_rechtsvorm"),
+    (20        ,10 ,"brk_rechtsvorm"),
     (3         ,20 ,"brk_soortgrootte"),    # Kadaster gaat nog meer soort soortgroottes opleveren
     (921260    ,0 ,"brk_zakelijkrecht"),
     (872015    ,0 ,"brk_zakelijkrechtverblijfsobjectrelatie"),
