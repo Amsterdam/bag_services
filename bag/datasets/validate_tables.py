@@ -47,7 +47,7 @@ TABLE_TARGETS = [
     (8         ,0 ,"brk_beschikkingsbevoegdheid"),
     (61        ,10 ,"brk_cultuurcodebebouwd"),
     (25        ,5 ,"brk_cultuurcodeonbebouwd"),
-    (19        ,0 ,"brk_gemeente"),
+    (19        ,1 ,"brk_gemeente"),
     (3         ,0 ,"brk_geslacht"),
     (587902    ,0 ,"brk_kadastraalobject"),
     (521751    ,0 ,"brk_kadastraalobjectverblijfsobjectrelatie"),
