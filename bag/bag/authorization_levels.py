@@ -4,8 +4,6 @@
 SCOPE_BRK_RS = 'BRK/RS'
 #  Bevragen alle Kadastrale Subjecten. Includes RS
 SCOPE_BRK_RSN = 'BRK/RSN'
-# Zakelijke rechten. Obsolete
-SCOPE_BRK_RZR = 'BRK/RZR'
 # Read Object
 SCOPE_BRK_RO = 'BRK/RO'
 
