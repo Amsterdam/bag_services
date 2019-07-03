@@ -42,6 +42,15 @@ class Command(BaseCommand):
             default=False,
             help='Skip database importing')
 
+        parser.add_argument(
+            '--gob',
+            '-g',
+            action='store_true',
+            dest='gob',
+            default=False,
+            help='Use GOB for import'
+        )
+
     def handle(self, *args, **options):
         dataset = options['dataset']
 
@@ -60,5 +69,5 @@ class Command(BaseCommand):
 
         for one_ds in sets:
             for job_class in self.imports[one_ds]:
-                batch.execute(job_class())
+                batch.execute(job_class(gob=options['gob']))
 

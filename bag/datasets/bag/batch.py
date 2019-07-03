@@ -5,7 +5,6 @@ import os
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db import connection
-from django.db.models import Value, CharField
 from django.utils.text import slugify
 # Project
 from search import index
@@ -273,11 +272,14 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import SDL"
     dataset_id = 'gebieden-stadsdeel'
 
-    def __init__(self, bag_path, shp_path):
+    def __init__(self, bag_path, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
         self.bag_path = bag_path
         self.gemeentes = set()
         self.stadsdelen = dict()
+        if self.gob:
+            self.source = os.path.join(self.bag_path, 'GBD_stadsdeel_Actueel.csv')
 
     def before(self):
         self.gemeentes = set(
@@ -288,58 +290,90 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def after(self):
         self.gemeentes.clear()
         self.stadsdelen.clear()
-        self.update_metadata_uva2(self.bag_path, 'SDL')
+        if self.gob:
+            self.update_metadata_csv(self.source)
+        else:
+            self.update_metadata_uva2(self.bag_path, 'SDL')
 
         validate_geometry(models.Stadsdeel)
 
     def process(self):
-        self.stadsdelen = dict(
-            uva2.process_uva2(self.bag_path, "SDL", self.process_row))
+        if self.gob:
+            self.stadsdelen = dict(
+                uva2.process_csv(None, None, self.process_row, source=self.source))
+        else:
+            self.stadsdelen = dict(
+                uva2.process_uva2(self.bag_path, "SDL", self.process_row))
+
         geo.process_shp(
-            self.shp_path, "GBD_Stadsdeel.shp", self.process_feature)
+            self.shp_path, "GBD_stadsdeel.shp" if self.gob else "GBD_Stadsdeel.shp", self.process_feature)
 
         models.Stadsdeel.objects.bulk_create(
             self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
+        if self.gob:
+            pk = r['identificatie']
+            code = r['code']
+            gemeente_id = r['ligtIn:BRK.GME.identificatie']
+            # The gemeente is in GOB in BRK and will be delivered much later.
+            # For now we can use the one and only gemeente that is in the old import.
+            if not gemeente_id:
+                gemeente_id = next(iter(self.gemeentes))
+
+            naam=r['naam']
+            brondocument_naam=r['documentnummer']
+            brondocument_datum=uva2.iso_datum(r['documentdatum'])
+            ingang_cyclus=uva2.iso_datum(r['beginGeldigheid'])
+            begin_geldigheid=uva2.iso_datum(r['beginGeldigheid'])
+            einde_geldigheid=uva2.iso_datum(r['eindGeldigheid'])
+            vervallen=None
+
+        else:
+            if not uva2.uva_geldig(r['SDLGME/TijdvakRelatie/begindatumRelatie'],
+                                   r['SDLGME/TijdvakRelatie/einddatumRelatie']):
+                return None
+
+            pk = r['sleutelVerzendend']
+            gemeente_id = r['SDLGME/GME/sleutelVerzendend'] or None
+
+            if gemeente_id not in self.gemeentes:
+                log.warning("""
+                    Stadsdeel {} references non-existing gemeente {};
+                    skipping""".format(
+                    pk, gemeente_id))
+                return None
+
+            code = r['Stadsdeelcode']
+            naam = r['Stadsdeelnaam']
+            brondocument_naam = r['Brondocumentverwijzing']
+            brondocument_datum = uva2.uva_datum(r['Brondocumentdatum'])
+            ingang_cyclus = uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
+            begin_geldigheid = uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            einde_geldigheid = uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid'])
+
+        if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
             return None
-
-        if not uva2.uva_geldig(r['SDLGME/TijdvakRelatie/begindatumRelatie'],
-                               r['SDLGME/TijdvakRelatie/einddatumRelatie']):
-            return None
-
-        pk = r['sleutelVerzendend']
-        gemeente_id = r['SDLGME/GME/sleutelVerzendend'] or None
-
-        if gemeente_id not in self.gemeentes:
-            log.warn("""
-                Stadsdeel {} references non-existing gemeente {};
-                skipping""".format(
-                pk, gemeente_id))
-            return None
-
-        code = r['Stadsdeelcode']
         return code, models.Stadsdeel(
             pk=pk,
             code=code,
-            naam=r['Stadsdeelnaam'],
-            brondocument_naam=r['Brondocumentverwijzing'],
-            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
-            ingang_cyclus=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
+            naam=naam,
+            brondocument_naam=brondocument_naam,
+            brondocument_datum=brondocument_datum,
+            ingang_cyclus=ingang_cyclus,
+            vervallen=vervallen,
             gemeente_id=gemeente_id,
-            begin_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=begin_geldigheid,
+            einde_geldigheid=einde_geldigheid,
         )
 
+
     def process_feature(self, feat):
-        code = feat.get('CODE')
+        code = feat.get('code' if self.gob else 'CODE')
         if code not in self.stadsdelen:
             log.warning(
                 """Stadsdeel/SHP {} references non-existing stadsdeel;
@@ -353,12 +387,14 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BRT - BUURT"
     dataset_id = 'gebieden-buurt'
 
-    def __init__(self, uva_path, shp_path):
+    def __init__(self, uva_path, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
         self.uva_path = uva_path
         self.stadsdelen = set()
         self.buurten = dict()
         self.buurtcombinaties = dict()
+        self.source = os.path.join(self.uva_path, 'GBD_buurt_Actueel.csv')
 
     def before(self):
         # database.clear_models(models.Buurt)
@@ -371,67 +407,96 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.stadsdelen.clear()
         self.buurten.clear()
         self.buurtcombinaties.clear()
-        self.update_metadata_uva2(self.uva_path, 'BRT')
+        if self.gob:
+            self.update_metadata_csv(self.source)
+        else:
+            self.update_metadata_uva2(self.uva_path, 'BRT')
         validate_geometry(models.Buurt)
 
         log.info("%d Buurten imported", models.Buurt.objects.count())
 
     def process(self):
-        self.buurten = dict(
-            uva2.process_uva2(self.uva_path, "BRT", self.process_row))
+        if self.gob:
+            self.buurten = dict(
+                uva2.process_csv(None, None, self.process_row, source=self.source))
+        else:
+            self.buurten = dict(
+                uva2.process_uva2(self.uva_path, "BRT", self.process_row))
 
         geo.process_shp(
-            self.shp_path, "GBD_Buurt.shp", self.process_feature)
+            self.shp_path, "GBD_buurt.shp" if self.gob else "GBD_Buurt.shp", self.process_feature)
 
         models.Buurt.objects.bulk_create(
             self.buurten.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
-            return None
+        if self.gob:
+            pk = r['identificatie']
+            stadsdeel_id = r['ligtIn:GBD.SDL.identificatie']
+            vollcode = r['code']
+            code = vollcode[1:]
+            naam = r['naam']
+            brondocument_naam = r['documentnummer']
+            brondocument_datum = uva2.iso_datum(r['documentdatum'])
+            ingang_cyclus = uva2.iso_datum(r['beginGeldigheid'])
+            begin_geldigheid = uva2.iso_datum(r['beginGeldigheid'])
+            einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
+            bc_voll_code = r['ligtIn:GBD.WIJK.code']
+            bc_code = bc_voll_code[1:]
+            vervallen = None
+        else:
+            if not uva2.uva_geldig(r['BRTSDL/TijdvakRelatie/begindatumRelatie'],
+                                   r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
+                return None
 
-        if not uva2.uva_geldig(r['BRTSDL/TijdvakRelatie/begindatumRelatie'],
-                               r['BRTSDL/TijdvakRelatie/einddatumRelatie']):
-            return None
+            pk = r['sleutelVerzendend']
+            stadsdeel_id = r['BRTSDL/SDL/sleutelVerzendend'] or None
 
-        pk = r['sleutelVerzendend']
-        stadsdeel_id = r['BRTSDL/SDL/sleutelVerzendend'] or None
+            code = r['Buurtcode']
+            bc_code = code[:-1]
+
+            naam=r['Buurtnaam']
+            brondocument_naam=r['Brondocumentverwijzing']
+            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum'])
+            ingang_cyclus=uva2.uva_datum(
+                    r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen'])
+            begin_geldigheid=uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            einde_geldigheid=uva2.uva_datum(
+                    r['TijdvakGeldigheid/einddatumTijdvakGeldigheid'])
+
+        if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
+            return None
         if stadsdeel_id not in self.stadsdelen:
-            log.warn("""
+            log.warning("""
             Buurt {} references non-existing stadsdeel {}; skipping
             """.format(pk, stadsdeel_id))
             return None
 
-        code = r['Buurtcode']
-        bc_code = code[:-1]
         bc_id = self.buurtcombinaties.get(bc_code)
 
         if not bc_id:
-            log.warn("""
+            log.warning("""
             Buurt {} references non-existing buurtcombinatie {}; ignoring
             """.format(pk, bc_code))
 
         return code, models.Buurt(
             pk=pk,
             code=code,
-            naam=r['Buurtnaam'],
-            brondocument_naam=r['Brondocumentverwijzing'],
-            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum']),
-            ingang_cyclus=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            naam=naam,
+            brondocument_naam=brondocument_naam,
+            brondocument_datum=brondocument_datum,
+            ingang_cyclus=ingang_cyclus,
             stadsdeel_id=stadsdeel_id,
-            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            begin_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            vervallen=vervallen,
+            begin_geldigheid=begin_geldigheid,
+            einde_geldigheid=einde_geldigheid,
             buurtcombinatie_id=bc_id,
         )
 
     def process_feature(self, feat):
-        vollcode = feat.get('VOLLCODE')
+        vollcode = feat.get('code' if self.gob else 'VOLLCODE')
         code = vollcode[1:]
         if code not in self.buurten:
             log.warning("""
@@ -447,11 +512,13 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BBK  - Bouwblok"
     dataset_id = 'gebieden-bouwblok'
 
-    def __init__(self, uva_path, shp_path):
+    def __init__(self, uva_path, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
         self.uva_path = uva_path
         self.buurten = set()
         self.bouwblokken = dict()
+        self.source = os.path.join(self.uva_path, 'GBD_bouwblok_Actueel.csv')
 
     def before(self):
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
@@ -459,49 +526,62 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def after(self):
         self.buurten.clear()
-        self.update_metadata_uva2(self.uva_path, 'BBK')
+        if self.gob:
+            self.update_metadata_csv(self.source)
+        else:
+            self.update_metadata_uva2(self.uva_path, 'BBK')
         validate_geometry(models.Bouwblok)
         log.info('%s Bouwblokken imported', models.Bouwblok.objects.count())
 
     def process(self):
         # loads the csv
-        for bb in uva2.process_uva2(self.uva_path, "BBK", self.process_row):
-            bb.save()
+        if self.gob:
+            for bb in uva2.process_csv(None, None, self.process_row, source=self.source):
+                bb.save()
+        else:
+            for bb in uva2.process_uva2(self.uva_path, "BBK", self.process_row):
+                bb.save()
 
-        geo.process_shp(self.shp_path, "GBD_Bouwblok.shp", self.process_feature)
+        geo.process_shp(self.shp_path, "GBD_bouwblok.shp" if self.gob else "GBD_Bouwblok.shp", self.process_feature)
 
     def process_row(self, r):
-        if not uva2.uva_geldig(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'],
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']):
-            return None
+        if self.gob:
+            pk = r['identificatie']
+            code = r['code']
+            buurt_id = r['ligtIn:GBD.BRT.identificatie']
+            ingang_cyclus = uva2.iso_datum(r['beginGeldigheid'])
+            begin_geldigheid = uva2.iso_datum(r['beginGeldigheid'])
+            einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
+        else:
 
-        if not uva2.uva_geldig(r['BBKBRT/TijdvakRelatie/begindatumRelatie'],
-                               r['BBKBRT/TijdvakRelatie/einddatumRelatie']):
-            return None
+            if not uva2.uva_geldig(r['BBKBRT/TijdvakRelatie/begindatumRelatie'],
+                                   r['BBKBRT/TijdvakRelatie/einddatumRelatie']):
+                return None
 
-        pk = r['sleutelVerzendend']
-        buurt_id = r['BBKBRT/BRT/sleutelVerzendend'] or None
+            pk = r['sleutelVerzendend']
+            buurt_id = r['BBKBRT/BRT/sleutelVerzendend'] or None
+            code = r['Bouwbloknummer']
+            ingang_cyclus = uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            begin_geldigheid = uva2.uva_datum(
+                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
+            einde_geldigheid = uva2.uva_datum(
+                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid'])
 
         if buurt_id not in self.buurten:
             log.warning("""
-            Bouwblok {} references non-existing buurt {}; fixing later.
-            """.format(pk, buurt_id))
-
+             Bouwblok {} references non-existing buurt {}; fixing later.
+             """.format(pk, buurt_id))
             buurt_id = None
-
-        code = r['Bouwbloknummer']
-
+        if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
+            return None
         return models.Bouwblok(
             pk=pk,
             code=code,
-            ingang_cyclus=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
+            ingang_cyclus=ingang_cyclus,
             buurt_id=buurt_id,
-            begin_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
+            begin_geldigheid=begin_geldigheid,
+            einde_geldigheid=einde_geldigheid,
         )
 
     def process_feature(self, feat):
@@ -1608,7 +1688,7 @@ class IndexBouwblokTask(index.ImportIndexTask):
 
 
 # These files don't have a UVA file
-class ImportBuurtcombinatieTask(batch.BasicTask):
+class ImportWijkTask(batch.BasicTask):
     """
     layer.fields:
 
@@ -1616,9 +1696,10 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
      'DOCDATUM', 'INGSDATUM', 'EINDDATUM']
     """
 
-    name = "Import GBD Buurtcombinatie"
+    name = "Import GBD Wijk"
 
-    def __init__(self, shp_path):
+    def __init__(self, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
         self.stadsdelen = dict()
 
@@ -1631,25 +1712,46 @@ class ImportBuurtcombinatieTask(batch.BasicTask):
         validate_geometry(models.Buurtcombinatie)
 
     def process(self):
+        shp_file = "GBD_wijk.shp" if self.gob else "GBD_Buurtcombinatie.shp"
         geo.process_shp(
-            self.shp_path, "GBD_Buurtcombinatie.shp", self.process_feature)
+            self.shp_path, shp_file, self.process_feature)
 
     def process_feature(self, feat):
-        vollcode = feat.get('VOLLCODE')
 
-        models.Buurtcombinatie(
-            id=str(int(feat.get('ID'))),
-            naam=feat.get('NAAM'),
-            code=feat.get('CODE'),
-            vollcode=vollcode,
-            brondocument_naam=feat.get('DOCNR'),
-            brondocument_datum=feat.get('DOCDATUM'),
-            ingang_cyclus=feat.get('INGSDATUM'),
-            geometrie=geo.get_multipoly(feat.geom.wkt),
-            stadsdeel_id=self.stadsdelen.get(vollcode[0]),
-            begin_geldigheid=feat.get('INGSDATUM'),
-            einde_geldigheid=feat.get('EINDDATUM'),
-        ).save()
+        if self.gob:
+            vollcode = feat.get('code')
+            code = vollcode[1:]
+            stadsdeel_id = vollcode[:1]
+            wijk = models.Buurtcombinatie(
+                id=str(int(feat.get('id'))),
+                naam=feat.get('naam'),
+                code=code,
+                vollcode=vollcode,
+                brondocument_naam=feat.get('docnummer'),
+                brondocument_datum=feat.get('docdatum') or None,
+                ingang_cyclus=feat.get('begindatum') or None,
+                geometrie=geo.get_multipoly(feat.geom.wkt),
+                stadsdeel_id=self.stadsdelen.get(stadsdeel_id),
+                begin_geldigheid=feat.get('begindatum') or None,
+                einde_geldigheid=feat.get('einddatum') or None,
+            )
+        else:
+            vollcode = feat.get('VOLLCODE')
+
+            wijk = models.Buurtcombinatie(
+                id=str(int(feat.get('ID'))),
+                naam=feat.get('NAAM'),
+                code=feat.get('CODE'),
+                vollcode=vollcode,
+                brondocument_naam=feat.get('DOCNR'),
+                brondocument_datum=feat.get('DOCDATUM'),
+                ingang_cyclus=feat.get('INGSDATUM'),
+                geometrie=geo.get_multipoly(feat.geom.wkt),
+                stadsdeel_id=self.stadsdelen.get(vollcode[0]),
+                begin_geldigheid=feat.get('INGSDATUM'),
+                einde_geldigheid=feat.get('EINDDATUM'),
+            )
+        wijk.save()
 
 
 def log_details_wrong_geometry(model):
@@ -1703,13 +1805,14 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['NAAM', 'CODE', 'STADSDEEL', 'INGSDATUM',
-     'EINDDATUM', 'DOCNR', 'DOCDATUM']
+    ['naam', 'code', 'sdl_code', ...]
+    TODO : In GOB import the GBD_ggw_gebied has also a 14 digit ID . Do we need this ID in the current API ?
     """
 
     name = "Import GBD Gebiedsgerichtwerken"
 
-    def __init__(self, shp_path):
+    def __init__(self, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
         self.stadsdelen = dict()
 
@@ -1729,38 +1832,49 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
             '%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
 
     def process(self):
+        shp_file = "GBD_ggw_gebied.shp" if self.gob else "GBD_gebiedsgerichtwerken.shp"
         geo.process_shp(
-            self.shp_path, "GBD_gebiedsgerichtwerken.shp",
+            self.shp_path, shp_file,
             self.process_feature)
 
     def process_feature(self, feat):
-        sdl = feat.get('STADSDEEL')
+        if self.gob:
+            sdl = feat.get('sdl_code')
+            code = feat.get('code')
+            naam = feat.get('naam')
+        else:
+            sdl = feat.get('STADSDEEL')
+            code = feat.get('CODE')
+            naam = feat.get('NAAM')
+
         if sdl not in self.stadsdelen:
             log.warning(
                 'Gebiedsgerichtwerken {} references non-existing stadsdeel {}; skipping'.format(sdl, sdl))
             return
-
-        code = feat.get('CODE')
-
-        models.Gebiedsgerichtwerken(
+        ggw = models.Gebiedsgerichtwerken(
             id=code,
-            naam=feat.get('NAAM'),
+            naam=naam,
             code=code,
             stadsdeel_id=self.stadsdelen[sdl],
             geometrie=geo.get_multipoly(feat.geom.wkt),
-        ).save()
+        )
+
+        ggw.save()
 
 
 class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
     """
     layer.fields:
 
-    ['NAAM']
+    ['naam', ...]
+    TODO : In GOB import the GBD_ggw_praktijkgebied has also a 14 digit ID . Do we need this ID in the current API ?
+    TODO : Currently no stadsdeel in GBD_ggw_praktijkgebied. It is in the GOB delivery. Do we need it ?
     """
 
     name = "Import GBD Gebiedsgerichtwerken praktijkgebieden"
 
-    def __init__(self, shp_path):
+    def __init__(self, shp_path, gob):
+        self.gob = gob
         self.shp_path = shp_path
 
     def before(self):
@@ -1776,12 +1890,13 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
             '%d Gebiedsgerichtwerken praktijkgebieden', models.GebiedsgerichtwerkenPraktijkgebieden.objects.count())
 
     def process(self):
+        shp_file = "GBD_ggw_praktijkgebied.shp" if self.gob else "GBD_gebiedsgerichtwerken_praktijk.shp"
         geo.process_shp(
-            self.shp_path, "GBD_gebiedsgerichtwerken_praktijk.shp",
+            self.shp_path, shp_file,
             self.process_feature)
 
     def process_feature(self, feat):
-        naam = feat.get('NAAM')
+        naam = feat.get('naam' if self.gob else 'NAAM')
 
         models.GebiedsgerichtwerkenPraktijkgebieden(
             naam=naam,
@@ -2110,7 +2225,7 @@ class UpdateGrootstedelijkAttributenTask(batch.BasicTask):
 class ImportBagJob(object):
     name = "Import BAG"
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         diva = settings.DIVA_DIR
         if not os.path.exists(diva):
             raise ValueError("DIVA_DIR not found: {}".format(diva))
@@ -2119,73 +2234,85 @@ class ImportBagJob(object):
         self.bag_wkt_path = os.path.join(diva, 'bag_wkt')
         self.gebieden_path = os.path.join(diva, 'gebieden')
         self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
+        self.gob = kwargs.get('gob', False)
+        if self.gob:
+            gob_dir = settings.GOB_DIR
+            self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
+            self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
+
 
     def tasks(self):
 
         return [
             # no-dependencies.
-            ImportIndicatieAOTTask(self.bag_path),
+            # ImportIndicatieAOTTask(self.bag_path),
 
-            ImportAvrTask(self.bag_path),
-            ImportOvrTask(self.bag_path),
-            ImportBronTask(self.bag_path),
-            ImportEgmTask(self.bag_path),
-            ImportFngTask(self.bag_path),
-            ImportGbkTask(self.bag_path),
-            ImportLggTask(self.bag_path),
-            ImportLocTask(self.bag_path),
-            ImportTggTask(self.bag_path),
-            ImportStatusTask(self.bag_path),
-            ImportGmeTask(self.gebieden_path),
-            ImportWplTask(self.bag_path),
-
-            ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
-            ImportBuurtcombinatieTask(self.gebieden_shp_path),
+            # ImportAvrTask(self.bag_path),
+            # ImportOvrTask(self.bag_path),
+            # ImportBronTask(self.bag_path),
+            # ImportEgmTask(self.bag_path),
+            # ImportFngTask(self.bag_path),
+            # ImportGbkTask(self.bag_path),
+            # ImportLggTask(self.bag_path),
+            # ImportLocTask(self.bag_path),
+            # ImportTggTask(self.bag_path),
+            # ImportStatusTask(self.bag_path),
+            ImportGmeTask(self.gebieden_path),  # TODO : Gemeente komt in GOB BRK
+            # ImportWplTask(self.bag_path),
+            ImportSdlTask(self.gob_gebieden_path if self.gob else self.gebieden_path,
+                          self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
+                          self.gob),
+            ImportWijkTask(self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
 
             # stadsdelen.
-            ImportGebiedsgerichtwerkenTask(self.gebieden_shp_path),
-            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path),
-            ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),
-            ImportUnescoTask(self.gebieden_shp_path),
-
-            ImportBuurtTask(self.gebieden_path, self.gebieden_shp_path),
+            ImportGebiedsgerichtwerkenTask(self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
+            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(
+                self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
+            # ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),   # TODO : nog niet geleverd door GOB
+            # ImportUnescoTask(self.gebieden_shp_path),                 # TODO : nog niet geleverd door GOB
+            #
+            ImportBuurtTask(self.gob_gebieden_path if self.gob else self.gebieden_path,
+                           self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
+                           self.gob),
             # depends on buurten.
-            ImportBouwblokTask(self.gebieden_path, self.gebieden_shp_path),
-
-            ImportOpenbareRuimteTask(
-                self.bag_path, self.bag_wkt_path,
-                self.opr_beschijving_path
-            ),
-
-            ImportLigTask(self.bag_path, self.bag_wkt_path),
-            ImportStandplaatsenTask(self.bag_path, self.bag_wkt_path),
-
-            ImportPandTask(self.bag_path, self.bag_wkt_path),
-
-            ImportPandNaamTask(self.bag_path),
-
-            # large. 500.000
-            ImportVboTask(self.bag_path),
-
-            ImportGebruiksdoelenTask(self.bag_path),
-
-            # large. 500.000
-            ImportNumTask(self.bag_path),
-
-            # finising stuff.
-            SetHoofdAdres(self.bag_path),
-
-
-            # requires all vbo's to be there
-            ImportPandVboTask(self.bag_path),
-
-            # some sql copying fields
-            DenormalizeDataTask(),
-            DenormalizeIndicatieTask(),
-
-            # more denormalizeing sql
-            UpdateGebiedenAttributenTask(),
-            UpdateGrootstedelijkAttributenTask(),
+            ImportBouwblokTask(self.gob_gebieden_path if self.gob else self.gebieden_path,
+                               self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
+                               self.gob),
+            #
+            # ImportOpenbareRuimteTask(
+            #     self.bag_path, self.bag_wkt_path,
+            #     self.opr_beschijving_path
+            # ),
+            #
+            # ImportLigTask(self.bag_path, self.bag_wkt_path),
+            # ImportStandplaatsenTask(self.bag_path, self.bag_wkt_path),
+            #
+            # ImportPandTask(self.bag_path, self.bag_wkt_path),
+            #
+            # ImportPandNaamTask(self.bag_path),
+            #
+            # # large. 500.000
+            # ImportVboTask(self.bag_path),
+            #
+            # ImportGebruiksdoelenTask(self.bag_path),
+            #
+            # # large. 500.000
+            # ImportNumTask(self.bag_path),
+            #
+            # # finising stuff.
+            # SetHoofdAdres(self.bag_path),
+            #
+            #
+            # # requires all vbo's to be there
+            # ImportPandVboTask(self.bag_path),
+            #
+            # # some sql copying fields
+            # DenormalizeDataTask(),
+            # DenormalizeIndicatieTask(),
+            #
+            # # more denormalizeing sql
+            # UpdateGebiedenAttributenTask(),
+            # UpdateGrootstedelijkAttributenTask(),
         ]
 
 
@@ -2286,16 +2413,17 @@ class IndexGebiedenJob(object):
             IndexWoonplaatsTask(),
         ]
 
-class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
-    name = "Delete and Fill the ggw praktijkgebieden "
-
-    def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
-        self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
-
-    def tasks(self):
-        return [
-            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path)
-        ]
+# This seems not to be used  anywhere
+# class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
+#     name = "Delete and Fill the ggw praktijkgebieden "
+#
+#     def __init__(self):
+#         diva = settings.DIVA_DIR
+#         if not os.path.exists(diva):
+#             raise ValueError("DIVA_DIR not found: {}".format(diva))
+#         self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
+#
+#     def tasks(self):
+#         return [
+#             ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path)
+#         ]

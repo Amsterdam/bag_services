@@ -207,6 +207,7 @@ OBJECTSTORE = {
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 
 DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
+GOB_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data/gob'))
 # DIVA_DIR = '/app/data'
 
 if not os.path.exists(DIVA_DIR):
