@@ -19,12 +19,10 @@ import proces.
 
 """
 import argparse
+import datetime
 import logging
 import os
 import time
-from calendar import timegm
-
-import datetime
 import zipfile
 
 from functools import lru_cache
@@ -137,11 +135,6 @@ def download_file(connect, container_name, file_path, target_path=None, target_r
 def download_diva_file(container_name, file_path, target_path=None):
     """
     Download a diva file
-    :param container_name:
-    :param mapped_folder: the foldername where file is written to
-    :param folder: foldername in O/S
-    :param file_name:
-    :return:
     """
     download_file('bag_brk', container_name, file_path, target_path=None)
 
@@ -323,7 +316,8 @@ def fetch_gob_files(container_name, prefix):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        download_file('GOB_user', container_name, file_path, target_root=GOB_DIR, target_path=file_path, file_last_modified=file_last_modified)
+        download_file('GOB_user', container_name, file_path, target_root=GOB_DIR, target_path=file_path,
+                      file_last_modified=file_last_modified)
 
 
 def unzip_data(zips_mapper):
@@ -407,7 +401,7 @@ def fetch_diva_zips(container_name, zipfolder):
     """
     fetch files from folder in an objectstore container
     :param container_name:
-    :param folder:
+    :param zipfolder:
     :return:
     """
     log.info(f"import files from {zipfolder}")

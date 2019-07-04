@@ -321,13 +321,13 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             if not gemeente_id:
                 gemeente_id = next(iter(self.gemeentes))
 
-            naam=r['naam']
-            brondocument_naam=r['documentnummer']
-            brondocument_datum=uva2.iso_datum(r['documentdatum'])
-            ingang_cyclus=uva2.iso_datum(r['beginGeldigheid'])
-            begin_geldigheid=uva2.iso_datum(r['beginGeldigheid'])
-            einde_geldigheid=uva2.iso_datum(r['eindGeldigheid'])
-            vervallen=None
+            naam = r['naam']
+            brondocument_naam = r['documentnummer']
+            brondocument_datum = uva2.iso_datum(r['documentdatum'])
+            ingang_cyclus = uva2.iso_datum(r['beginGeldigheid'])
+            begin_geldigheid = uva2.iso_datum(r['beginGeldigheid'])
+            einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
+            vervallen = None
 
         else:
             if not uva2.uva_geldig(r['SDLGME/TijdvakRelatie/begindatumRelatie'],
@@ -370,7 +370,6 @@ class ImportSdlTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             begin_geldigheid=begin_geldigheid,
             einde_geldigheid=einde_geldigheid,
         )
-
 
     def process_feature(self, feat):
         code = feat.get('code' if self.gob else 'CODE')
@@ -455,15 +454,15 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             code = r['Buurtcode']
             bc_code = code[:-1]
 
-            naam=r['Buurtnaam']
-            brondocument_naam=r['Brondocumentverwijzing']
-            brondocument_datum=uva2.uva_datum(r['Brondocumentdatum'])
-            ingang_cyclus=uva2.uva_datum(
+            naam = r['Buurtnaam']
+            brondocument_naam = r['Brondocumentverwijzing']
+            brondocument_datum = uva2.uva_datum(r['Brondocumentdatum'])
+            ingang_cyclus = uva2.uva_datum(
                     r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
-            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen'])
-            begin_geldigheid=uva2.uva_datum(
+            vervallen = uva2.uva_indicatie(r['Indicatie-vervallen'])
+            begin_geldigheid = uva2.uva_datum(
                 r['TijdvakGeldigheid/begindatumTijdvakGeldigheid'])
-            einde_geldigheid=uva2.uva_datum(
+            einde_geldigheid = uva2.uva_datum(
                     r['TijdvakGeldigheid/einddatumTijdvakGeldigheid'])
 
         if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
@@ -1272,9 +1271,9 @@ class ImportVboTask(batch.BasicTask):
         y = r['Y-Coordinaat']
 
         if x and y:
-            geo = Point(int(x), int(y))
+            geo1 = Point(int(x), int(y))
         else:
-            geo = None
+            geo1 = None
 
         pk = r['sleutelverzendend']
         reden_afvoer_id = r['VBOAVR/AVR/Code'] or None
@@ -1348,7 +1347,7 @@ class ImportVboTask(batch.BasicTask):
         return models.Verblijfsobject(
             pk=pk,
             landelijk_id=landelijk_id,
-            geometrie=geo,
+            geometrie=geo1,
             oppervlakte=uva2.uva_nummer(r['OppervlakteVerblijfsobject']),
             document_mutatie=uva2.uva_datum(
                 r['DocumentdatumMutatieVerblijfsobject']),
@@ -2240,7 +2239,6 @@ class ImportBagJob(object):
             self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
             self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
 
-
     def tasks(self):
 
         return [
@@ -2265,15 +2263,16 @@ class ImportBagJob(object):
             ImportWijkTask(self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
 
             # stadsdelen.
-            ImportGebiedsgerichtwerkenTask(self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
+            ImportGebiedsgerichtwerkenTask(self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
+                                           self.gob),
             ImportGebiedsgerichtwerkenPraktijkgebiedenTask(
                 self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path, self.gob),
             # ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),   # TODO : nog niet geleverd door GOB
             # ImportUnescoTask(self.gebieden_shp_path),                 # TODO : nog niet geleverd door GOB
             #
             ImportBuurtTask(self.gob_gebieden_path if self.gob else self.gebieden_path,
-                           self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
-                           self.gob),
+                            self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
+                            self.gob),
             # depends on buurten.
             ImportBouwblokTask(self.gob_gebieden_path if self.gob else self.gebieden_path,
                                self.gob_gebieden_shp_path if self.gob else self.gebieden_shp_path,
