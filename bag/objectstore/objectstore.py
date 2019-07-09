@@ -71,7 +71,7 @@ GOB_DIR = '/app/data/gob'
 @lru_cache(maxsize=None)
 def get_conn(connect):
     assert (connect == 'bag_brk' and os.getenv('BAG_OBJECTSTORE_PASSWORD')) or (
-                connect == 'GOB_user' and os.getenv('GOB_OBJECTSTORE_PASSWORD'))
+            connect == 'GOB_user' and os.getenv('GOB_OBJECTSTORE_PASSWORD'))
     return Connection(**connections[connect])
 
 
@@ -257,6 +257,7 @@ def get_specific_files(container_name):
 
 
 gob_file_age_list = {
+    # gebieden
     'gebieden/SHP/GBD_bouwblok.shp': 365,
     'gebieden/SHP/GBD_buurt.shp': 365,
     'gebieden/SHP/GBD_ggw_gebied.shp': 365,
@@ -269,6 +270,24 @@ gob_file_age_list = {
     'gebieden/CSV_Actueel/GBD_ggw_praktijkgebied_Actueel.csv': 100,
     'gebieden/CSV_Actueel/GBD_stadsdeel_Actueel.csv': 100,
     'gebieden/CSV_Actueel/GBD_wijk_Actueel.csv': 100,
+    # bag
+    'bag/CSV_Actueel/BAG_brondocument.csv': 100,
+    'bag/CSV_Actueel/BAG_ligplaats_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_nummeraanduiding_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_openbare_ruimte_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_openbare_ruimte_beschrijving_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_pand_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_standplaats_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 100,
+    #  The geometrie is also in the CSV files
+    #   'bag/SHP/BAG_ligplaats.shp': 100,
+    #   'bag/SHP/BAG_openbare_ruimte.shp': 100,
+    #   'bag/SHP/BAG_pand.shp': 100,
+    #   'bag/SHP/BAG_standplaats.shp': 100,
+    #   'bag/SHP/BAG_verblijfsobject.shp': 100,
+    #   'bag/SHP/BAG_woonplaats.shp': 100,
+    # brk
 }
 
 
@@ -307,7 +326,7 @@ def fetch_gob_files(container_name, prefix):
         if delta.days > file_max_age:
             raise ValueError(f"""
 
-            Delivery of file {file_name }is late!
+            Delivery of file {file_name}is late!
 
             {file_path} age {delta.days} max_age: {file_max_age}
             """)
@@ -465,5 +484,8 @@ if __name__ == "__main__":
     log.info("Start downloading files from objectstore")
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
+        # TODO : change to productie if this is ready in GOB
+        fetch_gob_files('acceptatie', 'bag')
+
     # As long as GOB import not complete we also import DIVA files
     fetch_diva_files()

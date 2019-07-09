@@ -18,6 +18,13 @@ def iso_datum(s):
     return datetime.datetime.strptime(s, "%Y-%m-%d").date()
 
 
+def iso_datum_tijd(s):
+    if not s:
+        return None
+
+    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").date()
+
+
 def uva_datum(s):
     if not s:
         return None
