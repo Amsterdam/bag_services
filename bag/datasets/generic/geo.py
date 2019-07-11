@@ -70,6 +70,19 @@ def get_poly(wkt):
     return None
 
 
+def get_point(wkt):
+    if not wkt:
+        return None
+
+    geom = GEOSGeometry(wkt)
+
+    if geom and isinstance(geom, Point):
+        return geom
+
+    return None
+
+
+
 def get_multiline(wkt):
     if not wkt:
         return None

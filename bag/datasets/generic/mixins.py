@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connection
 
 
 class DocumentStatusMixin(models.Model):
@@ -34,3 +34,21 @@ class CodeOmschrijvingMixin(models.Model):
     def __str__(self):
         return "{}: {}".format(self.code, self.omschrijving)
 
+    @classmethod
+    def get_or_create(cls, omschrijving):
+        try:
+            created = False
+            obj = cls.objects.get(omschrijving=omschrijving)
+        except cls.DoesNotExist:
+            # Create new code
+            table = cls._meta.db_table
+            with connection.cursor() as cursor:
+                query = f'''
+            SELECT COALESCE(MAX(CASE WHEN code ~ '^[0-9]+$' THEN code::INTEGER ELSE 0 END), 0) FROM {table}
+                    '''
+                cursor.execute(query)
+                (max_code,) = cursor.fetchone()
+                obj = cls(code=str(max_code + 1), omschrijving=omschrijving)
+                obj.save()
+                created = True
+        return obj, created
