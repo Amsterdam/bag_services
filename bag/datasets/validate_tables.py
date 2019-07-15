@@ -39,7 +39,7 @@ TABLE_TARGETS = [
     (1         ,20 ,"bag_woonplaats"),      # Er mogen meer woonplaatsen worden geleverd
     (4         ,0 ,"brk_aanduidingnaam"),
     (362900    ,50000 ,"brk_aantekening"),
-    (31        ,5 ,"brk_aardaantekening"),
+    (37        ,5 ,"brk_aardaantekening"),
     (12        ,0 ,"brk_aardzakelijkrecht"),
     (225800    ,0 ,"brk_adres"),
     (971430    ,0 ,"brk_aperceelgperceelrelatie"),
