@@ -196,7 +196,7 @@ def process_uva2(path, file_code, process_row_callback):
 
 def process_csv(
         path, file_code, process_row_callback,
-        with_header=True, quotechar='"', source=None, encoding='cp1252'):
+        with_header=True, quotechar='"', source=None, encoding='cp1252', max_rows=None):
 
     if not source:
         source = resolve_file(path, file_code, extension='csv')
@@ -206,8 +206,11 @@ def process_csv(
     with _context_reader(
             source, skip=0, quotechar=quotechar,
             quoting=csv.QUOTE_MINIMAL, with_header=with_header, encoding=encoding) as rows:
-
+        count = 0
         for row in rows:
+            count += 1
+            if max_rows and count > max_rows:
+                break
             result = cb(row)
             if result:
 
