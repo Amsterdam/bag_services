@@ -500,7 +500,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VerblijfsobjectPandRelatie',
             fields=[
-                ('id', models.CharField(max_length=31, primary_key=True, serialize=False)),
+                ('id', models.CharField(max_length=33, primary_key=True, serialize=False)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('pand', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bag.Pand')),
                 ('verblijfsobject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bag.Verblijfsobject')),

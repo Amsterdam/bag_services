@@ -1077,7 +1077,7 @@ class Pand(
 
 
 class VerblijfsobjectPandRelatie(models.Model):
-    id = models.CharField(max_length=31, primary_key=True)
+    id = models.CharField(max_length=33, primary_key=True)
     pand = models.ForeignKey(Pand, on_delete=models.CASCADE)
     verblijfsobject = models.ForeignKey(
         Verblijfsobject, on_delete=models.CASCADE)

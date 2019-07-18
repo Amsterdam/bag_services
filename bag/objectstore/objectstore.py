@@ -484,8 +484,7 @@ if __name__ == "__main__":
     log.info("Start downloading files from objectstore")
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
-        # TODO : change to productie if this is ready in GOB
-        fetch_gob_files('acceptatie', 'bag')
+        fetch_gob_files('productie', 'bag')
 
     # As long as GOB import not complete we also import DIVA files
     fetch_diva_files()
