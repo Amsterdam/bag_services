@@ -737,6 +737,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.toegang = set()
         self.statussen = set()
         self.buurten = set()
+        self.panden = set()
         self.gebruiksdoelen_code_mapping = {
             "sportfunctie": "0600",
             "onderwijsfunctie": "0700",
@@ -788,6 +789,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
         self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
+        self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
     def after(self):
         self.redenen_afvoer.clear()
@@ -801,6 +803,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
+        self.panden.clear()
 
         def gen_gebruiksdoelen(dict1:dict):
             for landelijk_id, gbs in dict1.items():
@@ -907,7 +910,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         if pand_ids:
             pand_ids = pand_ids.split('|')
             for pand_id in pand_ids:
-                self.pandrelatie[pand_id].append(pk)
+                if pand_id in self.panden:
+                    self.pandrelatie[pand_id].append(pk)
 
         if values['buurt_id'] and values['buurt_id'] not in self.buurten:
             log.warning('Ligplaats {} references non-existing buurt {}; ignoring'.format(pk, values['buurt_id']))
