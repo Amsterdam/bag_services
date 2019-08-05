@@ -34,6 +34,16 @@ class UpdateDatasetMixin(object):
 
         return self.update_metadata_date(filedate)
 
+    def update_metadata_csv(self, source):
+        """
+        For GOB import the date of the import file is the OS file modified date, and it is not encoded in the filename.
+        So when downloading the OS file modified date should be restored and the OS modified date should be used for
+        updating metadata
+        """
+        timestamp = os.path.getmtime(source)
+        filedate = datetime.datetime.fromtimestamp(timestamp)
+        return self.update_metadata_date(filedate)
+
     def update_metadata_onedate(self, path, code):
         filedate = uva2.get_filedate(path, code)
 

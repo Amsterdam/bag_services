@@ -40,6 +40,7 @@ def process_shp(path, filename, callback):
     for feature in lyr:
         callback(feature)
 
+
 def get_multipoly(wkt):
     if not wkt:
         return None
@@ -56,6 +57,30 @@ def get_multipoly(wkt):
         return None
 
     return geom
+
+
+def get_poly(wkt):
+    if not wkt:
+        return None
+
+    geom = GEOSGeometry(wkt)
+
+    if geom and isinstance(geom, Polygon):
+        return geom
+    return None
+
+
+def get_point(wkt):
+    if not wkt:
+        return None
+
+    geom = GEOSGeometry(wkt)
+
+    if geom and isinstance(geom, Point):
+        return geom
+
+    return None
+
 
 
 def get_multiline(wkt):

@@ -303,16 +303,16 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         (TYPE_ADMINISTRATIEF_GEBIED, 'Administratief gebied'),
     )
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
 
     date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
-    code = models.CharField(max_length=5, unique=True)
+    code = models.CharField(max_length=5, null=True, unique=True)
     straat_nummer = models.CharField(max_length=10, null=True)
     naam_nen = models.CharField(max_length=24)
-    naam_ptt = models.CharField(max_length=17)
+    naam_ptt = models.CharField(max_length=17, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
@@ -465,7 +465,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         (OBJECT_TYPE_OVERIG_TERREIN, 'Overig terrein'),
     )
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     huisnummer = models.IntegerField(db_index=True)
     huisletter = models.CharField(max_length=1, null=True)
@@ -698,7 +698,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/
     """
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
 
     date_modified = models.DateTimeField(auto_now=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
@@ -783,7 +783,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/
     """
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
@@ -867,7 +867,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/
     """
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     oppervlakte = models.PositiveIntegerField(null=True)
     bouwlaag_toegang = models.IntegerField(null=True)
@@ -1012,7 +1012,7 @@ class Pand(
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-pand/
     """
 
-    id = models.CharField(max_length=14, primary_key=True)
+    id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     bouwjaar = models.PositiveIntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
@@ -1077,7 +1077,7 @@ class Pand(
 
 
 class VerblijfsobjectPandRelatie(models.Model):
-    id = models.CharField(max_length=29, primary_key=True)
+    id = models.CharField(max_length=33, primary_key=True)
     pand = models.ForeignKey(Pand, on_delete=models.CASCADE)
     verblijfsobject = models.ForeignKey(
         Verblijfsobject, on_delete=models.CASCADE)

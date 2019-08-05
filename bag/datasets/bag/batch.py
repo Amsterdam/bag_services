@@ -2286,16 +2286,17 @@ class IndexGebiedenJob(object):
             IndexWoonplaatsTask(),
         ]
 
-class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
-    name = "Delete and Fill the ggw praktijkgebieden "
-
-    def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
-        self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
-
-    def tasks(self):
-        return [
-            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path)
-        ]
+# This seems not to be used  anywhere
+# class ImportGebiedsgerichtwerkenPraktijkgebiedenJob(object):
+#     name = "Delete and Fill the ggw praktijkgebieden "
+#
+#     def __init__(self):
+#         diva = settings.DIVA_DIR
+#         if not os.path.exists(diva):
+#             raise ValueError("DIVA_DIR not found: {}".format(diva))
+#         self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
+#
+#     def tasks(self):
+#         return [
+#             ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gebieden_shp_path)
+#         ]

@@ -11,6 +11,24 @@ uva2_date_re = re.compile(r'^.*/[a-zA-Z]+_(\d{8})_N_\d{8}_\d{8}\.uva2$', re.IGNO
 one_date_re = re.compile(r'^.*?_(\d{8})\.[a-z]{3}$', re.IGNORECASE)
 
 
+def iso_datum(s):
+    if not s:
+        return None
+
+    return datetime.datetime.strptime(s, "%Y-%m-%d").date()
+
+
+def iso_datum_tijd(s):
+    if not s:
+        return None
+
+    return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").date()
+
+
+def get_janee_boolean(value):
+    return True if value =='J' else False if value == 'N' else None
+
+
 def uva_datum(s):
     if not s:
         return None
@@ -32,13 +50,18 @@ def uva_indicatie(s):
     return {'j': True, 'n': False}.get(s.lower(), None)
 
 
+def datum_geldig(start, eind):
+    now = datetime.date.today()
+    return (eind is None and start is None) \
+           or (eind is None and start <= now) \
+           or (start is None and now < eind) \
+           or (start <= now < eind)
+
+
 def uva_geldig(start, eind):
     s = uva_datum(start)
     e = uva_datum(eind)
-
-    now = datetime.date.today()
-
-    return e is None or s is None or (s <= now < e)
+    return datum_geldig(s, e)
 
 
 def _wrap_row(r, headers):
@@ -48,12 +71,12 @@ def _wrap_row(r, headers):
 @contextmanager
 def _context_reader(
         source, skip=3, quotechar=None, quoting=csv.QUOTE_NONE,
-        with_header=True):
+        with_header=True, encoding='cp1252'):
 
     if not os.path.exists(source):
         raise ValueError("File not found: {}".format(source))
 
-    with open(source, encoding='cp1252') as f:
+    with open(source, encoding=encoding) as f:
         rows = csv.reader(f, delimiter=';', quotechar=quotechar, quoting=quoting)
 
         for i in range(skip):
@@ -122,14 +145,14 @@ def logging_callback(source_path, original_callback):
     return result
 
 
-def get_uva2_filedate(path, file_code):
+def get_uva2_filedate(path, file_code, **kwargs):
     """
     Extract date from uva2 filename
     :param path: filename
     :param file_code: uva2 filename code
     :return: datetime.date or None
     """
-    source = resolve_file(path, file_code)
+    source = resolve_file(path, file_code, **kwargs)
 
     m = re.match(uva2_date_re, source)
     if m and len(m.groups()):
@@ -173,7 +196,7 @@ def process_uva2(path, file_code, process_row_callback):
 
 def process_csv(
         path, file_code, process_row_callback,
-        with_header=True, quotechar='"', source=None):
+        with_header=True, quotechar='"', source=None, encoding='cp1252', max_rows=None):
 
     if not source:
         source = resolve_file(path, file_code, extension='csv')
@@ -182,9 +205,12 @@ def process_csv(
 
     with _context_reader(
             source, skip=0, quotechar=quotechar,
-            quoting=csv.QUOTE_MINIMAL, with_header=with_header) as rows:
-
+            quoting=csv.QUOTE_MINIMAL, with_header=with_header, encoding=encoding) as rows:
+        count = 0
         for row in rows:
+            count += 1
+            if max_rows and count > max_rows:
+                break
             result = cb(row)
             if result:
 

@@ -7,6 +7,7 @@ import sys
 from django.core.management import BaseCommand
 
 import datasets.bag.batch
+import datasets.bag.batch_gob
 import datasets.brk.batch
 import datasets.wkpb.batch
 from datasets import validate_tables
@@ -26,6 +27,14 @@ class Command(BaseCommand):
         gebieden=[],
     )
 
+    imports_gob = dict(
+        bag=[datasets.bag.batch_gob.ImportBagJob],
+        brk=[datasets.brk.batch.ImportKadasterJob],
+        wkpb=[datasets.wkpb.batch.ImportWkpbJob],
+        gebieden=[],
+    )
+
+
     def add_arguments(self, parser):
 
         parser.add_argument(
@@ -42,6 +51,15 @@ class Command(BaseCommand):
             default=False,
             help='Skip database importing')
 
+        parser.add_argument(
+            '--gob',
+            '-g',
+            action='store_true',
+            dest='gob',
+            default=False,
+            help='Use GOB for import'
+        )
+
     def handle(self, *args, **options):
         dataset = options['dataset']
 
@@ -57,6 +75,9 @@ class Command(BaseCommand):
         if options['validate']:
             validate_tables.check_table_targets()
             return
+
+        if options['gob']:
+            self.imports = self.imports_gob
 
         for one_ds in sets:
             for job_class in self.imports[one_ds]:
