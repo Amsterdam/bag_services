@@ -136,7 +136,7 @@ def download_diva_file(container_name, file_path, target_path=None):
     """
     Download a diva file
     """
-    download_file('bag_brk', container_name, file_path, target_path=None)
+    download_file('bag_brk', container_name, file_path, target_path=target_path)
 
 
 def file_exists(target):
