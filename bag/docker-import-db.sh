@@ -16,6 +16,8 @@ while getopts "g" arg; do
   esac
 done
 
+GOB_PARAMETER=${GOB_PARAMETER:-""}
+
 source docker-wait.sh
 
 # download csv
