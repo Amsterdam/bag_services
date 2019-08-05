@@ -1608,7 +1608,7 @@ class IndexBouwblokTask(index.ImportIndexTask):
 
 
 # These files don't have a UVA file
-class ImportBuurtcombinatieTask(batch.BasicTask):
+class ImportWijkTask(batch.BasicTask):
     """
     layer.fields:
 
@@ -2140,7 +2140,7 @@ class ImportBagJob(object):
             ImportWplTask(self.bag_path),
 
             ImportSdlTask(self.gebieden_path, self.gebieden_shp_path),
-            ImportBuurtcombinatieTask(self.gebieden_shp_path),
+            ImportWijkTask(self.gebieden_shp_path),
 
             # stadsdelen.
             ImportGebiedsgerichtwerkenTask(self.gebieden_shp_path),

@@ -189,7 +189,7 @@ class ImportSdlTest(TaskTestCase):
         factories.GemeenteFactory.create(pk='03630000000000')
 
     def task(self):
-        return batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP, False)
+        return batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -220,7 +220,7 @@ class ImportBuurtTest(TaskTestCase):
         factories.BuurtcombinatieFactory.create(code='92')
 
     def task(self):
-        return batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP, False)
+        return batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -244,13 +244,13 @@ class ImportBouwblokTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP, False),
-            batch.ImportWijkTask(GEBIEDEN_SHP, False),
-            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP, False),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportWijkTask(GEBIEDEN_SHP),
+            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP),
         ]
 
     def task(self):
-        return batch.ImportBouwblokTask(GEBIEDEN, GEBIEDEN_SHP, False)
+        return batch.ImportBouwblokTask(GEBIEDEN, GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -283,7 +283,7 @@ class ImportBuurtcombinatieTest(TaskTestCase):
         factories.StadsdeelFactory.create(code='E')
 
     def task(self):
-        return batch.ImportWijkTask(GEBIEDEN_SHP, False)
+        return batch.ImportWijkTask(GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -304,11 +304,11 @@ class ImportGebiedsgerichtwerkenTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP, False),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
         ]
 
     def task(self):
-        return batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP, False)
+        return batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -326,7 +326,7 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTest(TaskTestCase):
         return []
 
     def task(self):
-        return batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP, False)
+        return batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP)
 
     def test_import(self):
         self.run_task()
@@ -789,15 +789,15 @@ class UpdateGGWGebiedenTaskTest(TaskTestCase):
     def requires(self):
         return [
             batch.ImportGmeTask(GEBIEDEN),
-            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP, False),
-            batch.ImportWijkTask(GEBIEDEN_SHP, False),
-            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP, False),
+            batch.ImportSdlTask(GEBIEDEN, GEBIEDEN_SHP),
+            batch.ImportWijkTask(GEBIEDEN_SHP),
+            batch.ImportBuurtTask(GEBIEDEN, GEBIEDEN_SHP),
             batch.ImportStatusTask(BAG),
             batch.ImportVboTask(BAG),
             batch.ImportStandplaatsenTask(BAG, BAG_WKT),
             batch.ImportLigTask(BAG, BAG_WKT),
-            batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP, False),
-            batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP, False)
+            batch.ImportGebiedsgerichtwerkenTask(GEBIEDEN_SHP),
+            batch.ImportGebiedsgerichtwerkenPraktijkgebiedenTask(GEBIEDEN_SHP)
         ]
 
     def task(self):
