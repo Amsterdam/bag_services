@@ -81,6 +81,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         query=Q('bool', must=must),
         sort_fields=['aanduiding.raw'],
         indexes=[BRK_OBJECT],
+        size=100
     )
 
 
@@ -104,6 +105,7 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
         ),
         sort_fields=['naam.raw'],
         indexes=[BRK_SUBJECT],
+        size=100,
     )
 
 
@@ -132,4 +134,5 @@ def kadastraal_subject_nietnatuurlijk_query(
         ),
         sort_fields=['naam.raw'],
         indexes=[BRK_SUBJECT],
+        size=100,
     )
