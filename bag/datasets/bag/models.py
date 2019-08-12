@@ -499,7 +499,8 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         on_delete=models.CASCADE
     )
 
-    hoofdadres = models.NullBooleanField(default=None)
+    hoofdadres = models.NullBooleanField(default=None)  # Obsolete after GOB
+    type_adres = models.TextField(null=True)
 
     # gedenormaliseerde velden
     _openbare_ruimte_naam = models.CharField(max_length=150, null=True)
@@ -876,6 +877,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         max_length=150, null=True)
     verhuurbare_eenheden = models.PositiveIntegerField(null=True)
     bouwlagen = models.PositiveIntegerField(null=True)
+    hoogste_bouwlaag = models.IntegerField(null=True)
+    laagste_bouwlaag = models.IntegerField(null=True)
     type_woonobject_code = models.CharField(max_length=2, null=True)
     type_woonobject_omschrijving = models.CharField(max_length=150, null=True)
     woningvoorraad = models.NullBooleanField(default=None)
@@ -895,6 +898,13 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         Financieringswijze, null=True, on_delete=models.CASCADE)
 
     gebruik = models.ForeignKey(Gebruik, null=True, on_delete=models.CASCADE)
+
+    # gebruiksdoel_woonfunctie and gebruiksdoel_gezondheidszorgfunctie are currently also stored
+    # as plus parameter in Gebruiksdoel. If  GOB import is complete , the plus part of the Gebruiksdoel
+    # can be removed
+    gebruiksdoel_woonfunctie = models.TextField(null=True)
+    gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
+
     locatie_ingang = models.ForeignKey(
         LocatieIngang, null=True, on_delete=models.CASCADE)
     ligging = models.ForeignKey(
@@ -1015,6 +1025,7 @@ class Pand(
     id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     bouwjaar = models.PositiveIntegerField(null=True)
+    bouwlagen = models.PositiveIntegerField(null=True, serialize=False)
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     pandnummer = models.CharField(max_length=10, null=True)
@@ -1029,6 +1040,9 @@ class Pand(
     date_modified = models.DateTimeField(auto_now=True)
 
     pandnaam = models.CharField(max_length=250, null=True)
+
+    ligging = models.TextField(null=True)
+    type_woonobject = models.CharField(max_length=25, null=True)
 
     objects = geo.Manager()
 

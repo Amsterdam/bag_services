@@ -163,6 +163,7 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_display',
             'landelijk_id',
             'hoofdadres',
+            'type_adres',
             'vbo_status',
         )
 
@@ -696,6 +697,7 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'adres_nummer',
             'openbare_ruimte',
             'hoofdadres',
+            'type_adres',
             'ligplaats',
             'standplaats',
             'verblijfsobject',
@@ -876,6 +878,8 @@ class VerblijfsobjectDetail(
             'status_coordinaat',
             'verhuurbare_eenheden',
             'bouwlagen',
+            'hoogste_bouwlaag',
+            'laagste_bouwlaag',
             'type_woonobject',
             'woningvoorraad',
             'aantal_kamers',
@@ -898,6 +902,8 @@ class VerblijfsobjectDetail(
 
             'indicatie_geconstateerd',
             'aanduiding_in_onderzoek',
+            'gebruiksdoel_woonfunctie',
+            'gebruiksdoel_gezondheidszorgfunctie',
 
             '_buurtcombinatie',
             '_stadsdeel',
@@ -947,10 +953,13 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
             'oorspronkelijk_bouwjaar',
 
+            'bouwlagen',
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
             'pandnummer',
             'pandnaam',
+            'ligging',
+            'type_woonobject',
 
             'verblijfsobjecten',
 
