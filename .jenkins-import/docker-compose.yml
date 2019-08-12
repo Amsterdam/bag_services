@@ -32,6 +32,7 @@ services:
       DATABASE_PASSWORD: insecure
       METADATA_URL:
       BAG_OBJECTSTORE_PASSWORD:
+      GOB_OBJECTSTORE_PASSWORD:
       DATAPUNT_API_URL:
       GOB_PARAMETER:
     command: >
