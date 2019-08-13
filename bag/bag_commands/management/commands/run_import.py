@@ -10,7 +10,7 @@ import datasets.bag.batch
 import datasets.bag.batch_gob
 import datasets.brk.batch
 import datasets.wkpb.batch
-from datasets import validate_tables
+from datasets import validate_tables, validate_tables_gob
 from batch import batch
 
 
@@ -73,7 +73,10 @@ class Command(BaseCommand):
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
         if options['validate']:
-            validate_tables.check_table_targets()
+            if options['gob']:
+                validate_tables_gob.check_table_targets()
+            else:    
+                validate_tables.check_table_targets()
             return
 
         if options['gob']:
