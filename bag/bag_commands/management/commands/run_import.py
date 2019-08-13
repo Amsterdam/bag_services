@@ -9,6 +9,7 @@ from django.core.management import BaseCommand
 import datasets.bag.batch
 import datasets.bag.batch_gob
 import datasets.brk.batch
+import datasets.brk.batch_gob
 import datasets.wkpb.batch
 from datasets import validate_tables, validate_tables_gob
 from batch import batch
@@ -29,7 +30,7 @@ class Command(BaseCommand):
 
     imports_gob = dict(
         bag=[datasets.bag.batch_gob.ImportBagJob],
-        brk=[datasets.brk.batch.ImportKadasterJob],
+        brk=[datasets.brk.batch_gob.ImportKadasterJob],
         wkpb=[datasets.wkpb.batch.ImportWkpbJob],
         gebieden=[],
     )
