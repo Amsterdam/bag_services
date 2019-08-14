@@ -132,6 +132,10 @@ def download_file(connect, container_name, file_path, target_path=None, target_r
         os.utime(newfilename, (epoch_modified, epoch_modified))
 
 
+def download_file_data(connect, container_name, file_path):
+    return get_conn(connect).get_object(container_name, file_path)[1]
+
+
 def download_diva_file(container_name, file_path, target_path=None):
     """
     Download a diva file

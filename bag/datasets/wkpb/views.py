@@ -1,5 +1,11 @@
+import logging
 from django.db.models import Prefetch
+from django.http import HttpResponse
+from rest_framework.response import Response
+from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
+from swiftclient import ClientException
 
+from objectstore import objectstore
 from . import models, serializers
 from datasets.generic.rest import DatapuntViewSet
 
@@ -8,6 +14,7 @@ from django_filters.rest_framework import filters
 
 from bag import authorization_levels
 
+log = logging.getLogger(__name__)
 
 class BroncodeView(DatapuntViewSet):
     """
@@ -97,7 +104,7 @@ class BrondocumentView(DatapuntViewSet):
     serializer_class = serializers.Brondocument
     serializer_detail_class = serializers.BrondocumentDetail
 
-    queryset = models.Brondocument.objects.all().order_by('id')
+    queryset = models.Brondocument.objects.select_related('beperking__beperkingtype', 'bron').all().order_by('id')
     filter_fields = ('bron', 'beperking', )
 
     def get_serializer_class(self):
@@ -111,3 +118,26 @@ class BrondocumentView(DatapuntViewSet):
             if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
                 return serializers.BrondocumentDetail
             return serializers.BrondocumentDetailPublic
+
+    def retrieve(self, request, *args, **kwargs):
+        if 'as_pdf' in self.request.query_params:
+            if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
+                brondocument = self.get_object()
+                container = 'productie'
+                path = f'wkpb/brondocumenten/{brondocument.documentnaam}'
+                connection = 'GOB_user'
+                try:
+                    pdf = objectstore.download_file_data(connection, container, path)
+                except ClientException as exc:
+                    log.error(exc)
+                    pdf = None
+                if pdf:
+                    response = HttpResponse(pdf, content_type='application/pdf')
+                    response['Content-Disposition'] = 'attachment; filename="' + brondocument.documentnaam + '"'
+                    return response
+                else:
+                    return Response(data=f'{brondocument.documentnaam} not found', status=HTTP_404_NOT_FOUND)
+            else:
+                return Response(HTTP_401_UNAUTHORIZED)
+        else:
+            return super().retrieve(request, *args, **kwargs)
