@@ -1355,8 +1355,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         # TODO : In GOB there can be multiple toegangen in the toegang field.
         # For now we use the first entry. We have to determine how to deal with this later
         toegangen = r['toegang']
-        if toegangen:
-            toegang0 = toegangen.split('|')[0] if toegangen else None
+        toegang0 = toegangen.split('|')[0] if toegangen else None
         toegang_id = get_code_for_omschrijving(toegang0, models.Toegang, self.toegang)
 
         gebruiksdoel_woonfunctie = r['gebruiksdoelWoonfunctie'] or None
