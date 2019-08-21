@@ -123,11 +123,9 @@ class BrondocumentView(DatapuntViewSet):
         if 'as_pdf' in self.request.query_params:
             if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
                 brondocument = self.get_object()
-                container = 'productie'
                 path = f'wkpb/brondocumenten/{brondocument.documentnaam}'
-                connection = 'GOB_user'
                 try:
-                    pdf = objectstore.download_file_data(connection, container, path)
+                    pdf = objectstore.download_wkpb_file_data(path)
                 except ClientException as exc:
                     log.error(exc)
                     pdf = None

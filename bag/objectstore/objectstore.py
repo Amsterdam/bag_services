@@ -136,6 +136,10 @@ def download_file_data(connect, container_name, file_path):
     return get_conn(connect).get_object(container_name, file_path)[1]
 
 
+def download_wkpb_file_data(file_path):
+    return download_file_data('GOB_user', 'production', file_path)
+
+
 def download_diva_file(container_name, file_path, target_path=None):
     """
     Download a diva file
