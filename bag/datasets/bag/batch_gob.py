@@ -29,6 +29,7 @@ class CodeOmschrijvingDataTask(batch.BasicTask):
 
     def process(self):
         avrs = [self.process_row(entry) for entry in self.data]
+
         self.model.objects.bulk_create(avrs, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
@@ -139,10 +140,6 @@ class ImportStatusTask(CodeOmschrijvingDataTask):
         ("32", "Pand buiten gebruik"),
         ("33", "Plaats aangewezen"),
         ("34", "Plaats ingetrokken"),
-        ("35", "Naamgeving uitgegeven"),
-        ("36", "Naamgeving ingetrokken"),
-        ("37", "Plaats aangewezen"),
-        ("38", "Plaats ingetrokken"),
     ]
 
 
@@ -1352,7 +1349,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
                                                            self.eigendomsverhoudingen)
         gebruik_id = get_code_for_omschrijving(r['is:WOZ.WOB.soortObject'], models.Gebruik, self.gebruik)
 
-        # TODO : In GOB there can be multiple toegangen in the toegang field.
+        # In GOB there can be multiple toegangen in the toegang field.
         # For now we use the first entry. We have to determine how to deal with this later
         toegangen = r['toegang']
         toegang0 = toegangen.split('|')[0] if toegangen else None
