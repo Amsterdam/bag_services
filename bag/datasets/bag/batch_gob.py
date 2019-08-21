@@ -6,14 +6,13 @@ import time
 from collections import defaultdict
 
 from django.conf import settings
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon, GEOSGeometry
 from django.db import connection
 from django.utils.text import slugify
 # Project
 from search import index
 from batch import batch
 from datasets.generic import uva2, database, geo, metadata
-from . import models, documents
+from . import models, documents, gob_diva_code_mapping
 
 log = logging.getLogger(__name__)
 
@@ -862,7 +861,12 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         eigendomsverhouding_id = get_code_for_omschrijving(r['eigendomsverhouding'], models.Eigendomsverhouding,
                                                            self.eigendomsverhoudingen)
         gebruik_id = get_code_for_omschrijving(r['is:WOZ.WOB.soortObject'], models.Gebruik, self.gebruik)
-        toegang_id = get_code_for_omschrijving(r['toegang'], models.Toegang, self.toegang)
+
+        # In GOB there can be multiple toegangen in the toegang field.
+        # For now we use the first entry. We have to determine how to deal with this later
+        toegangen = r['toegang']
+        toegang0 = toegangen.split('|')[0] if toegangen else None
+        toegang_id = get_code_for_omschrijving(toegang0, models.Toegang, self.toegang)
 
         gebruiksdoel_woonfunctie = r['gebruiksdoelWoonfunctie'] or None
         gebruiksdoel_gezondheidszorgfunctie = r['gebruiksdoelGezondheidszorgfunctie'] or None
@@ -1292,6 +1296,8 @@ def get_code_for_omschrijving(omschrijving, model, dictionary):
         obj, created = model.get_or_create(omschrijving)
         code = obj.code
         dictionary[omschrijving] = code
+        if created:
+            log.info(f"Created new code {code} for {omschrijving} in {model.__name__}")
     return code
 
 
@@ -1695,6 +1701,14 @@ class ImportBagJob(object):
     def tasks(self):
 
         return [
+            # Import codes for backward compatibility
+            gob_diva_code_mapping.ImportRedenAfvoerTask(),
+            gob_diva_code_mapping.ImportRedenOpvoerTask(),
+            gob_diva_code_mapping.ImportStatusTask(),
+            gob_diva_code_mapping.ImportEigendomsverhoudingTask(),
+            gob_diva_code_mapping.ImportGebruikTask(),
+            gob_diva_code_mapping.ImportToegangTask(),
+
             # no-dependencies.
             ImportGemeenteTask(self.gebieden_path),  # TODO : Gemeente komt in GOB BRK
             ImportWoonplaatsTask(self.gob_bag_path),

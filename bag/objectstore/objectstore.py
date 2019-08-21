@@ -132,6 +132,14 @@ def download_file(connect, container_name, file_path, target_path=None, target_r
         os.utime(newfilename, (epoch_modified, epoch_modified))
 
 
+def download_file_data(connect, container_name, file_path):
+    return get_conn(connect).get_object(container_name, file_path)[1]
+
+
+def download_wkpb_file_data(file_path):
+    return download_file_data('GOB_user', 'production', file_path)
+
+
 def download_diva_file(container_name, file_path, target_path=None):
     """
     Download a diva file
@@ -258,28 +266,28 @@ def get_specific_files(container_name):
 
 gob_file_age_list = {
     # gebieden
-    'gebieden/SHP/GBD_bouwblok.shp': 365,
-    'gebieden/SHP/GBD_buurt.shp': 365,
-    'gebieden/SHP/GBD_ggw_gebied.shp': 365,
-    'gebieden/SHP/GBD_ggw_praktijkgebied.shp': 365,
-    'gebieden/SHP/GBD_stadsdeel.shp': 365,
-    'gebieden/SHP/GBD_wijk.shp': 365,
-    'gebieden/CSV_Actueel/GBD_bouwblok_Actueel.csv': 100,
-    'gebieden/CSV_Actueel/GBD_buurt_Actueel.csv': 100,
-    'gebieden/CSV_Actueel/GBD_ggw_gebied_Actueel.csv': 100,
-    'gebieden/CSV_Actueel/GBD_ggw_praktijkgebied_Actueel.csv': 100,
-    'gebieden/CSV_Actueel/GBD_stadsdeel_Actueel.csv': 100,
-    'gebieden/CSV_Actueel/GBD_wijk_Actueel.csv': 100,
+    'gebieden/SHP/GBD_bouwblok.shp': 10,
+    'gebieden/SHP/GBD_buurt.shp': 10,
+    'gebieden/SHP/GBD_ggw_gebied.shp': 10,
+    'gebieden/SHP/GBD_ggw_praktijkgebied.shp': 10,
+    'gebieden/SHP/GBD_stadsdeel.shp': 10,
+    'gebieden/SHP/GBD_wijk.shp': 10,
+    'gebieden/CSV_Actueel/GBD_bouwblok_Actueel.csv': 10,
+    'gebieden/CSV_Actueel/GBD_buurt_Actueel.csv': 10,
+    'gebieden/CSV_Actueel/GBD_ggw_gebied_Actueel.csv': 10,
+    'gebieden/CSV_Actueel/GBD_ggw_praktijkgebied_Actueel.csv': 10,
+    'gebieden/CSV_Actueel/GBD_stadsdeel_Actueel.csv': 10,
+    'gebieden/CSV_Actueel/GBD_wijk_Actueel.csv': 10,
     # bag
-    'bag/CSV_Actueel/BAG_brondocument.csv': 100,
-    'bag/CSV_Actueel/BAG_ligplaats_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_nummeraanduiding_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_openbare_ruimte_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_openbare_ruimte_beschrijving_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_pand_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_standplaats_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 100,
-    'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 100,
+    'bag/CSV_Actueel/BAG_brondocument.csv': 5,
+    'bag/CSV_Actueel/BAG_ligplaats_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_nummeraanduiding_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_openbare_ruimte_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_openbare_ruimte_beschrijving_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_pand_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_standplaats_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
+    'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
     #  The geometrie is also in the CSV files
     #   'bag/SHP/BAG_ligplaats.shp': 100,
     #   'bag/SHP/BAG_openbare_ruimte.shp': 100,
