@@ -291,14 +291,12 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_standplaats_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
-    #  The geometrie is also in the CSV files
-    #   'bag/SHP/BAG_ligplaats.shp': 100,
-    #   'bag/SHP/BAG_openbare_ruimte.shp': 100,
-    #   'bag/SHP/BAG_pand.shp': 100,
-    #   'bag/SHP/BAG_standplaats.shp': 100,
-    #   'bag/SHP/BAG_verblijfsobject.shp': 100,
-    #   'bag/SHP/BAG_woonplaats.shp': 100,
     # brk
+    # # wkpb
+    # 'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_orgaan.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_type.csv': 5,
 }
 
 
@@ -509,5 +507,12 @@ if __name__ == "__main__":
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
         fetch_gob_files('productie', 'bag')
-        # As long as GOB import not complete we also import DIVA files
-        fetch_diva_files_for_gob()
+    #    fetch_gob_files('productie', 'wkpb')
+    #     # As long as GOB import not complete we also import some DIVA files
+    #     fetch_diva_files_for_gob()
+    # else:
+    #     pass
+
+    # As long as brk and wkpb are not yet imported in GOB we also need the DIVA files
+    # for brk and wkpb
+    fetch_diva_files()
