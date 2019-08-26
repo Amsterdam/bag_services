@@ -243,8 +243,14 @@ exception_list = [
     ('bag_openbareruimte_beschrijving/OPR_beschrijving.csv', ''),
 ]
 
+# list of exceptions still required for GOB
+exception_list_gob = [
+    ('gebieden_shp/GBD_grootstedelijke_projecten.shp', ''),
+    ('gebieden_shp/GBD_unesco.shp', ''),
+]
 
-def get_specific_files(container_name):
+
+def get_specific_files(container_name, exception_list=exception_list):
     """
     There are some files not contained in the zips.
     Lets pick them up separately.
@@ -266,11 +272,8 @@ def get_specific_files(container_name):
 
 gob_file_age_list = {
     # gebieden
-    'gebieden/SHP/GBD_bouwblok.shp': 10,
-    'gebieden/SHP/GBD_buurt.shp': 10,
     'gebieden/SHP/GBD_ggw_gebied.shp': 10,
     'gebieden/SHP/GBD_ggw_praktijkgebied.shp': 10,
-    'gebieden/SHP/GBD_stadsdeel.shp': 10,
     'gebieden/SHP/GBD_wijk.shp': 10,
     'gebieden/CSV_Actueel/GBD_bouwblok_Actueel.csv': 10,
     'gebieden/CSV_Actueel/GBD_buurt_Actueel.csv': 10,
@@ -288,14 +291,12 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_standplaats_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
-    #  The geometrie is also in the CSV files
-    #   'bag/SHP/BAG_ligplaats.shp': 100,
-    #   'bag/SHP/BAG_openbare_ruimte.shp': 100,
-    #   'bag/SHP/BAG_pand.shp': 100,
-    #   'bag/SHP/BAG_standplaats.shp': 100,
-    #   'bag/SHP/BAG_verblijfsobject.shp': 100,
-    #   'bag/SHP/BAG_woonplaats.shp': 100,
     # brk
+    # # wkpb
+    # 'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_orgaan.csv': 5,
+    # 'wkpb/CSV_Actueel/WKPB_type.csv': 5,
 }
 
 
@@ -484,6 +485,19 @@ def fetch_diva_files():
     fetch_diva_zips('Diva', 'Zip_bestanden')
 
 
+def fetch_diva_files_for_gob():
+    """
+    As long as GOB import not complete we also import some files from DIVA
+    :return:
+    """
+    logging.basicConfig(level=logging.DEBUG)
+    # creat folders where files are expected.
+    create_target_directories()
+    # download the exceptions not in zip files
+    # these are special cases manual made by some people
+    get_specific_files('Diva', exception_list=exception_list_gob)
+
+
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-g', '--gob', action='store_true', help='Do GOB import')
@@ -493,6 +507,12 @@ if __name__ == "__main__":
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
         fetch_gob_files('productie', 'bag')
+    #    fetch_gob_files('productie', 'wkpb')
+    #     # As long as GOB import not complete we also import some DIVA files
+    #     fetch_diva_files_for_gob()
+    # else:
+    #     pass
 
-    # As long as GOB import not complete we also import DIVA files
+    # As long as brk and wkpb are not yet imported in GOB we also need the DIVA files
+    # for brk and wkpb
     fetch_diva_files()

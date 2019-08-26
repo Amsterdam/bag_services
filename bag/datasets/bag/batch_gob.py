@@ -16,9 +16,17 @@ from . import models, documents, gob_diva_code_mapping
 
 log = logging.getLogger(__name__)
 
+GOB_CSV_ENCODING = 'utf-8-sig'
+
 
 class ImportGemeenteTask(batch.BasicTask):
+    """
+    Gemeente is not delivered by GOB. So we hardcode gemeente Amsterdam data
+    """
     name = "Import gemeente code / naam"
+    data = [
+        ('03630000000000','0363','Amsterdam','','J','','GVI','N','19000101','')
+    ]
 
     def __init__(self, path):
         self.path = path
@@ -30,34 +38,29 @@ class ImportGemeenteTask(batch.BasicTask):
         pass
 
     def process(self):
-        gemeentes = uva2.process_uva2(self.path, "GME", self.process_row)
+        gemeentes = [
+            models.Gemeente(
+                pk=r[0],
+                code=r[1],
+                naam=r[2],
+                verzorgingsgebied=uva2.uva_indicatie(
+                    r[4]),
+                vervallen=uva2.uva_indicatie(r[8]),
+                begin_geldigheid=uva2.uva_datum(
+                    r[8]),
+                einde_geldigheid=uva2.uva_datum(
+                    r[9]),
+            ) for r in self.data]
+
         models.Gemeente.objects.bulk_create(
             gemeentes, batch_size=database.BATCH_SIZE)
-
-    def process_row(self, r):
-        if not uva2.geldig_tijdvak(r):
-            return
-
-        return models.Gemeente(
-            pk=r['sleutelVerzendend'],
-            code=r['Gemeentecode'],
-            naam=r['Gemeentenaam'],
-            verzorgingsgebied=uva2.uva_indicatie(
-                r['IndicatieVerzorgingsgebied']),
-            vervallen=uva2.uva_indicatie(r['Indicatie-vervallen']),
-            begin_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/begindatumTijdvakGeldigheid']),
-            einde_geldigheid=uva2.uva_datum(
-                r['TijdvakGeldigheid/einddatumTijdvakGeldigheid']),
-        )
 
 
 class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import stadsdeel"
     dataset_id = 'gebieden-stadsdeel'
 
-    def __init__(self, bag_path, shp_path):
-        self.shp_path = shp_path
+    def __init__(self, bag_path):
         self.bag_path = bag_path
         self.gemeentes = set()
         self.stadsdelen = dict()
@@ -78,10 +81,7 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.stadsdelen = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'))
-
-        geo.process_shp(
-            self.shp_path, "GBD_stadsdeel.shp", self.process_feature)
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING))
 
         models.Stadsdeel.objects.bulk_create(
             self.stadsdelen.values(), batch_size=database.BATCH_SIZE)
@@ -103,6 +103,16 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
         vervallen = None
 
+        wkt_geometrie = r['geometrie']
+        if wkt_geometrie:
+            geometrie = geo.get_multipoly(wkt_geometrie)
+            if not geometrie:
+                log.error(f"Stadsdeel {code} has no valid geometry; skipping")
+                return None
+        else:
+            log.warning(f"Stadsdeel {code}, {naam} has no geometry")
+            geometrie = None
+
         if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
             return None
         return code, models.Stadsdeel(
@@ -116,25 +126,15 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             gemeente_id=gemeente_id,
             begin_geldigheid=begin_geldigheid,
             einde_geldigheid=einde_geldigheid,
+            geometrie=geometrie
         )
-
-    def process_feature(self, feat):
-        code = feat.get('code')
-        if code not in self.stadsdelen:
-            log.warning(
-                """Stadsdeel/SHP {} references non-existing stadsdeel;
-                skipping""".format(code))
-            return
-
-        self.stadsdelen[code].geometrie = geo.get_multipoly(feat.geom.wkt)
 
 
 class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BRT - BUURT"
     dataset_id = 'gebieden-buurt'
 
-    def __init__(self, uva_path, shp_path):
-        self.shp_path = shp_path
+    def __init__(self, uva_path):
         self.uva_path = uva_path
         self.stadsdelen = set()
         self.buurten = dict()
@@ -159,10 +159,7 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.buurten = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'))
-
-        geo.process_shp(
-            self.shp_path, "GBD_buurt.shp", self.process_feature)
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING))
 
         models.Buurt.objects.bulk_create(
             self.buurten.values(), batch_size=database.BATCH_SIZE)
@@ -182,6 +179,16 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         bc_code = bc_voll_code[1:]
         vervallen = None
 
+        wkt_geometrie = r['geometrie']
+        if wkt_geometrie:
+            geometrie = geo.get_multipoly(wkt_geometrie)
+            if not geometrie:
+                log.error(f"Buurt {naam} has no valid geometry; skipping")
+                return None
+        else:
+            log.warning(f"Buurt {naam} has no geometry")
+            geometrie = None
+
         if not uva2.datum_geldig(begin_geldigheid, einde_geldigheid):
             return None
         if stadsdeel_id not in self.stadsdelen:
@@ -200,6 +207,7 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         return code, models.Buurt(
             pk=pk,
             code=code,
+            vollcode=vollcode,
             naam=naam,
             brondocument_naam=brondocument_naam,
             brondocument_datum=brondocument_datum,
@@ -209,27 +217,15 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             begin_geldigheid=begin_geldigheid,
             einde_geldigheid=einde_geldigheid,
             buurtcombinatie_id=bc_id,
+            geometrie=geometrie,
         )
-
-    def process_feature(self, feat):
-        vollcode = feat.get('code')
-        code = vollcode[1:]
-        if code not in self.buurten:
-            log.warning("""
-            Buurt/SHP {} references non-existing buurt; skipping
-            """.format(code))
-            return
-
-        self.buurten[code].geometrie = geo.get_multipoly(feat.geom.wkt)
-        self.buurten[code].vollcode = vollcode
 
 
 class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BBK  - Bouwblok"
     dataset_id = 'gebieden-bouwblok'
 
-    def __init__(self, uva_path, shp_path):
-        self.shp_path = shp_path
+    def __init__(self, uva_path):
         self.uva_path = uva_path
         self.buurten = set()
         self.bouwblokken = dict()
@@ -247,10 +243,8 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         # loads the csv
-        for bb in uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'):
+        for bb in uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING):
             bb.save()
-
-        geo.process_shp(self.shp_path, "GBD_bouwblok.shp", self.process_feature)
 
     def process_row(self, r):
         pk = r['identificatie']
@@ -259,6 +253,16 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         ingang_cyclus = uva2.iso_datum(r['beginGeldigheid'])
         begin_geldigheid = uva2.iso_datum(r['beginGeldigheid'])
         einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
+
+        wkt_geometrie = r['geometrie']
+        if wkt_geometrie:
+            geometrie = geo.get_multipoly(wkt_geometrie)
+            if not geometrie:
+                log.error(f"Bouwblok {code} has no valid geometry; skipping")
+                return None
+        else:
+            log.warning(f"Bouwblok {code} has no geometry")
+            geometrie = None
 
         if buurt_id not in self.buurten:
             log.warning("""
@@ -274,19 +278,8 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             buurt_id=buurt_id,
             begin_geldigheid=begin_geldigheid,
             einde_geldigheid=einde_geldigheid,
+            geometrie=geometrie,
         )
-
-    def process_feature(self, feat):
-        code = feat.get('CODE')
-        try:
-            bouwblok = models.Bouwblok.objects.get(code=code)
-        except models.Bouwblok.DoesNotExist:
-            log.warning("""
-            Bouwblok/SHP {} code of non-existing bouwblok; skipping
-            """.format(code))
-            return
-
-        bouwblok.geometrie = geo.get_multipoly(feat.geom.wkt)
 
         # add buurt to bouwblok if missing.
         # now dependent  objects like panden have
@@ -323,7 +316,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
     def process(self):
 
         source = os.path.join(self.path, 'BAG_woonplaats_Actueel.csv')
-        woonplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8')
+        woonplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding=GOB_CSV_ENCODING)
 
         models.Woonplaats.objects.bulk_create(
             woonplaatsen, batch_size=database.BATCH_SIZE)
@@ -387,7 +380,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
                 None,
                 None,
                 self.store_opr_omschrijving,
-                quotechar='"', source=source, encoding='utf-8')
+                quotechar='"', source=source, encoding=GOB_CSV_ENCODING)
         )
 
     def after(self):
@@ -400,7 +393,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
     def process(self):
         source = os.path.join(self.path, 'BAG_openbare_ruimte_Actueel.csv')
         self.openbare_ruimtes = dict(
-            uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8'))
+            uva2.process_csv(None, None, self.process_row, source=source, encoding=GOB_CSV_ENCODING))
 
         models.OpenbareRuimte.objects.bulk_create(
             self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
@@ -505,7 +498,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         log.info('%d Nummeraanduiding Imported', models.Nummeraanduiding.objects.count())
 
     def process(self):
-        nummeraanduidingen = uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8', max_rows=None)
+        nummeraanduidingen = uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING, max_rows=None)
         models.Nummeraanduiding.objects.bulk_create(
             nummeraanduidingen, batch_size=database.BATCH_SIZE)
 
@@ -551,8 +544,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             'verblijfsobject_id': verblijfsobject_id,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
-            # 'indicatie_in_onderzoek': uva2.get_janee_boolean(r['aanduidingInOnderzoek']),
-            # 'indicatie_geconstateerd': uva2.get_janee_boolean(r['geconstateerd']),
         }
 
         if not uva2.datum_geldig(values['begin_geldigheid'], values['einde_geldigheid']):
@@ -594,7 +585,7 @@ class ImportLigplaatsTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.bag_path, 'BAG_ligplaats_Actueel.csv')
-        self.ligplaatsen = dict(uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8'))
+        self.ligplaatsen = dict(uva2.process_csv(None, None, self.process_row, source=source, encoding=GOB_CSV_ENCODING))
 
         models.Ligplaats.objects.bulk_create(self.ligplaatsen.values(), batch_size=database.BATCH_SIZE)
 
@@ -677,7 +668,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.bag_path, 'BAG_standplaats_Actueel.csv')
-        standplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8')
+        standplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding=GOB_CSV_ENCODING)
 
         models.Standplaats.objects.bulk_create(standplaatsen, batch_size=database.BATCH_SIZE)
 
@@ -839,7 +830,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.path, 'BAG_verblijfsobject_Actueel.csv')
-        verblijfsobjecten = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8', max_rows=None)
+        verblijfsobjecten = uva2.process_csv(None, None, self.process_row, source=source, encoding=GOB_CSV_ENCODING, max_rows=None)
         log.debug('Create verblijfsobjecten...')
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
         validate_geometry(models.Verblijfsobject)
@@ -963,7 +954,7 @@ class ImportPandTask(batch.BasicTask):
 
     def process(self):
         self.panden = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8', max_rows=None))
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING, max_rows=None))
         models.Pand.objects.bulk_create(self.panden.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
@@ -1710,9 +1701,9 @@ class ImportBagJob(object):
             gob_diva_code_mapping.ImportToegangTask(),
 
             # no-dependencies.
-            ImportGemeenteTask(self.gebieden_path),  # TODO : Gemeente komt in GOB BRK
+            ImportGemeenteTask(self.gebieden_path),
             ImportWoonplaatsTask(self.gob_bag_path),
-            ImportStadsdeelTask(self.gob_gebieden_path, self.gob_gebieden_shp_path),
+            ImportStadsdeelTask(self.gob_gebieden_path),
             ImportWijkTask(self.gob_gebieden_shp_path),
 
             # stadsdelen.
@@ -1721,8 +1712,8 @@ class ImportBagJob(object):
             ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),  # TODO : nog niet geleverd door GOB
             ImportUnescoTask(self.gebieden_shp_path),  # TODO : nog niet geleverd door GOB
             #
-            ImportBuurtTask(self.gob_gebieden_path, self.gob_gebieden_shp_path),
-            ImportBouwblokTask(self.gob_gebieden_path, self.gob_gebieden_shp_path),
+            ImportBuurtTask(self.gob_gebieden_path),
+            ImportBouwblokTask(self.gob_gebieden_path),
             #
             ImportOpenbareRuimteTask(self.gob_bag_path),
             #
