@@ -272,11 +272,8 @@ def get_specific_files(container_name, exception_list=exception_list):
 
 gob_file_age_list = {
     # gebieden
-    'gebieden/SHP/GBD_bouwblok.shp': 10,
-    'gebieden/SHP/GBD_buurt.shp': 10,
     'gebieden/SHP/GBD_ggw_gebied.shp': 10,
     'gebieden/SHP/GBD_ggw_praktijkgebied.shp': 10,
-    'gebieden/SHP/GBD_stadsdeel.shp': 10,
     'gebieden/SHP/GBD_wijk.shp': 10,
     'gebieden/CSV_Actueel/GBD_bouwblok_Actueel.csv': 10,
     'gebieden/CSV_Actueel/GBD_buurt_Actueel.csv': 10,
