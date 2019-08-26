@@ -78,7 +78,7 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.stadsdelen = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'))
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8-sig'))
 
         geo.process_shp(
             self.shp_path, "GBD_stadsdeel.shp", self.process_feature)
@@ -159,7 +159,7 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         self.buurten = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'))
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8-sig'))
 
         geo.process_shp(
             self.shp_path, "GBD_buurt.shp", self.process_feature)
@@ -247,7 +247,7 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def process(self):
         # loads the csv
-        for bb in uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8'):
+        for bb in uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8-sig'):
             bb.save()
 
         geo.process_shp(self.shp_path, "GBD_bouwblok.shp", self.process_feature)
@@ -323,7 +323,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
     def process(self):
 
         source = os.path.join(self.path, 'BAG_woonplaats_Actueel.csv')
-        woonplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8')
+        woonplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8-sig')
 
         models.Woonplaats.objects.bulk_create(
             woonplaatsen, batch_size=database.BATCH_SIZE)
@@ -387,7 +387,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
                 None,
                 None,
                 self.store_opr_omschrijving,
-                quotechar='"', source=source, encoding='utf-8')
+                quotechar='"', source=source, encoding='utf-8-sig')
         )
 
     def after(self):
@@ -400,7 +400,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
     def process(self):
         source = os.path.join(self.path, 'BAG_openbare_ruimte_Actueel.csv')
         self.openbare_ruimtes = dict(
-            uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8'))
+            uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8-sig'))
 
         models.OpenbareRuimte.objects.bulk_create(
             self.openbare_ruimtes.values(), batch_size=database.BATCH_SIZE)
@@ -505,7 +505,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         log.info('%d Nummeraanduiding Imported', models.Nummeraanduiding.objects.count())
 
     def process(self):
-        nummeraanduidingen = uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8', max_rows=None)
+        nummeraanduidingen = uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8-sig', max_rows=None)
         models.Nummeraanduiding.objects.bulk_create(
             nummeraanduidingen, batch_size=database.BATCH_SIZE)
 
@@ -594,7 +594,7 @@ class ImportLigplaatsTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.bag_path, 'BAG_ligplaats_Actueel.csv')
-        self.ligplaatsen = dict(uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8'))
+        self.ligplaatsen = dict(uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8-sig'))
 
         models.Ligplaats.objects.bulk_create(self.ligplaatsen.values(), batch_size=database.BATCH_SIZE)
 
@@ -677,7 +677,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.bag_path, 'BAG_standplaats_Actueel.csv')
-        standplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8')
+        standplaatsen = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8-sig')
 
         models.Standplaats.objects.bulk_create(standplaatsen, batch_size=database.BATCH_SIZE)
 
@@ -839,7 +839,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
 
     def process(self):
         source = os.path.join(self.path, 'BAG_verblijfsobject_Actueel.csv')
-        verblijfsobjecten = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8', max_rows=None)
+        verblijfsobjecten = uva2.process_csv(None, None, self.process_row, source=source, encoding='utf-8-sig', max_rows=None)
         log.debug('Create verblijfsobjecten...')
         models.Verblijfsobject.objects.bulk_create(verblijfsobjecten, batch_size=database.BATCH_SIZE)
         validate_geometry(models.Verblijfsobject)
@@ -963,7 +963,7 @@ class ImportPandTask(batch.BasicTask):
 
     def process(self):
         self.panden = dict(
-            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8', max_rows=None))
+            uva2.process_csv(None, None, self.process_row, source=self.source, encoding='utf-8-sig', max_rows=None))
         models.Pand.objects.bulk_create(self.panden.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
