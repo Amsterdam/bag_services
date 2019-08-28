@@ -59,7 +59,7 @@ TABLE_TARGETS = [
     (3         ,20 ,"brk_soortgrootte"),    # Kadaster gaat nog meer soort soortgroottes opleveren
     (921260    ,0 ,"brk_zakelijkrecht"),
     (872015    ,0 ,"brk_zakelijkrechtverblijfsobjectrelatie"),
-    (5184      ,0 ,"wkpb_beperking"),
+    (5444      ,0 ,"wkpb_beperking"),
     (20        ,0 ,"wkpb_beperkingcode"),
     (314047    ,0 ,"wkpb_beperkingkadastraalobject"),
     (338702    ,0 ,"wkpb_beperkingverblijfsobject"),
