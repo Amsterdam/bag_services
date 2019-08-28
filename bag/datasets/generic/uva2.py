@@ -37,10 +37,9 @@ def uva_datum(s):
 
 
 def uva_nummer(s):
-    if not s:
+    if s is None or s == '':
         return None
-
-    return int(s, 10)
+    return int(s)
 
 
 def uva_indicatie(s):
