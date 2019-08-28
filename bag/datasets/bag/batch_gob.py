@@ -860,7 +860,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'oppervlakte': uva2.uva_nummer(r['oppervlakte']),
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'],
-            'bouwlaag_toegang': uva2.uva_nummer(r['verdiepingToegang']) or None,
+            'bouwlaag_toegang': uva2.uva_nummer(r['verdiepingToegang']),
             'verhuurbare_eenheden': r['aantalEenhedenComplex'] or None,
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'hoogste_bouwlaag' : uva2.uva_nummer(r['hoogsteBouwlaag']),
