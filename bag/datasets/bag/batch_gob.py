@@ -62,14 +62,12 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def __init__(self, bag_path):
         self.bag_path = bag_path
-        self.gemeentes = set()
+        self.gemeentes = dict()
         self.stadsdelen = dict()
         self.source = os.path.join(self.bag_path, 'GBD_stadsdeel_Actueel.csv')
 
     def before(self):
-        self.gemeentes = set(
-            models.Gemeente.objects.values_list("pk", flat=True))
-
+        self.gemeentes = dict(models.Gemeente.objects.values_list("code", "pk"))
         assert self.gemeentes
 
     def after(self):
@@ -89,12 +87,7 @@ class ImportStadsdeelTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process_row(self, r):
         pk = r['identificatie']
         code = r['code']
-        gemeente_id = r['ligtIn:BRK.GME.identificatie']
-        # The gemeente is in GOB in BRK and will be delivered much later.
-        # For now we can use the one and only gemeente that is in the old import.
-        if not gemeente_id:
-            gemeente_id = next(iter(self.gemeentes))
-
+        gemeente_id = self.gemeentes.get(r['ligtIn:BRK.GME.identificatie'])
         naam = r['naam']
         brondocument_naam = r['documentnummer']
         brondocument_datum = uva2.iso_datum(r['documentdatum'])
@@ -304,11 +297,10 @@ class ImportWoonplaatsTask(batch.BasicTask):
 
     def __init__(self, path):
         self.path = path
-        self.gemeentes = set()
+        self.gemeentes = dict()
 
     def before(self):
-        self.gemeentes = set(
-            models.Gemeente.objects.values_list("pk", flat=True))
+        self.gemeentes = dict(models.Gemeente.objects.values_list("code", "pk"))
 
     def after(self):
         self.gemeentes.clear()
@@ -323,8 +315,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
 
     def process_row(self, r):
         pk = r['identificatie']
-        # gemeente wordt niet geleverd, maar er is er maar een
-        gemeente_id = next(iter(self.gemeentes))
+        gemeente_id = self.gemeentes.get(r['ligtIn:BRK.GME.identificatie'])
         values = {
             'pk': pk,
             'landelijk_id': pk,
@@ -342,7 +333,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
         if not uva2.datum_geldig(values['begin_geldigheid'], values['einde_geldigheid']):
             return None
 
-        if gemeente_id not in self.gemeentes:
+        if not gemeente_id:
             log.warning("""
              Woonplaats {} references non-existing gemeente {}; skipping
              """.format(pk, gemeente_id))
