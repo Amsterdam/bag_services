@@ -98,9 +98,12 @@ class Brondocument(models.Model):
 
     @property
     def url(self):
-        # return f'{settings.DATAPUNT_API_URL}wkpb/brondocument/{self.id}/?as_pdf'
         base_url = 'http://diva.intranet.amsterdam.nl/Brondocumenten/Wkpb'
         return '%s/%s' % (base_url, self.documentnaam)
+
+    @property
+    def extern_url(self):
+        return f'{settings.DATAPUNT_API_URL}wkpb/brondocument/{self.id}/?as_pdf'
 
     class Meta:
         verbose_name = "Brondocument"

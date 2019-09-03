@@ -28,6 +28,7 @@ class Brondocument(rest.HALSerializer):
             '_links',
             '_display',
             'url',
+            'extern_url',
             'inschrijfnummer',
             'documentnaam',
             'soort_besluit',

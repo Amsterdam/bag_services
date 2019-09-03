@@ -137,7 +137,7 @@ def download_file_data(connect, container_name, file_path):
 
 
 def download_wkpb_file_data(file_path):
-    return download_file_data('GOB_user', 'production', file_path)
+    return download_file_data('GOB_user', 'productie', file_path)
 
 
 def download_diva_file(container_name, file_path, target_path=None):
