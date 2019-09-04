@@ -364,6 +364,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
         self.woonplaatsen = set(
             models.Woonplaats.objects.values_list("pk", flat=True))
 
+
         source = os.path.join(self.path, 'BAG_openbare_ruimte_beschrijving_Actueel.csv')
 
         self.omschrijvingen = dict(
@@ -398,7 +399,10 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             log.error(f"OpenbareRuimte {pk} has invalid type {r['type']}; skipping")
             return None
 
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        status_id0 = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        # Ugly hack to handle duplicate codes for Naamgeving uitgegeven and Naamgeving ingetrokken
+        status_id = 35 if status_id0 == 16 else 36 if status_id0 == 17 else status_id0
+
         naam = r['naam']
         naam_nen = r['naamNEN']
         if len(naam_nen) > 24:
@@ -634,7 +638,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bronnen = set()
-        self.statussen = set()
+        self.statussen = dict()
         self.buurten = set()
 
     def before(self):
@@ -665,7 +669,11 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
     def process_row(self, r):
         pk = landelijk_id = r['identificatie']
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+
+        status_id0 = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        # Ugly hack to handle duplicate codes for same Plaats aangewezen and Plaats ingetrokken
+        status_id = 37 if status_id0 == 33 else 38 if status_id0 == 34 else status_id0
+
         wkt_geometrie = r['geometrie']
         if wkt_geometrie:
             geometrie = geo.get_poly(wkt_geometrie)

@@ -129,6 +129,10 @@ class ImportStatusTask(CodeOmschrijvingDataTask):
         ("32", "Pand buiten gebruik"),
         ("33", "Plaats aangewezen"),
         ("34", "Plaats ingetrokken"),
+        ("35", "Naamgeving uitgegeven (openbare ruimte)"),
+        ("36", "Naamgeving ingetrokken (openbare ruimte)"),
+        ("37", "Plaats aangewezen (standplaats)"),
+        ("38", "Plaats ingetrokken (standplaats)"),
     ]
 
 
