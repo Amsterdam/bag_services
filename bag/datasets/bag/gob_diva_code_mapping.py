@@ -14,12 +14,6 @@ class CodeOmschrijvingDataTask(batch.BasicTask):
         pass
 
     def process(self):
-        check_duplicates = set()
-        for entry in self.data:
-            if entry[1] in check_duplicates:
-                raise ValueError(f"Duplicate omschrijving {entry[1]} in {type(self).__name__}")
-            check_duplicates.add(entry[1])
-
         avrs = [self.process_row(entry) for entry in self.data]
         self.model.objects.bulk_create(avrs, batch_size=database.BATCH_SIZE)
 
@@ -129,6 +123,10 @@ class ImportStatusTask(CodeOmschrijvingDataTask):
         ("32", "Pand buiten gebruik"),
         ("33", "Plaats aangewezen"),
         ("34", "Plaats ingetrokken"),
+        ("35", "Naamgeving uitgegeven"),
+        ("36", "Naamgeving ingetrokken"),
+        ("37", "Plaats aangewezen"),
+        ("38", "Plaats ingetrokken"),
     ]
 
 
@@ -492,3 +490,11 @@ class ImportToegangTask(CodeOmschrijvingDataTask):
         ("99", "Onbekend"),
         ("08", "Begane grond"),
     ]
+
+
+def get_status_dictionary():
+    """
+    Order in descending order because there are duplicate values for omschrijving and we want to keep only the
+    lowest values in the dictionary.
+    """
+    return  dict(models.Status.objects.values_list("omschrijving", "pk").order_by("-pk"))

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.text import slugify
 # Project
+from datasets.bag.gob_diva_code_mapping import get_status_dictionary
 from search import index
 from batch import batch
 from datasets.generic import uva2, database, geo, metadata
@@ -358,11 +359,11 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
 
     def before(self):
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
         self.types = dict([(t[1], t[0]) for t in models.OpenbareRuimte.TYPE_CHOICES])
         self.woonplaatsen = set(
             models.Woonplaats.objects.values_list("pk", flat=True))
+
 
         source = os.path.join(self.path, 'BAG_openbare_ruimte_beschrijving_Actueel.csv')
 
@@ -398,7 +399,10 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             log.error(f"OpenbareRuimte {pk} has invalid type {r['type']}; skipping")
             return None
 
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        status_id0 = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        # Ugly hack to handle duplicate codes for Naamgeving uitgegeven and Naamgeving ingetrokken
+        status_id = '35' if status_id0 == '16' else '36' if status_id0 == '17' else status_id0
+
         naam = r['naam']
         naam_nen = r['naamNEN']
         if len(naam_nen) > 24:
@@ -471,7 +475,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def before(self):
         log.debug('Starting import nummeraanduidingen: delete old data')
         models.Nummeraanduiding.objects.all().delete()
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
         self.openbare_ruimtes = set(
             models.OpenbareRuimte.objects.values_list("pk", flat=True))
         self.ligplaatsen = set(models.Ligplaats.objects.values_list("pk", flat=True))
@@ -555,7 +559,7 @@ class ImportLigplaatsTask(batch.BasicTask):
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bronnen = set()
-        self.statussen = set()
+        self.statussen = dict()
         self.buurten = set()
         self.ligplaatsen = dict()
 
@@ -563,8 +567,7 @@ class ImportLigplaatsTask(batch.BasicTask):
         log.debug('Starting import ligplaats: delete old data')
         models.Ligplaats.objects.all().delete()
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
     def after(self):
@@ -634,15 +637,14 @@ class ImportStandplaatsenTask(batch.BasicTask):
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bronnen = set()
-        self.statussen = set()
+        self.statussen = dict()
         self.buurten = set()
 
     def before(self):
         log.info('Starting import standplaatsen: delete old data')
         models.Standplaats.objects.all().delete()
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
     def after(self):
@@ -665,7 +667,11 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
     def process_row(self, r):
         pk = landelijk_id = r['identificatie']
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+
+        status_id0 = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
+        # Ugly hack to handle duplicate codes for same Plaats aangewezen and Plaats ingetrokken
+        status_id = '37' if status_id0 == '33' else '38' if status_id0 == '34' else status_id0
+
         wkt_geometrie = r['geometrie']
         if wkt_geometrie:
             geometrie = geo.get_poly(wkt_geometrie)
@@ -717,7 +723,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.locaties_ingang = set()
         self.liggingen = set()
         self.toegang = set()
-        self.statussen = set()
+        self.statussen = dict()
         self.buurten = set()
         self.panden = set()
         self.gebruiksdoelen_code_mapping = {
@@ -769,7 +775,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.eigendomsverhoudingen = dict(models.Eigendomsverhouding.objects.values_list("omschrijving", "pk"))
         self.gebruik = dict(models.Gebruik.objects.values_list("omschrijving", "pk"))
         self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
         self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
@@ -933,7 +939,8 @@ class ImportPandTask(batch.BasicTask):
     def before(self):
         log.debug('Starting import pand: delete old data')
         models.Pand.objects.all().delete()
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
+        self.statussen = get_status_dictionary()
+
         self.bouwblokken = set(models.Bouwblok.objects.values_list("pk", flat=True))
         self.verblijfsobjecten = set(models.Verblijfsobject.objects.values_list("pk", flat=True))
 
