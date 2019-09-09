@@ -292,11 +292,12 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
     # brk
-    # # wkpb
-    # 'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
-    # 'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
-    # 'wkpb/CSV_Actueel/WKPB_orgaan.csv': 5,
-    # 'wkpb/CSV_Actueel/WKPB_type.csv': 5,
+    # wkpb
+    'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
+    'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
+    'wkpb/CSV_Actueel/WKPB_orgaan.csv': 5,
+    'wkpb/CSV_Actueel/WKPB_type.csv': 5,
+    'wkpb/CSV_Actueel/WKPB_beperking_kadastraalobject.csv': 5,
 }
 
 
@@ -507,7 +508,7 @@ if __name__ == "__main__":
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
         fetch_gob_files('productie', 'bag')
-    #    fetch_gob_files('productie', 'wkpb')
+        fetch_gob_files('acceptatie', 'wkpb')
     #     # As long as GOB import not complete we also import some DIVA files
     #     fetch_diva_files_for_gob()
     # else:
