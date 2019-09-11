@@ -22,6 +22,7 @@ import argparse
 import datetime
 import logging
 import os
+import re
 import time
 import zipfile
 
@@ -130,6 +131,32 @@ def download_file(connect, container_name, file_path, target_path=None, target_r
     if file_last_modified:
         epoch_modified = file_last_modified.timestamp()
         os.utime(newfilename, (epoch_modified, epoch_modified))
+
+
+def download_file_check(container_name, file_path,
+                        file_last_modified=None, file_max_age=None, now=None):
+    path = file_path.split('/')
+    file_name = path[-1]
+
+    if file_max_age:
+        if not now:
+            now = datetime.datetime.today()
+        delta = now - file_last_modified
+        log.debug('AGE %s: %2d days', file_path, delta.days)
+        if delta.days > file_max_age:
+            raise ValueError(f"""
+
+            Delivery of file {file_name} is late!
+
+            {file_path} age {delta.days} max_age: {file_max_age}
+            """)
+
+    directory = os.path.join(GOB_DIR, *path[:-1])
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    download_file('GOB_user', container_name, file_path, target_root=GOB_DIR, target_path=file_path,
+                  file_last_modified=file_last_modified)
 
 
 def download_file_data(connect, container_name, file_path):
@@ -292,6 +319,12 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
     # brk
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_Gemeente_': 365,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_object_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_subject_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_aantekening_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_zakelijke_recht_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_c_aard_zakelijkrecht_': 35,
     # wkpb
     'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
     'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
@@ -313,6 +346,8 @@ def fetch_gob_files(container_name, prefix):
                 new_gob_file_age_list[new_key] = val
     gob_file_age_list.update(new_gob_file_age_list)
 
+    download_files = {}
+
     for file_object in get_full_container_list(
             'GOB_user', container_name, prefix=prefix):
 
@@ -320,33 +355,30 @@ def fetch_gob_files(container_name, prefix):
             continue
 
         file_path = file_object['name']
-        path = file_path.split('/')
+        m = re.search(r'BRK[a-zA-Z_]+(\d{8})\.csv$', file_path)
+        if m:
+            file_key = file_path[:-12]
+            file_date = m.group(1)
+        else:
+            file_key = file_path
+            file_date = None
 
-        file_max_age = gob_file_age_list.get(file_path)
-        file_name = path[-1]
-
+        file_max_age = gob_file_age_list.get(file_key)
         if not file_max_age:
             continue
 
-        file_last_modified = parser.parse(file_object['last_modified'])
+        if file_key not in download_files or (file_date and file_date > download_files[file_key]['file_date']):
+            file_last_modified = parser.parse(file_object['last_modified'])
+            download_files[file_key] = {
+                'file_path': file_path,
+                'file_last_modified': file_last_modified,
+                'file_date': file_date,
+                'file_max_age': file_max_age
+            }
 
-        delta = now - file_last_modified
-        log.debug('AGE %s: %2d days', file_name, delta.days)
-
-        if delta.days > file_max_age:
-            raise ValueError(f"""
-
-            Delivery of file {file_name}is late!
-
-            {file_path} age {delta.days} max_age: {file_max_age}
-            """)
-
-        directory = os.path.join(GOB_DIR, *path[:-1])
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        download_file('GOB_user', container_name, file_path, target_root=GOB_DIR, target_path=file_path,
-                      file_last_modified=file_last_modified)
+    for object in download_files.values():
+        download_file_check(container_name, object['file_path'], file_last_modified=object['file_last_modified'],
+                            file_max_age=object['file_max_age'], now=now)
 
 
 def unzip_data(zips_mapper):
@@ -508,6 +540,7 @@ if __name__ == "__main__":
     if args.gob:
         fetch_gob_files('productie', 'gebieden')
         fetch_gob_files('productie', 'bag')
+        fetch_gob_files('acceptatie', 'brk')
         fetch_gob_files('acceptatie', 'wkpb')
     #     # As long as GOB import not complete we also import some DIVA files
     #     fetch_diva_files_for_gob()

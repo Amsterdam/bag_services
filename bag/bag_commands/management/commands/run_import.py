@@ -38,7 +38,6 @@ class Command(BaseCommand):
         gebieden=[],
     )
 
-
     def add_arguments(self, parser):
 
         parser.add_argument(
