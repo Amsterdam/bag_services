@@ -1025,7 +1025,7 @@ class Pand(
     id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     bouwjaar = models.PositiveIntegerField(null=True)
-    bouwlagen = models.PositiveIntegerField(null=True, serialize=False)
+    bouwlagen = models.PositiveIntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     pandnummer = models.CharField(max_length=10, null=True)

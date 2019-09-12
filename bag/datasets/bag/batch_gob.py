@@ -977,6 +977,7 @@ class ImportPandTask(batch.BasicTask):
             'ligging': r['ligging'] or None,
             'type_woonobject': r['typeWoonobject'] or None,
             'bouwjaar': uva2.uva_nummer(r['oorspronkelijkBouwjaar']),
+            'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
             'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
             'status_id': status_id,
