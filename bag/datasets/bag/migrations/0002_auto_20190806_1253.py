@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pand',
             name='bouwlagen',
-            field=models.PositiveIntegerField(null=True, serialize=False),
+            field=models.PositiveIntegerField(null=True),
         ),
         migrations.AddField(
             model_name='pand',
