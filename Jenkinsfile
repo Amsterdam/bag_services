@@ -31,7 +31,7 @@ node {
     stage("Build image") {
         tryStep "build", {
             docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
-                def image = docker.build("datapunt/bag:${env.BUILD_NUMBER}")
+                def image = docker.build("datapunt/bag-v11:${env.BUILD_NUMBER}")
                 image.push()
             }
         }
@@ -44,6 +44,15 @@ String BRANCH = "${env.BRANCH_NAME}"
 if (BRANCH == "diva_legacy") {
 
     node {
+        stage("Build image") {
+            tryStep "build", {
+                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                    def image = docker.build("datapunt/bag:${env.BUILD_NUMBER}")
+                    image.push()
+                }
+            }
+        }
+
         stage('Push acceptance image') {
             tryStep "image tagging", {
                 docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
