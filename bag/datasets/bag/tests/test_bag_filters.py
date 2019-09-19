@@ -12,6 +12,8 @@ LOG = logging.getLogger(__name__)
 
 
 class Numfilter(APITransactionTestCase):
+    
+    bag_root_url = "/bag/v1.1"
 
     def setUp(self):
 
@@ -78,7 +80,7 @@ class Numfilter(APITransactionTestCase):
         DenormalizeDataTask().process()
 
     def test_kot_filter(self):
-        url = f'/bag/nummeraanduiding/?kadastraalobject={self.kot.id}'
+        url = f'/bag/v1.1/nummeraanduiding/?kadastraalobject={self.kot.id}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -89,7 +91,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_pand_filter(self):
-        url = f'/bag/nummeraanduiding/?pand={self.pand.landelijk_id}'
+        url = f'/bag/v1.1/nummeraanduiding/?pand={self.pand.landelijk_id}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -100,7 +102,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_vbo_filter(self):
-        url = f'/bag/nummeraanduiding/?verblijfsobject={self.vbo.landelijk_id}'
+        url = f'/bag/v1.1/nummeraanduiding/?verblijfsobject={self.vbo.landelijk_id}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -112,7 +114,7 @@ class Numfilter(APITransactionTestCase):
 
     def test_standplaats_filter(self):
         test_param = f"standplaats={self.standplaats.landelijk_id}"
-        url = f'/bag/nummeraanduiding/?{test_param}'
+        url = f'/bag/v1.1/nummeraanduiding/?{test_param}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -124,7 +126,7 @@ class Numfilter(APITransactionTestCase):
 
     def test_ligplaats_filter(self):
         test_param = f"ligplaats={self.ligplaats.landelijk_id}"
-        url = f'/bag/nummeraanduiding/?{test_param}'
+        url = f'/bag/v1.1/nummeraanduiding/?{test_param}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -135,7 +137,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_postcode_filter(self):
-        url = f'/bag/nummeraanduiding/?postcode={self.num.postcode}'
+        url = f'/bag/v1.1/nummeraanduiding/?postcode={self.num.postcode}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -145,7 +147,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_partial_postcode_filter(self):
-        url = f'/bag/nummeraanduiding/?postcode={self.num.postcode[:4]}'
+        url = f'/bag/v1.1/nummeraanduiding/?postcode={self.num.postcode[:4]}'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -158,7 +160,7 @@ class Numfilter(APITransactionTestCase):
         )
 
     def test_openbare_ruimte_filter(self):
-        url = f'/bag/nummeraanduiding/?openbare_ruimte={self.num.openbare_ruimte.naam[:5]}'   # noqa
+        url = f'/bag/v1.1/nummeraanduiding/?openbare_ruimte={self.num.openbare_ruimte.naam[:5]}'   # noqa
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -169,7 +171,7 @@ class Numfilter(APITransactionTestCase):
 
     def test_location_filter(self):
 
-        url = '/bag/nummeraanduiding/?locatie=121849,487303,20'
+        url = '/bag/v1.1/nummeraanduiding/?locatie=121849,487303,20'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -179,7 +181,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_location_filter_2(self):
-        url = '/bag/nummeraanduiding/?locatie=52.3726097,4.9004161,10'
+        url = '/bag/v1.1/nummeraanduiding/?locatie=52.3726097,4.9004161,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -189,7 +191,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_opr_location_filter_in(self):
-        url = '/bag/openbareruimte/?locatie=121850,487304,10'
+        url = '/bag/v1.1/openbareruimte/?locatie=121850,487304,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -199,7 +201,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_opr_location_filter_out(self):
-        url = '/bag/openbareruimte/?locatie=100000,400000,10'
+        url = '/bag/v1.1/openbareruimte/?locatie=100000,400000,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -207,7 +209,7 @@ class Numfilter(APITransactionTestCase):
         self.assertEquals(data['results'], [])
 
     def test_pand_location_filter_in(self):
-        url = '/bag/pand/?locatie=121850,487304,10'
+        url = '/bag/v1.1/pand/?locatie=121850,487304,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -217,7 +219,7 @@ class Numfilter(APITransactionTestCase):
             data['results'][0]['landelijk_id'])
 
     def test_pand_location_filter_out(self):
-        url = '/bag/pand/?locatie=100000,400000,10'
+        url = '/bag/v1.1/pand/?locatie=100000,400000,10'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)
@@ -225,7 +227,7 @@ class Numfilter(APITransactionTestCase):
         self.assertEquals(data['results'], [])
 
     def test_pand_location_filter_error(self):
-        url = '/bag/pand/?locatie=X00000,X00000,10'
+        url = '/bag/v1.1/pand/?locatie=X00000,X00000,10'
         response = self.client.get(url)
 
         self.assertEquals(400, response.status_code)
@@ -234,7 +236,7 @@ class Numfilter(APITransactionTestCase):
             ['Locatie must be x: float, y: float, r: int'])
 
     def test_detailed_view(self):
-        url = '/bag/nummeraanduiding/?detailed=1'
+        url = '/bag/v1.1/nummeraanduiding/?detailed=1'
         response = self.client.get(url)
 
         self.assertEquals(200, response.status_code)

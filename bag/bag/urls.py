@@ -23,9 +23,8 @@ from rest_framework_swagger.renderers import SwaggerUIRenderer
 
 from django.conf.urls.static import static
 
-import search.urls
-# import datasets.bag.views
 import datasets.brk.views
+import bag.urlsets
 
 grouped_url_patterns = {
     'base_patterns': [
@@ -33,37 +32,25 @@ grouped_url_patterns = {
     ],
 
     'bag_patterns': [
-        url(r'^bag/', include(search.urls.bag.urls)),
+        url(r'^bag/v1.1/', include(bag.urlsets.bag.urls)),
     ],
 
     'gebieden_patterns': [
-        url(r'^gebieden/', include(search.urls.gebieden.urls)),
+        url(r'^gebieden/v1.1/', include(bag.urlsets.gebieden.urls)),
     ],
 
     'brk_patterns': [
-        url(r'^brk/', include(search.urls.brk.urls)),
+        url(r'^brk/v1.1/', include(bag.urlsets.brk.urls)),
 
-        url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
+        url(r'^brk/v1.1/object-wkpb/(?P<pk>[^/]+)/?$',
             datasets.brk.views.KadastraalObjectWkpbView.as_view(
                 {'get': 'retrieve'}),
             name='brk-object-wkpb'),
     ],
 
     'beperkingen_patterns': [
-        url(r'^wkpb/', include(search.urls.wkpb.urls)),
+        url(r'^wkpb/v1.1/', include(bag.urlsets.wkpb.urls)),
     ],
-
-    # 'typeahead_patterns': [
-    #     # atlas is depricated
-    #     url(r'^atlas/typeahead/', include(search.urls.typeahead.urls)),
-    #     # url(r'^typeahead/', include(search.urls.typeahead.urls)),
-    # ],
-    #
-    # 'search_patterns': [
-    #     # atlas is depricated
-    #     url(r'^atlas/search/', include(search.urls.bag_search.urls)),
-    #     # url(r'^search/', include(search.urls.bag_search.urls)),
-    # ],
 }
 
 

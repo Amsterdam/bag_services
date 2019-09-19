@@ -10,24 +10,24 @@ class CodeRedirectsTest(APITestCase):
 
     def testBouwblokCode(self):
         bbk = factories.BouwblokFactory.create(code='AN34')
-        res = self.client.get('/gebieden/bouwblok/AN34/')
+        res = self.client.get('/gebieden/v1.1/bouwblok/AN34/')
         bb_id = res.data['bouwblokidentificatie']
         self.assertEqual(bb_id, bbk.id)
 
     def testBouwblokCodeFilter(self):
         bbk = factories.BouwblokFactory.create(code='AN34')
-        res = self.client.get('/gebieden/bouwblok/?code=AN34')
+        res = self.client.get('/gebieden/v1.1/bouwblok/?code=AN34')
         bb_id = res.data['results'][0]['id']
         self.assertEqual(bb_id, bbk.id)
 
     def testStadsdeelCode(self):
         sdl = factories.StadsdeelFactory.create(code='X')
-        res = self.client.get('/gebieden/stadsdeel/X/')
+        res = self.client.get('/gebieden/v1.1/stadsdeel/X/')
         sd_id = res.data['stadsdeelidentificatie']
         self.assertEqual(sd_id, sdl.id)
 
     def testStadsdeelCodeFilter(self):
         sdl = factories.StadsdeelFactory.create(code='X')
-        res = self.client.get('/gebieden/stadsdeel/?code=X')
+        res = self.client.get('/gebieden/v1.1/stadsdeel/?code=X')
         sd = res.data['results'][0]
         self.assertEqual(sd['code'], sdl.code)

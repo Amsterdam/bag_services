@@ -31,34 +31,34 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
     to see every endpoint
     """
     datasets = [
-        'bag/ligplaats',
-        'bag/standplaats',
-        'bag/verblijfsobject',
-        'bag/pand',
-        'bag/nummeraanduiding',
-        'bag/openbareruimte',
-        'bag/woonplaats',
+        'bag/v1.1/ligplaats',
+        'bag/v1.1/standplaats',
+        'bag/v1.1/verblijfsobject',
+        'bag/v1.1/pand',
+        'bag/v1.1/nummeraanduiding',
+        'bag/v1.1/openbareruimte',
+        'bag/v1.1/woonplaats',
 
-        'gebieden/stadsdeel',
-        'gebieden/buurt',
-        'gebieden/bouwblok',
-        'gebieden/wijk',
-        'gebieden/buurtcombinatie',
-        'gebieden/gebiedsgerichtwerken',
-        'gebieden/grootstedelijkgebied',
+        'gebieden/v1.1/stadsdeel',
+        'gebieden/v1.1/buurt',
+        'gebieden/v1.1/bouwblok',
+        'gebieden/v1.1/wijk',
+        'gebieden/v1.1/buurtcombinatie',
+        'gebieden/v1.1/gebiedsgerichtwerken',
+        'gebieden/v1.1/grootstedelijkgebied',
 
-        'wkpb/beperking',
-        'wkpb/brondocument',
-        'wkpb/broncode',
+        'wkpb/v1.1/beperking',
+        'wkpb/v1.1/brondocument',
+        'wkpb/v1.1/broncode',
 
-        'brk/gemeente',
-        'brk/kadastrale-gemeente',
-        'brk/kadastrale-sectie',
-        'brk/object',
-        'brk/object-expand',
-        'brk/subject',
-        'brk/zakelijk-recht',
-        'brk/aantekening',
+        'brk/v1.1/gemeente',
+        'brk/v1.1/kadastrale-gemeente',
+        'brk/v1.1/kadastrale-sectie',
+        'brk/v1.1/object',
+        'brk/v1.1/object-expand',
+        'brk/v1.1/subject',
+        'brk/v1.1/zakelijk-recht',
+        'brk/v1.1/aantekening',
     ]
 
     formats = [
@@ -188,10 +188,10 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         urls = [
             # 'atlas/search',
             # 'atlas/typeahead',
-            'wkpb',
-            'bag',
-            'brk',
-            'gebieden',
+            'wkpb/v1.1',
+            'bag/v1.1',
+            'brk/v1.1',
+            'gebieden/v1.1',
         ]
 
         for url in urls:
@@ -357,7 +357,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
     def test_brk_object_wkpb(self):
 
-        url = 'brk/object'
+        url = 'brk/v1.1/object'
 
         response = self.client.get('/{}/'.format(url))
 
@@ -371,7 +371,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
     def test_brk_object_wkpb_html(self):
 
-        url = 'brk/object'
+        url = 'brk/v1.1/object'
 
         response = self.client.get(f'/{url}/', {'format': 'api'})
 
@@ -385,7 +385,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
     def test_kos_filter(self):
 
-        url = 'brk/subject'
+        url = 'brk/v1.1/subject'
 
         response = self.client.get(f'/{url}/', {'buurt': self.buurt.vollcode})
 
@@ -393,7 +393,7 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
 
     def test_aantekening_id(self):
 
-        url = 'brk/aantekening'
+        url = 'brk/v1.1/aantekening'
 
         aantekening_id = self.aantekening.aantekening_id
         _id = self.aantekening.id
