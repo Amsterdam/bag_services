@@ -1,8 +1,11 @@
+from unittest import skip
+
 from rest_framework.test import APITransactionTestCase
 
 from search.tests.fill_elastic import load_docs
 
 
+@skip
 class QueryTest(APITransactionTestCase):
     """
     Testing commonly used datasets

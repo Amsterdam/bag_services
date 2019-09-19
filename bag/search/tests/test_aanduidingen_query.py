@@ -1,5 +1,6 @@
 # Python
 # Package
+from unittest import skip
 
 from rest_framework.test import APITestCase
 # Project
@@ -9,6 +10,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
+@skip
 class SubjectSearchTest(APITestCase):
 
     formats = [

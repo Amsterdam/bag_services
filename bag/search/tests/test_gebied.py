@@ -9,6 +9,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
+@skip
 class GebiedSearchTest(APITransactionTestCase):
 
     def setUp(self):

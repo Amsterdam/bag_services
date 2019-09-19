@@ -1,5 +1,7 @@
 # Python
 # Packages
+from unittest import skip
+
 from rest_framework.test import APITransactionTestCase
 # Project
 from batch import batch
@@ -8,6 +10,7 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
+@skip
 class OPRTest(APITransactionTestCase):
 
     @classmethod

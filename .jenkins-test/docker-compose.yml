@@ -2,7 +2,7 @@ database:
   image: amsterdam/postgres11
   environment:
     POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: bag
+    POSTGRES_USER: bag_v11
 
 elasticsearch:
   image: amsterdam/elasticsearch6
@@ -14,8 +14,8 @@ tests:
     - database:database
     - elasticsearch:elasticsearch
   environment:
-    DATABASE_NAME: bag
-    DATABASE_USER: bag
+    DATABASE_NAME: bag_v11
+    DATABASE_USER: bag_v11
     DATABASE_PASSWORD: insecure
     BAG_OBJECTSTORE_PASSWORD:
     METADATA_URL: ""

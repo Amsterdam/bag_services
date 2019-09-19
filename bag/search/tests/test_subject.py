@@ -1,3 +1,5 @@
+from unittest import skip
+
 from rest_framework.test import APITestCase
 
 from batch import batch
@@ -7,6 +9,7 @@ from datasets.brk.tests import factories as brk_factories
 from datasets.generic.tests.authorization import AuthorizationSetup
 
 
+@skip
 class SubjectSearchTest(APITestCase, AuthorizationSetup):
 
     @classmethod

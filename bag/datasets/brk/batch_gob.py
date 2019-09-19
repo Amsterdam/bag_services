@@ -842,77 +842,77 @@ class ImportKadasterJob(object):
             ImportEigendommenTask(),
             FixKadastraalObjectAppartementGeometrie()
         ]
-
-
-class DeleteObjectIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BRK_OBJECT']
-    doc_types = [
-        documents.KadastraalObject,
-    ]
-
-
-class DeleteSubjectIndexTask(index.DeleteIndexTask):
-    index = settings.ELASTIC_INDICES['BRK_SUBJECT']
-    doc_types = [
-        documents.KadastraalSubject
-    ]
-
-
-class IndexSubjectTask(index.ImportIndexTask):
-
-    name = "index kadastraal subject"
-    queryset = models.KadastraalSubject.objects.all().order_by('id')
-    sequential = True
-
-    def convert(self, obj):
-        return documents.from_kadastraal_subject(obj)
-
-
-class IndexObjectTask(index.ImportIndexTask):
-
-    name = "index kadastraal object"
-    sequential = True
-
-    queryset = models.KadastraalObject.objects.all().order_by('id')
-
-    def convert(self, obj):
-        return documents.from_kadastraal_object(obj)
-
-
-class IndexKadasterJob(object):
-    """
-    Destroy and recreate elastic BKR index
-    """
-    name = "Update search-index BRK"
-
-    def tasks(self):
-        return [
-            DeleteSubjectIndexTask(),
-            DeleteObjectIndexTask(),
-            IndexSubjectTask(),
-            IndexObjectTask(),
-        ]
-
-
-class BuildIndexKadasterJob(object):
-    """
-    Destroy and recreate elastic BKR index
-    """
-    name = "Update search-index BRK"
-
-    def tasks(self):
-        return [
-            IndexObjectTask(),
-            IndexSubjectTask(),
-        ]
-
-
-class DeleteIndexKadasterJob(object):
-
-    name = "Delete search-index BRK"
-
-    def tasks(self):
-        return [
-            DeleteObjectIndexTask(),
-            DeleteSubjectIndexTask(),
-        ]
+#
+#
+# class DeleteObjectIndexTask(index.DeleteIndexTask):
+#     index = settings.ELASTIC_INDICES['BRK_OBJECT']
+#     doc_types = [
+#         documents.KadastraalObject,
+#     ]
+#
+#
+# class DeleteSubjectIndexTask(index.DeleteIndexTask):
+#     index = settings.ELASTIC_INDICES['BRK_SUBJECT']
+#     doc_types = [
+#         documents.KadastraalSubject
+#     ]
+#
+#
+# class IndexSubjectTask(index.ImportIndexTask):
+#
+#     name = "index kadastraal subject"
+#     queryset = models.KadastraalSubject.objects.all().order_by('id')
+#     sequential = True
+#
+#     def convert(self, obj):
+#         return documents.from_kadastraal_subject(obj)
+#
+#
+# class IndexObjectTask(index.ImportIndexTask):
+#
+#     name = "index kadastraal object"
+#     sequential = True
+#
+#     queryset = models.KadastraalObject.objects.all().order_by('id')
+#
+#     def convert(self, obj):
+#         return documents.from_kadastraal_object(obj)
+#
+#
+# class IndexKadasterJob(object):
+#     """
+#     Destroy and recreate elastic BKR index
+#     """
+#     name = "Update search-index BRK"
+#
+#     def tasks(self):
+#         return [
+#             DeleteSubjectIndexTask(),
+#             DeleteObjectIndexTask(),
+#             IndexSubjectTask(),
+#             IndexObjectTask(),
+#         ]
+#
+#
+# class BuildIndexKadasterJob(object):
+#     """
+#     Destroy and recreate elastic BKR index
+#     """
+#     name = "Update search-index BRK"
+#
+#     def tasks(self):
+#         return [
+#             IndexObjectTask(),
+#             IndexSubjectTask(),
+#         ]
+#
+#
+# class DeleteIndexKadasterJob(object):
+#
+#     name = "Delete search-index BRK"
+#
+#     def tasks(self):
+#         return [
+#             DeleteObjectIndexTask(),
+#             DeleteSubjectIndexTask(),
+#         ]

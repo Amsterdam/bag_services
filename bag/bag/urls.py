@@ -24,7 +24,7 @@ from rest_framework_swagger.renderers import SwaggerUIRenderer
 from django.conf.urls.static import static
 
 import search.urls
-import datasets.bag.views
+# import datasets.bag.views
 import datasets.brk.views
 
 grouped_url_patterns = {
@@ -53,17 +53,17 @@ grouped_url_patterns = {
         url(r'^wkpb/', include(search.urls.wkpb.urls)),
     ],
 
-    'typeahead_patterns': [
-        # atlas is depricated
-        url(r'^atlas/typeahead/', include(search.urls.typeahead.urls)),
-        # url(r'^typeahead/', include(search.urls.typeahead.urls)),
-    ],
-
-    'search_patterns': [
-        # atlas is depricated
-        url(r'^atlas/search/', include(search.urls.bag_search.urls)),
-        # url(r'^search/', include(search.urls.bag_search.urls)),
-    ],
+    # 'typeahead_patterns': [
+    #     # atlas is depricated
+    #     url(r'^atlas/typeahead/', include(search.urls.typeahead.urls)),
+    #     # url(r'^typeahead/', include(search.urls.typeahead.urls)),
+    # ],
+    #
+    # 'search_patterns': [
+    #     # atlas is depricated
+    #     url(r'^atlas/search/', include(search.urls.bag_search.urls)),
+    #     # url(r'^search/', include(search.urls.bag_search.urls)),
+    # ],
 }
 
 

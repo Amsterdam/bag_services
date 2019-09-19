@@ -2,6 +2,8 @@
 import string
 import random
 # Packages
+from unittest import skip
+
 from rest_framework.test import APITestCase
 # Project
 from search.tests.fill_elastic import load_docs
@@ -10,6 +12,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
+@skip
 class RandomShitTest(APITestCase):
 
     @classmethod

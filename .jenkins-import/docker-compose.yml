@@ -4,7 +4,7 @@ services:
     image: amsterdam/postgres11
     environment:
       POSTGRES_PASSWORD: insecure
-      POSTGRES_USER: bag
+      POSTGRES_USER: bag_v11
     volumes:
       - ./backups:/tmp/backups
     extra_hosts:
@@ -25,8 +25,8 @@ services:
       - elasticsearch:elasticsearch
     user: root
     environment:
-      DATABASE_NAME: bag
-      DATABASE_USER: bag
+      DATABASE_NAME: bag_v11
+      DATABASE_USER: bag_v11
       DATABASE_PASSWORD: insecure
       METADATA_URL:
       BAG_OBJECTSTORE_PASSWORD:
