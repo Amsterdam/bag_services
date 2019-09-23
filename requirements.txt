@@ -12,7 +12,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 coverage==4.5.2
 cryptography==2.4.2
-git+https://github.com/Amsterdam/authorization_django.git#egg=datapunt-authorization-django
+datapunt-authorization-django==0.3.1
 debtcollector==1.20.0
 defusedxml==0.5.0
 Django==2.1.11
