@@ -7,7 +7,7 @@ set -x  # print all commands
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -p bag -f ${DIR}/docker-compose.yml $*;
+	docker-compose -p bag-v11 -f ${DIR}/docker-compose.yml $*;
 }
 
 trap 'dc kill ; dc rm -f' EXIT
@@ -31,7 +31,7 @@ dc run --rm importer
 # dc run --rm importer ./docker-index-es.sh
 
 echo "Running backups"
-dc exec -T database backup-db.sh bag
+dc exec -T database backup-db.sh bag_v11
 # dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
 
 echo "Done"
