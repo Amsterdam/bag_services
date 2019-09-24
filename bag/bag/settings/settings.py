@@ -240,7 +240,8 @@ JWKS_TEST_KEY = """
 
 DATAPUNT_AUTHZ = {
     # 'ALWAYS_OK': True,  # disable authz. tests will fail...
-    'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY)
+    'JWKS': os.getenv('PUB_JWKS', JWKS_TEST_KEY),
+    'JWKS_URL': os.getenv('KEYCLOAK_JWKS_URL')
 }
 
 SENTRY_DSN = os.getenv('SENTRY_DSN')
