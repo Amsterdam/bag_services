@@ -5,6 +5,8 @@ services:
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag_v11
+    networks:
+      - network1
     volumes:
       - ./backups:/tmp/backups
     extra_hosts:
@@ -13,6 +15,8 @@ services:
 
   elasticsearch:
     image: amsterdam/elasticsearch6
+    networks:
+      - network1
     volumes:
       - ./backups/elasticsearch:/tmp/backups
     user: root
@@ -20,6 +24,8 @@ services:
 
   importer:
     image: repo.data.amsterdam.nl/datapunt/bag:${ENVIRONMENT}
+    networks:
+      - network1
     links:
       - database:database
       - elasticsearch:elasticsearch
@@ -35,3 +41,7 @@ services:
       GOB_PARAMETER:
     command: >
       bash -c "/app/docker-import-db.sh ${GOB_PARAMETER}"
+
+networks:
+  network1:
+    name: bag_v11
