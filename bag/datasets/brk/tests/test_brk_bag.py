@@ -1,9 +1,12 @@
+from unittest import skip
+
 from batch.test import TaskTestCase
 from datasets.brk import batch, models
 from datasets.brk.tests import factories
 from datasets.bag.tests import factories as bag_factories
 
 
+@skip
 class ImportKadastraalObjectTaskTest(TaskTestCase):
     def setUp(self):
         [factories.KadastraalObjectFactory.create(pk=kot_id) for kot_id in [
