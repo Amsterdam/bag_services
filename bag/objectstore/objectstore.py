@@ -18,7 +18,6 @@ import proces.
 
 
 """
-import argparse
 import datetime
 import logging
 import os
@@ -242,13 +241,6 @@ exception_list = [
     ('gebieden_shp/GBD_unesco.shp', ''),
     ('bag_openbareruimte_beschrijving/OPR_beschrijving.csv', ''),
 ]
-
-# list of exceptions still required for GOB
-exception_list_gob = [
-    ('gebieden_shp/GBD_grootstedelijke_projecten.shp', ''),
-    ('gebieden_shp/GBD_unesco.shp', ''),
-]
-
 
 def get_specific_files(container_name, exception_list=exception_list):
     """
@@ -485,33 +477,12 @@ def fetch_diva_files():
     fetch_diva_zips('Diva', 'Zip_bestanden')
 
 
-def fetch_diva_files_for_gob():
-    """
-    As long as GOB import not complete we also import some files from DIVA
-    :return:
-    """
-    logging.basicConfig(level=logging.DEBUG)
-    # creat folders where files are expected.
-    create_target_directories()
-    # download the exceptions not in zip files
-    # these are special cases manual made by some people
-    get_specific_files('Diva', exception_list=exception_list_gob)
-
-
 if __name__ == "__main__":
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('-g', '--gob', action='store_true', help='Do GOB import')
-    args = argparser.parse_args()
     # Download files from objectstore
     log.info("Start downloading files from objectstore")
-    if args.gob:
-        fetch_gob_files('productie', 'gebieden')
-        fetch_gob_files('productie', 'bag')
-    #    fetch_gob_files('productie', 'wkpb')
-    #     # As long as GOB import not complete we also import some DIVA files
-    #     fetch_diva_files_for_gob()
-    # else:
-    #     pass
+
+    fetch_gob_files('productie', 'gebieden')
+    fetch_gob_files('productie', 'bag')
 
     # As long as brk and wkpb are not yet imported in GOB we also need the DIVA files
     # for brk and wkpb

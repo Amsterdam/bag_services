@@ -252,34 +252,34 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
         bron = models.KadastraalSubject.BRON_REGISTRATIE if row['SJT_NAAM'] else models.KadastraalSubject.BRON_KADASTER
 
         return models.KadastraalSubject(
-                pk=row['BRK_SJT_ID'],
-                type=models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
-                beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
-                                                                         row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
-                voornamen=row['SJT_NP_VOORNAMEN'] or row['SJT_KAD_VOORNAMEN'],
-                voorvoegsels=row['SJT_NP_VOORVOEGSELSGESLSNAAM'] or row['SJT_KAD_VOORVOEGSELSGESLSNAAM'],
-                naam=row['SJT_NAAM'] or row['SJT_KAD_GESLACHTSNAAM'],
-                geslacht=self.get_geslacht(row['SJT_NP_GESLACHTSCODE'] or row['SJT_KAD_GESLACHTSCODE'],
-                                           row['SJT_NP_GESLACHTSCODE_OMS'] or row['SJT_KAD_GESLACHTSCODE_OMS']),
-                aanduiding_naam=self.get_aanduiding_naam(row['SJT_NP_AANDUIDINGNAAMGEBR_CODE'],
-                                                         row['SJT_NP_AANDUIDINGNAAMGEBR_OMS']),
-                geboortedatum=row['SJT_NP_GEBOORTEDATUM'] or row['SJT_KAD_GEBOORTEDATUM'],
-                geboorteplaats=row['SJT_NP_GEBOORTEPLAATS'] or row['SJT_KAD_GEBOORTEPLAATS'],
-                geboorteland=self.get_land(row['SJT_NP_GEBOORTELAND_CODE'] or row['SJT_KAD_GEBOORTELAND_CODE'],
-                                           row['SJT_NP_GEBOORTELAND_OMS'] or row['SJT_KAD_GEBOORTELAND_OMS']),
-                overlijdensdatum=row['SJT_NP_DATUMOVERLIJDEN'] or row['SJT_KAD_DATUMOVERLIJDEN'],
+            pk=row['BRK_SJT_ID'],
+            type=models.KadastraalSubject.SUBJECT_TYPE_NATUURLIJK,
+            beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
+                                                                     row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
+            voornamen=row['SJT_NP_VOORNAMEN'] or row['SJT_KAD_VOORNAMEN'],
+            voorvoegsels=row['SJT_NP_VOORVOEGSELSGESLSNAAM'] or row['SJT_KAD_VOORVOEGSELSGESLSNAAM'],
+            naam=row['SJT_NAAM'] or row['SJT_KAD_GESLACHTSNAAM'],
+            geslacht=self.get_geslacht(row['SJT_NP_GESLACHTSCODE'] or row['SJT_KAD_GESLACHTSCODE'],
+                                       row['SJT_NP_GESLACHTSCODE_OMS'] or row['SJT_KAD_GESLACHTSCODE_OMS']),
+            aanduiding_naam=self.get_aanduiding_naam(row['SJT_NP_AANDUIDINGNAAMGEBR_CODE'],
+                                                     row['SJT_NP_AANDUIDINGNAAMGEBR_OMS']),
+            geboortedatum=row['SJT_NP_GEBOORTEDATUM'] or row['SJT_KAD_GEBOORTEDATUM'],
+            geboorteplaats=row['SJT_NP_GEBOORTEPLAATS'] or row['SJT_KAD_GEBOORTEPLAATS'],
+            geboorteland=self.get_land(row['SJT_NP_GEBOORTELAND_CODE'] or row['SJT_KAD_GEBOORTELAND_CODE'],
+                                       row['SJT_NP_GEBOORTELAND_OMS'] or row['SJT_KAD_GEBOORTELAND_OMS']),
+            overlijdensdatum=row['SJT_NP_DATUMOVERLIJDEN'] or row['SJT_KAD_DATUMOVERLIJDEN'],
 
-                partner_voornamen=row['SJT_NP_VOORNAMEN_PARTNER'],
-                partner_voorvoegsels=row['SJT_NP_VOORVOEGSEL_PARTNER'],
-                partner_naam=row['SJT_NP_GESLACHTSNAAM_PARTNER'],
+            partner_voornamen=row['SJT_NP_VOORNAMEN_PARTNER'],
+            partner_voorvoegsels=row['SJT_NP_VOORVOEGSEL_PARTNER'],
+            partner_naam=row['SJT_NP_GESLACHTSNAAM_PARTNER'],
 
-                land_waarnaar_vertrokken=self.get_land(row['SJT_NP_LANDWAARNAARVERTR_CODE'],
-                                                       row['SJT_NP_LANDWAARNAARVERTR_OMS']),
+            land_waarnaar_vertrokken=self.get_land(row['SJT_NP_LANDWAARNAARVERTR_CODE'],
+                                                   row['SJT_NP_LANDWAARNAARVERTR_OMS']),
 
-                woonadres_id=woonadres_id,
-                postadres_id=postadres_id,
+            woonadres_id=woonadres_id,
+            postadres_id=postadres_id,
 
-                bron=bron,
+            bron=bron,
         )
 
     def process_niet_natuurlijk(self, row, woonadres_id, postadres_id):
@@ -287,22 +287,22 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
                 else models.KadastraalSubject.BRON_KADASTER)
 
         return models.KadastraalSubject(
-                pk=row['BRK_SJT_ID'],
-                type=models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK,
+            pk=row['BRK_SJT_ID'],
+            type=models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK,
 
-                beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
-                                                                         row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
-                rsin=row['SJT_NNP_RSIN'],
-                kvknummer=row['SJT_NNP_KVKNUMMER'],
-                rechtsvorm=self.get_rechtsvorm(row['SJT_NNP_RECHTSVORM_CODE'] or row['SJT_KAD_RECHTSVORM_CODE'],
-                                               row['SJT_NNP_RECHTSVORM_OMS'] or row['SJT_KAD_RECHTSVORM_OMS']),
-                statutaire_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_KAD_STATUTAIRE_NAAM'],
-                statutaire_zetel=row['SJT_NNP_STATUTAIRE_ZETEL'] or row['SJT_KAD_STATUTAIRE_ZETEL'],
+            beschikkingsbevoegdheid=self.get_beschikkingsbevoegdheid(row['SJT_BESCHIKKINGSBEVOEGDH_CODE'],
+                                                                     row['SJT_BESCHIKKINGSBEVOEGDH_OMS']),
+            rsin=row['SJT_NNP_RSIN'],
+            kvknummer=row['SJT_NNP_KVKNUMMER'],
+            rechtsvorm=self.get_rechtsvorm(row['SJT_NNP_RECHTSVORM_CODE'] or row['SJT_KAD_RECHTSVORM_CODE'],
+                                           row['SJT_NNP_RECHTSVORM_OMS'] or row['SJT_KAD_RECHTSVORM_OMS']),
+            statutaire_naam=row['SJT_NNP_STATUTAIRE_NAAM'] or row['SJT_KAD_STATUTAIRE_NAAM'],
+            statutaire_zetel=row['SJT_NNP_STATUTAIRE_ZETEL'] or row['SJT_KAD_STATUTAIRE_ZETEL'],
 
-                woonadres_id=woonadres_id,
-                postadres_id=postadres_id,
+            woonadres_id=woonadres_id,
+            postadres_id=postadres_id,
 
-                bron=bron,
+            bron=bron,
         )
 
     def get_geslacht(self, code, omschrijving):
@@ -446,7 +446,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             toestands_datum = datetime.datetime.strptime(toestands_datum_str, "%Y%m%d%H%M%S").date()
         except ValueError:
             log.warning("Could not parse toestandsdatum {} for Kadastraal Object {}; ignoring".format(toestands_datum_str,
-                                                                                                   kot_id))
+                                                                                                      kot_id))
             pass
 
         subject_id = row['BRK_SJT_ID'] or None
@@ -700,13 +700,10 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
 
     def process_row(self, row):
         kot_id = row['BRK_KOT_ID']
-        vbo_id = row['DIVA_VOT_ID']
+        vbo_id = row['BAG_VOT_ID']
 
         if not vbo_id:
-            # a lot of BRK_BAG objects do not have VBO's.
             return
-
-        vbo_id = '0' + vbo_id
 
         if not kot_id or kot_id not in self.kot:
             log.warning(
@@ -845,7 +842,7 @@ class ImportKadasterJob(object):
             ImportEigendommenTask(),
             FixKadastraalObjectAppartementGeometrie()
         ]
-
+#
 #
 # class DeleteObjectIndexTask(index.DeleteIndexTask):
 #     index = settings.ELASTIC_INDICES['BRK_OBJECT']
