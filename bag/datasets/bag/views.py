@@ -252,7 +252,6 @@ class NummeraanduidingFilter(FilterSet):
             'landelijk_id',
             'openbare_ruimte',
             'postcode',
-            'hoofdadres',
             'huisnummer',
             'huisletter',
             'huisnummer_toevoeging',
@@ -545,7 +544,6 @@ class OpenbareRuimteFilter(FilterSet):
         fields = (
             'landelijk_id',
             'naam',
-            'code',
             'type',
             'locatie',
             'adressen__postcode',

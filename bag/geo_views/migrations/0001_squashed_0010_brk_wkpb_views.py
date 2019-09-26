@@ -145,7 +145,7 @@ FROM bag_ligplaats l
   LEFT JOIN bag_nummeraanduiding n ON n.ligplaats_id = l.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
-  n.hoofdadres
+  n.type_adres = 'Hoofdadres'
 """.format(QuotedString(URL)),
         ),
 
@@ -156,7 +156,6 @@ SELECT
   opr.landelijk_id                                      AS id,
   opr.naam                                              AS display,
   opr.omschrijving                                      AS omschrijving,
-  opr.code                                              AS code,
   CASE opr.type
     WHEN '01' THEN 'Weg'
         WHEN '02' THEN 'Water'
@@ -221,7 +220,7 @@ FROM bag_standplaats s
   LEFT JOIN bag_nummeraanduiding n ON n.standplaats_id = s.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
-  n.hoofdadres
+    n.type_adres = 'Hoofdadres'
 """.format(QuotedString(URL)),
         ),
 
@@ -256,7 +255,7 @@ FROM bag_verblijfsobject v
   LEFT JOIN bag_nummeraanduiding n ON n.verblijfsobject_id = v.id
   LEFT JOIN bag_openbareruimte o ON n.openbare_ruimte_id = o.id
 WHERE
-  n.hoofdadres
+    n.type_adres = 'Hoofdadres'
 """.format(QuotedString(URL)),
         ),
         migrate.ManageView(

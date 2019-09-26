@@ -526,7 +526,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'],
             'type': self.type_lookup[r['typeAdresseerbaarObject']],
-            'hoofdadres': True if r['typeAdres'] == 'Hoofdadres' else False if r['typeAdres'] else None,
+            # 'hoofdadres': True if r['typeAdres'] == 'Hoofdadres' else False if r['typeAdres'] else None,
             'type_adres': r['typeAdres'] or None,
             'status_id': status_id,
             'openbare_ruimte_id': openbare_ruimte_id,
@@ -1476,7 +1476,7 @@ FROM (
          num.huisnummer_toevoeging AS huisnummer_toevoeging
        FROM bag_nummeraanduiding num
          LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
-       WHERE num.hoofdadres
+       WHERE num.type_adres = 'Hoofdadres'
      ) t
 WHERE vbo.id = t.vbo_id;
         """
@@ -1501,7 +1501,7 @@ FROM (
          num.huisnummer_toevoeging AS huisnummer_toevoeging
        FROM bag_nummeraanduiding num
          LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
-       WHERE num.hoofdadres AND num.ligplaats_id IS NOT NULL
+       WHERE num.type_adres = 'Hoofdadres' AND num.ligplaats_id IS NOT NULL
      ) t
 WHERE lig.id = t.lig_id;
             """
@@ -1524,7 +1524,7 @@ FROM (
          num.huisnummer_toevoeging AS huisnummer_toevoeging
        FROM bag_nummeraanduiding num
          LEFT JOIN bag_openbareruimte opr ON num.openbare_ruimte_id = opr.id
-       WHERE num.hoofdadres AND num.standplaats_id IS NOT NULL
+       WHERE num.type_adres = 'Hoofdadres' AND num.standplaats_id IS NOT NULL
      ) t
 WHERE sta.id = t.sta_id;
             """

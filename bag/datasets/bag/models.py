@@ -309,10 +309,8 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
     date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
-    code = models.CharField(max_length=5, null=True, unique=True)
     straat_nummer = models.CharField(max_length=10, null=True)
     naam_nen = models.CharField(max_length=24)
-    naam_ptt = models.CharField(max_length=17, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
@@ -499,7 +497,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         on_delete=models.CASCADE
     )
 
-    hoofdadres = models.NullBooleanField(default=None)  # Obsolete after GOB
     type_adres = models.TextField(null=True)
 
     # gedenormaliseerde velden
@@ -673,13 +670,13 @@ class AdresseerbaarObjectMixin(object):
     @property
     def hoofdadres(self):
         # noinspection PyUnresolvedReferences
-        candidates = [a for a in self.adressen.all() if a.hoofdadres]
+        candidates = [a for a in self.adressen.all() if a.type_adres == 'Hoofdadres']
         return candidates[0] if candidates else None
 
     @property
     def nevenadressen(self):
         # noinspection PyUnresolvedReferences
-        return [a for a in self.adressen.all() if not a.hoofdadres]
+        return [a for a in self.adressen.all() if not a.type_adres == 'Hoofdadres']
 
     def __str__(self):
         if self.hoofdadres:
@@ -898,10 +895,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.MutatieGebruikerMixin,
         Financieringswijze, null=True, on_delete=models.CASCADE)
 
     gebruik = models.ForeignKey(Gebruik, null=True, on_delete=models.CASCADE)
-
-    # gebruiksdoel_woonfunctie and gebruiksdoel_gezondheidszorgfunctie are currently also stored
-    # as plus parameter in Gebruiksdoel. If  GOB import is complete , the plus part of the Gebruiksdoel
-    # can be removed
     gebruiksdoel_woonfunctie = models.TextField(null=True)
     gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
 
@@ -1188,5 +1181,3 @@ class Gebruiksdoel(models.Model):
     )
     code = models.CharField(max_length=4)
     omschrijving = models.CharField(max_length=150)
-    code_plus = models.CharField(max_length=4, null=True)
-    omschrijving_plus = models.CharField(max_length=150, null=True)

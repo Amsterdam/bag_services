@@ -162,7 +162,6 @@ class Nummeraanduiding(BagMixin, rest.HALSerializer):
             '_links',
             '_display',
             'landelijk_id',
-            'hoofdadres',
             'type_adres',
             'vbo_status',
         )
@@ -528,8 +527,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
     sleutelverzendend = serializers.CharField(source='id')
     openbare_ruimte_identificatie = serializers.CharField(
         source='landelijk_id')
-    openbare_ruimte_code = serializers.CharField(source='code')
-    naam_17_posities = serializers.CharField(source='naam_ptt')
     naam_24_posities = serializers.CharField(source='naam_nen')
 
     bbox = serializers.SerializerMethodField()
@@ -541,7 +538,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
             '_display',
             'sleutelverzendend',
             'openbare_ruimte_identificatie',
-            'openbare_ruimte_code',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -555,7 +551,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'type',
             'naam',
             'omschrijving',
-            'naam_17_posities',
             'naam_24_posities',
             'straat_nummer',
             'woonplaats',
@@ -696,7 +691,6 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'type',
             'adres_nummer',
             'openbare_ruimte',
-            'hoofdadres',
             'type_adres',
             'ligplaats',
             'standplaats',
@@ -785,8 +779,7 @@ class GebruiksdoelSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Gebruiksdoel
         fields = (
-            'verblijfsobject', 'code', 'omschrijving', 'code_plus',
-            'omschrijving_plus')
+            'verblijfsobject', 'code', 'omschrijving',)
 
 
 class VerblijfsobjectDetailMixin(object):

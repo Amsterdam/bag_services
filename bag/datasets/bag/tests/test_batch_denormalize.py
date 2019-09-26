@@ -15,39 +15,39 @@ class DenormalizeDataTaskTest(TransactionTestCase):
         self.vbo_2 = factories.VerblijfsobjectFactory.create()
 
         self.num_vbo_1_nvn = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=False,
+            openbare_ruimte=self.opr_1, type_adres=None,
             verblijfsobject=self.vbo_1, )
         self.num_vbo_1_hfd = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=True,
+            openbare_ruimte=self.opr_1, type_adres='Hoofdadres',
             verblijfsobject=self.vbo_1, )
         self.num_vbo_2_hfd = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_2, hoofdadres=True,
+            openbare_ruimte=self.opr_2, type_adres='Hoofdadres',
             verblijfsobject=self.vbo_2, )
 
         self.lig_1 = factories.LigplaatsFactory.create()
         self.lig_2 = factories.LigplaatsFactory.create()
 
         self.num_lig_1_nvn = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=False,
+            openbare_ruimte=self.opr_1, type_adres=None,
             ligplaats=self.lig_1, )
         self.num_lig_1_hfd = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=True,
+            openbare_ruimte=self.opr_1, type_adres='Hoofdadres',
             ligplaats=self.lig_1, )
         self.num_lig_2 = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_2, hoofdadres=True,
+            openbare_ruimte=self.opr_2, type_adres='Hoofdadres',
             ligplaats=self.lig_2, )
 
         self.sta_1 = factories.StandplaatsFactory.create()
         self.sta_2 = factories.StandplaatsFactory.create()
 
         self.num_sta_1_nvn = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=False,
+            openbare_ruimte=self.opr_1, type_adres=None,
             standplaats=self.sta_1, )
         self.num_sta_1_hfd = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_1, hoofdadres=True,
+            openbare_ruimte=self.opr_1, type_adres='Hoofdadres',
             standplaats=self.sta_1, )
         self.num_sta_2 = factories.NummeraanduidingFactory.create(
-            openbare_ruimte=self.opr_2, hoofdadres=True,
+            openbare_ruimte=self.opr_2, type_adres='Hoofdadres',
             standplaats=self.sta_2, )
 
     def test_normalize_vbo(self):

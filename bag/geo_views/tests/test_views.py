@@ -29,7 +29,7 @@ class ViewsTest(TestCase):
         l = bag_factories.LigplaatsFactory.create()
         bag_factories.NummeraanduidingFactory.create(
             ligplaats=l,
-            hoofdadres=True,
+            type_adres="Hoofdadres",
         )
         row = self.get_row('geo_bag_ligplaats')
         self.assertEqual(row['id'], l.landelijk_id)
@@ -60,7 +60,7 @@ class ViewsTest(TestCase):
         s = bag_factories.StandplaatsFactory.create()
         bag_factories.NummeraanduidingFactory.create(
             standplaats=s,
-            hoofdadres=True,
+            type_adres="Hoofdadres",
         )
         row = self.get_row('geo_bag_standplaats')
         self.assertEqual(row['id'], s.landelijk_id)
@@ -75,7 +75,7 @@ class ViewsTest(TestCase):
         v = bag_factories.VerblijfsobjectFactory.create()
         bag_factories.NummeraanduidingFactory.create(
             verblijfsobject=v,
-            hoofdadres=True,
+            type_adres="Hoofdadres",
         )
         row = self.get_row('geo_bag_verblijfsobject')
         self.assertEqual(row["id"], v.landelijk_id)

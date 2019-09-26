@@ -199,11 +199,9 @@ class WoonplaatsFactory(factory.DjangoModelFactory):
 class OpenbareRuimteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.OpenbareRuimte
-        django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
-    code = fuzzy.FuzzyText(length=5, chars=string.digits)
     woonplaats = factory.SubFactory(WoonplaatsFactory)
     naam = factory.LazyAttribute(lambda o: f.street_name())
     type = '01'  # weg
