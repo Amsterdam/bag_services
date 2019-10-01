@@ -10,11 +10,11 @@ from datasets.generic import rest
 from . import models
 
 
-class BboxMixin():
-
+class BboxMixin:
     def get_bbox(self, obj):
         if obj.geometrie:
             return obj.geometrie.extent
+
 
 class BagMixin(rest.DataSetSerializerMixin):
     dataset = 'bag'
@@ -491,7 +491,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
     openbare_ruimtes = rest.RelatedSummaryField()
     gemeente = Gemeente()
     woonplaatsidentificatie = serializers.CharField(source='landelijk_id')
-    sleutelverzendend = serializers.CharField(source='id')
     naam_17_posities = serializers.CharField(source='naam_ptt')
 
     class Meta:
@@ -499,10 +498,7 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
-            # 'id',
             'woonplaatsidentificatie',
-            # 'landelijk_id',
             'date_modified',
             'document_mutatie',
             'document_nummer',
@@ -510,7 +506,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
             'einde_geldigheid',
 
             'naam',
-            # 'naam_ptt',
             'naam_17_posities',
             'gemeente',
             'openbare_ruimtes'
@@ -524,7 +519,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
     adressen = rest.RelatedSummaryField()
     woonplaats = Woonplaats()
 
-    sleutelverzendend = serializers.CharField(source='id')
     openbare_ruimte_identificatie = serializers.CharField(
         source='landelijk_id')
     naam_24_posities = serializers.CharField(source='naam_nen')
@@ -536,7 +530,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
             'openbare_ruimte_identificatie',
             'date_modified',
             'document_mutatie',
@@ -576,7 +569,6 @@ class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _grootstedelijkgebied = Grootstedelijkgebied()
 
     ligplaatsidentificatie = serializers.CharField(source='landelijk_id')
-    sleutelverzendend = serializers.CharField(source='id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
 
@@ -587,7 +579,6 @@ class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
             'ligplaatsidentificatie',
             'date_modified',
             'document_mutatie',
@@ -645,8 +636,6 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     nummeraanduidingidentificatie = serializers.CharField(
         source='landelijk_id')
 
-    sleutelverzendend = serializers.CharField(source='id')
-
     def to_representation(self, instance):
         """
         Removes the afstand field if it is None
@@ -670,7 +659,6 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
             'nummeraanduidingidentificatie',
             'date_modified',
             'document_mutatie',
@@ -719,7 +707,6 @@ class StandplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _grootstedelijkgebied = Grootstedelijkgebied()
 
     standplaatsidentificatie = serializers.CharField(source='landelijk_id')
-    sleutelverzendend = serializers.CharField(source='id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
 
@@ -732,7 +719,6 @@ class StandplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
             '_display',
 
             'standplaatsidentificatie',
-            'sleutelverzendend',
 
             'landelijk_id',
             'date_modified',
@@ -836,7 +822,6 @@ class VerblijfsobjectDetail(
 
     verblijfsobjectidentificatie = serializers.CharField(
         source='landelijk_id')
-    sleutelverzendend = serializers.CharField(source='id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
 
@@ -849,7 +834,6 @@ class VerblijfsobjectDetail(
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
             'verblijfsobjectidentificatie',
             'date_modified',
             'document_mutatie',
@@ -919,7 +903,6 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _gemeente = Gemeente()
 
     pandidentificatie = serializers.CharField(source='landelijk_id')
-    sleutelverzendend = serializers.CharField(source='id')
     oorspronkelijk_bouwjaar = serializers.CharField(source='bouwjaar')
 
     bbox = serializers.SerializerMethodField()
@@ -929,7 +912,6 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
         fields = (
             '_links',
             '_display',
-            'sleutelverzendend',
             'pandidentificatie',
             'date_modified',
             'document_mutatie',

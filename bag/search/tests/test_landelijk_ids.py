@@ -17,13 +17,11 @@ class LandelijkIDTest(APITransactionTestCase):
     def test_vbo_amsterdams_id(self):
         res = self.client.get(self.bag_root_url+'/verblijfsobject/{}/'.format(self.vbo.id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.vbo.id, res.data['sleutelverzendend'])
 
     def test_vbo_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/verblijfsobject/{}/'.format(
             self.vbo.landelijk_id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.vbo.id, res.data['sleutelverzendend'])
 
     def test_vbo_pand_landelijk_id(self):
 
@@ -41,22 +39,18 @@ class LandelijkIDTest(APITransactionTestCase):
         res = self.client.get(self.bag_root_url+'/nummeraanduiding/{}/'.format(
             self.na.id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.na.id, res.data['sleutelverzendend'])
 
     def test_nummeraanduiding_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/nummeraanduiding/{}/'.format(
             self.na.landelijk_id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.na.id, res.data['sleutelverzendend'])
 
     def test_pand_amsterdams_id(self):
         res = self.client.get(self.bag_root_url+'/pand/{}/'.format(
             self.pand.id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.pand.id, res.data['sleutelverzendend'])
 
     def test_pand_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/pand/{}/'.format(
             self.pand.landelijk_id))
         self.assertEquals(200, res.status_code)
-        self.assertEquals(self.pand.id, res.data['sleutelverzendend'])
