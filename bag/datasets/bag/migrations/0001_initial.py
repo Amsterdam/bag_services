@@ -315,7 +315,6 @@ class Migration(migrations.Migration):
                 ('bouwjaar', models.PositiveIntegerField(null=True)),
                 ('laagste_bouwlaag', models.IntegerField(null=True)),
                 ('hoogste_bouwlaag', models.IntegerField(null=True)),
-                ('pandnummer', models.CharField(max_length=10, null=True)),
                 ('vervallen', models.NullBooleanField(default=None)),
                 ('geometrie', django.contrib.gis.db.models.fields.PolygonField(null=True, srid=28992)),
                 ('date_modified', models.DateTimeField(auto_now=True)),

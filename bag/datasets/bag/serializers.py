@@ -922,7 +922,6 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'bouwlagen',
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
-            'pandnummer',
             'pandnaam',
             'ligging',
             'type_woonobject',

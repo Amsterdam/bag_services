@@ -260,7 +260,6 @@ class ImportPandTest(TaskTestCase):
         self.assertEqual(p.bouwjaar, 1993)
         self.assertIsNone(p.laagste_bouwlaag)
         self.assertIsNone(p.hoogste_bouwlaag)
-        self.assertEqual(p.pandnummer, '')
         self.assertEqual(p.vervallen, False)
         self.assertEqual(p.status.code, '31')
         self.assertEqual(p.begin_geldigheid, datetime.date(2010, 9, 9))

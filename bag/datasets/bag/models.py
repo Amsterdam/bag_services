@@ -1008,7 +1008,6 @@ class Pand(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.Model):
     bouwlagen = models.PositiveIntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
-    pandnummer = models.CharField(max_length=10, null=True)
     vervallen = models.NullBooleanField(default=None)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
 

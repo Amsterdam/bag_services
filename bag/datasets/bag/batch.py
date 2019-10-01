@@ -522,7 +522,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'],
             'type': self.type_lookup[r['typeAdresseerbaarObject']],
-            # 'hoofdadres': True if r['typeAdres'] == 'Hoofdadres' else False if r['typeAdres'] else None,
             'type_adres': r['typeAdres'] or None,
             'status_id': status_id,
             'openbare_ruimte_id': openbare_ruimte_id,
