@@ -327,7 +327,6 @@ class ImportWoonplaatsTask(batch.BasicTask):
             'gemeente_id': gemeente_id,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
-            'mutatie_gebruiker': None,
         }
 
         if not uva2.datum_geldig(values['begin_geldigheid'], values['einde_geldigheid']):
@@ -432,7 +431,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             # 'vervallen': None,  # TODO: ? Perhaps if daterange not geldig
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
-            # 'mutatie_gebruiker': None,
             'geometrie': geometrie
         }
 
@@ -604,7 +602,6 @@ class ImportLigplaatsTask(batch.BasicTask):
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
-            # 'mutatie_gebruiker': None,
             'indicatie_in_onderzoek': uva2.get_janee_boolean(r['aanduidingInOnderzoek']),
             'indicatie_geconstateerd': uva2.get_janee_boolean(r['geconstateerd']),
             'geometrie': geometrie
@@ -687,7 +684,6 @@ class ImportStandplaatsenTask(batch.BasicTask):
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
-            # 'mutatie_gebruiker': None,
             'indicatie_in_onderzoek': uva2.get_janee_boolean(r['aanduidingInOnderzoek']),
             'indicatie_geconstateerd': uva2.get_janee_boolean(r['geconstateerd']),
             'geometrie': geometrie

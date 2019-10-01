@@ -23,6 +23,7 @@ class BagMixin(rest.DataSetSerializerMixin):
 class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
 
+
 class Status(serializers.ModelSerializer):
     class Meta:
         model = models.Status
@@ -507,7 +508,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
 
             'naam',
             # 'naam_ptt',
@@ -543,7 +543,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
             'geometrie',
@@ -595,7 +594,6 @@ class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -679,7 +677,6 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
             'adres',
@@ -743,7 +740,6 @@ class StandplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -860,7 +856,6 @@ class VerblijfsobjectDetail(
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -962,7 +957,6 @@ class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
 
             '_buurt',
             '_buurtcombinatie',
@@ -1079,7 +1073,6 @@ class VerblijfsobjectNummeraanduiding(
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
 
@@ -1145,7 +1138,6 @@ class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-            'mutatie_gebruiker',
             'status',
             'bron',
             'adres',

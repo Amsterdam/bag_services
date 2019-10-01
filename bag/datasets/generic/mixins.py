@@ -17,13 +17,6 @@ class GeldigheidMixin(models.Model):
         abstract = True
 
 
-class MutatieGebruikerMixin(models.Model):
-    mutatie_gebruiker = models.CharField(max_length=30, null=True)
-
-    class Meta:
-        abstract = True
-
-
 class CodeOmschrijvingMixin(models.Model):
     code = models.CharField(max_length=4, primary_key=True)
     omschrijving = models.CharField(max_length=150, null=True)

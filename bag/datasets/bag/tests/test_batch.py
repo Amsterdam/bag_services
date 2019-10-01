@@ -204,7 +204,6 @@ class ImportOprTest(TaskTestCase):
         self.assertEqual(o.woonplaats.id, '03630022796658')
         self.assertEqual(o.begin_geldigheid, datetime.date(2014, 1, 10))
         self.assertEqual(o.einde_geldigheid, None)
-        self.assertEqual(o.mutatie_gebruiker, 'DBI')
         self.assertIsNotNone(o.geometrie)
 
 
@@ -229,7 +228,6 @@ class ImportStandplaatsenTest(TaskTestCase):
         self.assertEqual(lp.document_nummer, 'GV00000407')
         self.assertEqual(lp.begin_geldigheid, datetime.date(2010, 9, 9))
         self.assertIsNone(lp.einde_geldigheid)
-        self.assertEqual(lp.mutatie_gebruiker, 'DBI')
 
     def test_import_geo(self):
         self.run_task()
@@ -269,7 +267,6 @@ class ImportPandTest(TaskTestCase):
         self.assertEqual(p.status.code, '31')
         self.assertEqual(p.begin_geldigheid, datetime.date(2010, 9, 9))
         self.assertIsNone(p.einde_geldigheid)
-        self.assertEqual(p.mutatie_gebruiker, 'DBI')
         self.assertIsNone(p.bouwblok)
 
         p = models.Pand.objects.get(pk='03630012977654')
