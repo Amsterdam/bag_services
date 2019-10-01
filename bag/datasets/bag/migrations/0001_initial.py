@@ -510,7 +510,6 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('landelijk_id', models.CharField(max_length=4, unique=True)),
                 ('naam', models.CharField(max_length=80)),
-                ('naam_ptt', models.CharField(max_length=18, null=True)),
                 ('vervallen', models.NullBooleanField(default=None)),
                 ('gemeente', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='woonplaatsen', to='bag.Gemeente')),
             ],

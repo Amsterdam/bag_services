@@ -322,7 +322,6 @@ class ImportWoonplaatsTask(batch.BasicTask):
             'naam': r['naam'],
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
-            'naam_ptt': None,
             'vervallen': None,
             'gemeente_id': gemeente_id,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
@@ -425,7 +424,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             'status_id': status_id,
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
-            # 'straat_nummer': None,
             'naam_nen': naam_nen,
             # 'naam_ptt': None,
             # 'vervallen': None,  # TODO: ? Perhaps if daterange not geldig

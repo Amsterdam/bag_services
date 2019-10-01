@@ -136,7 +136,6 @@ class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.Mode
     date_modified = models.DateTimeField(auto_now=True)
     landelijk_id = models.CharField(max_length=4, unique=True)
     naam = models.CharField(max_length=80)
-    naam_ptt = models.CharField(max_length=18, null=True)
     vervallen = models.NullBooleanField(default=None)
     gemeente = models.ForeignKey(
         Gemeente, related_name='woonplaatsen', on_delete=models.CASCADE)
@@ -538,7 +537,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, model
             dct.update({
                 'straatnaam': self.openbare_ruimte.naam,
                 'straatnaam_nen': self.openbare_ruimte.naam_nen,
-                'straatnaam_ptt': self.openbare_ruimte.naam_ptt
             })
         else:
             dct.update({

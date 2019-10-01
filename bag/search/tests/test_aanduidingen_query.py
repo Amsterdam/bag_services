@@ -27,7 +27,6 @@ class SubjectSearchTest(APITestCase):
 
         ptt_straat = bag_factories.OpenbareRuimteFactory.create(
             naam="Marius Cornelis straat",
-            naam_ptt="M Cornelisstr",
             type='01')
 
         nen_straat = bag_factories.OpenbareRuimteFactory.create(

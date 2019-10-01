@@ -197,7 +197,6 @@ class ImportOprTest(TaskTestCase):
         self.assertEqual(o.document_nummer, 'GV00001729_AC00AC')
         self.assertEqual(o.straat_nummer, '')
         self.assertEqual(o.naam_nen, 'Amstel')
-        self.assertEqual(o.naam_ptt, 'AMSTEL')
         self.assertEqual(o.vervallen, False)
         self.assertIsNone(o.bron)
         self.assertEqual(o.status.code, '35')

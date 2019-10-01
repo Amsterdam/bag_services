@@ -491,7 +491,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
     openbare_ruimtes = rest.RelatedSummaryField()
     gemeente = Gemeente()
     woonplaatsidentificatie = serializers.CharField(source='landelijk_id')
-    naam_17_posities = serializers.CharField(source='naam_ptt')
 
     class Meta:
         model = models.Woonplaats
@@ -506,7 +505,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
             'einde_geldigheid',
 
             'naam',
-            'naam_17_posities',
             'gemeente',
             'openbare_ruimtes'
         )
