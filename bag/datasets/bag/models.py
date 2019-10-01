@@ -305,7 +305,6 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.
     date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
-    straat_nummer = models.CharField(max_length=10, null=True)
     naam_nen = models.CharField(max_length=24)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)

@@ -292,7 +292,6 @@ class Migration(migrations.Migration):
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('type', models.CharField(choices=[('01', 'Weg'), ('02', 'Water'), ('03', 'Spoorbaan'), ('04', 'Terrein'), ('05', 'Kunstwerk'), ('06', 'Landschappelijk gebied'), ('07', 'Administratief gebied')], max_length=2, null=True)),
                 ('naam', models.CharField(max_length=150)),
-                ('straat_nummer', models.CharField(max_length=10, null=True)),
                 ('naam_nen', models.CharField(max_length=24)),
                 ('vervallen', models.NullBooleanField(default=None)),
                 ('geometrie', django.contrib.gis.db.models.fields.MultiPolygonField(null=True, srid=28992)),
