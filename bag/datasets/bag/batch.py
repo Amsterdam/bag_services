@@ -705,10 +705,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.redenen_opvoer = set()
         self.bronnen = set()
         self.eigendomsverhoudingen = set()
-        self.financieringswijzes = set()
         self.gebruik = set()
         self.locaties_ingang = set()
-        self.liggingen = set()
         self.toegang = set()
         self.statussen = set()
         self.buurten = set()
@@ -771,10 +769,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.redenen_opvoer.clear()
         self.bronnen.clear()
         self.eigendomsverhoudingen.clear()
-        self.financieringswijzes.clear()
         self.gebruik.clear()
         self.locaties_ingang.clear()
-        self.liggingen.clear()
         self.toegang.clear()
         self.statussen.clear()
         self.buurten.clear()
@@ -853,7 +849,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'oppervlakte': uva2.uva_nummer(r['oppervlakte']),
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'],
-            'bouwlaag_toegang': uva2.uva_nummer(r['verdiepingToegang']),
+            'verdieping_toegang': uva2.uva_nummer(r['verdiepingToegang']),
             'verhuurbare_eenheden': r['aantalEenhedenComplex'] or None,
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'hoogste_bouwlaag' : uva2.uva_nummer(r['hoogsteBouwlaag']),

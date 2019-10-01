@@ -199,7 +199,6 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'reden_afvoer',
         'eigendomsverhouding',
         'gebruik',
-        'ligging',
         'toegang',
         'reden_opvoer',
         '_gebiedsgerichtwerken',

@@ -857,17 +857,11 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True)
     oppervlakte = models.PositiveIntegerField(null=True)
-    bouwlaag_toegang = models.IntegerField(null=True)
-    status_coordinaat_code = models.CharField(max_length=3, null=True)
-    status_coordinaat_omschrijving = models.CharField(
-        max_length=150, null=True)
+    verdieping_toegang = models.IntegerField(null=True)
     verhuurbare_eenheden = models.PositiveIntegerField(null=True)
     bouwlagen = models.PositiveIntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
-    type_woonobject_code = models.CharField(max_length=2, null=True)
-    type_woonobject_omschrijving = models.CharField(max_length=150, null=True)
-    woningvoorraad = models.NullBooleanField(default=None)
     aantal_kamers = models.PositiveIntegerField(null=True)
     vervallen = models.PositiveIntegerField(default=False)
     reden_afvoer = models.ForeignKey(
@@ -880,8 +874,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     eigendomsverhouding = models.ForeignKey(
         Eigendomsverhouding, null=True, on_delete=models.CASCADE)
-    financieringswijze = models.ForeignKey(
-        Financieringswijze, null=True, on_delete=models.CASCADE)
 
     gebruik = models.ForeignKey(Gebruik, null=True, on_delete=models.CASCADE)
     gebruiksdoel_woonfunctie = models.TextField(null=True)
@@ -889,8 +881,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
 
     locatie_ingang = models.ForeignKey(
         LocatieIngang, null=True, on_delete=models.CASCADE)
-    ligging = models.ForeignKey(
-        Ligging, null=True, on_delete=models.CASCADE)
     toegang = models.ForeignKey(
         Toegang, null=True, on_delete=models.CASCADE)
 

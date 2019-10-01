@@ -762,18 +762,6 @@ class GebruiksdoelSerializer(serializers.ModelSerializer):
 
 class VerblijfsobjectDetailMixin(object):
 
-    def get_status_coordinaat(self, obj):
-        return dict(
-            code=obj.status_coordinaat_code,
-            omschrijving=obj.status_coordinaat_omschrijving,
-        )
-
-    def get_type_woonobject(self, obj):
-        return dict(
-            code=obj.type_woonobject_code,
-            omschrijving=obj.type_woonobject_omschrijving,
-        )
-
     def get_gebruiksdoelen(self, obj):
         data = GebruiksdoelSerializer(
             instance=obj.gebruiksdoelen.all(), many=True).data
@@ -788,13 +776,9 @@ class VerblijfsobjectDetail(
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
-    financieringswijze = Financieringswijze()
     gebruik = Gebruik()
-    ligging = Ligging()
     locatie_ingang = LocatieIngang()
     toegang = Toegang()
-    status_coordinaat = serializers.SerializerMethodField()
-    type_woonobject = serializers.SerializerMethodField()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
     reden_afvoer = RedenAfvoer()
@@ -842,21 +826,16 @@ class VerblijfsobjectDetail(
             'bbox',
             'geometrie',
             'oppervlakte',
-            'bouwlaag_toegang',
-            'status_coordinaat',
+            'verdieping_toegang',
             'verhuurbare_eenheden',
             'bouwlagen',
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
-            'type_woonobject',
-            'woningvoorraad',
             'aantal_kamers',
             'reden_afvoer',
             'reden_opvoer',
             'eigendomsverhouding',
-            'financieringswijze',
             'gebruik',
-            'ligging',
             'locatie_ingang',
             'toegang',
             'hoofdadres',
@@ -1023,13 +1002,9 @@ class VerblijfsobjectNummeraanduiding(
     _display = rest.DisplayField()
     status = Status()
     eigendomsverhouding = Eigendomsverhouding()
-    financieringswijze = Financieringswijze()
     gebruik = Gebruik()
-    ligging = Ligging()
     locatie_ingang = LocatieIngang()
     toegang = Toegang()
-    status_coordinaat = serializers.SerializerMethodField()
-    type_woonobject = serializers.SerializerMethodField()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
@@ -1055,19 +1030,14 @@ class VerblijfsobjectNummeraanduiding(
 
             'geometrie',
             'oppervlakte',
-            'bouwlaag_toegang',
-            'status_coordinaat',
+            'verdieping_toegang',
             'verhuurbare_eenheden',
             'bouwlagen',
-            'type_woonobject',
-            'woningvoorraad',
             'aantal_kamers',
             'reden_afvoer',
             'reden_opvoer',
             'eigendomsverhouding',
-            'financieringswijze',
             'gebruik',
-            'ligging',
             'locatie_ingang',
             'toegang',
             'panden',
