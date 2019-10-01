@@ -465,7 +465,6 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, model
     postcode = models.CharField(max_length=6, null=True, db_index=True)
     type = models.CharField(
         max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
-    adres_nummer = models.CharField(max_length=10, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)

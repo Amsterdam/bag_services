@@ -266,7 +266,6 @@ class Migration(migrations.Migration):
                 ('huisnummer_toevoeging', models.CharField(db_index=True, max_length=4, null=True)),
                 ('postcode', models.CharField(db_index=True, max_length=6, null=True)),
                 ('type', models.CharField(choices=[('01', 'Verblijfsobject'), ('02', 'Standplaats'), ('03', 'Ligplaats'), ('04', 'Overig gebouwd object'), ('05', 'Overig terrein')], max_length=2, null=True)),
-                ('adres_nummer', models.CharField(max_length=10, null=True)),
                 ('vervallen', models.NullBooleanField(default=None)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('_openbare_ruimte_naam', models.CharField(max_length=150, null=True)),
