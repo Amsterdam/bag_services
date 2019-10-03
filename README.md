@@ -69,7 +69,7 @@ username, assumes your public SSH key is known and you have appropriate level of
 This command expects the private SSH key to be found in the ~/.ssh T†folder,
 in a file with the name datapunt.key (chmod 600):
 
-    docker-compose exec database update-db.sh bag <username>
+    docker-compose exec database update-db.sh bag_v11 <username>
 
 To import the latest elastic index from acceptance:
 

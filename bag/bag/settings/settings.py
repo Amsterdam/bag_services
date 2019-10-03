@@ -40,8 +40,8 @@ ROOT_URLCONF = 'bag.urls'
 DATABASE_OPTIONS = {
     LocationKey.docker: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'bag'),
-        'USER': os.getenv('DATABASE_USER', 'bag'),
+        'NAME': os.getenv('DATABASE_NAME', 'bag_v11'),
+        'USER': os.getenv('DATABASE_USER', 'bag_v11'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': 'database',
         'PORT': '5432',
@@ -49,8 +49,8 @@ DATABASE_OPTIONS = {
     },
     LocationKey.local: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'bag'),
-        'USER': os.getenv('DATABASE_USER', 'bag'),
+        'NAME': os.getenv('DATABASE_NAME', 'bag_v11'),
+        'USER': os.getenv('DATABASE_USER', 'bag_v11'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': get_docker_host(),
         'PORT': '5434',
@@ -58,8 +58,8 @@ DATABASE_OPTIONS = {
     },
     LocationKey.override: {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'bag'),
-        'USER': os.getenv('DATABASE_USER', 'bag'),
+        'NAME': os.getenv('DATABASE_NAME', 'bag_v11'),
+        'USER': os.getenv('DATABASE_USER', 'bag_v11'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'insecure'),
         'HOST': os.getenv(OVERRIDE_HOST_ENV_VAR),
         'PORT': os.getenv(OVERRIDE_PORT_ENV_VAR, '5432'),
