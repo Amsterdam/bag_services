@@ -66,14 +66,6 @@ class LiggingFactory(factory.DjangoModelFactory):
     omschrijving = fuzzy.FuzzyText(length=50)
 
 
-class StatusFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Status
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GemeenteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gemeente
@@ -169,7 +161,7 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
     reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
     reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
     buurt = factory.SubFactory(BuurtFactory)
-    status = factory.SubFactory(StatusFactory)
+    status = fuzzy.FuzzyText(length=100)
     geometrie = Point(
         # Defaulting to 1000, 1000
         randint(1, 100), randint(1, 100), srid=28992)
@@ -218,7 +210,7 @@ class NummeraanduidingFactory(factory.DjangoModelFactory):
     verblijfsobject = factory.SubFactory(VerblijfsobjectFactory)
     type = '01'  # default verblijfsobject
     postcode = '1000AN'  # default postcode..
-    status = factory.SubFactory(StatusFactory)
+    status = fuzzy.FuzzyText(length=100)
 
     _openbare_ruimte_naam = factory.LazyAttribute(
         lambda o: o.openbare_ruimte.naam)

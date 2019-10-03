@@ -346,7 +346,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
     def __init__(self, path):
         self.path = path
         self.bronnen = set()
-        self.statussen = set()
         self.woonplaatsen = set()
         self.openbare_ruimtes = dict()
         self.omschijvingen = set()
@@ -356,8 +355,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
 
     def before(self):
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
         self.types = dict([(t[1], t[0]) for t in models.OpenbareRuimte.TYPE_CHOICES])
         self.woonplaatsen = set(
             models.Woonplaats.objects.values_list("pk", flat=True))
@@ -374,7 +371,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
 
     def after(self):
         self.bronnen.clear()
-        self.statussen.clear()
         self.woonplaatsen.clear()
         self.openbare_ruimtes.clear()
         self.types.clear()
@@ -396,7 +392,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             log.error(f"OpenbareRuimte {pk} has invalid type {r['type']}; skipping")
             return None
 
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
         naam = r['naam']
         naam_nen = r['naamNEN']
         if len(naam_nen) > 24:
@@ -421,7 +416,7 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             'type': type,
             'naam': naam,
             # 'code': None,
-            'status_id': status_id,
+            'status': (r['status']),
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'naam_nen': naam_nen,
@@ -454,7 +449,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
 
     def __init__(self, path):
         self.path = path
-        self.statussen = dict()
         self.openbare_ruimtes = set()
         self.ligplaatsen = set()
         self.standplaatsen = set()
@@ -467,7 +461,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def before(self):
         log.debug('Starting import nummeraanduidingen: delete old data')
         models.Nummeraanduiding.objects.all().delete()
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
         self.openbare_ruimtes = set(
             models.OpenbareRuimte.objects.values_list("pk", flat=True))
         self.ligplaatsen = set(models.Ligplaats.objects.values_list("pk", flat=True))
@@ -478,7 +471,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.verblijfsobjecten.clear()
         self.standplaatsen.clear()
         self.ligplaatsen.clear()
-        self.statussen.clear()
         self.openbare_ruimtes.clear()
         self.update_metadata_csv(self.source)
         self.type_lookup.clear()
@@ -492,7 +484,6 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process_row(self, r):
         pk = landelijk_id = r['identificatie']
 
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen) or None
         openbare_ruimte_id = r['ligtAan:BAG.ORE.identificatie'] or None
 
         if openbare_ruimte_id not in self.openbare_ruimtes:
@@ -523,7 +514,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             'document_nummer': r['documentnummer'],
             'type': self.type_lookup[r['typeAdresseerbaarObject']],
             'type_adres': r['typeAdres'] or None,
-            'status_id': status_id,
+            'status': (r['status'] or None),
             'openbare_ruimte_id': openbare_ruimte_id,
             'ligplaats_id': ligplaats_id,
             'standplaats_id': standplaats_id,
@@ -550,7 +541,6 @@ class ImportLigplaatsTask(batch.BasicTask):
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bronnen = set()
-        self.statussen = set()
         self.buurten = set()
         self.ligplaatsen = dict()
 
@@ -558,15 +548,11 @@ class ImportLigplaatsTask(batch.BasicTask):
         log.debug('Starting import ligplaats: delete old data')
         models.Ligplaats.objects.all().delete()
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
-        self.statussen.clear()
         self.buurten.clear()
-
         self.ligplaatsen.clear()
 
     def process(self):
@@ -577,7 +563,6 @@ class ImportLigplaatsTask(batch.BasicTask):
 
     def process_row(self, r):
         pk = landelijk_id = r['identificatie']
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
         wkt_geometrie = r['geometrie']
         if wkt_geometrie:
             geometrie = geo.get_poly(wkt_geometrie)
@@ -595,7 +580,7 @@ class ImportLigplaatsTask(batch.BasicTask):
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'bron_id': None,
-            'status_id': status_id,
+            'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
@@ -628,20 +613,16 @@ class ImportStandplaatsenTask(batch.BasicTask):
     def __init__(self, bag_path):
         self.bag_path = bag_path
         self.bronnen = set()
-        self.statussen = set()
         self.buurten = set()
 
     def before(self):
         log.info('Starting import standplaatsen: delete old data')
         models.Standplaats.objects.all().delete()
         self.bronnen = set(models.Bron.objects.values_list("pk", flat=True))
-        self.statussen = dict(
-            models.Status.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
-        self.statussen.clear()
         self.buurten.clear()
 
         validate_geometry(models.Standplaats)
@@ -659,7 +640,6 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
     def process_row(self, r):
         pk = landelijk_id = r['identificatie']
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
         wkt_geometrie = r['geometrie']
         if wkt_geometrie:
             geometrie = geo.get_poly(wkt_geometrie)
@@ -677,7 +657,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'bron_id': None,
-            'status_id': status_id,
+            'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
@@ -708,7 +688,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.gebruik = set()
         self.locaties_ingang = set()
         self.toegang = set()
-        self.statussen = set()
         self.buurten = set()
         self.panden = set()
         self.gebruiksdoelen_code_mapping = {
@@ -760,7 +739,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.eigendomsverhoudingen = dict(models.Eigendomsverhouding.objects.values_list("omschrijving", "pk"))
         self.gebruik = dict(models.Gebruik.objects.values_list("omschrijving", "pk"))
         self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
         self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
@@ -772,7 +750,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.gebruik.clear()
         self.locaties_ingang.clear()
         self.toegang.clear()
-        self.statussen.clear()
         self.buurten.clear()
         self.panden.clear()
 
@@ -828,7 +805,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             geometrie = None
         reden_opvoer_id = get_code_for_omschrijving(r['redenopvoer'], models.RedenOpvoer, self.redenen_opvoer)
         reden_afvoer_id = get_code_for_omschrijving(r['redenafvoer'], models.RedenAfvoer, self.redenen_afvoer)
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen)
         eigendomsverhouding_id = get_code_for_omschrijving(r['eigendomsverhouding'], models.Eigendomsverhouding,
                                                            self.eigendomsverhoudingen)
         gebruik_id = get_code_for_omschrijving(r['is:WOZ.WOB.soortObject'], models.Gebruik, self.gebruik)
@@ -852,15 +828,15 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'verdieping_toegang': uva2.uva_nummer(r['verdiepingToegang']),
             'verhuurbare_eenheden': r['aantalEenhedenComplex'] or None,
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
-            'hoogste_bouwlaag' : uva2.uva_nummer(r['hoogsteBouwlaag']),
-            'laagste_bouwlaag' : uva2.uva_nummer(r['laagsteBouwlaag']),
+            'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
+            'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
             'aantal_kamers': uva2.uva_nummer(r['aantalKamers']),
             'reden_afvoer_id': reden_afvoer_id,
             'reden_opvoer_id': reden_opvoer_id,
             'eigendomsverhouding_id': eigendomsverhouding_id,
             'gebruik_id': gebruik_id,
             'toegang_id': toegang_id,
-            'status_id': status_id,
+            'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
@@ -911,7 +887,6 @@ class ImportPandTask(batch.BasicTask):
 
     def __init__(self, path):
         self.path = path
-        self.statussen = dict()
         self.bouwblokken = set()
         self.verblijfsobjecten = set()
         self.panden = dict()
@@ -922,12 +897,10 @@ class ImportPandTask(batch.BasicTask):
     def before(self):
         log.debug('Starting import pand: delete old data')
         models.Pand.objects.all().delete()
-        self.statussen = dict(models.Status.objects.values_list("omschrijving", "pk"))
         self.bouwblokken = set(models.Bouwblok.objects.values_list("pk", flat=True))
         self.verblijfsobjecten = set(models.Verblijfsobject.objects.values_list("pk", flat=True))
 
     def after(self):
-        self.statussen.clear()
         self.verblijfsobjecten.clear()
         self.panden.clear()
         self.bouwblokken.clear()
@@ -950,7 +923,6 @@ class ImportPandTask(batch.BasicTask):
             log.warning(f"Pand {landelijk_id} has no geometry")
             geometrie = None
 
-        status_id = get_code_for_omschrijving(r['status'], models.Status, self.statussen) or None
         bbk_id = r['ligtIn:GBD.BBK.identificatie'] or None
 
         if bbk_id and bbk_id not in self.bouwblokken:
@@ -969,7 +941,7 @@ class ImportPandTask(batch.BasicTask):
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
             'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
-            'status_id': status_id,
+            'status': (r['status'] or None),
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
             'bouwblok_id': bbk_id,
@@ -1676,7 +1648,6 @@ class ImportBagJob(object):
             # Import codes for backward compatibility
             gob_diva_code_mapping.ImportRedenAfvoerTask(),
             gob_diva_code_mapping.ImportRedenOpvoerTask(),
-            gob_diva_code_mapping.ImportStatusTask(),
             gob_diva_code_mapping.ImportEigendomsverhoudingTask(),
             gob_diva_code_mapping.ImportGebruikTask(),
             gob_diva_code_mapping.ImportToegangTask(),

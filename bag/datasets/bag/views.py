@@ -195,7 +195,6 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'buurt__buurtcombinatie',
         'buurt__stadsdeel',
         'buurt__stadsdeel__gemeente',
-        'status',
         'reden_afvoer',
         'eigendomsverhouding',
         'gebruik',
@@ -301,7 +300,6 @@ class NummeraanduidingFilter(FilterSet):
         queryset = queryset.prefetch_related(None)
         queryset = queryset.select_related(None)
         # ligplaatsen en standplaatsen hebben we NIET nodig.
-        queryset = queryset.select_related('verblijfsobject__status')
         m_po = models.Pand.objects
         pand = m_po.get(landelijk_id=value)   # noqa
         ids = pand.verblijfsobjecten.values_list(
@@ -370,16 +368,12 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
             'verblijfsobject',
             'standplaats',
             'ligplaats',
-            'verblijfsobject__status',
-            'standplaats__status',
-            'ligplaats__status',
         )
     )
     queryset_detail = models.Nummeraanduiding.objects.prefetch_related(
         Prefetch('verblijfsobject__panden',
                  queryset=models.Pand.objects.select_related('bouwblok'))
     ).select_related(
-        'status',
         'openbare_ruimte',
         'openbare_ruimte__woonplaats',
         'verblijfsobject',
@@ -490,13 +484,11 @@ class PandViewSet(rest.DatapuntViewSet):
     metadata_class = ExpansionMetadata
 
     queryset = models.Pand.objects.all().order_by('id').select_related(
-        'status',
         'bouwblok',
         'bouwblok__buurt',
     )
 
     queryset_detail = models.Pand.objects.all().order_by('id').select_related(
-        'status',
         'bouwblok',
         'bouwblok__buurt',
         'bouwblok__buurt__stadsdeel',

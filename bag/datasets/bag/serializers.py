@@ -24,12 +24,6 @@ class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
 
 
-class Status(serializers.ModelSerializer):
-    class Meta:
-        model = models.Status
-        fields = ('code', 'omschrijving')
-
-
 class Eigendomsverhouding(serializers.ModelSerializer):
     class Meta:
         model = models.Eigendomsverhouding
@@ -155,7 +149,6 @@ class OpenbareRuimte(BagMixin, rest.HALSerializer):
 
 class Nummeraanduiding(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    vbo_status = Status()
 
     class Meta:
         model = models.Nummeraanduiding
@@ -198,7 +191,6 @@ class Standplaats(BagMixin, rest.HALSerializer):
 class Verblijfsobject(BagMixin, rest.HALSerializer):
 
     _display = rest.DisplayField()
-    status = Status()
     hoofdadres = serializers.SerializerMethodField()
 
     class Meta:
@@ -512,7 +504,6 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
 
 class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
     type = serializers.CharField(source='get_type_display')
     adressen = rest.RelatedSummaryField()
     woonplaats = Woonplaats()
@@ -552,8 +543,6 @@ class OpenbareRuimteDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
 class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-
-    status = Status()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
     adressen = rest.RelatedSummaryField()
@@ -604,7 +593,6 @@ class LigplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
 class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
     type = serializers.CharField(source='get_type_display')
     buurt = Buurt()
     buurtcombinatie = Buurtcombinatie()
@@ -690,7 +678,6 @@ class NummeraanduidingDetail(BagMixin, rest.HALSerializer):
 
 class StandplaatsDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
     adressen = rest.RelatedSummaryField()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
@@ -774,7 +761,6 @@ class VerblijfsobjectDetail(
         VerblijfsobjectDetailMixin, BagMixin,
         BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
     eigendomsverhouding = Eigendomsverhouding()
     gebruik = Gebruik()
     locatie_ingang = LocatieIngang()
@@ -865,7 +851,6 @@ class VerblijfsobjectDetail(
 
 class PandDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    status = Status()
     verblijfsobjecten = rest.RelatedSummaryField()
     bouwblok = Bouwblok()
 
@@ -1000,7 +985,6 @@ class VerblijfsobjectNummeraanduiding(
     Serializer used in custom nummeraanduiding endpoint
     """
     _display = rest.DisplayField()
-    status = Status()
     eigendomsverhouding = Eigendomsverhouding()
     gebruik = Gebruik()
     locatie_ingang = LocatieIngang()
@@ -1057,7 +1041,6 @@ class NummeraanduidingExpanded(BagMixin, rest.HALSerializer):
     Serializer used in custom nummeraanduiding endpoint
     """
     _display = rest.DisplayField()
-    status = Status()
     type = serializers.CharField(source='get_type_display')
     bouwblok = Bouwblok()
 

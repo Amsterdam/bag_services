@@ -176,7 +176,6 @@ class ImportUnescoTest(TaskTestCase):
 @skip
 class ImportOprTest(TaskTestCase):
     def setUp(self):
-        factories.StatusFactory.create(code='35')
         factories.WoonplaatsFactory.create(id='03630022796658')
 
     def task(self):
@@ -198,7 +197,7 @@ class ImportOprTest(TaskTestCase):
         self.assertEqual(o.naam_nen, 'Amstel')
         self.assertEqual(o.vervallen, False)
         self.assertIsNone(o.bron)
-        self.assertEqual(o.status.code, '35')
+        self.assertEqual(o.status, 'Naamgeving uitgegeven')
         self.assertEqual(o.woonplaats.id, '03630022796658')
         self.assertEqual(o.begin_geldigheid, datetime.date(2014, 1, 10))
         self.assertEqual(o.einde_geldigheid, None)
@@ -241,7 +240,6 @@ class ImportStandplaatsenTest(TaskTestCase):
 class ImportPandTest(TaskTestCase):
 
     def setUp(self):
-        factories.StatusFactory.create(pk='31')
         factories.BouwblokFactory.create(pk='03630012102404')
 
     def task(self):
@@ -261,7 +259,7 @@ class ImportPandTest(TaskTestCase):
         self.assertIsNone(p.laagste_bouwlaag)
         self.assertIsNone(p.hoogste_bouwlaag)
         self.assertEqual(p.vervallen, False)
-        self.assertEqual(p.status.code, '31')
+        self.assertEqual(p.status, 'Pand in gebruik')
         self.assertEqual(p.begin_geldigheid, datetime.date(2010, 9, 9))
         self.assertIsNone(p.einde_geldigheid)
         self.assertIsNone(p.bouwblok)

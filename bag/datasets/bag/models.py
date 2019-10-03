@@ -27,15 +27,6 @@ class IndicatieAdresseerbaarObject(models.Model):
     indicatie_in_onderzoek = models.BooleanField(null=False)
 
 
-class Status(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Status"
-        verbose_name_plural = "Status"
-
-
 class RedenAfvoer(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)
@@ -308,7 +299,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.
     naam_nen = models.CharField(max_length=24)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
-    status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=150)
     woonplaats = models.ForeignKey(
         Woonplaats, related_name="openbare_ruimtes",
         on_delete=models.CASCADE
@@ -467,7 +458,7 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, model
         max_length=2, null=True, choices=OBJECT_TYPE_CHOICES)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
-    status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=150, null=True)
     openbare_ruimte = models.ForeignKey(
         OpenbareRuimte, related_name='adressen',
         on_delete=models.CASCADE
@@ -693,7 +684,7 @@ class Ligplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adresseerbaa
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
-    status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=150)
 
     indicatie_geconstateerd = models.NullBooleanField(default=None)
     indicatie_in_onderzoek = models.NullBooleanField(default=None)
@@ -775,7 +766,7 @@ class Standplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adresseerb
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
     vervallen = models.NullBooleanField(default=None)
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
-    status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=150)
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='standplaatsen',
         on_delete=models.CASCADE
@@ -884,9 +875,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     toegang = models.ForeignKey(
         Toegang, null=True, on_delete=models.CASCADE)
 
-    status = models.ForeignKey(
-        Status, null=True, on_delete=models.CASCADE)
-
+    status = models.CharField(max_length=150)
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='verblijfsobjecten',
         on_delete=models.CASCADE
@@ -999,7 +988,7 @@ class Pand(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.Model):
     laagste_bouwlaag = models.IntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     vervallen = models.NullBooleanField(default=None)
-    status = models.ForeignKey(Status, null=True, on_delete=models.CASCADE)
+    status = models.CharField(max_length=150, null=True)
 
     bouwblok = models.ForeignKey(
         Bouwblok, null=True, related_name="panden", on_delete=models.CASCADE)

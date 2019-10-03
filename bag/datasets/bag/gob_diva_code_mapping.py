@@ -87,51 +87,6 @@ class ImportRedenOpvoerTask(CodeOmschrijvingDataTask):
     data = data_reden_opvoer_afvoer
 
 
-class ImportStatusTask(CodeOmschrijvingDataTask):
-    name = "Import Status"
-    model = models.Status
-    data = [
-        ("08", "Buiten gebruik i.v.m. verbouw"),
-        ("09", "Bouwvergunning verleend"),
-        ("11", "In Onderzoek (samenvoeging)"),
-        ("0", "Actueel"),
-        ("2", "Vervallen 1"),
-        ("3", "Vervallen 2"),
-        ("4", "Vervallen 3"),
-        ("5", "Vervallen 4"),
-        ("6", "Geconstateerd"),
-        ("7", "In Onderzoek"),
-        ("01", "Buitengebruik i.v.m. renovatie"),
-        ("TMP", "Tijdelijk punt"),
-        ("DEF", "Definitief punt"),
-        ("10", "In onderzoek (bestemmingswijziging)"),
-        ("15", "In onderzoek n.a.v. langdurige leegstand (adressenproject stadsdelen)"),
-        ("1", "Vervallen 5"),
-        ("13", "In onderzoek n.a.v. langdurige leegstand (adressenproject Dienst Wonen)"),
-        ("14", "In onderzoek (adressen project)"),
-        ("ONB", "ONB"),
-        ("12", "In onderzoek (splitsing)"),
-        ("16", "Naamgeving uitgegeven"),
-        ("17", "Naamgeving ingetrokken"),
-        ("18", "Verblijfsobject gevormd"),
-        ("19", "Niet gerealiseerd verblijfsobject"),
-        ("20", "Verblijfsobject in gebruik (niet ingemeten)"),
-        ("21", "Verblijfsobject in gebruik"),
-        ("22", "Verblijfsobject ingetrokken"),
-        ("23", "Verblijfsobject buiten gebruik"),
-        ("24", "Bouwaanvraag ontvangen"),
-        ("26", "Bouw gestart"),
-        ("27", "Sloopvergunning verleend"),
-        ("28", "Pand gesloopt"),
-        ("29", "Niet gerealiseerd pand"),
-        ("30", "Pand in gebruik (niet ingemeten)"),
-        ("31", "Pand in gebruik"),
-        ("32", "Pand buiten gebruik"),
-        ("33", "Plaats aangewezen"),
-        ("34", "Plaats ingetrokken"),
-    ]
-
-
 class ImportEigendomsverhoudingTask(CodeOmschrijvingDataTask):
     name = "Import Eigendomsverhouding"
     model = models.Eigendomsverhouding

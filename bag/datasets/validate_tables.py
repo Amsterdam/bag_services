@@ -24,7 +24,6 @@ TABLE_TARGETS = [
     (184505, 0, "bag_pand"),
     (8, 0, "bag_stadsdeel"),
     (323, 0, "bag_standplaats"),
-    (38, 30, "bag_status"),
     (9, 40, "bag_toegang"),
     (2, 0, "bag_unesco"),
     (518817, 0, "bag_verblijfsobject"),
