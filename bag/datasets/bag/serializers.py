@@ -738,8 +738,6 @@ class GebruiksdoelSerializer(serializers.ModelSerializer):
     verblijfsobject = serializers.ReadOnlyField(source='verblijfsobject_id')
     code = serializers.CharField()
     omschrijving = serializers.CharField()
-    code_plus = serializers.CharField()
-    omschrijving_plus = serializers.CharField()
 
     class Meta:
         model = models.Gebruiksdoel

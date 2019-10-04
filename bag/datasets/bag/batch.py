@@ -758,14 +758,10 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
                 for gb in gbs:
                     code = self.gebruiksdoelen_code_mapping.get(gb[0], "9999")
                     omschrijving = gb[0]
-                    code_plus = self.gebruiksdoelen_code_mapping.get(gb[1], "9999") if gb[1] else None
-                    omschrijving_plus = gb[1] if gb[1] else None
                     yield models.Gebruiksdoel(
                         verblijfsobject_id=landelijk_id,
                         code=code,
                         omschrijving=omschrijving,
-                        code_plus=code_plus,
-                        omschrijving_plus=omschrijving_plus
                     )
 
         log.debug('Create gebruiksdoelen...')
