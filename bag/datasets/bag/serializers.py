@@ -54,12 +54,6 @@ class Gebruik(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class Ligging(serializers.ModelSerializer):
-    class Meta:
-        model = models.Ligging
-        fields = ('code', 'omschrijving')
-
-
 class Toegang(serializers.ModelSerializer):
     class Meta:
         model = models.Toegang

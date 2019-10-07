@@ -199,18 +199,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Ligging',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Ligging',
-                'verbose_name_plural': 'Ligging',
-            },
-        ),
-        migrations.CreateModel(
             name='Ligplaats',
             fields=[
                 ('document_mutatie', models.DateField(null=True)),

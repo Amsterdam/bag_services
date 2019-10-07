@@ -63,15 +63,6 @@ class Financieringswijze(mixins.CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Financieringswijzes"
 
 
-class Ligging(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Ligging"
-        verbose_name_plural = "Ligging"
-
-
 class Gebruik(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)

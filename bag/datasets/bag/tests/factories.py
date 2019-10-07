@@ -58,14 +58,6 @@ class GebruikFactory(factory.DjangoModelFactory):
     omschrijving = fuzzy.FuzzyText(length=50)
 
 
-class LiggingFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Ligging
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GemeenteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gemeente
