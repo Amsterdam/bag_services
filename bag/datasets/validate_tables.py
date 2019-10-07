@@ -13,7 +13,6 @@ TABLE_TARGETS = [
     (8726, 0, "bag_bouwblok"),
     (481, 0, "bag_buurt"),
     (99, 0, "bag_buurtcombinatie"),
-    (2, 0, "bag_eigendomsverhouding"),
     (22, 6, "bag_gebiedsgerichtwerken"),
     (521908, 0, "bag_gebruiksdoel"),
     (1, 0, "bag_gemeente"),

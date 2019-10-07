@@ -682,8 +682,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
     def __init__(self, path):
         self.path = path
         self.bronnen = set()
-        self.eigendomsverhoudingen = set()
-        self.gebruik = set()
         self.locaties_ingang = set()
         self.toegang = set()
         self.buurten = set()
@@ -732,16 +730,12 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         models.Gebruiksdoel.objects.all().delete()
         models.VerblijfsobjectPandRelatie.objects.all().delete()
         models.Verblijfsobject.objects.all().delete()
-        self.eigendomsverhoudingen = dict(models.Eigendomsverhouding.objects.values_list("omschrijving", "pk"))
-        self.gebruik = dict(models.Gebruik.objects.values_list("omschrijving", "pk"))
         self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
         self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
-        self.eigendomsverhoudingen.clear()
-        self.gebruik.clear()
         self.locaties_ingang.clear()
         self.toegang.clear()
         self.buurten.clear()
@@ -793,9 +787,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         else:
             log.warning(f"Verblijfsobject {landelijk_id} has no geometry")
             geometrie = None
-        eigendomsverhouding_id = get_code_for_omschrijving(r['eigendomsverhouding'], models.Eigendomsverhouding,
-                                                           self.eigendomsverhoudingen)
-        gebruik_id = get_code_for_omschrijving(r['is:WOZ.WOB.soortObject'], models.Gebruik, self.gebruik)
 
         # In GOB there can be multiple toegangen in the toegang field.
         # For now we use the first entry. We have to determine how to deal with this later
@@ -821,8 +812,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'aantal_kamers': uva2.uva_nummer(r['aantalKamers']),
             'reden_afvoer': r['redenafvoer'],
             'reden_opvoer': r['redenopvoer'],
-            'eigendomsverhouding_id': eigendomsverhouding_id,
-            'gebruik_id': gebruik_id,
+            'eigendomsverhouding': r['eigendomsverhouding'],
+            'gebruik': r['is:WOZ.WOB.soortObject'],
             'toegang_id': toegang_id,
             'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
@@ -1634,7 +1625,6 @@ class ImportBagJob(object):
 
         return [
             # Import codes for backward compatibility
-            gob_diva_code_mapping.ImportEigendomsverhoudingTask(),
             gob_diva_code_mapping.ImportGebruikTask(),
             gob_diva_code_mapping.ImportToegangTask(),
 

@@ -24,12 +24,6 @@ class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
 
 
-class Eigendomsverhouding(serializers.ModelSerializer):
-    class Meta:
-        model = models.Eigendomsverhouding
-        fields = ('code', 'omschrijving')
-
-
 class Gebruik(serializers.ModelSerializer):
     class Meta:
         model = models.Gebruik
@@ -729,8 +723,6 @@ class VerblijfsobjectDetail(
         VerblijfsobjectDetailMixin, BagMixin,
         BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    eigendomsverhouding = Eigendomsverhouding()
-    gebruik = Gebruik()
     toegang = Toegang()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
@@ -949,8 +941,6 @@ class VerblijfsobjectNummeraanduiding(
     Serializer used in custom nummeraanduiding endpoint
     """
     _display = rest.DisplayField()
-    eigendomsverhouding = Eigendomsverhouding()
-    gebruik = Gebruik()
     toegang = Toegang()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()

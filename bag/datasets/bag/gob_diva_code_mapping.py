@@ -28,15 +28,6 @@ class CodeOmschrijvingDataTask(batch.BasicTask):
         return self.model(pk=r[0], omschrijving=r[1])
 
 
-class ImportEigendomsverhoudingTask(CodeOmschrijvingDataTask):
-    name = "Import Eigendomsverhouding"
-    model = models.Eigendomsverhouding
-    data = [
-        ("01", "Huur"),
-        ("02", "Eigendom"),
-    ]
-
-
 class ImportGebruikTask(CodeOmschrijvingDataTask):
     name = "Import Gebruik"
     model = models.Gebruik

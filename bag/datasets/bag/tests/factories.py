@@ -18,14 +18,6 @@ from .. import models
 f = Faker(locale='nl_NL')
 
 
-class EigendomsverhoudingFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Eigendomsverhouding
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GebruikFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gebruik

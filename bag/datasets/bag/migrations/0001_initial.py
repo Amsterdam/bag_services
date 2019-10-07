@@ -87,18 +87,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Eigendomsverhouding',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Eigendomsverhouding',
-                'verbose_name_plural': 'Eigendomsverhoudingen',
-            },
-        ),
-        migrations.CreateModel(
             name='Gebiedsgerichtwerken',
             fields=[
                 ('id', models.CharField(max_length=4, primary_key=True, serialize=False)),
@@ -405,8 +393,6 @@ class Migration(migrations.Migration):
                 ('_grootstedelijkgebied', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='adressen', to='bag.Grootstedelijkgebied')),
                 ('bron', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Bron')),
                 ('buurt', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='verblijfsobjecten', to='bag.Buurt')),
-                ('eigendomsverhouding', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Eigendomsverhouding')),
-                ('gebruik', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Gebruik')),
             ],
             options={
                 'verbose_name': 'Verblijfsobject',

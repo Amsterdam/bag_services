@@ -20,12 +20,12 @@ class Migration(migrations.Migration):
             name='reden_opvoer',
             field=models.TextField(null=True),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='verblijfsobject',
             name='eigendomsverhouding',
             field=models.TextField(null=True),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='verblijfsobject',
             name='gebruik',
             field=models.TextField(null=True),
