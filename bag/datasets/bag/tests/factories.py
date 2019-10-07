@@ -26,22 +26,6 @@ class EigendomsverhoudingFactory(factory.DjangoModelFactory):
     omschrijving = fuzzy.FuzzyText(length=50)
 
 
-class RedenAfvoerFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.RedenAfvoer
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
-class RedenOpvoerFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.RedenOpvoer
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GebruikFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gebruik
@@ -142,8 +126,8 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     landelijk_id = fuzzy.FuzzyText(length=16, chars=string.digits)
-    reden_afvoer = factory.SubFactory(RedenAfvoerFactory)
-    reden_opvoer = factory.SubFactory(RedenOpvoerFactory)
+    reden_afvoer = fuzzy.FuzzyText(length=100)
+    reden_opvoer = fuzzy.FuzzyText(length=100)
     buurt = factory.SubFactory(BuurtFactory)
     status = fuzzy.FuzzyText(length=100)
     geometrie = Point(

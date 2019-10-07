@@ -195,11 +195,9 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'buurt__buurtcombinatie',
         'buurt__stadsdeel',
         'buurt__stadsdeel__gemeente',
-        'reden_afvoer',
         'eigendomsverhouding',
         'gebruik',
         'toegang',
-        'reden_opvoer',
         '_gebiedsgerichtwerken',
     ).prefetch_related(
         'gebruiksdoelen'

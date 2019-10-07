@@ -28,65 +28,6 @@ class CodeOmschrijvingDataTask(batch.BasicTask):
         return self.model(pk=r[0], omschrijving=r[1])
 
 
-data_reden_opvoer_afvoer = [
-    ("20", "Geconstateerd VBO"),
-    ("10", "Verbouw door wijziging gebruiksdoel"),
-    ("11", "Mutatie"),
-    ("13", "In onderzoek"),
-    ("48", "Niet-gerealiseerd verblijfsobject"),
-    ("61", "Nieuwe cyclus"),
-    ("12", "Buitengebruik"),
-    ("28", "Nieuwbouw vergunningsfase"),
-    ("29", "Nieuwbouw in aanbouw"),
-    ("60", "Afgevoerde nieuwbouw in aanbouw"),
-    ("49", "Correctie afvoer"),
-    ("97", "Herstel Reden Opvoer-Afvoer"),
-    ("21", "Correctie opvoer"),
-    ("30", "Verbouw met nieuwbouwfinanciering"),
-    ("31", "Ontstaan door nieuwbouw"),
-    ("32", "Ontstaan door samenvoeging"),
-    ("33", "Ontstaan door splitsing"),
-    ("34", "Verbouw niet-woonobject>woonobject"),
-    ("35", "Correctie (+woningvoorraad)"),
-    ("36", "Ontstaan door verbouw"),
-    ("37", "Verbouw geen invloed woningvoorraad"),
-    ("40", "Verdwenen door verbouw"),
-    ("41", "Buitengebruik i.v.m. verbouw"),
-    ("42", "Verbouw woonobject>niet-woonobject"),
-    ("43", "Verdwenen door samenvoeging"),
-    ("44", "Verdwenen door splitsing"),
-    ("45", "Afgevoerd wegens correctie"),
-    ("50", "Gesloopt"),
-    ("51", "Buitengebruik i.v.m. brand"),
-    ("52", "-"),
-    ("99", "Default voor conversie"),
-    ("53", "Afgevoerd verbouw geen invloed"),
-    ("54", "Afgevoerd administratieve reden"),
-    ("46", "Verdwenen door woningonttrekking"),
-    ("39", "Administratieve wijziging"),
-    ("98", "Dummy Verblijfsobject"),
-    ("55", "Afgevoerd bestemmingswijziging"),
-    ("63", "Verbouw zolder in woning"),
-    ("100", "Vervallen"),
-    ("26", "Samenvoeging in vergunningsfase"),
-    ("27", "Verbouw in vergunningsfase"),
-    ("25", "Splitsing in vergunningsfase"),
-    ("24", "Sloop in Vergunningsfase"),
-]
-
-
-class ImportRedenAfvoerTask(CodeOmschrijvingDataTask):
-    name = "Import RedenAfvoer"
-    model = models.RedenAfvoer
-    data = data_reden_opvoer_afvoer
-
-
-class ImportRedenOpvoerTask(CodeOmschrijvingDataTask):
-    name = "Import RedenOpvoer"
-    model = models.RedenOpvoer
-    data = data_reden_opvoer_afvoer
-
-
 class ImportEigendomsverhoudingTask(CodeOmschrijvingDataTask):
     name = "Import Eigendomsverhouding"
     model = models.Eigendomsverhouding

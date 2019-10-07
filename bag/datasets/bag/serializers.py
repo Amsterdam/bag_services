@@ -30,18 +30,6 @@ class Eigendomsverhouding(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class RedenAfvoer(serializers.ModelSerializer):
-    class Meta:
-        model = models.RedenAfvoer
-        fields = ('code', 'omschrijving')
-
-
-class RedenOpvoer(serializers.ModelSerializer):
-    class Meta:
-        model = models.RedenOpvoer
-        fields = ('code', 'omschrijving')
-
-
 class Gebruik(serializers.ModelSerializer):
     class Meta:
         model = models.Gebruik
@@ -746,8 +734,6 @@ class VerblijfsobjectDetail(
     toegang = Toegang()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
-    reden_afvoer = RedenAfvoer()
-    reden_opvoer = RedenOpvoer()
 
     kadastrale_objecten = rest.RelatedSummaryField()
 
@@ -966,8 +952,6 @@ class VerblijfsobjectNummeraanduiding(
     eigendomsverhouding = Eigendomsverhouding()
     gebruik = Gebruik()
     toegang = Toegang()
-    reden_afvoer = RedenAfvoer()
-    reden_opvoer = RedenOpvoer()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
 

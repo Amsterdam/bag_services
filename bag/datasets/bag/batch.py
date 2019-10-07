@@ -681,8 +681,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
 
     def __init__(self, path):
         self.path = path
-        self.redenen_afvoer = set()
-        self.redenen_opvoer = set()
         self.bronnen = set()
         self.eigendomsverhoudingen = set()
         self.gebruik = set()
@@ -734,8 +732,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         models.Gebruiksdoel.objects.all().delete()
         models.VerblijfsobjectPandRelatie.objects.all().delete()
         models.Verblijfsobject.objects.all().delete()
-        self.redenen_afvoer = dict(models.RedenAfvoer.objects.values_list("omschrijving", "pk"))
-        self.redenen_opvoer = dict(models.RedenOpvoer.objects.values_list("omschrijving", "pk"))
         self.eigendomsverhoudingen = dict(models.Eigendomsverhouding.objects.values_list("omschrijving", "pk"))
         self.gebruik = dict(models.Gebruik.objects.values_list("omschrijving", "pk"))
         self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
@@ -743,8 +739,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
     def after(self):
-        self.redenen_afvoer.clear()
-        self.redenen_opvoer.clear()
         self.bronnen.clear()
         self.eigendomsverhoudingen.clear()
         self.gebruik.clear()
@@ -799,8 +793,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         else:
             log.warning(f"Verblijfsobject {landelijk_id} has no geometry")
             geometrie = None
-        reden_opvoer_id = get_code_for_omschrijving(r['redenopvoer'], models.RedenOpvoer, self.redenen_opvoer)
-        reden_afvoer_id = get_code_for_omschrijving(r['redenafvoer'], models.RedenAfvoer, self.redenen_afvoer)
         eigendomsverhouding_id = get_code_for_omschrijving(r['eigendomsverhouding'], models.Eigendomsverhouding,
                                                            self.eigendomsverhoudingen)
         gebruik_id = get_code_for_omschrijving(r['is:WOZ.WOB.soortObject'], models.Gebruik, self.gebruik)
@@ -827,8 +819,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
             'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
             'aantal_kamers': uva2.uva_nummer(r['aantalKamers']),
-            'reden_afvoer_id': reden_afvoer_id,
-            'reden_opvoer_id': reden_opvoer_id,
+            'reden_afvoer': r['redenafvoer'],
+            'reden_opvoer': r['redenopvoer'],
             'eigendomsverhouding_id': eigendomsverhouding_id,
             'gebruik_id': gebruik_id,
             'toegang_id': toegang_id,
@@ -1642,8 +1634,6 @@ class ImportBagJob(object):
 
         return [
             # Import codes for backward compatibility
-            gob_diva_code_mapping.ImportRedenAfvoerTask(),
-            gob_diva_code_mapping.ImportRedenOpvoerTask(),
             gob_diva_code_mapping.ImportEigendomsverhoudingTask(),
             gob_diva_code_mapping.ImportGebruikTask(),
             gob_diva_code_mapping.ImportToegangTask(),

@@ -291,30 +291,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='RedenAfvoer',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Reden Afvoer',
-                'verbose_name_plural': 'Reden Afvoer',
-            },
-        ),
-        migrations.CreateModel(
-            name='RedenOpvoer',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Reden Opvoer',
-                'verbose_name_plural': 'Reden Opvoer',
-            },
-        ),
-        migrations.CreateModel(
             name='Stadsdeel',
             fields=[
                 ('begin_geldigheid', models.DateField(null=True)),
@@ -475,16 +451,6 @@ class Migration(migrations.Migration):
             model_name='verblijfsobject',
             name='panden',
             field=models.ManyToManyField(related_name='verblijfsobjecten', through='bag.VerblijfsobjectPandRelatie', to='bag.Pand'),
-        ),
-        migrations.AddField(
-            model_name='verblijfsobject',
-            name='reden_afvoer',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.RedenAfvoer'),
-        ),
-        migrations.AddField(
-            model_name='verblijfsobject',
-            name='reden_opvoer',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.RedenOpvoer'),
         ),
         migrations.AddField(
             model_name='verblijfsobject',
