@@ -241,18 +241,6 @@ class Migration(migrations.Migration):
             bases=(datasets.bag.models.AdresseerbaarObjectMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='LocatieIngang',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Locatie Ingang',
-                'verbose_name_plural': 'Locaties Ingang',
-            },
-        ),
-        migrations.CreateModel(
             name='Nummeraanduiding',
             fields=[
                 ('document_mutatie', models.DateField(null=True)),
@@ -467,7 +455,6 @@ class Migration(migrations.Migration):
                 ('buurt', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='verblijfsobjecten', to='bag.Buurt')),
                 ('eigendomsverhouding', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Eigendomsverhouding')),
                 ('gebruik', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Gebruik')),
-                ('locatie_ingang', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.LocatieIngang')),
             ],
             options={
                 'verbose_name': 'Verblijfsobject',

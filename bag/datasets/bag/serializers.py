@@ -60,12 +60,6 @@ class Ligging(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class LocatieIngang(serializers.ModelSerializer):
-    class Meta:
-        model = models.LocatieIngang
-        fields = ('code', 'omschrijving')
-
-
 class Toegang(serializers.ModelSerializer):
     class Meta:
         model = models.Toegang
@@ -761,7 +755,6 @@ class VerblijfsobjectDetail(
     _display = rest.DisplayField()
     eigendomsverhouding = Eigendomsverhouding()
     gebruik = Gebruik()
-    locatie_ingang = LocatieIngang()
     toegang = Toegang()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
@@ -820,7 +813,6 @@ class VerblijfsobjectDetail(
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'locatie_ingang',
             'toegang',
             'hoofdadres',
             'adressen',
@@ -985,7 +977,6 @@ class VerblijfsobjectNummeraanduiding(
     _display = rest.DisplayField()
     eigendomsverhouding = Eigendomsverhouding()
     gebruik = Gebruik()
-    locatie_ingang = LocatieIngang()
     toegang = Toegang()
     reden_afvoer = RedenAfvoer()
     reden_opvoer = RedenOpvoer()
@@ -1020,7 +1011,6 @@ class VerblijfsobjectNummeraanduiding(
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'locatie_ingang',
             'toegang',
             'panden',
             'adressen',

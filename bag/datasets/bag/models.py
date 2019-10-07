@@ -81,15 +81,6 @@ class Gebruik(mixins.CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Gebruik"
 
 
-class LocatieIngang(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Locatie Ingang"
-        verbose_name_plural = "Locaties Ingang"
-
-
 class Toegang(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)
@@ -870,8 +861,6 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     gebruiksdoel_woonfunctie = models.TextField(null=True)
     gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
 
-    locatie_ingang = models.ForeignKey(
-        LocatieIngang, null=True, on_delete=models.CASCADE)
     toegang = models.ForeignKey(
         Toegang, null=True, on_delete=models.CASCADE)
 
