@@ -54,15 +54,6 @@ class Eigendomsverhouding(mixins.CodeOmschrijvingMixin, models.Model):
         verbose_name_plural = "Eigendomsverhoudingen"
 
 
-class Financieringswijze(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Financieringswijze"
-        verbose_name_plural = "Financieringswijzes"
-
-
 class Gebruik(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)
@@ -837,18 +828,13 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     laagste_bouwlaag = models.IntegerField(null=True)
     aantal_kamers = models.PositiveIntegerField(null=True)
     vervallen = models.PositiveIntegerField(default=False)
-    reden_afvoer = models.ForeignKey(
-        RedenAfvoer, null=True, on_delete=models.CASCADE)
 
     date_modified = models.DateTimeField(auto_now=True)
 
-    reden_opvoer = models.ForeignKey(
-        RedenOpvoer, null=True, on_delete=models.CASCADE)
-    bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
-    eigendomsverhouding = models.ForeignKey(
-        Eigendomsverhouding, null=True, on_delete=models.CASCADE)
-
-    gebruik = models.ForeignKey(Gebruik, null=True, on_delete=models.CASCADE)
+    reden_opvoer = models.TextField(null=True)
+    reden_afvoer = models.TextField(null=True)
+    eigendomsverhouding = models.TextField(null=True)
+    gebruik = models.TextField(null=True)
     gebruiksdoel_woonfunctie = models.TextField(null=True)
     gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
 
@@ -856,6 +842,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
         Toegang, null=True, on_delete=models.CASCADE)
 
     status = models.CharField(max_length=150)
+
+    bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
     buurt = models.ForeignKey(
         Buurt, null=True, related_name='verblijfsobjecten',
         on_delete=models.CASCADE

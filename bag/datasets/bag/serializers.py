@@ -30,12 +30,6 @@ class Eigendomsverhouding(serializers.ModelSerializer):
         fields = ('code', 'omschrijving')
 
 
-class Financieringswijze(serializers.ModelSerializer):
-    class Meta:
-        model = models.Financieringswijze
-        fields = ('code', 'omschrijving')
-
-
 class RedenAfvoer(serializers.ModelSerializer):
     class Meta:
         model = models.RedenAfvoer

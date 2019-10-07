@@ -99,18 +99,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Financieringswijze',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Financieringswijze',
-                'verbose_name_plural': 'Financieringswijzes',
-            },
-        ),
-        migrations.CreateModel(
             name='Gebiedsgerichtwerken',
             fields=[
                 ('id', models.CharField(max_length=4, primary_key=True, serialize=False)),

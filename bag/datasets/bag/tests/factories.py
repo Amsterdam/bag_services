@@ -42,14 +42,6 @@ class RedenOpvoerFactory(factory.DjangoModelFactory):
     omschrijving = fuzzy.FuzzyText(length=50)
 
 
-class FinancieringswijzeFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Financieringswijze
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GebruikFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gebruik
