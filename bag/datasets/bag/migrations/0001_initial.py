@@ -116,18 +116,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Gebruik',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Gebruik',
-                'verbose_name_plural': 'Gebruik',
-            },
-        ),
-        migrations.CreateModel(
             name='Gebruiksdoel',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

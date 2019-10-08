@@ -18,14 +18,6 @@ from .. import models
 f = Faker(locale='nl_NL')
 
 
-class GebruikFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = models.Gebruik
-
-    code = fuzzy.FuzzyText(length=4)
-    omschrijving = fuzzy.FuzzyText(length=50)
-
-
 class GemeenteFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.Gemeente

@@ -27,15 +27,6 @@ class IndicatieAdresseerbaarObject(models.Model):
     indicatie_in_onderzoek = models.BooleanField(null=False)
 
 
-class Gebruik(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Gebruik"
-        verbose_name_plural = "Gebruik"
-
-
 class Toegang(mixins.CodeOmschrijvingMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)

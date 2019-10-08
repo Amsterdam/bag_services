@@ -1625,7 +1625,6 @@ class ImportBagJob(object):
 
         return [
             # Import codes for backward compatibility
-            gob_diva_code_mapping.ImportGebruikTask(),
             gob_diva_code_mapping.ImportToegangTask(),
 
             # no-dependencies.

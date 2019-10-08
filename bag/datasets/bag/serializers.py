@@ -24,12 +24,6 @@ class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
 
 
-class Gebruik(serializers.ModelSerializer):
-    class Meta:
-        model = models.Gebruik
-        fields = ('code', 'omschrijving')
-
-
 class Toegang(serializers.ModelSerializer):
     class Meta:
         model = models.Toegang
