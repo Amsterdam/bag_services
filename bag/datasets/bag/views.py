@@ -196,11 +196,7 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
         'buurt__stadsdeel',
         'buurt__stadsdeel__gemeente',
         'eigendomsverhouding',
-        'gebruik',
-        'toegang',
         '_gebiedsgerichtwerken',
-    ).prefetch_related(
-        'gebruiksdoelen'
     )
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject

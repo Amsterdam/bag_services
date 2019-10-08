@@ -227,27 +227,3 @@ def read_landelijk_id_mapping(path, file_code):
                 result[row[0]] = row[1]
 
     return result
-
-
-def read_gebruiksdoelen(path):
-    """
-    Read CSV file with gebruiksdoel, gebruiksdoel plus data.
-
-    :param path: path containing the CSV file
-    """
-    file_code = 'VBO_gebruiksdoelen'
-    try:
-        file_code = 'AOT_geconstateerd'
-        filename = resolve_file(path, file_code, extension='csv')
-    except ValueError():
-        log.info('AOT_geconstateerd NOT FOUND. Using fallback')
-        # old one.
-        file_code = 'VBO_gebruiksdoelen'
-        filename = resolve_file(path, file_code, extension='csv')
-
-    out = []
-    with open(filename, encoding='cp1252') as f:
-        rows = csv.reader(f, delimiter=';')
-        out = list(rows)
-
-    return out

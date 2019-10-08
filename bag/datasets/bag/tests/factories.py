@@ -119,6 +119,8 @@ class VerblijfsobjectFactory(factory.DjangoModelFactory):
         randint(1, 100), randint(1, 100), srid=28992)
     indicatie_in_onderzoek = False
     indicatie_geconstateerd = None
+    toegangen = []
+    gebruiksdoelen = []
 
 
 class VerblijfsobjectPandRelatie(factory.DjangoModelFactory):

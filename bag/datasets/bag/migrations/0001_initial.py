@@ -116,14 +116,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Gebruiksdoel',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField(max_length=4)),
-                ('omschrijving', models.CharField(max_length=150)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Gemeente',
             fields=[
                 ('begin_geldigheid', models.DateField(null=True)),
@@ -330,18 +322,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Toegang',
-            fields=[
-                ('code', models.CharField(max_length=4, primary_key=True, serialize=False)),
-                ('omschrijving', models.CharField(max_length=150, null=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'verbose_name': 'Toegang',
-                'verbose_name_plural': 'Toegang',
-            },
-        ),
-        migrations.CreateModel(
             name='Unesco',
             fields=[
                 ('id', models.SlugField(max_length=100, primary_key=True, serialize=False)),
@@ -432,11 +412,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Status'),
         ),
         migrations.AddField(
-            model_name='verblijfsobject',
-            name='toegang',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Toegang'),
-        ),
-        migrations.AddField(
             model_name='standplaats',
             name='status',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Status'),
@@ -480,11 +455,6 @@ class Migration(migrations.Migration):
             model_name='ligplaats',
             name='status',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bag.Status'),
-        ),
-        migrations.AddField(
-            model_name='gebruiksdoel',
-            name='verblijfsobject',
-            field=models.ForeignKey(max_length=16, on_delete=django.db.models.deletion.CASCADE, related_name='gebruiksdoelen', to='bag.Verblijfsobject'),
         ),
         migrations.AddField(
             model_name='gebiedsgerichtwerken',

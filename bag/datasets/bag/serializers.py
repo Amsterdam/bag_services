@@ -24,12 +24,6 @@ class GebiedenMixin(rest.DataSetSerializerMixin):
     dataset = 'gebieden'
 
 
-class Toegang(serializers.ModelSerializer):
-    class Meta:
-        model = models.Toegang
-        fields = ('code', 'omschrijving')
-
-
 class Woonplaats(BagMixin, rest.HALSerializer):
 
     _display = rest.DisplayField()
@@ -692,32 +686,9 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-class GebruiksdoelSerializer(serializers.ModelSerializer):
-    verblijfsobject = serializers.ReadOnlyField(source='verblijfsobject_id')
-    code = serializers.CharField()
-    omschrijving = serializers.CharField()
 
-    class Meta:
-        model = models.Gebruiksdoel
-        fields = (
-            'verblijfsobject', 'code', 'omschrijving',)
-
-
-class VerblijfsobjectDetailMixin(object):
-
-    def get_gebruiksdoelen(self, obj):
-        data = GebruiksdoelSerializer(
-            instance=obj.gebruiksdoelen.all(), many=True).data
-        for doel in data:  # we know verblijfsobject id (do not include again)
-            doel.pop('verblijfsobject')
-        return data
-
-
-class VerblijfsobjectDetail(
-        VerblijfsobjectDetailMixin, BagMixin,
-        BboxMixin, rest.HALSerializer):
+class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
-    toegang = Toegang()
     hoofdadres = Nummeraanduiding()
     buurt = Buurt()
 
@@ -741,8 +712,6 @@ class VerblijfsobjectDetail(
         source='landelijk_id')
     aanduiding_in_onderzoek = serializers.BooleanField(
         source='indicatie_in_onderzoek')
-
-    gebruiksdoelen = serializers.SerializerMethodField()
 
     bbox = serializers.SerializerMethodField()
 
@@ -773,7 +742,7 @@ class VerblijfsobjectDetail(
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'toegang',
+            'toegangen',
             'hoofdadres',
             'adressen',
             'buurt',
@@ -929,13 +898,11 @@ class UnescoDetail(GebiedenMixin, BboxMixin, rest.HALSerializer):
         )
 
 
-class VerblijfsobjectNummeraanduiding(
-        VerblijfsobjectDetailMixin, BagMixin, rest.HALSerializer):
+class VerblijfsobjectNummeraanduiding(BagMixin, rest.HALSerializer):
     """
     Serializer used in custom nummeraanduiding endpoint
     """
     _display = rest.DisplayField()
-    toegang = Toegang()
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
 
@@ -967,7 +934,8 @@ class VerblijfsobjectNummeraanduiding(
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'toegang',
+            'toegangen',
+            'gebruiksdoelen',
             'panden',
             'adressen',
             'kadastrale_objecten',

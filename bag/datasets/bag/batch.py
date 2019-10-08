@@ -12,7 +12,7 @@ from django.utils.text import slugify
 from search import index
 from batch import batch
 from datasets.generic import uva2, database, geo, metadata
-from . import models, documents, gob_diva_code_mapping
+from . import models, documents
 
 log = logging.getLogger(__name__)
 
@@ -683,79 +683,25 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.path = path
         self.bronnen = set()
         self.locaties_ingang = set()
-        self.toegang = set()
         self.buurten = set()
         self.panden = set()
-        self.gebruiksdoelen_code_mapping = {
-            "sportfunctie": "0600",
-            "onderwijsfunctie": "0700",
-            "winkelfunctie": "0800",
-            "overige gebruiksfunctie": "0900",
-            "woonfunctie": "1000",
-            "bijeenkomstfunctie": "1100",
-            "celfunctie": "1200",
-            "gezondheidszorgfunctie": "1300",
-            "industriefunctie": "1400",
-            "kantoorfunctie" : "1500",
-            "logiesfunctie": "1600",
-            # plus
-            "woning":"1010",
-            "gemengde panden": "1020",
-            "wooneenheden": "1030",
-            "complex met eenheden": "1040",
-            "bijzondere woongebouwen": "1050",
-            "internaat": "1054",
-            "verpleeghuis": "1310",
-            "inrichting": "1320",
-            "recreatiewoningen": "1610",
-            "Seniorenwoning": "2060",
-            "Rolstoeltoegankelijke woning": "2061",
-            "Studentenwoning": "2070",
-            "Woning": "2075",
-            "Complex, onzelfst. studentenwoonruimten": "2081",
-            "Complex, onzelfst. seniorenwoonruimten": "2082",
-            "Complex, onzelfst. gehandicaptenwoonruimten": "2083",
-            "Complex, onzelfst. woonruimten": "2085",
-            "Verpleeghuis": "2310",
-            "Complex,onzelfst. woonruimten met begeleiding":"2330",
-        }
         self.pandrelatie = defaultdict(list)
 
-        self.gebruiksdoelen = dict()
         self.count = 0
         self.prev_time = time.time()
 
     def before(self):
         log.debug('Starting import verblijfsobject: delete old data')
-        models.Gebruiksdoel.objects.all().delete()
         models.VerblijfsobjectPandRelatie.objects.all().delete()
         models.Verblijfsobject.objects.all().delete()
-        self.toegang = dict(models.Toegang.objects.values_list("omschrijving", "pk"))
         self.buurten = set(models.Buurt.objects.values_list("pk", flat=True))
         self.panden = set(models.Pand.objects.values_list("pk", flat=True))
 
     def after(self):
         self.bronnen.clear()
         self.locaties_ingang.clear()
-        self.toegang.clear()
         self.buurten.clear()
         self.panden.clear()
-
-        def gen_gebruiksdoelen(dict1:dict):
-            for landelijk_id, gbs in dict1.items():
-                for gb in gbs:
-                    code = self.gebruiksdoelen_code_mapping.get(gb[0], "9999")
-                    omschrijving = gb[0]
-                    yield models.Gebruiksdoel(
-                        verblijfsobject_id=landelijk_id,
-                        code=code,
-                        omschrijving=omschrijving,
-                    )
-
-        log.debug('Create gebruiksdoelen...')
-        gb_objects = gen_gebruiksdoelen(self.gebruiksdoelen)
-        models.Gebruiksdoel.objects.bulk_create(gb_objects, batch_size=database.BATCH_SIZE)
-        self.gebruiksdoelen.clear()
 
         def gen_pand_vbo_objects(dict1:dict):
             for pand_id, vbo_ids in dict1.items():
@@ -788,12 +734,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             log.warning(f"Verblijfsobject {landelijk_id} has no geometry")
             geometrie = None
 
-        # In GOB there can be multiple toegangen in the toegang field.
-        # For now we use the first entry. We have to determine how to deal with this later
-        toegangen = r['toegang']
-        toegang0 = toegangen.split('|')[0] if toegangen else None
-        toegang_id = get_code_for_omschrijving(toegang0, models.Toegang, self.toegang)
-
+        toegangen = r['toegang'].split('|') if r['toegang'] else []
+        gebruiksdoelen = r['gebruiksdoel'].split('|')
         gebruiksdoel_woonfunctie = r['gebruiksdoelWoonfunctie'] or None
         gebruiksdoel_gezondheidszorgfunctie = r['gebruiksdoelGezondheidszorgfunctie'] or None
 
@@ -814,7 +756,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'reden_opvoer': r['redenopvoer'],
             'eigendomsverhouding': r['eigendomsverhouding'],
             'gebruik': r['is:WOZ.WOB.soortObject'],
-            'toegang_id': toegang_id,
+            'toegangen': toegangen,
+            'gebruiksdoelen': gebruiksdoelen,
             'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
@@ -828,19 +771,6 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
 
         if not uva2.datum_geldig(values['begin_geldigheid'], values['einde_geldigheid']):
             return None
-
-        #  Store related items only after we are sure the verblijfsobject will be created.
-        gebruiksdoelen = r['gebruiksdoel'].split('|')
-        gebruiksdoelen_plus = []
-        for gebruiksdoel in gebruiksdoelen:
-            if gebruiksdoel == 'woonfunctie' and gebruiksdoel_woonfunctie:
-                gebruiksdoelen_plus.append((gebruiksdoel, gebruiksdoel_woonfunctie))
-            elif gebruiksdoel == 'gezondheidszorgfunctie' and gebruiksdoel_gezondheidszorgfunctie:
-                gebruiksdoelen_plus.append((gebruiksdoel, gebruiksdoel_gezondheidszorgfunctie))
-            else:
-                gebruiksdoelen_plus.append((gebruiksdoel,None))
-
-        self.gebruiksdoelen[landelijk_id] = gebruiksdoelen_plus
 
         pand_ids = r['ligtIn:BAG.PND.identificatie'] or None
         if pand_ids:
@@ -1624,9 +1554,6 @@ class ImportBagJob(object):
     def tasks(self):
 
         return [
-            # Import codes for backward compatibility
-            gob_diva_code_mapping.ImportToegangTask(),
-
             # no-dependencies.
             ImportGemeenteTask(self.gebieden_path),
             ImportWoonplaatsTask(self.gob_bag_path),

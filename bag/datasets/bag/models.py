@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models as geo
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from datasets.generic import mixins
@@ -25,15 +26,6 @@ class IndicatieAdresseerbaarObject(models.Model):
     landelijk_id = models.CharField(max_length=16, primary_key=True, null=False)
     indicatie_geconstateerd = models.BooleanField(null=False)
     indicatie_in_onderzoek = models.BooleanField(null=False)
-
-
-class Toegang(mixins.CodeOmschrijvingMixin, models.Model):
-
-    date_modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Toegang"
-        verbose_name_plural = "Toegang"
 
 
 class Gemeente(mixins.GeldigheidMixin, models.Model):
@@ -802,9 +794,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     gebruiksdoel_woonfunctie = models.TextField(null=True)
     gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
 
-    toegang = models.ForeignKey(
-        Toegang, null=True, on_delete=models.CASCADE)
-
+    toegangen = ArrayField(models.CharField(max_length=150))
+    gebruiksdoelen = ArrayField(models.TextField())
     status = models.CharField(max_length=150)
 
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)
@@ -1069,12 +1060,3 @@ class Unesco(models.Model):
 
     def __str__(self):
         return "{}".format(self.naam)
-
-
-class Gebruiksdoel(models.Model):
-    verblijfsobject = models.ForeignKey(
-        Verblijfsobject, max_length=16, related_name='gebruiksdoelen',
-        on_delete=models.CASCADE
-    )
-    code = models.CharField(max_length=4)
-    omschrijving = models.CharField(max_length=150)
