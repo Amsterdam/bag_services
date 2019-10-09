@@ -778,7 +778,7 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     landelijk_id = models.CharField(max_length=16, unique=True)
     oppervlakte = models.PositiveIntegerField(null=True)
     verdieping_toegang = models.IntegerField(null=True)
-    verhuurbare_eenheden = models.PositiveIntegerField(null=True)
+    aantal_eenheden_complex = models.PositiveIntegerField(null=True)
     bouwlagen = models.PositiveIntegerField(null=True)
     hoogste_bouwlaag = models.IntegerField(null=True)
     laagste_bouwlaag = models.IntegerField(null=True)
@@ -794,8 +794,8 @@ class Verblijfsobject(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Adress
     gebruiksdoel_woonfunctie = models.TextField(null=True)
     gebruiksdoel_gezondheidszorgfunctie = models.TextField(null=True)
 
-    toegangen = ArrayField(models.CharField(max_length=150))
-    gebruiksdoelen = ArrayField(models.TextField())
+    toegang = ArrayField(models.CharField(max_length=150))
+    gebruiksdoel = ArrayField(models.TextField())
     status = models.CharField(max_length=150)
 
     bron = models.ForeignKey(Bron, null=True, on_delete=models.CASCADE)

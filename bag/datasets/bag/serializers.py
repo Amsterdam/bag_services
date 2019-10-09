@@ -733,7 +733,6 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'geometrie',
             'oppervlakte',
             'verdieping_toegang',
-            'verhuurbare_eenheden',
             'bouwlagen',
             'hoogste_bouwlaag',
             'laagste_bouwlaag',
@@ -742,7 +741,7 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'toegangen',
+            'toegang',
             'hoofdadres',
             'adressen',
             'buurt',
@@ -754,8 +753,10 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
 
             'indicatie_geconstateerd',
             'aanduiding_in_onderzoek',
+            'gebruiksdoel',
             'gebruiksdoel_woonfunctie',
             'gebruiksdoel_gezondheidszorgfunctie',
+            'aantal_eenheden_complex',
 
             '_buurtcombinatie',
             '_stadsdeel',
@@ -764,7 +765,6 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
             '_gemeente',
             '_woonplaats',
 
-            'gebruiksdoelen',
         )
 
 
@@ -927,15 +927,15 @@ class VerblijfsobjectNummeraanduiding(BagMixin, rest.HALSerializer):
             'geometrie',
             'oppervlakte',
             'verdieping_toegang',
-            'verhuurbare_eenheden',
+            'aantal_eenheden_complex',
             'bouwlagen',
             'aantal_kamers',
             'reden_afvoer',
             'reden_opvoer',
             'eigendomsverhouding',
             'gebruik',
-            'toegangen',
-            'gebruiksdoelen',
+            'toegang',
+            'gebruiksdoel',
             'panden',
             'adressen',
             'kadastrale_objecten',

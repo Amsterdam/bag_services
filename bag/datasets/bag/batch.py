@@ -734,8 +734,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             log.warning(f"Verblijfsobject {landelijk_id} has no geometry")
             geometrie = None
 
-        toegangen = r['toegang'].split('|') if r['toegang'] else []
-        gebruiksdoelen = r['gebruiksdoel'].split('|')
+        toegang = r['toegang'].split('|') if r['toegang'] else []
+        gebruiksdoel = r['gebruiksdoel'].split('|')
         gebruiksdoel_woonfunctie = r['gebruiksdoelWoonfunctie'] or None
         gebruiksdoel_gezondheidszorgfunctie = r['gebruiksdoelGezondheidszorgfunctie'] or None
 
@@ -747,7 +747,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'],
             'verdieping_toegang': uva2.uva_nummer(r['verdiepingToegang']),
-            'verhuurbare_eenheden': r['aantalEenhedenComplex'] or None,
+            'aantal_eenheden_complex': r['aantalEenhedenComplex'] or None,
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
             'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
@@ -756,8 +756,8 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'reden_opvoer': r['redenopvoer'],
             'eigendomsverhouding': r['eigendomsverhouding'],
             'gebruik': r['is:WOZ.WOB.soortObject'],
-            'toegangen': toegangen,
-            'gebruiksdoelen': gebruiksdoelen,
+            'toegang': toegang,
+            'gebruiksdoel': gebruiksdoel,
             'status': (r['status']),
             'buurt_id': r['ligtIn:GBD.BRT.identificatie'] or None,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
