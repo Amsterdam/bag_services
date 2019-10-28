@@ -10,7 +10,7 @@ This repository contains Django application that serves the BAG (buildings and
 addresses), BBGA (areas), BRK (land register) and WKPB (extra municipal
 restrictions on real estate use) REST APIs on
 [https://api.data.amsterdam.nl](https://api.data.amsterdam.nl).
-These APIs are used among other things to power the City data portal website
+These APIs are used among other things to power the Data en Informatie portal website
 and maps, available on [https://data.amsterdam.nl](https://data.amsterdam.nl)
 Precise definitions of abbreviations like BAG and BRK (and how they relate) are
 available, in Dutch, on [Stelselpedia](https://www.amsterdam.nl/stelselpedia/).
