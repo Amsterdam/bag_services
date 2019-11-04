@@ -16,7 +16,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
 
     def test_match_brondocument_public(self):
         doc_id = self.brondocument.id
-        response = self.client.get(f'/wkpb/v1.1/brondocument/{doc_id}/')
+        response = self.client.get(f'/wkpb/brondocument/{doc_id}/')
 
         self.assertEqual(response.status_code, 200)
         data = str(response.data)
@@ -30,7 +30,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
         doc_id = self.brondocument.id
-        response = self.client.get(f'/wkpb/v1.1/brondocument/{doc_id}/')
+        response = self.client.get(f'/wkpb/brondocument/{doc_id}/')
 
         data = str(response.data)
 
@@ -42,7 +42,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
 
     def test_match_brondocument_public_list(self):
         doc_id = self.brondocument.id
-        response = self.client.get(f'/wkpb/v1.1/brondocument/')
+        response = self.client.get(f'/wkpb/brondocument/')
 
         self.assertEqual(response.status_code, 200)
 
@@ -59,7 +59,7 @@ class ImportBeperkingVerblijfsobjectTaskTest(APITestCase, AuthorizationSetup):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
         doc_id = self.brondocument.id
-        response = self.client.get(f'/wkpb/v1.1/brondocument/')
+        response = self.client.get(f'/wkpb/brondocument/')
 
         data = response.data
 
