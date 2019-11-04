@@ -17,7 +17,12 @@ class Command(BaseCommand):
     """
     Import datainto database. with options to select dataset
     """
-    ordered = ['bag', 'brk', 'wkpb', 'gebieden']
+    ordered = [
+#        'bag',
+        'gebieden',
+        'brk',
+        'wkpb',
+    ]
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],

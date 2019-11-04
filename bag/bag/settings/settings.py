@@ -205,16 +205,7 @@ OBJECTSTORE = {
 }
 
 PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
-
-DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data'))
 GOB_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'data/gob'))
-# DIVA_DIR = '/app/data'
-
-if not os.path.exists(DIVA_DIR):
-    DIVA_DIR = os.path.abspath(os.path.join(PROJECT_DIR, 'bag', 'diva'))
-    print("Geen lokale DIVA bestanden gevonden, maak gebruik van testset",
-          DIVA_DIR, "\n")
-
 
 # The following JWKS data was obtained in the authz project :
 # jwkgen -create -alg ES256

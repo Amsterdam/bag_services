@@ -1,15 +1,15 @@
-import csv
 import datetime
 import logging
 import os
-from collections import Counter
+from collections import defaultdict
 
 from django import db
 from django.conf import settings
 
 import datasets.brk.models as brk
 from batch import batch
-from datasets.generic import kadaster, database, metadata
+from datasets.bag.batch import GOB_CSV_ENCODING
+from datasets.generic import database, metadata, uva2
 from . import models
 
 log = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class ImportBeperkingcodeTask(batch.BasicTask):
 
     def __init__(self, source_path):
         super().__init__()
-        self.source = os.path.join(source_path, 'wpb_belemmeringcode.dat')
+        self.source = os.path.join(source_path, 'WKPB_type.csv')
 
     def before(self):
         pass
@@ -29,16 +29,14 @@ class ImportBeperkingcodeTask(batch.BasicTask):
         pass
 
     def process(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            objects = [self.process_row(row) for row in rows]
-
+        objects = uva2.process_csv(None, None, self.process_row, source=self.source,
+                                   encoding=GOB_CSV_ENCODING)
         models.Beperkingcode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
         return models.Beperkingcode(
-            pk=r[0],
-            omschrijving=r[1],
+            pk=r['typeCode'],
+            omschrijving=r['typeOmschrijving'],
         )
 
 
@@ -47,7 +45,7 @@ class ImportWkpbBroncodeTask(batch.BasicTask):
 
     def __init__(self, source_path):
         super().__init__()
-        self.source = os.path.join(source_path, 'wpb_broncode.dat')
+        self.source = os.path.join(source_path, 'WKPB_orgaan.csv')
 
     def before(self):
         pass
@@ -60,17 +58,17 @@ class ImportWkpbBroncodeTask(batch.BasicTask):
         pass
 
     def process(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            objects = [self.process_row(r) for r in rows]
+        objects = uva2.process_csv(None, None, self.process_row, source=self.source,
+                                   encoding=GOB_CSV_ENCODING)
 
         models.Broncode.objects.all().delete()
         models.Broncode.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
+
         return models.Broncode(
-            pk=r[0],
-            omschrijving=r[1],
+            pk=r['orgaanCode'],
+            omschrijving=r['orgaanOmschrijving'],
         )
 
 
@@ -79,7 +77,7 @@ class ImportBeperkingTask(batch.BasicTask):
 
     def __init__(self, source_path):
         super().__init__()
-        self.source = os.path.join(source_path, 'wpb_belemmering.dat')
+        self.source = os.path.join(source_path, 'WKPB_beperking.csv')
         self.codes = set()
 
     def before(self):
@@ -89,31 +87,27 @@ class ImportBeperkingTask(batch.BasicTask):
         self.codes.clear()
 
     def process(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            objects = [obj for obj in (self.process_row(r) for r in rows) if obj]
-
+        objects = uva2.process_csv(None, None, self.process_row, source=self.source,
+                                   encoding=GOB_CSV_ENCODING)
         models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
-    def get_date(self, s):
-        if s:
-            return datetime.datetime.strptime(s, "%Y%m%d").date()
-        else:
-            return None
-
     def process_row(self, r):
-        code_id = r[2] if r[2] in self.codes else None
-        datum_einde = self.get_date(r[4])
+        code_id = r['typeCode'] if r['typeCode'] in self.codes else None
+        datum_in_werking = uva2.iso_datum_tijd(r['beginGeldigheid'])
+        datum_einde = uva2.iso_datum_tijd(r['eindGeldigheid'])
         vandaag = datetime.date.today()
         if datum_einde and datum_einde < vandaag:
-            log.warning('Beperking {} no longer valid; end date {} was before {}'.format(r[0], datum_einde, vandaag))
+            log.warning(f'Beperking {code_id} no longer valid; end date {datum_einde} was before {vandaag}')
             return None
+        inschrijfnummer = r['identificatie']
 
+        # In GOB no  special id for beperking is given. Only identificatie or inschrijfnummer.
+        # But this is unique and can be used as int for primary key
         return models.Beperking(
-            pk=r[0],
-            inschrijfnummer=r[1],
+            pk=inschrijfnummer,
+            inschrijfnummer=inschrijfnummer,
             beperkingtype_id=code_id,
-            datum_in_werking=self.get_date(r[3]),
+            datum_in_werking=datum_in_werking,
             datum_einde=datum_einde,
         )
 
@@ -123,68 +117,72 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
 
     def __init__(self, source_path):
         super().__init__()
-        self.source = os.path.join(source_path, 'wpb_brondocument.dat')
+        self.source = os.path.join(source_path, 'WKPB_brondocument.csv')
         self.codes = set()
-        self.beperkingen = dict()
-        self.warnings = Counter()
+        self.beperkingen = set()
 
     def before(self):
         self.codes = set(models.Broncode.objects.values_list('pk', flat=True))
-        self.beperkingen = dict(models.Beperking.objects.values_list('inschrijfnummer', 'pk'))
+        self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
 
     def after(self):
         self.codes.clear()
         self.beperkingen.clear()
-        for w in self.warnings.most_common():
-            log.warning(f'{w[0]} ({w[1]})')
-        self.warnings.clear()
-
 
     def process(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            objects = (self.process_row(r) for r in rows)
-            object_dict = dict((o.pk, o) for o in objects)  # make unique; input contains duplicate IDs
+        objects = uva2.process_csv(None, None, self.process_row, source=self.source,
+                                   encoding=GOB_CSV_ENCODING)
+        object_dict = defaultdict(list)
+        for o in objects:
+            object_dict[o.pk].append(o)
+
+        for key, value in object_dict.items():
+            # Order on  reverse object name . We only need the last name
+            object_dict[key].sort(key=lambda o: o.documentnaam, reverse=True)
+            object_dict[key] = object_dict[key][0]
 
         models.Brondocument.objects.bulk_create(object_dict.values(), batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        pers_afsch = {'0': False, '1': True}.get(r[4], None)
+        pers_afsch = {'N': False, 'J': True}.get(r['persoonsgegevensAfschermen'], None)
 
-        bron_id = r[2] if r[2] in self.codes else None
+        bron_id = r['orgaanCode'] if r['orgaanCode'] in self.codes else None
 
-        inschrijfnummer = int(r[0])
-        beperking_id = self.beperkingen.get(inschrijfnummer)
+        inschrijfnummer = int(r['identificatie'])
+        if inschrijfnummer not in self.beperkingen:
+            log.warning(f'Brondocument {inschrijfnummer} references non-existing beperking; ignoring')
 
-        if not beperking_id:
-            self.warnings[
-                'Brondocument {} references non-existing beperking; ignoring'.format(inschrijfnummer)] += 1
+        # soort_besluit = {
+        #     'Opleggen': 'beperkingenbesluit',
+        #     'Beëindigen': 'beeindigingsbesluit'
+        # }.get(r['aard'], r['aard'])
+
+        soort_besluit = r['aard']
 
         return models.Brondocument(
             pk=inschrijfnummer,
             inschrijfnummer=inschrijfnummer,
             bron_id=bron_id,
-            documentnaam=r[3][:21],  # afknippen, omdat data corrupt is (zie brondocument: 5820)
+            documentnaam=r['documentnummer'],
             persoonsgegevens_afschermen=pers_afsch,
-            soort_besluit=r[5],
-            beperking_id=beperking_id
+            soort_besluit=soort_besluit,
+            beperking_id=inschrijfnummer
         )
 
 
 class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
-    name = "import Beperking-Percelen"
+    name = "import Beperking-KadastraalObject"
     dataset_id = 'Wkpb'
 
     def __init__(self, source_path):
         super().__init__()
-        self.source = os.path.join(source_path, 'wpb_belemmering_perceel.dat')
+        self.source = os.path.join(source_path, 'WKPB_beperking_kadastraalobject.csv')
         self.beperkingen = set()
         self.kot = dict()
-        self.warnings = Counter()
 
     def before(self):
         self.beperkingen = set(models.Beperking.objects.values_list('pk', flat=True))
-        self.kot = dict(brk.KadastraalObject.objects.values_list('aanduiding', 'pk'))
+        self.kot = dict(brk.KadastraalObject.objects.values_list('pk', 'aanduiding'))
 
     def after(self):
         self.beperkingen.clear()
@@ -193,41 +191,38 @@ class ImportWkpbBepKadTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         filedate = datetime.date.today() - datetime.timedelta(days=1)
         self.update_metadata_date(filedate)
 
-        for w in self.warnings.most_common():
-            log.warning(f'{w[0]} ({w[1]})')
-        self.warnings.clear()
         log.info(
-            '%d Beperking-Percelen Imported',
+            '%d Beperking-KadastraalObject Imported',
             models.BeperkingKadastraalObject.objects.count()
         )
 
     def process(self):
-        with open(self.source) as f:
-            rows = csv.reader(f, delimiter=';')
-            objects = [o for o in (self.process_row(r) for r in rows) if o]
-
+        objects = uva2.process_csv(None, None, self.process_row, source=self.source,
+                                   encoding=GOB_CSV_ENCODING)
         models.BeperkingKadastraalObject.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        aanduiding = kadaster.get_aanduiding(r[0], r[1], r[2], r[3], r[4])
-        beperking_id = int(r[5])
-
-        if beperking_id not in self.beperkingen:
-            self.warnings[
-                'WPB Beperking-Percelen references non-existing beperking {}; skipping'.format(beperking_id)] += 1
+        kot_id = r['belast:BRK.KOT.identificatie']
+        inschrijfnummer = int(r['identificatie'])
+        if not kot_id:
+            log.warning(f'Beperking {inschrijfnummer} references no kadastraal object; skipping')
             return None
 
-        if not aanduiding or aanduiding not in self.kot:
-            self.warnings[
-                'Beperking {} references non-existing kadastraal object; skipping'.format(beperking_id)] += 1
+        aanduiding = self.kot.get(kot_id)
+        if not aanduiding:
+            log.warning(f'Beperking {inschrijfnummer} references non-existing kadastraal object {kot_id}; skipping')
             return None
 
-        uid = '{0}_{1}'.format(beperking_id, aanduiding)
+        if inschrijfnummer not in self.beperkingen:
+            log.warning(f'WPB Beperking-KadastraalObject references non-existing beperking for inschrijfnummer {inschrijfnummer}; skipping')
+            return None
+
+        uid = '{0}_{1}'.format(inschrijfnummer, aanduiding)
 
         return models.BeperkingKadastraalObject(
             pk=uid,
-            beperking_id=beperking_id,
-            kadastraal_object_id=self.kot[aanduiding],
+            beperking_id=inschrijfnummer,
+            kadastraal_object_id=kot_id,
         )
 
 
@@ -259,11 +254,11 @@ class ImportWkpbJob(object):
     name = "Import WKPB"
 
     def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
+        gob_dir = settings.GOB_DIR
+        if not os.path.exists(gob_dir):
+            raise ValueError("GOB_DIR not found: {}".format(gob_dir))
 
-        self.beperkingen = os.path.join(diva, 'beperkingen')
+        self.beperkingen = os.path.join(gob_dir, 'wkpb/CSV_Actueel')
 
     def tasks(self):
         return [

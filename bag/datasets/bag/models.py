@@ -73,12 +73,9 @@ class Hoofdklasse(models.Model):
     De hoofdklasse is een abstracte klasse waar sommige andere
     gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
     Deze afstammelingen erven alle kenmerken over van deze hoofdklasse.
-    Het kenmerk 'diva_id' komt bijvoorbeeld voor
-    bij alle gebieden.
     """
 
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
     date_modified = models.DateTimeField(auto_now=True)
 
     objects = geo.Manager()
@@ -190,7 +187,7 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
         return self._stadsdeel.gemeente if self._stadsdeel else None
 
 
-class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.Model):
+class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdklasse):
     """
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
@@ -222,7 +219,6 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.
     id = models.CharField(max_length=16, primary_key=True)
     landelijk_id = models.CharField(max_length=16, unique=True, null=True)
 
-    date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=2, null=True, choices=TYPE_CHOICES)
     naam = models.CharField(max_length=150)
     naam_nen = models.CharField(max_length=24)
@@ -233,10 +229,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.
         Woonplaats, related_name="openbare_ruimtes",
         on_delete=models.CASCADE
     )
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
     omschrijving = models.TextField(null=True)
-
-    objects = geo.Manager()
 
     class Meta:
         verbose_name = "Openbare Ruimte"
@@ -267,7 +260,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.
         return dct
 
 
-class Gebiedsgerichtwerken(models.Model):
+class Gebiedsgerichtwerken(Hoofdklasse):
     """
     model for data from shp files
 
@@ -281,16 +274,10 @@ class Gebiedsgerichtwerken(models.Model):
     code = models.CharField(max_length=4)
     naam = models.CharField(max_length=100)
 
-    date_modified = models.DateTimeField(auto_now=True)
-
     stadsdeel = models.ForeignKey(
         Stadsdeel, related_name='gebiedsgerichtwerken',
         on_delete=models.CASCADE,
     )
-
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
-    objects = geo.Manager()
 
     class Meta:
         verbose_name = "Gebiedsgerichtwerken"
@@ -301,7 +288,7 @@ class Gebiedsgerichtwerken(models.Model):
         return "{} ({})".format(self.naam, self.code)
 
 
-class GebiedsgerichtwerkenPraktijkgebieden(models.Model):
+class GebiedsgerichtwerkenPraktijkgebieden(Hoofdklasse):
     """
     model for data from shp files
 
@@ -326,7 +313,7 @@ class GebiedsgerichtwerkenPraktijkgebieden(models.Model):
 
 
 
-class Grootstedelijkgebied(models.Model):
+class Grootstedelijkgebied(Hoofdklasse):
     """
     model for data from shp files
 
@@ -338,10 +325,6 @@ class Grootstedelijkgebied(models.Model):
     id = models.SlugField(max_length=100, primary_key=True)
     naam = models.CharField(max_length=100)
     gsg_type = models.CharField(max_length=5,null=True)
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
-    date_modified = models.DateTimeField(auto_now=True)
-    objects = geo.Manager()
 
     class Meta:
         verbose_name = "Grootstedelijkgebied"

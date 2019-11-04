@@ -1533,14 +1533,6 @@ class ImportBagJob(object):
     name = "Import BAG"
 
     def __init__(self, **kwargs):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
-        self.bag_path = os.path.join(diva, 'bag')
-        self.opr_beschrijving_path = os.path.join(diva, 'bag_openbareruimte_beschrijving')
-        self.bag_wkt_path = os.path.join(diva, 'bag_wkt')
-        self.gebieden_path = os.path.join(diva, 'gebieden')
-        self.gebieden_shp_path = os.path.join(diva, 'gebieden_shp')
         gob_dir = settings.GOB_DIR
         if not os.path.exists(gob_dir):
             raise ValueError("GOB_DIR not found: {}".format(gob_dir))
@@ -1562,7 +1554,7 @@ class ImportBagJob(object):
 
         return [
             # no-dependencies.
-            ImportGemeenteTask(self.gebieden_path),
+            ImportGemeenteTask(self.gob_gebieden_path),  # TODO : nog niet geleverd door GOB, manually added in GOB Objectstore
             ImportWoonplaatsTask(self.gob_bag_path),
             ImportStadsdeelTask(self.gob_gebieden_path),
             ImportWijkTask(self.gob_gebieden_shp_path),
@@ -1570,8 +1562,8 @@ class ImportBagJob(object):
             # stadsdelen.
             ImportGebiedsgerichtwerkenTask(self.gob_gebieden_shp_path),
             ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gob_gebieden_shp_path),
-            ImportGrootstedelijkgebiedTask(self.gebieden_shp_path),  # TODO : nog niet geleverd door GOB
-            ImportUnescoTask(self.gebieden_shp_path),  # TODO : nog niet geleverd door GOB
+            ImportGrootstedelijkgebiedTask(self.gob_gebieden_shp_path),  # TODO : nog niet geleverd door GOB, manually added in GOB Objectstore
+            ImportUnescoTask(self.gob_gebieden_shp_path),  # TODO : nog niet geleverd door GOB, manually added in GOB Objectstore
             #
             ImportBuurtTask(self.gob_gebieden_path),
             ImportBouwblokTask(self.gob_gebieden_path),

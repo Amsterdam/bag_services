@@ -812,12 +812,21 @@ class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
     def __init__(self):
+        gob_dir = settings.GOB_DIR
+        if not os.path.exists(gob_dir):
+            raise ValueError("GOB_DIR not found: {}".format(gob_dir))
+
+        self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
+        self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
+        self.gob_bag_path = os.path.join(gob_dir, 'bag/CSV_Actueel')
+
+
         diva = settings.DIVA_DIR
         if not os.path.exists(diva):
             raise ValueError("DIVA_DIR not found: {}".format(diva))
 
-        self.brk = os.path.join(diva, 'brk')
-        self.brk_shp = os.path.join(diva, 'brk_shp')
+        self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
+        self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
         self.stash = {}
 
     def tasks(self):
@@ -827,6 +836,7 @@ class ImportKadasterJob(object):
             ImportKadastraleGemeenteTask(self.brk_shp, self.stash),
             ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
             ImportKadastraleSectieTask(self.brk_shp, self.stash),
+
             ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
             # needs Subject and Object
