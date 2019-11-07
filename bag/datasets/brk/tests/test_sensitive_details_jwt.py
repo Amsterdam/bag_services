@@ -11,7 +11,7 @@ from . import factories
 
 class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
     
-    brk_root_url = '/brk/v1.1'
+    brk_root_url = '/brk'
 
     def setUp(self):
 
@@ -80,7 +80,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             subj = response['kadastraal_subject']
             self.assertEqual(
                 subj['_links']['self']['href'],
-                'http://testserver/brk/v1.1/subject/{}/'.format(self.natuurlijk.pk)
+                'http://testserver/brk/subject/{}/'.format(self.natuurlijk.pk)
             )
 
     def test_uitgelogd_zakelijk_recht_niet_natuurlijk_hoofd_view(self):
@@ -148,7 +148,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_ro))
 
-        response = self.client.get(f'/brk/v1.1/object/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
@@ -160,7 +160,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertIn(field, data)
 
     def test_match_kot_object_public(self):
-        response = self.client.get(f'/brk/v1.1/object/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
@@ -175,7 +175,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_brk_ro))
 
-        response = self.client.get(f'/brk/v1.1/object-expand/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
@@ -187,7 +187,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertIn(field, data)
 
     def test_match_kot_object__expandpublic(self):
-        response = self.client.get(f'/brk/v1.1/object-expand/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
@@ -202,7 +202,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
 
-        response = self.client.get(f'/brk/v1.1/object-wkpb/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))
@@ -214,7 +214,7 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.assertIn(field, data)
 
     def test_match_kot_object__wkpb_public(self):
-        response = self.client.get(f'/brk/v1.1/object-wkpb/{self.kot.pk}/')
+        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))

@@ -36,20 +36,20 @@ grouped_url_patterns = {
     ],
 
     'gebieden_patterns': [
-        url(r'^gebieden/v1.1/', include(bag.urlsets.gebieden.urls)),
+        url(r'^gebieden/', include(bag.urlsets.gebieden.urls)),
     ],
 
     'brk_patterns': [
-        url(r'^brk/v1.1/', include(bag.urlsets.brk.urls)),
+        url(r'^brk/', include(bag.urlsets.brk.urls)),
 
-        url(r'^brk/v1.1/object-wkpb/(?P<pk>[^/]+)/?$',
+        url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
             datasets.brk.views.KadastraalObjectWkpbView.as_view(
                 {'get': 'retrieve'}),
             name='brk-object-wkpb'),
     ],
 
     'beperkingen_patterns': [
-        url(r'^wkpb/v1.1/', include(bag.urlsets.wkpb.urls)),
+        url(r'^wkpb/', include(bag.urlsets.wkpb.urls)),
     ],
 }
 
