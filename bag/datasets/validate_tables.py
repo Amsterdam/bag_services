@@ -53,7 +53,7 @@ TABLE_TARGETS = [
     (321260, 0, "wkpb_beperkingkadastraalobject"),
     (338702, 0, "wkpb_beperkingverblijfsobject"),
     (6, 0, "wkpb_broncode"),
-    (7731, 0, "wkpb_brondocument"),
+    (7800, 0, "wkpb_brondocument"),
 ]
 
 
