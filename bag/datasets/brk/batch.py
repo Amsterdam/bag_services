@@ -821,10 +821,6 @@ class ImportKadasterJob(object):
         self.gob_bag_path = os.path.join(gob_dir, 'bag/CSV_Actueel')
 
 
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
-
         self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
         self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
         self.stash = {}
