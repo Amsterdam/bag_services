@@ -180,7 +180,7 @@ def fetch_gob_files(container_name, prefix):
         m = re.search(r'BRK[a-zA-Z_]+(\d{8})\.csv$', file_path)
         if m:
             file_key = file_path[:-12]
-            target_filename = path[-1][:-13]+path[-1][-4:]
+            target_filename = path[-1][:-12]+path[-1][-4:]
         else:
             file_key = file_path
             target_filename = path[-1]
