@@ -15,6 +15,7 @@ from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
+from datasets.bag.batch import GOB_CSV_ENCODING
 from . import batch_eigendom_sql, batch_fix_kadastraalobject_sql
 
 log = logging.getLogger(__name__)
@@ -215,7 +216,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
 
     def process(self):
         subjects = uva2.process_csv(
-            self.path, 'BRK_kadastraal_subject', self.process_subject)
+            self.path, 'BRK_kadastraal_subject', self.process_subject, encoding=GOB_CSV_ENCODING)
 
         models.KadastraalSubject.objects.bulk_create(
             subjects, batch_size=database.BATCH_SIZE)
@@ -402,7 +403,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
     def process(self):
         objects = uva2.process_csv(
-            self.path, 'BRK_kadastraal_object', self.process_object)
+            self.path, 'BRK_kadastraal_object', self.process_object, encoding=GOB_CSV_ENCODING)
 
         models.KadastraalObject.objects.bulk_create(
             objects, batch_size=database.BATCH_SIZE)
@@ -537,7 +538,7 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process(self):
         zrts = dict(
             uva2.process_csv(
-                self.path, 'BRK_zakelijk_recht', self.process_subject))
+                self.path, 'BRK_zakelijk_recht', self.process_subject, encoding=GOB_CSV_ENCODING))
 
         models.ZakelijkRecht.objects.bulk_create(
             zrts.values(), batch_size=database.BATCH_SIZE)
@@ -628,7 +629,7 @@ class ImportAantekeningTask(batch.BasicTask):
         self.warnings.clear()
 
     def process(self):
-        atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row)
+        atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row, encoding=GOB_CSV_ENCODING)
         models.Aantekening.objects.bulk_create(atks, batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
@@ -694,7 +695,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         self.vbo.clear()
 
     def process(self):
-        rels = uva2.process_csv(self.path, "BRK_BRK_BAG", self.process_row)
+        rels = uva2.process_csv(self.path, "BRK_BRK_BAG", self.process_row, encoding=GOB_CSV_ENCODING)
         models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(
             rels, batch_size=database.BATCH_SIZE)
 
