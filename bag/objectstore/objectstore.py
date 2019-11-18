@@ -146,7 +146,7 @@ gob_file_age_list = {
     'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_object_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_subject_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_aantekening_': 35,
-    'brk/AmsterdamRegio/CSV_Actueel/BRK_zakelijke_recht_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_zakelijk_recht_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_c_aard_zakelijkrecht_': 35,
     # brk SHP
     'brk/AmsterdamRegio/SHP_Actueel/BRK_Gemeente_20191017.shp': 365,
