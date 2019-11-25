@@ -36,6 +36,7 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("swiftclient").setLevel(logging.WARNING)
 
+environment = os.getenv('GOB_OBJECTSTORE_ENV', 'productie')
 connections = {
     'bag_brk': {
         'auth_version': '2.0',
@@ -481,8 +482,8 @@ if __name__ == "__main__":
     # Download files from objectstore
     log.info("Start downloading files from objectstore")
 
-    fetch_gob_files('productie', 'gebieden')
-    fetch_gob_files('productie', 'bag')
+    fetch_gob_files(environment, 'gebieden')
+    fetch_gob_files(environment, 'bag')
 
     # As long as brk and wkpb are not yet imported in GOB we also need the DIVA files
     # for brk and wkpb
