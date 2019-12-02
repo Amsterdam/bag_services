@@ -349,7 +349,7 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/)
 
-    bag/nummeraanduiding/?pand=0363100012171966
+    bag/v1.1/nummeraanduiding/?pand=0363100012171966
 
     TIP! detailed=1 if you want all fields in the list view!
 

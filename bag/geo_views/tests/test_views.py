@@ -36,10 +36,10 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row['display'].split()[0], l.hoofdadres.adres().split()[0])
-        self.assertEqual(row['type'], 'bag/ligplaats')
+        self.assertEqual(row['type'], 'bag/v1.1/ligplaats')
         self.assertEqual(
             row['uri'],
-            '{}bag/ligplaats/{}/'.format(URL, l.landelijk_id))
+            '{}bag/v1.1/ligplaats/{}/'.format(URL, l.landelijk_id))
 
     def test_bag_openbareruimte(self):
 
@@ -51,10 +51,10 @@ class ViewsTest(TestCase):
         row = self.get_row('geo_bag_openbareruimte')
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], 'prinsengracht')
-        self.assertEqual(row['type'], 'bag/openbareruimte')
+        self.assertEqual(row['type'], 'bag/v1.1/openbareruimte')
         self.assertEqual(row['opr_type'], 'Water')
         self.assertEqual(
-            row['uri'], '{}bag/openbareruimte/{}/'.format(URL, ob.landelijk_id))
+            row['uri'], '{}bag/v1.1/openbareruimte/{}/'.format(URL, ob.landelijk_id))
 
     def test_bag_standplaats(self):
         s = bag_factories.StandplaatsFactory.create()
@@ -67,9 +67,9 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], s.hoofdadres.adres().split()[0])
-        self.assertEqual(row["type"], 'bag/standplaats')
+        self.assertEqual(row["type"], 'bag/v1.1/standplaats')
         self.assertIn(
-            row["uri"], '{}bag/standplaats/{}/'.format(URL, s.landelijk_id))
+            row["uri"], '{}bag/v1.1/standplaats/{}/'.format(URL, s.landelijk_id))
 
     def test_bag_verblijfsobject(self):
         v = bag_factories.VerblijfsobjectFactory.create()
@@ -82,9 +82,9 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], v.hoofdadres.adres().split()[0])
-        self.assertEqual(row['type'], 'bag/verblijfsobject')
+        self.assertEqual(row['type'], 'bag/v1.1/verblijfsobject')
         self.assertEqual(
-            row['uri'], f'{URL}bag/verblijfsobject/{v.landelijk_id}/')
+            row['uri'], f'{URL}bag/v1.1/verblijfsobject/{v.landelijk_id}/')
 
     def test_bag_pand(self):
         p = bag_factories.PandFactory.create()
@@ -92,9 +92,9 @@ class ViewsTest(TestCase):
         self.assertEqual(row['id'], p.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], p.landelijk_id)
-        self.assertEqual(row['type'], 'bag/pand')
+        self.assertEqual(row['type'], 'bag/v1.1/pand')
         self.assertIn(
-            row['uri'], '{}bag/pand/{}/'.format(URL, p.landelijk_id))
+            row['uri'], '{}bag/v1.1/pand/{}/'.format(URL, p.landelijk_id))
 
     def test_bag_bouwblok(self):
         bb = bag_factories.BouwblokFactory.create()
