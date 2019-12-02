@@ -7,7 +7,7 @@ set -x
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -p bag-v11-test -f ${DIR}/docker-compose.yml $*
+	docker-compose -p bag_v11-test -f ${DIR}/docker-compose.yml $*
 }
 
 dc stop

@@ -7,7 +7,7 @@ set -x  # print all commands
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -p bag-v11 -f ${DIR}/docker-compose.yml $*;
+	docker-compose -p bag_v11 -f ${DIR}/docker-compose.yml $*;
 }
 
 trap 'dc kill ; dc rm -f' EXIT
