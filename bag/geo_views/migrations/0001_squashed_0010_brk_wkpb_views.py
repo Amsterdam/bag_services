@@ -134,7 +134,7 @@ FROM bag_grootstedelijkgebied gg
 SELECT
   l.landelijk_id                    AS id,
   l.geometrie                       AS geometrie,
-  'bag/v1.1/ligplaats'::TEXT             AS type,
+  'bag/ligplaats'::TEXT             AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')
@@ -167,7 +167,7 @@ SELECT
         ELSE '??'
   END                                                   AS opr_type,
   opr.geometrie                                         AS geometrie,
-  'bag/v1.1/openbareruimte'::TEXT                            AS type,
+  'bag/openbareruimte'::TEXT                            AS type,
   {} || 'bag/v1.1/openbareruimte/' || opr.landelijk_id || '/' AS uri
 FROM
   bag_openbareruimte opr
@@ -181,7 +181,7 @@ SELECT
   p.landelijk_id                            AS id,
   p.geometrie                               AS geometrie,
   p.landelijk_id                            AS display,
-  'bag/v1.1/pand'::TEXT                          AS type,
+  'bag/pand'::TEXT                          AS type,
   {} || 'bag/v1.1/pand/' || p.landelijk_id || '/'       AS uri
 FROM
   bag_pand p
@@ -209,7 +209,7 @@ FROM bag_stadsdeel s
 SELECT
   s.landelijk_id                                AS id,
   s.geometrie                                   AS geometrie,
-  'bag/v1.1/standplaats'::TEXT                       AS type,
+  'bag/standplaats'::TEXT                       AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE(' ' || NULLIF(n.huisnummer_toevoeging, ''), '')
@@ -244,7 +244,7 @@ FROM bag_unesco u
 SELECT
   v.landelijk_id                          AS id,
   v.geometrie                             AS geometrie,
-  'bag/v1.1/verblijfsobject'::TEXT             AS type,
+  'bag/verblijfsobject'::TEXT             AS type,
   (o.naam || ' '
    || n.huisnummer || COALESCE(n.huisletter, '')
    || COALESCE('-' || NULLIF(n.huisnummer_toevoeging, ''), '')

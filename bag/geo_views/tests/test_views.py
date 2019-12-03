@@ -36,7 +36,7 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row['display'].split()[0], l.hoofdadres.adres().split()[0])
-        self.assertEqual(row['type'], 'bag/v1.1/ligplaats')
+        self.assertEqual(row['type'], 'bag/ligplaats')
         self.assertEqual(
             row['uri'],
             '{}bag/v1.1/ligplaats/{}/'.format(URL, l.landelijk_id))
@@ -51,7 +51,7 @@ class ViewsTest(TestCase):
         row = self.get_row('geo_bag_openbareruimte')
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], 'prinsengracht')
-        self.assertEqual(row['type'], 'bag/v1.1/openbareruimte')
+        self.assertEqual(row['type'], 'bag/openbareruimte')
         self.assertEqual(row['opr_type'], 'Water')
         self.assertEqual(
             row['uri'], '{}bag/v1.1/openbareruimte/{}/'.format(URL, ob.landelijk_id))
@@ -67,7 +67,7 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], s.hoofdadres.adres().split()[0])
-        self.assertEqual(row["type"], 'bag/v1.1/standplaats')
+        self.assertEqual(row["type"], 'bag/standplaats')
         self.assertIn(
             row["uri"], '{}bag/v1.1/standplaats/{}/'.format(URL, s.landelijk_id))
 
@@ -82,7 +82,7 @@ class ViewsTest(TestCase):
         self.assertIn("geometrie", row)
         self.assertEqual(
             row["display"].split()[0], v.hoofdadres.adres().split()[0])
-        self.assertEqual(row['type'], 'bag/v1.1/verblijfsobject')
+        self.assertEqual(row['type'], 'bag/verblijfsobject')
         self.assertEqual(
             row['uri'], f'{URL}bag/v1.1/verblijfsobject/{v.landelijk_id}/')
 
@@ -92,7 +92,7 @@ class ViewsTest(TestCase):
         self.assertEqual(row['id'], p.landelijk_id)
         self.assertIn("geometrie", row)
         self.assertEqual(row['display'], p.landelijk_id)
-        self.assertEqual(row['type'], 'bag/v1.1/pand')
+        self.assertEqual(row['type'], 'bag/pand')
         self.assertIn(
             row['uri'], '{}bag/v1.1/pand/{}/'.format(URL, p.landelijk_id))
 
