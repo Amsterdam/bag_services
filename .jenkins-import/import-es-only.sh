@@ -21,17 +21,17 @@ echo "Building dockers"
 #dc build
 
 dc up -d database
-# dc up -d elasticsearch
+dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
 # restore database bag backup.
 #docker-compose -p bag exec -T database update-db.sh bag_v11 spreeker
 dc exec -T database update-db.sh bag_v11
 
-# echo "Starting Elastic importer"
-# dc run --rm importer ./docker-index-es.sh
+echo "Starting Elastic importer"
+dc run --rm importer ./docker-index-es.sh
 
-# echo "Make es backup"
-# dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
+echo "Make es backup"
+dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
 
 echo "Done"

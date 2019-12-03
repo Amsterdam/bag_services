@@ -27,11 +27,11 @@ dc run importer ./docker-wait.sh
 echo "import new diva files into database"
 dc run --rm importer
 
-# echo "Starting Elastic importer"
-# dc run --rm importer ./docker-index-es.sh
+echo "Starting Elastic importer"
+dc run --rm importer ./docker-index-es.sh
 
 echo "Running backups"
 dc exec -T database backup-db.sh bag_v11
-# dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
+dc exec -T elasticsearch backup-indices.sh bag bag*,brk*,nummeraanduiding
 
 echo "Done"
