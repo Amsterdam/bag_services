@@ -186,8 +186,8 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         Visit all root main api pages
         """
         urls = [
-            # 'atlas/search',
-            # 'atlas/typeahead',
+            'atlas/search',
+            'atlas/typeahead',
             'wkpb',
             'bag/v1.1',
             'brk',

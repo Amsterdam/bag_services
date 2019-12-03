@@ -1,5 +1,4 @@
 # Python
-from unittest import skip
 # Packages
 from rest_framework.test import APITransactionTestCase
 # Project
@@ -9,7 +8,6 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-@skip
 class GebiedSearchTest(APITransactionTestCase):
 
     def setUp(self):

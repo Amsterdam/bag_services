@@ -686,7 +686,6 @@ class KadastraalObjectField(serializers.HyperlinkedRelatedField):
     view_name = "kadastraalobject-detail"
 
 
-
 class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     hoofdadres = Nummeraanduiding()

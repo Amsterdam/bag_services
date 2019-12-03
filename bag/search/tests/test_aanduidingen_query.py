@@ -1,6 +1,5 @@
 # Python
 # Package
-from unittest import skip
 
 from rest_framework.test import APITestCase
 # Project
@@ -10,7 +9,6 @@ from datasets.bag.tests import factories as bag_factories
 import datasets.brk.batch
 
 
-@skip
 class SubjectSearchTest(APITestCase):
 
     formats = [
@@ -153,7 +151,7 @@ class SubjectSearchTest(APITestCase):
         vbo_status = self.anje42F.adresseerbaar_object.status
 
         self.assertEqual(
-            first['vbo_status'][0]['omschrijving'], vbo_status.omschrijving)
+            first['vbo_status'], vbo_status)
 
     def test_gracht_query(self):
         response = self.client.get(
@@ -189,17 +187,6 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Stoom Maker Weg 100")
-
-    def test_ptt_query(self):
-        response = self.client.get(
-            "/atlas/search/adres/", {'q': 'M Cornelisstr'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('results', response.data)
-        self.assertIn('count', response.data)
-        self.assertEqual(response.data['count'], 1)
-
-        self.assertEqual(
-            response.data['results'][0]['adres'], "Marius Cornelis straat 99")
 
     def test_meercijferige_toevoeging(self):
         response = self.client.get(

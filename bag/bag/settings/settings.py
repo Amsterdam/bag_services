@@ -84,13 +84,12 @@ ELASTIC_OPTIONS = {
 ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
 
 ELASTIC_INDICES = {
-    'BAG_GEBIED': 'bag_gebied',
-    'BAG_BOUWBLOK': 'bag_bouwblok',
-    # 'BAG_OPENBARETUIMTE': 'bag_openbareruimte',
-    'BRK_OBJECT': 'brk_object',
-    'BRK_SUBJECT': 'brk_subject',
-    'NUMMERAANDUIDING': 'nummeraanduiding',
-    'BAG_PAND': 'bag_pand',
+    'BAG_GEBIED': 'bag_v11_gebied',
+    'BAG_BOUWBLOK': 'bag_v11_bouwblok',
+    'BRK_OBJECT': 'brk_v11_object',
+    'BRK_SUBJECT': 'brk_v11_subject',
+    'NUMMERAANDUIDING': 'v11_nummeraanduiding',
+    'BAG_PAND': 'bag_v11_pand',
 }
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'

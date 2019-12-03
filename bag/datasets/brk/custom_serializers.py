@@ -71,10 +71,6 @@ class KadastraalObjectDetailWkpbPublic(KadastraalObjectDetailWkpb):
     kadastrale_gemeente = brk_serializers.KadastraleGemeente()
     sectie = brk_serializers.KadastraleSectie()
     soort_grootte = brk_serializers.SoortGrootte()
-    # cultuurcode_onbebouwd = brk_serializers.CultuurCodeOnbebouwd()
-    # cultuurcode_bebouwd = brk_serializers.CultuurCodeBebouwd()
-
-    # rechten = brk_serializers.ZakelijkRecht(many=True)
     verblijfsobjecten = Verblijfsobject(many=True)
     beperkingen = BeperkingDetail(many=True)
     aantekeningen = rest.RelatedSummaryField()
@@ -95,12 +91,7 @@ class KadastraalObjectDetailWkpbPublic(KadastraalObjectDetailWkpb):
             'indexnummer',
             'soort_grootte',
             'grootte',
-            # 'koopsom',
-            # 'koopsom_valuta_code',
-            # 'koopjaar',
             'meer_objecten',
-            # 'cultuurcode_onbebouwd',
-            # 'cultuurcode_bebouwd',
 
             'register9_tekst',
             'status_code',
@@ -111,7 +102,5 @@ class KadastraalObjectDetailWkpbPublic(KadastraalObjectDetailWkpb):
             'g_percelen',
             'a_percelen',
             'verblijfsobjecten',
-            # 'rechten',
-            # 'aantekeningen',
             'beperkingen',
         )

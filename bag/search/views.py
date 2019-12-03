@@ -1122,8 +1122,6 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
                 continue
             if key.endswith('_nen'):
                 continue
-            if key.endswith('_ptt'):
-                continue
             result[key] = value
 
 

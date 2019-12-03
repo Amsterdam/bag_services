@@ -64,19 +64,6 @@ class Nummeraanduiding(es.DocType):
 
     straatnaam_nen_keyword = es.Keyword()
 
-    straatnaam_ptt = es.Text(
-        analyzer=analyzers.adres, fields={
-            'raw': es.Keyword(),
-            'ngram_edge': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'keyword': es.Keyword(normalizer=analyzers.lowercase),
-
-        }
-    )
-
-    straatnaam_ptt_keyword = es.Keyword()
-
     adres = es.Text(
         analyzer=analyzers.adres,
         fields={
@@ -101,14 +88,6 @@ class Nummeraanduiding(es.DocType):
             'ngram': es.Text(
                 analyzer=analyzers.autocomplete,
                 search_analyzer='standard')
-        }
-    )
-    comp_address_ptt = es.Text(
-        analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')
         }
     )
     comp_address_pcode = es.Text(
@@ -140,20 +119,9 @@ class Nummeraanduiding(es.DocType):
 
     order = es.Integer()
 
-    hoofdadres = es.Boolean()
-    status = es.Nested(
-        properties={
-            'code': es.Keyword(normalizer=analyzers.lowercase),
-            'omschrijving': es.Text()
-        }
-    )
-
-    vbo_status = es.Nested(
-        properties={
-            'code': es.Keyword(normalizer=analyzers.lowercase),
-            'omschrijving': es.Text()
-        }
-    )
+    type_adres = es.Keyword()
+    status = es.Text()
+    vbo_status = es.Text()
 
     subtype = es.Keyword()
     _display = es.Keyword()
@@ -219,11 +187,6 @@ class Gebied(es.DocType):
     )
 
     naam_nen = es.Text(
-        analyzer=analyzers.adres,
-        fields=text_fields
-    )
-
-    naam_ptt = es.Text(
         analyzer=analyzers.adres,
         fields=text_fields
     )
@@ -335,16 +298,12 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
                                         n.toevoeging)
     doc.comp_address_nen = "{0} {1}".format(n.openbare_ruimte.naam_nen,
                                             n.toevoeging)
-    doc.comp_address_ptt = "{0} {1}".format(n.openbare_ruimte.naam_ptt,
-                                            n.toevoeging)
     doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = n.openbare_ruimte.naam
     doc.straatnaam_nen = n.openbare_ruimte.naam_nen
-    doc.straatnaam_ptt = n.openbare_ruimte.naam_ptt
     doc.straatnaam_keyword = n.openbare_ruimte.naam
     doc.straatnaam_nen_keyword = n.openbare_ruimte.naam_nen
-    doc.straatnaam_ptt_keyword = n.openbare_ruimte.naam_ptt
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
 
@@ -352,23 +311,13 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
     doc.bag_toevoeging = n.huisnummer_toevoeging
     doc.woonplaats = n.woonplaats.naam
 
-    # doc.hoofdadres = n.hoofdadres
-
-    if n.status:
-        doc.status.append({
-            'code': n.status.code,
-            'omschrijving': n.status.omschrijving
-        })
-
+    doc.type_adres = n.type_adres
+    doc.status = n.status
     doc.landelijk_id = n.landelijk_id
 
     # verblijfsobject status
     if n.adresseerbaar_object:
-        if n.adresseerbaar_object.status:
-            doc.vbo_status.append({
-                'code': n.adresseerbaar_object.status.code,
-                'omschrijving': n.adresseerbaar_object.status.omschrijving
-            })
+        doc.vbo_status = n.adresseerbaar_object.status
         doc.adresseerbaar_object_id = n.adresseerbaar_object.landelijk_id
 
     if n.bron:
@@ -405,7 +354,6 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
     d.naam = o.naam
     d.naam_nen = o.naam_nen
-    d.naam_ptt = o.naam_ptt
 
     postcodes = set()
 

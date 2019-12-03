@@ -4,7 +4,7 @@ from django.contrib.gis.db import models as geo
 from django.db import models
 
 from datasets.bag import models as bag
-from datasets.generic import mixins, kadaster
+from datasets.generic import kadaster
 
 
 class Gemeente(models.Model):

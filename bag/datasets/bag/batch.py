@@ -420,7 +420,6 @@ class ImportOpenbareRuimteTask(batch.BasicTask):
             'document_nummer': r['documentnummer'],
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'naam_nen': naam_nen,
-            # 'naam_ptt': None,
             # 'vervallen': None,  # TODO: ? Perhaps if daterange not geldig
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
@@ -869,176 +868,172 @@ class ImportPandTask(batch.BasicTask):
         return pk, models.Pand(**values)
 
 
-# BAG_DOC_TYPES = [
-#     documents.Bouwblok,
-#     documents.Gebied,
-# ]
-#
-#
-# class DeleteGebiedIndexTask(index.DeleteIndexTask):
-#     index = settings.ELASTIC_INDICES['BAG_GEBIED']
-#     doc_types = [documents.Gebied]
-#
-#
-# class DeleteBouwblokIndexTask(index.DeleteIndexTask):
-#     index = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
-#     doc_types = [documents.Bouwblok]
-#
-#
-# class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
-#     index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
-#     doc_types = [documents.Nummeraanduiding]
-#
-#
-# class DeletePandTask(index.DeleteIndexTask):
-#     index = settings.ELASTIC_INDICES['BAG_PAND']
-#     doc_types = [documents.Pand]
-#
-#
-# class IndexLigplaatsTask(index.ImportIndexTask):
-#     name = "index ligplaatsen"
-#     queryset = models.Ligplaats.objects.\
-#         prefetch_related('adressen').\
-#         prefetch_related('adressen__openbare_ruimte')
-#
-#     def convert(self, obj):
-#         return documents.from_ligplaats(obj)
-#
-#
-# class IndexStandplaatsTask(index.ImportIndexTask):
-#     name = "index standplaatsen"
-#     queryset = models.Standplaats.objects.\
-#         prefetch_related('adressen').\
-#         prefetch_related('adressen__openbare_ruimte')
-#
-#     def convert(self, obj):
-#         return documents.from_standplaats(obj)
-#
-#
-# class IndexVerblijfsobjectTask(index.ImportIndexTask):
-#     name = "index verblijfsobjecten"
-#     queryset = models.Verblijfsobject.objects.\
-#         prefetch_related('adressen').\
-#         prefetch_related('adressen__openbare_ruimte').\
-#         prefetch_related('gebruiksdoelen')
-#
-#     def convert(self, obj):
-#         return documents.from_verblijfsobject(obj)
-#
-#
-# class IndexOpenbareRuimteTask(index.ImportIndexTask):
-#     name = "index openbare ruimtes"
-#     queryset = models.OpenbareRuimte.objects.prefetch_related('adressen')
-#
-#     def convert(self, obj):
-#         return documents.from_openbare_ruimte(obj)
-#
-#
-# #########################################################
-# # gebieden tasks
-# #########################################################
-#
-#
-# class IndexUnescoTask(index.ImportIndexTask):
-#     name = "index unesco"
-#     queryset = models.Unesco.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_unesco(obj)
-#
-#
-# class IndexBuurtTask(index.ImportIndexTask):
-#     name = "index buurten"
-#     queryset = models.Buurt.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_buurt(obj)
-#
-#
-# class IndexBuurtcombinatieTask(index.ImportIndexTask):
-#     name = "index buurtcombinaties"
-#     queryset = models.Buurtcombinatie.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_buurtcombinatie(obj)
-#
-#
-# class IndexGebiedsgerichtWerkenTask(index.ImportIndexTask):
-#     name = "index gebiedsgerichtwerken"
-#     queryset = models.Gebiedsgerichtwerken.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_gebiedsgerichtwerken(obj)
-#
-#
-# class IndexStadsdeelTask(index.ImportIndexTask):
-#     name = "index stadsdeel"
-#     queryset = models.Stadsdeel.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_stadsdeel(obj)
-#
-#
-# class IndexGrootstedelijkgebiedTask(index.ImportIndexTask):
-#     name = "Index grootstedelijk"
-#     queryset = models.Grootstedelijkgebied.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_grootstedelijk(obj)
-#
-#
-# class IndexGemeenteTask(index.ImportIndexTask):
-#     name = "index gemeenten"
-#     queryset = models.Gemeente.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_gemeente(obj)
-#
-#
-# class IndexWoonplaatsTask(index.ImportIndexTask):
-#     name = "index woonplatsen"
-#     queryset = models.Woonplaats.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_woonplaats(obj)
-#
-#
-# ##########################################################
-# ##########################################################
-#
-#
-# class IndexNummerAanduidingTask(index.ImportIndexTask):
-#     name = "index nummer aanduidingen"
-#     queryset = models.Nummeraanduiding.objects.\
-#         prefetch_related('verblijfsobject').\
-#         prefetch_related('verblijfsobject__status').\
-#         prefetch_related('standplaats').\
-#         prefetch_related('standplaats__status').\
-#         prefetch_related('ligplaats').\
-#         prefetch_related('ligplaats__status').\
-#         prefetch_related('status').\
-#         prefetch_related('openbare_ruimte')
-#
-#     def convert(self, obj):
-#         return documents.from_nummeraanduiding_ruimte(obj)
-#
-#
-# class IndexPandTask(index.ImportIndexTask):
-#     name = "index pand"
-#
-#     queryset = models.Pand.objects.only('landelijk_id', 'pandnaam')
-#
-#     def convert(self, obj):
-#         return documents.from_pand(obj)
-#
-#
-# class IndexBouwblokTask(index.ImportIndexTask):
-#     name = "index bouwblokken"
-#     queryset = models.Bouwblok.objects.all()
-#
-#     def convert(self, obj):
-#         return documents.from_bouwblok(obj)
-#
+BAG_DOC_TYPES = [
+    documents.Bouwblok,
+    documents.Gebied,
+]
+
+
+class DeleteGebiedIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_GEBIED']
+    doc_types = [documents.Gebied]
+
+
+class DeleteBouwblokIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_BOUWBLOK']
+    doc_types = [documents.Bouwblok]
+
+
+class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
+    doc_types = [documents.Nummeraanduiding]
+
+
+class DeletePandTask(index.DeleteIndexTask):
+    index = settings.ELASTIC_INDICES['BAG_PAND']
+    doc_types = [documents.Pand]
+
+
+class IndexLigplaatsTask(index.ImportIndexTask):
+    name = "index ligplaatsen"
+    queryset = models.Ligplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
+
+    def convert(self, obj):
+        return documents.from_ligplaats(obj)
+
+
+class IndexStandplaatsTask(index.ImportIndexTask):
+    name = "index standplaatsen"
+    queryset = models.Standplaats.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte')
+
+    def convert(self, obj):
+        return documents.from_standplaats(obj)
+
+
+class IndexVerblijfsobjectTask(index.ImportIndexTask):
+    name = "index verblijfsobjecten"
+    queryset = models.Verblijfsobject.objects.\
+        prefetch_related('adressen').\
+        prefetch_related('adressen__openbare_ruimte').\
+        prefetch_related('gebruiksdoelen')
+
+    def convert(self, obj):
+        return documents.from_verblijfsobject(obj)
+
+
+class IndexOpenbareRuimteTask(index.ImportIndexTask):
+    name = "index openbare ruimtes"
+    queryset = models.OpenbareRuimte.objects.prefetch_related('adressen')
+
+    def convert(self, obj):
+        return documents.from_openbare_ruimte(obj)
+
+
+#########################################################
+# gebieden tasks
+#########################################################
+
+
+class IndexUnescoTask(index.ImportIndexTask):
+    name = "index unesco"
+    queryset = models.Unesco.objects.all()
+
+    def convert(self, obj):
+        return documents.from_unesco(obj)
+
+
+class IndexBuurtTask(index.ImportIndexTask):
+    name = "index buurten"
+    queryset = models.Buurt.objects.all()
+
+    def convert(self, obj):
+        return documents.from_buurt(obj)
+
+
+class IndexBuurtcombinatieTask(index.ImportIndexTask):
+    name = "index buurtcombinaties"
+    queryset = models.Buurtcombinatie.objects.all()
+
+    def convert(self, obj):
+        return documents.from_buurtcombinatie(obj)
+
+
+class IndexGebiedsgerichtWerkenTask(index.ImportIndexTask):
+    name = "index gebiedsgerichtwerken"
+    queryset = models.Gebiedsgerichtwerken.objects.all()
+
+    def convert(self, obj):
+        return documents.from_gebiedsgerichtwerken(obj)
+
+
+class IndexStadsdeelTask(index.ImportIndexTask):
+    name = "index stadsdeel"
+    queryset = models.Stadsdeel.objects.all()
+
+    def convert(self, obj):
+        return documents.from_stadsdeel(obj)
+
+
+class IndexGrootstedelijkgebiedTask(index.ImportIndexTask):
+    name = "Index grootstedelijk"
+    queryset = models.Grootstedelijkgebied.objects.all()
+
+    def convert(self, obj):
+        return documents.from_grootstedelijk(obj)
+
+
+class IndexGemeenteTask(index.ImportIndexTask):
+    name = "index gemeenten"
+    queryset = models.Gemeente.objects.all()
+
+    def convert(self, obj):
+        return documents.from_gemeente(obj)
+
+
+class IndexWoonplaatsTask(index.ImportIndexTask):
+    name = "index woonplatsen"
+    queryset = models.Woonplaats.objects.all()
+
+    def convert(self, obj):
+        return documents.from_woonplaats(obj)
+
+
+##########################################################
+##########################################################
+
+
+class IndexNummerAanduidingTask(index.ImportIndexTask):
+    name = "index nummer aanduidingen"
+    queryset = models.Nummeraanduiding.objects.\
+        prefetch_related('verblijfsobject').\
+        prefetch_related('standplaats').\
+        prefetch_related('ligplaats').\
+        prefetch_related('openbare_ruimte')
+
+    def convert(self, obj):
+        return documents.from_nummeraanduiding_ruimte(obj)
+
+
+class IndexPandTask(index.ImportIndexTask):
+    name = "index pand"
+
+    queryset = models.Pand.objects.only('landelijk_id', 'pandnaam')
+
+    def convert(self, obj):
+        return documents.from_pand(obj)
+
+
+class IndexBouwblokTask(index.ImportIndexTask):
+    name = "index bouwblokken"
+    queryset = models.Bouwblok.objects.all()
+
+    def convert(self, obj):
+        return documents.from_bouwblok(obj)
+
 
 # These files don't have a UVA file
 class ImportWijkTask(batch.BasicTask):
@@ -1588,100 +1583,100 @@ class ImportBagJob(object):
             UpdateGrootstedelijkAttributenTask(),
         ]
 
-#
-# class IndexBagJob(object):
-#     name = "Delete and Fill Nummeraanduiding search-index"
-#
-#     def tasks(self):
-#         return [
-#             DeleteNummerAanduidingIndexTask(),
-#             IndexNummerAanduidingTask(),
-#         ]
-#
-#
-# class BuildIndexBagJob(object):
-#     name = "Fill Nummeraanduiding search-index"
-#
-#     def tasks(self):
-#         return [
-#             IndexNummerAanduidingTask(),
-#         ]
-#
-#
-# class DeleteIndexBagJob(object):
-#
-#     name = "Delete BAG related indexes"
-#
-#     def tasks(self):
-#         return [
-#             DeleteNummerAanduidingIndexTask(),
-#         ]
-#
-#
-# class IndexPandJob(object):
-#     name = "Delete and Fill Pand search-index"
-#
-#     def tasks(self):
-#         return [
-#             DeletePandTask(),
-#             IndexPandTask(),
-#         ]
-#
-#
-# class BuildIndexPandJob(object):
-#     name = "Fill Pand search-index"
-#
-#     def tasks(self):
-#         return [
-#             IndexPandTask(),
-#         ]
-#
-#
-# class DeleteIndexPandJob(object):
-#
-#     name = "Delete Pand related indexes"
-#
-#     def tasks(self):
-#         return [
-#             DeletePandTask(),
-#         ]
-#
-#
-# class DeleteIndexGebiedJob(object):
-#
-#     name = "Delete BAG_GEBIED index"
-#
-#     def tasks(self):
-#         return [
-#             DeleteGebiedIndexTask(),
-#             DeleteBouwblokIndexTask(),
-#         ]
-#
-#
-# class IndexNummerAanduidingJob(object):
-#     name = "Create new search index for Nummeraanduiding"
-#
-#     def tasks(self):
-#         return [
-#             DeleteNummerAanduidingIndexTask(),
-#             IndexNummerAanduidingTask()
-#         ]
-#
-#
-# class IndexGebiedenJob(object):
-#     """Important! This only adds to the bag index, but does not create it"""
-#
-#     name = "Create add gebieden to BAG index"
-#
-#     def tasks(self):
-#         return [
-#             IndexBouwblokTask(),
-#             IndexOpenbareRuimteTask(),
-#             IndexUnescoTask(),
-#             IndexBuurtTask(),
-#             IndexBuurtcombinatieTask(),
-#             IndexStadsdeelTask(),
-#             IndexGrootstedelijkgebiedTask(),
-#             IndexGebiedsgerichtWerkenTask(),
-#             IndexWoonplaatsTask(),
-#         ]
+
+class IndexBagJob(object):
+    name = "Delete and Fill Nummeraanduiding search-index"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            IndexNummerAanduidingTask(),
+        ]
+
+
+class BuildIndexBagJob(object):
+    name = "Fill Nummeraanduiding search-index"
+
+    def tasks(self):
+        return [
+            IndexNummerAanduidingTask(),
+        ]
+
+
+class DeleteIndexBagJob(object):
+
+    name = "Delete BAG related indexes"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+        ]
+
+
+class IndexPandJob(object):
+    name = "Delete and Fill Pand search-index"
+
+    def tasks(self):
+        return [
+            DeletePandTask(),
+            IndexPandTask(),
+        ]
+
+
+class BuildIndexPandJob(object):
+    name = "Fill Pand search-index"
+
+    def tasks(self):
+        return [
+            IndexPandTask(),
+        ]
+
+
+class DeleteIndexPandJob(object):
+
+    name = "Delete Pand related indexes"
+
+    def tasks(self):
+        return [
+            DeletePandTask(),
+        ]
+
+
+class DeleteIndexGebiedJob(object):
+
+    name = "Delete BAG_GEBIED index"
+
+    def tasks(self):
+        return [
+            DeleteGebiedIndexTask(),
+            DeleteBouwblokIndexTask(),
+        ]
+
+
+class IndexNummerAanduidingJob(object):
+    name = "Create new search index for Nummeraanduiding"
+
+    def tasks(self):
+        return [
+            DeleteNummerAanduidingIndexTask(),
+            IndexNummerAanduidingTask()
+        ]
+
+
+class IndexGebiedenJob(object):
+    """Important! This only adds to the bag index, but does not create it"""
+
+    name = "Create add gebieden to BAG index"
+
+    def tasks(self):
+        return [
+            IndexBouwblokTask(),
+            IndexOpenbareRuimteTask(),
+            IndexUnescoTask(),
+            IndexBuurtTask(),
+            IndexBuurtcombinatieTask(),
+            IndexStadsdeelTask(),
+            IndexGrootstedelijkgebiedTask(),
+            IndexGebiedsgerichtWerkenTask(),
+            IndexWoonplaatsTask(),
+        ]

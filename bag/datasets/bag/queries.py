@@ -165,7 +165,6 @@ def _basis_openbare_ruimte_query(
                                     'fields': [
                                         'naam',
                                         'naam_nen',
-                                        'naam_ptt',
                                         'postcode',
                                     ]
                                 }
@@ -235,7 +234,6 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
                 'fields': [
                     'straatnaam',
                     'straatnaam_nen',
-                    'straatnaam_ptt',
                 ]
             },
         },
@@ -261,7 +259,6 @@ def straatnaam_huisnummer_query(
                             'fields': [
                                 'straatnaam',
                                 'straatnaam_nen',
-                                'straatnaam_ptt',
                             ]
                         },
                     },

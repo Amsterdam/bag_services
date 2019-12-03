@@ -63,7 +63,7 @@ def load_docs(cls):
     bag_factories.NummeraanduidingFactory.create(
         type='05',
         postcode='9999ZZ',
-        openbare_ruimte=kade_ruimte, huisnummer=33, hoofdadres=True)
+        openbare_ruimte=kade_ruimte, huisnummer=33, type_adres='Hoofdadres')
 
     # marnixkade
     marnix_kade = bag_factories.OpenbareRuimteFactory.create(
@@ -71,34 +71,34 @@ def load_docs(cls):
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=marnix_kade, huisnummer=36, huisletter='F',
-        hoofdadres=True, postcode='1015XR')
+        type_adres='Hoofdadres', postcode='1015XR')
 
     rozenstraat = bag_factories.OpenbareRuimteFactory.create(
         naam="Rozenstraat")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=228, huisletter='a',
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1')
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=228, huisletter='b',
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1')
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='1')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1')
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='2')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='2')
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='3')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='3')
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        hoofdadres=True, postcode='1016SZ', huisnummer_toevoeging='4')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='4')
 
     bag_factories.BouwblokFactory.create(code='RN35')
     bag_factories.BouwblokFactory.create(code='AB01')
