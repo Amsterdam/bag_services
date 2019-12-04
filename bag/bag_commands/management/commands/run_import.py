@@ -18,7 +18,7 @@ class Command(BaseCommand):
     Import datainto database. with options to select dataset
     """
     ordered = [
-#        'bag',
+        'bag',
         'gebieden',
         'brk',
         'wkpb',
