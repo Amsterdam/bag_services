@@ -142,19 +142,25 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
     # brk
+
     'brk/AmsterdamRegio/CSV_Actueel/BRK_Gemeente_': 365,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_aantekening_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_stukdeel_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_object_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_kadastraal_subject_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_aantekening_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_zakelijk_recht_': 35,
     'brk/AmsterdamRegio/CSV_Actueel/BRK_c_aard_zakelijkrecht_': 35,
+    'brk/AmsterdamRegio/CSV_Actueel/BRK_BRK_BAG_': 35,
     # brk SHP
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_Gemeente_20191017.shp': 365,
-   #  'brk/AmsterdamRegio/SHP_Actueel/BRK_kadastraal_object_': 35,
-   #  'brk/AmsterdamRegio/SHP_Actueel/BRK_kadastraal_subject_': 35,
-   #  'brk/AmsterdamRegio/SHP_Actueel/BRK_aantekening_': 35,
-   #  'brk/AmsterdamRegio/SHP_Actueel/BRK_zakelijke_recht_': 35,
-   #  'brk/AmsterdamRegio/SHP_Actueel/BRK_c_aard_zakelijkrecht_': 35,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_Adam_totaal_G.shp': 365,  # For now, set all max_age to 365
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_GEMEENTE.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE_L.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE_L.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_bijpijling.shp': 365,
+    'brk/AmsterdamRegio/SHP_Actueel/BRK_perceelnummer.shp': 365,
     # wkpb
     'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
     'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
@@ -187,7 +193,7 @@ def fetch_gob_files(container_name, prefix):
         m = re.search(r'BRK[a-zA-Z_]+(\d{8})\.csv$', file_path)
         if m:
             file_key = file_path[:-12]
-            target_filename = path[-1][:-12]+path[-1][-4:]
+            target_filename = path[-1][:-12] + path[-1][-4:]
         else:
             file_key = file_path
             target_filename = path[-1]
@@ -204,7 +210,7 @@ def fetch_gob_files(container_name, prefix):
         if delta.days > file_max_age:
             raise ValueError(f"""
 
-            Delivery of file {file_name}is late!
+            Delivery of file {file_path} is late!
 
             {file_path} age {delta.days} max_age: {file_max_age}
             """)
