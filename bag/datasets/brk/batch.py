@@ -828,11 +828,11 @@ class ImportKadasterJob(object):
 
     def tasks(self):
         return [
-            ImportGemeenteTask(self.brk_shp),
-#             ImportKadastraleGemeenteTaskLines(self.brk_shp, self.stash),
-#             ImportKadastraleGemeenteTask(self.brk_shp, self.stash),
-#             ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
-#             ImportKadastraleSectieTask(self.brk_shp, self.stash),
+             ImportGemeenteTask(self.brk_shp),
+             ImportKadastraleGemeenteTaskLines(self.brk_shp, self.stash),
+             ImportKadastraleGemeenteTask(self.brk_shp, self.stash),
+             ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
+             ImportKadastraleSectieTask(self.brk_shp, self.stash),
 
             ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
