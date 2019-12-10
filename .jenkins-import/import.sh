@@ -32,6 +32,6 @@ dc run --rm importer ./docker-index-es.sh
 
 echo "Running backups"
 dc exec -T database backup-db.sh bag_v11
-dc exec -T elasticsearch backup-indices.sh bag bag_v11*,brk_v11*,v11_nummeraanduiding
+dc exec -T elasticsearch backup-indices.sh bag_v11 bag_v11*,brk_v11*,v11_nummeraanduiding
 
 echo "Done"

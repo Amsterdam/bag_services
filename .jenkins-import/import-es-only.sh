@@ -7,7 +7,7 @@ set -x  # print all commands
 DIR="$(dirname $0)"
 
 dc() {
-	docker-compose -p bag -f ${DIR}/docker-compose.yml $*;
+	docker-compose -p bag_v11 -f ${DIR}/docker-compose.yml $*;
 }
 
 trap 'dc kill ; dc rm -f' EXIT
@@ -25,13 +25,13 @@ dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
 # restore database bag backup.
-#docker-compose -p bag exec -T database update-db.sh bag_v11 spreeker
+# docker-compose -p bag_v11 exec -T database update-db.sh bag_v11 spreeker
 dc exec -T database update-db.sh bag_v11
 
 echo "Starting Elastic importer"
 dc run --rm importer ./docker-index-es.sh
 
 echo "Make es backup"
-dc exec -T elasticsearch backup-indices.sh bag bag_v11*,brk_v11*,v11_nummeraanduiding
+dc exec -T elasticsearch backup-indices.sh bag_v11 bag_v11*,brk_v11*,v11_nummeraanduiding
 
 echo "Done"
