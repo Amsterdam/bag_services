@@ -64,8 +64,8 @@ connections = {
 
 # zet in data directory laat diva voor test data.
 # in settings een verschil maken
-DIVA_DIR = '/app/data'
-GOB_DIR = '/app/data/gob'
+DIVA_DIR = os.getenv('DIVA_DIR', '/app/data')
+GOB_DIR = os.getenv('GOB_DIR', '/app/data/gob')
 
 
 @lru_cache(maxsize=None)

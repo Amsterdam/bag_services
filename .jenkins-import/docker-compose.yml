@@ -40,6 +40,7 @@ services:
       METADATA_URL:
       BAG_OBJECTSTORE_PASSWORD:
       GOB_OBJECTSTORE_PASSWORD:
+      GOB_OBJECTSTORE_ENV:
       DATAPUNT_API_URL:
     command: >
       bash -c "/app/docker-import-db.sh"
