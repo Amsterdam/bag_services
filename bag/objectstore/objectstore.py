@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Module Contains logic to get the latest most up to date
 files to import in the BAG / BRK / WKPB database

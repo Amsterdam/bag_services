@@ -52,6 +52,10 @@ The BAG API should now be available on http://localhost:8000/
 
 To run an import, execute:
 
+	export BAG_OBJECTSTORE_PASSWORD=...
+	export GOB_OBJECTSTORE_PASSWORD=...
+
+	DIVA_DIR=./data GOB_DIR=./data/gob bag/objectstore/objectstore.py
 	./bag/manage.py run_import
 	./bag/manage.py elastic_indices --build
 
