@@ -37,7 +37,7 @@ if (BRANCH == "gob_only_imports") {
         stage("Build image") {
             tryStep "build", {
                 docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
-                    def image = docker.build("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
+                    def image = docker.build("datapunt/bag:${env.BUILD_NUMBER}")
                     image.push()
                 }
             }
@@ -46,7 +46,7 @@ if (BRANCH == "gob_only_imports") {
         stage('Push acceptance image') {
             tryStep "image tagging", {
                 docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
-                    def image = docker.image("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
+                    def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
                     image.pull()
                     image.push("acceptance")
                 }
@@ -63,7 +63,7 @@ if (BRANCH == "gob_only_imports") {
 //        stage('Push production image') {
 //            tryStep "image tagging", {
 //                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
-//                def image = docker.image("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
+//                def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
 //                    image.pull()
 //                    image.push("production")
 //                    image.push("latest")
