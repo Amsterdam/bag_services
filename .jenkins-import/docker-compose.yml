@@ -2,7 +2,7 @@ version: "3.5"
 services:
   database:
     image: amsterdam/postgres11
-    container_name: bag_v11_database_1
+    container_name: "bag_v11${DC_IMPORT_NETWORK}_database_1"
     environment:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag_v11
@@ -16,7 +16,7 @@ services:
 
   elasticsearch:
     image: amsterdam/elasticsearch6
-    container_name: bag_v11_elasticsearch_1
+    container_name: "bag_v11${DC_IMPORT_NETWORK}_elasticsearch_1"
     networks:
       - network1
     volumes:
@@ -26,7 +26,7 @@ services:
 
   importer:
     image: repo.data.amsterdam.nl/datapunt/bag_v11:${ENVIRONMENT}
-    container_name: bag_v11_importer_1
+    container_name: "bag_v11${DC_IMPORT_NETWORK}_importer_1"
     networks:
       - network1
     links:
@@ -47,4 +47,4 @@ services:
 
 networks:
   network1:
-    name: bag_v11
+    name: "bag_v11${DC_IMPORT_NETWORK}"
