@@ -13,7 +13,7 @@ class ImportZakelijkRechtTaskTest(TaskTestCase):
         )
 
     def task(self):
-        return batch.ImportZakelijkRechtTask("diva/brk")
+        return batch.ImportZakelijkRechtTask("gob/brk")
 
     def test_import(self):
         self.run_task()

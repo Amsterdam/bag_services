@@ -9,11 +9,11 @@ from .. import models, batch
 
 from batch.test import TaskTestCase
 
-BAG = 'diva/bag'
-BAG_WKT = 'diva/bag_wkt'
-OPR_BESCHRIJVING = 'diva/bag_openbareruimte_beschrijving'
-GEBIEDEN = 'diva/gebieden'
-GEBIEDEN_SHP = 'diva/gebieden_shp'
+BAG = 'gob/bag'
+BAG_WKT = 'gob/bag_wkt'
+OPR_BESCHRIJVING = 'gob/bag_openbareruimte_beschrijving'
+GEBIEDEN = 'gob/gebieden'
+GEBIEDEN_SHP = 'gob/gebieden_shp'
 
 
 log = logging.getLogger(__name__)

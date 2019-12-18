@@ -3,7 +3,7 @@ import datetime
 from batch.test import TaskTestCase
 from .. import models, batch
 
-BEPERKINGEN = 'diva/beperkingen'
+BEPERKINGEN = 'gob/beperkingen'
 
 
 class ImportBeperkingcode(TaskTestCase):

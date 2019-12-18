@@ -20,8 +20,8 @@ class TestObjectstore(TestCase):
             if ob['name'].startswith('bagtest/'):
                 objectstore.delete_from_objectstore(container_name, ob['name'])
 
-        objects = ['diva/bag/{}'.format(filename)
-                   for filename in os.listdir('diva/bag')]
+        objects = ['gob/bag/{}'.format(filename)
+                   for filename in os.listdir('gob/bag')]
 
         names = set()
 
