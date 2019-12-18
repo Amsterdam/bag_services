@@ -151,6 +151,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         inschrijfnummer = int(r['identificatie'])
         if inschrijfnummer not in self.beperkingen:
             log.warning(f'Brondocument {inschrijfnummer} references non-existing beperking; ignoring')
+            return None
 
         # soort_besluit = {
         #     'Opleggen': 'beperkingenbesluit',
