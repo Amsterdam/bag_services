@@ -25,7 +25,7 @@ services:
     command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
   importer:
-    image: repo.data.amsterdam.nl/datapunt/bag-v11:${ENVIRONMENT}
+    image: repo.data.amsterdam.nl/datapunt/bag_v11:${ENVIRONMENT}
     container_name: "bag_v11${DC_IMPORT_NETWORK}_importer_1"
     networks:
       - network1
