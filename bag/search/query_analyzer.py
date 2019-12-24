@@ -107,7 +107,7 @@ class QueryAnalyzer(object):
     def __init__(self, query: str):
         self.query = query
         self._cleaned_query = query.translate(_REPLACE_TABLE).lower()
-        self._tokens = re.findall('[^0-9 ]+|\\d+', self._cleaned_query)
+        self._tokens = re.findall('\\de |[^0-9 ]+|\\d+', self._cleaned_query)
         self._token_count = len(self._tokens)
 
         self._huisnummer_index = None

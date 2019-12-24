@@ -761,8 +761,6 @@ class SearchViewSet(viewsets.ViewSet):
         except TransportError:
             log.exception("Could not execute search query " + query)
             log.debug(json.dumps(search.to_dict(), indent=4))
-            # Todo fix this
-            # https://github.com/elastic/elasticsearch/issues/11340#issuecomment-105433439
             return Response([], 500)
 
         response = OrderedDict()
