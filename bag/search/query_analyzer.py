@@ -107,7 +107,7 @@ class QueryAnalyzer(object):
     def __init__(self, query: str):
         self.query = query
         self._cleaned_query = query.translate(_REPLACE_TABLE).lower()
-        self._tokens = re.findall('^\\de |[^0-9 ]+|\\d+', self._cleaned_query)
+        self._tokens = re.findall(r'^\de |[^0-9 ]+|\d+', self._cleaned_query)
         self._token_count = len(self._tokens)
 
         self._huisnummer_index = None
@@ -332,7 +332,7 @@ class QueryAnalyzer(object):
         if len(self.query) < 5:
             return False
 
-        return re.match('^\d+$', self.query) is not None
+        return re.match(r'^\d+$', self.query) is not None
 
     def get_landelijk_id(self) -> str:
         assert self.is_landelijk_id_prefix()
@@ -346,4 +346,4 @@ class QueryAnalyzer(object):
         contains more then 5 consecutive numbers it is not
         a name
         """
-        return re.search('(^\d+$|\d{5})', self.query) is None
+        return re.search(r'(^\d+$|\d{5})', self.query) is None
