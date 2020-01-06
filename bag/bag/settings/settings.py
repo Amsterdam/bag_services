@@ -108,6 +108,7 @@ ALLOWED_HOSTS = [
     '.localdomain',
     '.data.amsterdam.nl',
     'bag-api.service.consul',
+    'bag_v11-api.service.consul',
     '.amsterdam.nl',
     '.service.consul',
 ]
