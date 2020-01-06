@@ -43,6 +43,9 @@ class SubjectSearchTest(APITestCase):
         gracht = bag_factories.OpenbareRuimteFactory.create(
             naam="Prinsengracht", type='01')
 
+        straat_1e = bag_factories.OpenbareRuimteFactory.create(
+            naam="1e Boomdwarsstraat", type='01')
+
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=192,
             huisletter='A',
@@ -99,6 +102,14 @@ class SubjectSearchTest(APITestCase):
             openbare_ruimte=kon_straat
         )
 
+        bag_factories.NummeraanduidingFactory.create(
+            huisnummer=8,
+            huisnummer_toevoeging='3',
+            postcode='1234AB',
+            type='01',  # Verblijfsobject
+            openbare_ruimte=straat_1e
+        )
+
         batch.execute(datasets.bag.batch.IndexBagJob())
         batch.execute(datasets.brk.batch.IndexKadasterJob())
 
@@ -135,6 +146,30 @@ class SubjectSearchTest(APITestCase):
             first = response.data['results'][0]
             self.assertEqual(first['straatnaam'], "Anjeliersstraat")
 
+    def test_straat_1e_query(self):
+        for fmt, content_type in self.formats:
+
+            url = '/atlas/search/adres/'
+
+            response = self.client.get(
+                '/atlas/search/adres/', {'q': '1e boomdw', 'format': fmt}
+            )
+
+            self.assertEqual(
+                f"{content_type}",
+                response["Content-Type"],
+                "Wrong Content-Type for {}".format(url),
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('results', response.data)
+            self.assertIn('count', response.data)
+
+            self.assertEqual(response.data['count'], 1)
+
+            first = response.data['results'][0]
+            self.assertEqual(first['straatnaam'], "1e Boomdwarsstraat")
+
     def test_straat_vbo_status(self):
         response = self.client.get(
             '/atlas/search/adres/', {'q': 'Anjeliersstraat 42 F'})
@@ -163,6 +198,17 @@ class SubjectSearchTest(APITestCase):
 
         self.assertEqual(
             response.data['results'][0]['adres'], "Prinsengracht 192A")
+
+    def test_adres_1e_query(self):
+        response = self.client.get(
+            "/atlas/search/adres/", {'q': "1e boomdwarsstraat 8 3"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('results', response.data)
+        self.assertIn('count', response.data)
+        self.assertEqual(response.data['count'], 1)
+
+        self.assertEqual(
+            response.data['results'][0]['adres'], "1e Boomdwarsstraat 8-3")
 
     def test_postcode_huisnummer_query(self):
         response = self.client.get(

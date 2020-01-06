@@ -74,7 +74,7 @@ in a file with the name datapunt.key (chmod 600):
 To import the latest elastic index from acceptance:
 
 	docker-compose exec elasticsearch clean-el.sh
-	docker-compose exec elasticsearch update-el.sh bag <username>
+	docker-compose exec elasticsearch update-el.sh bag_v11 <username>
 
 The database import takes approximately 10 minutes.
 The elastic index import takes approximately 5 minutes.
