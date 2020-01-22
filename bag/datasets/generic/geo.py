@@ -25,17 +25,18 @@ def process_wkt(path, filename, callback):
             callback(row[0], GEOSGeometry(row[1]))
 
 
-def process_shp(path, filename, callback):
+def process_shp(path, filename, callback, encoding='ISO-8859-1'):
     """
     Processes a shape file
 
     :param path: directory containing the file
     :param filename: name of the file
     :param callback: function taking a shapefile record; called for every row
+    :param encoding: optional encoding for the shapefile
     :return:
     """
     source = os.path.join(path, filename)
-    ds = DataSource(source, encoding='ISO-8859-1')
+    ds = DataSource(source, encoding=encoding)
     lyr = ds[0]
     for feature in lyr:
         callback(feature)

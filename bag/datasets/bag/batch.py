@@ -17,6 +17,7 @@ from . import models, documents
 log = logging.getLogger(__name__)
 
 GOB_CSV_ENCODING = 'utf-8-sig'
+GOB_SHAPE_ENCODING = 'utf-8'
 
 
 class ImportGemeenteTask(batch.BasicTask):
@@ -1061,7 +1062,7 @@ class ImportWijkTask(batch.BasicTask):
     def process(self):
         shp_file = "GBD_wijk.shp"
         geo.process_shp(
-            self.shp_path, shp_file, self.process_feature)
+            self.shp_path, shp_file, self.process_feature, GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
 
@@ -1182,7 +1183,8 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         shp_file = "GBD_ggw_gebied.shp"
         geo.process_shp(
             self.shp_path, shp_file,
-            self.process_feature)
+            self.process_feature,
+            GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
         sdl = feat.get('sdl_code')
@@ -1234,7 +1236,8 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
         shp_file = "GBD_ggw_praktijkgebied.shp"
         geo.process_shp(
             self.shp_path, shp_file,
-            self.process_feature)
+            self.process_feature,
+            GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
         naam = feat.get('naam')
@@ -1270,7 +1273,7 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
     def process(self):
         geo.process_shp(
             self.shp_path,
-            "GBD_grootstedelijke_projecten.shp", self.process_feature)
+            "GBD_grootstedelijke_projecten.shp", self.process_feature, GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
         naam = feat.get('NAAM')
@@ -1305,7 +1308,7 @@ class ImportUnescoTask(batch.BasicTask):
         validate_geometry(models.Unesco)
 
     def process(self):
-        geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature)
+        geo.process_shp(self.shp_path, "GBD_unesco.shp", self.process_feature, GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
         naam = feat.get('NAAM')
@@ -1545,6 +1548,15 @@ class ImportBagJob(object):
         self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
         self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
         self.gob_bag_path = os.path.join(gob_dir, 'bag/CSV_Actueel')
+        # For utf-8 files SHAPE_ENCODING needs to be set.
+        # See : https://gis.stackexchange.com/questions/195862/preserving-special-chars-using-osgeo-ogr-driver-to-shapefile-in-python
+        os.environ['SHAPE_ENCODING'] = "utf-8"
+
+    def __del__(self):
+        # TODO : shapefiles for BRK are not yet in utf-8.
+        #        If every shapefile is utf-8 SHAPE_ENCODING variable can be set globally
+        os.environ.pop('SHAPE_ENCODING')
+
 
     def tasks(self):
 
