@@ -156,6 +156,7 @@ if settings.DEBUG:
 
 urlpatterns.extend(
     [
+        url('^bag/v1.1/docs/api-docs/bag/$', bag_schema_view),
         url('^bag/docs/api-docs/bag/$', bag_schema_view),
         url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
         url('^bag/docs/api-docs/brk/$', brk_schema_view),
