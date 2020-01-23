@@ -7,11 +7,6 @@ SCOPE_BRK_RSN = 'BRK/RSN'
 # Read Object
 SCOPE_BRK_RO = 'BRK/RO'
 
-# Aantekeningen
-SCOPE_BRK_RAT = 'BRK/RAT'
-# Lezen alle WKPB details van Kadastrale Objecten
-SCOPE_BRK_RW = 'BRK/RW'
-
 # WKPB
 # name: Wet Kenbaarheid Publiekrechtelijke Beperkingen
 # described_by: 'https://www.amsterdam.nl/stelselpedia/wkpb-index/'
@@ -27,10 +22,6 @@ all_options = {
     # SCOPE_BRK_RZR = 'BRK/RZR'
     # Read Object
     'BRK/RO': "Read kadastraal object",
-    # Aantekeningen
-    'BRK/RAT': "Aantekeningen",
-    # Lezen alle WKPB details van Kadastrale Objecten
-    'BRK/RW': "Alle WKPB details",
     # WKPB
     # name: Wet Kenbaarheid Publiekrechtelijke Beperkingen
     # described_by: 'https://www.amsterdam.nl/stelselpedia/wkpb-index/'
