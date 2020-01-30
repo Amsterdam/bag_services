@@ -40,7 +40,7 @@ class QueryTest(APITransactionTestCase):
         """
         response = self.client.get(
             "/atlas/search/kadastraalsubject/", {'q': "kikker"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         self.assertNotIn('results', response.data)
 
     def test_bouwblok(self):

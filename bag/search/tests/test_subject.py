@@ -67,13 +67,13 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'Stephan Preeker'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'stoeptegel'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         self.assertNotIn("stoeptegel", str(response.data))
 
     def test_match_subject2_employee_authorized(self):
@@ -102,7 +102,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'Kikker'})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         self.assertNotIn("Kermet de Kikker", str(response.data))
 
@@ -110,7 +110,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
             '/atlas/search/kadastraalsubject/',
             {'q': 'Kermet'})
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         self.assertNotIn("Kermet de Kikker", str(response.data))
 
@@ -118,7 +118,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
             '/atlas/search/kadastraalsubject/',
             {'q': 'stoeptegel'})
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         self.assertNotIn("stoeptegel", str(response.data))
 

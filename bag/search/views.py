@@ -9,6 +9,8 @@ import logging
 import re
 from collections import OrderedDict
 from collections import defaultdict
+
+from rest_framework.exceptions import PermissionDenied
 from typing import AbstractSet, List
 from urllib.parse import quote, urlparse
 
@@ -840,7 +842,7 @@ class SearchSubjectViewSet(SearchViewSet):
         querylist = authorized_subject_queries(request, analyzer)
 
         if not querylist:
-            return []
+            raise PermissionDenied
 
         # authorized only!
         search = querylist[0].to_elasticsearch_object(elk_client)
