@@ -65,4 +65,7 @@ class RandomShitTest(APITestCase):
             response = self.client.get(url, {
                 'q': "".join(query)})
 
-            self.assertEqual(response.status_code, 200, url)
+            if url == '/atlas/search/kadastraalsubject/':
+                self.assertEqual(response.status_code, 403, url)
+            else:
+                self.assertEqual(response.status_code, 200, url)
