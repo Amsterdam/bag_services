@@ -196,7 +196,7 @@ LOGGING = {
 
         'search': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': False,
         },
 

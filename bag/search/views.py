@@ -439,17 +439,19 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         # create elk queries
         for q in query_components:  # type: ElasticQueryWrapper
-
             search = q.to_elasticsearch_object(self.client)
 
-            log.debug(json.dumps(search.to_dict(), indent=4))
+            log.debug(
+                "Running query at %s: %s", search._index,
+                json.dumps(search.to_dict(), indent=4)
+            )
 
             # get the result from elastic
             try:
                 result = search.execute(ignore_cache=ignore_cache)
             except TransportError:
                 log.exception(
-                    'FAILED ELK SEARCH: %s',
+                    'FAILED ELK SEARCH: at %s %s', search._index,
                     json.dumps(search.to_dict(), indent=4))
                 continue
 
@@ -756,12 +758,15 @@ class SearchViewSet(viewsets.ViewSet):
 
         ignore_cache = settings.DEBUG
 
-        log.debug(json.dumps(search.to_dict(), indent=4))
+        log.debug(
+            "Running query at %s: %s", search._index,
+            json.dumps(search.to_dict(), indent=4)
+        )
 
         try:
             result = search.execute(ignore_cache=ignore_cache)
         except TransportError:
-            log.exception("Could not execute search query " + query)
+            log.exception("Could not execute search query at %s: %s", search._index, query)
             log.debug(json.dumps(search.to_dict(), indent=4))
             return Response([], 500)
 
