@@ -34,6 +34,7 @@ Developing
 Use `docker-compose` to start a local database and Elasticsearch service. Use
 `sudo` if you're running on Linux.
 
+	cp -i ~/.ssh/id_rsa.key ~/.ssh/datapunt.key
 	docker-compose up -d --build database elasticsearch
 
 Then, create and activate a new virtual environment in the `.venv` directory:
