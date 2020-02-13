@@ -2,32 +2,26 @@
 *.pyc
 **/__pycache__
 
-# Pytest
+# Development
 .cache
-
-# IntelliJ
-.idea
+htmlcov/
+.coverage
+.envrc
 
 # Other..?
-*.iml
-batch.log
-.jenkins/backups/
-reports/
 .DS_Store
-
-# PyDev (Eclipse)
-.project
-.pydevproject
-.settings
 
 # venv
 .venv
 venv
 .env
-/out/
-/data/
-
-.vscode
 
 # pyenv
 .python-version
+
+# IDE
+.idea/
+.vscode/
+.project
+.pydevproject
+.settings

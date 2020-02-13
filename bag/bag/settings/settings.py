@@ -90,10 +90,10 @@ ELASTIC_INDICES = {
     'BAG_PAND': 'bag_v11_pand',
 }
 
-TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+TESTING = 'pytest' in sys.modules or (len(sys.argv) > 1 and sys.argv[1] == 'test')
 if TESTING:
     for k, v in ELASTIC_INDICES.items():
-        ELASTIC_INDICES[k] += 'test'
+        ELASTIC_INDICES[k] = f'test_{v}'
 
 BATCH_SETTINGS = dict(
     batch_size=5000
