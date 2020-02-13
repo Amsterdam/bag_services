@@ -1,22 +1,14 @@
 import logging
 
-from django.conf import settings
-from django.db.models.query import RawQuerySet
-from elasticsearch import helpers
 import elasticsearch
 import elasticsearch_dsl as es
-
+from django.conf import settings
+from django.db.models import BigIntegerField, F
 from django.db.models.functions import Cast
-from django.db.models import F
-from django.db.models import BigIntegerField
-
+from elasticsearch import helpers
 from elasticsearch.client import IndicesClient
-
 from elasticsearch.exceptions import NotFoundError
-
 from elasticsearch_dsl.connections import connections
-
-import time
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +51,7 @@ class DeleteIndexTask(object):
 
 
 class ImportIndexTask(object):
+    name = None
     queryset = None
     sequential = False  # Non integer PK
     last_id = None
@@ -189,14 +182,12 @@ class ImportIndexTask(object):
             return
 
         batch_size = settings.BATCH_SETTINGS['batch_size']
-
         loopidx = 0
 
         # gets updates when we save object in es
         self.last_id = None
 
         while True:
-
             loopidx += 1
 
             if not self.last_id:
@@ -204,9 +195,10 @@ class ImportIndexTask(object):
             else:
                 qs_ss = qs_s.filter(id__gt=self.last_id)[:batch_size]
 
+            percentage = int((loopidx * batch_size - 1) / qs_count * 100)
             log.debug(
-                'Batch %4d %4d %s  %s',
-                loopidx, loopidx*batch_size, self.name,
+                'Batch %4d %6d %3d%% %s  %s',
+                loopidx, loopidx * batch_size, percentage, self.name,
                 self.last_id
             )
 
