@@ -292,18 +292,19 @@ def from_bouwblok(n: models.Bouwblok):
 
 
 def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding:
+    openbare_ruimte = n.openbare_ruimte
+    adresseerbaar_object = n.adresseerbaar_object
+
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.comp_address = "{0} {1}".format(n.openbare_ruimte.naam,
-                                        n.toevoeging)
-    doc.comp_address_nen = "{0} {1}".format(n.openbare_ruimte.naam_nen,
-                                            n.toevoeging)
+    doc.comp_address = "{0} {1}".format(openbare_ruimte.naam, n.toevoeging)
+    doc.comp_address_nen = "{0} {1}".format(openbare_ruimte.naam_nen, n.toevoeging)
     doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
-    doc.straatnaam = n.openbare_ruimte.naam
-    doc.straatnaam_nen = n.openbare_ruimte.naam_nen
-    doc.straatnaam_keyword = n.openbare_ruimte.naam
-    doc.straatnaam_nen_keyword = n.openbare_ruimte.naam_nen
+    doc.straatnaam = openbare_ruimte.naam
+    doc.straatnaam_nen = openbare_ruimte.naam_nen
+    doc.straatnaam_keyword = openbare_ruimte.naam
+    doc.straatnaam_nen_keyword = openbare_ruimte.naam_nen
     doc.huisnummer = n.huisnummer
     doc.toevoeging = n.toevoeging
 
@@ -316,11 +317,11 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding
     doc.landelijk_id = n.landelijk_id
 
     # verblijfsobject status
-    if n.adresseerbaar_object:
-        doc.vbo_status = n.adresseerbaar_object.status
-        doc.adresseerbaar_object_id = n.adresseerbaar_object.landelijk_id
+    if adresseerbaar_object:
+        doc.vbo_status = adresseerbaar_object.status
+        doc.adresseerbaar_object_id = adresseerbaar_object.landelijk_id
 
-    if n.bron:
+    if n.bron_id:
         doc.bron = n.bron.omschrijving
 
     # if not doc.subtype:
