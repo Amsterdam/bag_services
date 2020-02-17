@@ -133,6 +133,12 @@ class QueryTest(APITransactionTestCase):
 
             self.assertIn('Rozenstraat 228', str(response.data))
 
+    def test_typeahead_bag_adres_quotes(self):
+        for name in ("laing's nekstraat", "laing's", "laing"):
+            response = self.client.get("/atlas/typeahead/bag/", {'q': name})
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('"Laing\'s Nekstraat"', str(response.data))
+
     def test_typeahead_bag_openbare_ruimte(self):
 
         for fmt, content_type in self.formats:

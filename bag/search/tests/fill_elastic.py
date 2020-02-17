@@ -31,6 +31,10 @@ def load_docs(cls):
     bag_factories.OpenbareRuimteFactory.create(
         naam="Brughuis", type='05')
 
+    # Special chars
+    bag_factories.OpenbareRuimteFactory.create(
+        naam="Laing's Nekstraat", type='01')
+
     anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
         naam="Anjeliersstraat", type='01')
 

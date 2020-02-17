@@ -20,6 +20,7 @@ orderings = {
 ####################################
 
 # Replaces the number street shortening with the actual word
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-mapping-charfilter.html
 synonym_filter = analysis.token_filter(
     'synonyms',
     type='synonym',
@@ -41,14 +42,12 @@ huisnummer_expand = analysis.token_filter(
 
 
 # Change dash and dot to space
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-pattern-replace-charfilter.html
 naam_stripper = analysis.char_filter(
     'naam_stripper',
-    type='mapping',
-    mappings=[
-        "-=>' '",  # change '-' to separator
-        ".=>' '",  # change '.' to separator
-        "/=>' '",  # change '/' to separator
-    ]
+    type="pattern_replace",
+    pattern=r"[-./']",  # replace these with spaces: "- . / '"
+    replace=" ",
 )
 
 # normalizes ., -, / to space from text

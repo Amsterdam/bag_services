@@ -1,8 +1,8 @@
 import re
 import string
 
-_REPLACE_TABLE = "".maketrans(
-    string.punctuation, len(string.punctuation) * " ")
+_REPLACE_CHARS = string.punctuation.replace("'", "")  # except "Laing's Nekstraat"
+_REPLACE_TABLE = str.maketrans(_REPLACE_CHARS, len(_REPLACE_CHARS) * " ")
 
 
 class KadastraalObjectQuery(object):
@@ -326,6 +326,9 @@ class QueryAnalyzer(object):
         Assuming that this query represents a straatnaam, this returns the
         straatnaam.
         """
+        # For "Laing's Nekstraat" we no longer split the quotes, as the ES analyzer
+        # handles that. Perhaps other punctuation doesn't have to be split either,
+        # meaning self.query could be returned instead.
         return " ".join(self._tokens)
 
     def is_landelijk_id_prefix(self) -> bool:
