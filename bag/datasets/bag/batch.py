@@ -869,12 +869,6 @@ class ImportPandTask(batch.BasicTask):
         return pk, models.Pand(**values)
 
 
-BAG_DOC_TYPES = [
-    documents.Bouwblok,
-    documents.Gebied,
-]
-
-
 class DeleteGebiedIndexTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG_GEBIED']
     doc_types = [documents.Gebied]
@@ -893,37 +887,6 @@ class DeleteNummerAanduidingIndexTask(index.DeleteIndexTask):
 class DeletePandTask(index.DeleteIndexTask):
     index = settings.ELASTIC_INDICES['BAG_PAND']
     doc_types = [documents.Pand]
-
-
-class IndexLigplaatsTask(index.ImportIndexTask):
-    name = "index ligplaatsen"
-    queryset = models.Ligplaats.objects.\
-        prefetch_related('adressen').\
-        prefetch_related('adressen__openbare_ruimte')
-
-    def convert(self, obj):
-        return documents.from_ligplaats(obj)
-
-
-class IndexStandplaatsTask(index.ImportIndexTask):
-    name = "index standplaatsen"
-    queryset = models.Standplaats.objects.\
-        prefetch_related('adressen').\
-        prefetch_related('adressen__openbare_ruimte')
-
-    def convert(self, obj):
-        return documents.from_standplaats(obj)
-
-
-class IndexVerblijfsobjectTask(index.ImportIndexTask):
-    name = "index verblijfsobjecten"
-    queryset = models.Verblijfsobject.objects.\
-        prefetch_related('adressen').\
-        prefetch_related('adressen__openbare_ruimte').\
-        prefetch_related('gebruiksdoelen')
-
-    def convert(self, obj):
-        return documents.from_verblijfsobject(obj)
 
 
 class IndexOpenbareRuimteTask(index.ImportIndexTask):
