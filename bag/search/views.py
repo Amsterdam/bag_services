@@ -3,6 +3,7 @@ Typeahead bag, brk
 
 Search    bag, brk
 """
+from __future__ import annotations
 
 import json
 import logging
@@ -11,7 +12,7 @@ from collections import OrderedDict
 from collections import defaultdict
 
 from rest_framework.exceptions import PermissionDenied
-from typing import AbstractSet, List
+from typing import AbstractSet, Callable, List
 from urllib.parse import quote, urlparse
 
 from django.conf import settings
@@ -21,6 +22,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl import Search
 from rest_framework import viewsets, metadata
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.compat import coreapi, coreschema
@@ -35,6 +37,8 @@ from search.query_analyzer import QueryAnalyzer
 
 
 log = logging.getLogger(__name__)
+
+CallableQueryFunction = Callable[[QueryAnalyzer], ElasticQueryWrapper]
 
 # Mapping of subtypes with detail views
 _details = {
@@ -241,7 +245,7 @@ def collect_queries(query_selectors, analyzer):
     return queries
 
 
-def find_default_queries(q_select):
+def find_default_queries(q_select) -> List[ElasticQueryWrapper]:
     """
     return the default queries.
     filter by selected queries if set
@@ -264,7 +268,7 @@ def find_default_queries(q_select):
 def select_queries(
         query_string: str,
         analyzer: QueryAnalyzer,
-        q_select: AbstractSet[str] = ()) -> [ElasticQueryWrapper]:
+        q_select: AbstractSet[str] = ()) -> List[ElasticQueryWrapper]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -409,7 +413,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-    def authorized_queries(self, request, analyzer):
+    def authorized_queries(self, request: Request, analyzer) -> List[ElasticQueryWrapper]:
         """
         Overide this method with custom authorization for your
         data
@@ -417,14 +421,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
         return []
 
     def autocomplete_queries(
-            self, request, query, q_select: AbstractSet[str] = set()):
+            self, request, query: str, q_select: AbstractSet[str]):
         """provide autocomplete suggestions"""
 
         # get the relevant queries
-
         analyzer = QueryAnalyzer(query)
-
-        query_components = select_queries(query, analyzer, q_select)
+        query_components = select_queries(query, analyzer, q_select or set())
 
         authorized_queries = self.authorized_queries(request, analyzer)
         # if you are authorized to look for names
@@ -529,7 +531,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         return ordered_results
 
-    def _abstr_list(self, request, q_select: AbstractSet[str]):
+    def _abstr_list(self, request: Request, q_select: AbstractSet[str]):
         """
         returns result options
         ---
@@ -569,7 +571,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'bag', 'nummeraanduiding', 'pand'})
 
 
-def authorized_subject_queries(request, analyzer):
+def authorized_subject_queries(request, analyzer) -> List[ElasticQueryWrapper]:
     """
     Decide if which query we can execute
 
@@ -635,7 +637,7 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
 
     filter_backends = [BrkQ]
 
-    def authorized_queries(self, request, analyzer):
+    def authorized_queries(self, request, analyzer) -> List[ElasticQueryWrapper]:
         return authorized_subject_queries(request, analyzer)
 
     def list(self, request):

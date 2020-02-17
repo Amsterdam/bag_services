@@ -1529,7 +1529,7 @@ class UpdateGrootstedelijkAttributenTask(batch.BasicTask):
             ligplaatsen.update(_grootstedelijkgebied=gsg.id)
 
 
-class ImportBagJob(object):
+class ImportBagJob(batch.BasicJob):
     name = "Import BAG"
 
     def __init__(self, **kwargs):
@@ -1588,7 +1588,7 @@ class ImportBagJob(object):
         ]
 
 
-class IndexBagJob(object):
+class IndexBagJob(batch.BasicJob):
     name = "Delete and Fill Nummeraanduiding search-index"
 
     def tasks(self):
@@ -1598,7 +1598,7 @@ class IndexBagJob(object):
         ]
 
 
-class BuildIndexBagJob(object):
+class BuildIndexBagJob(batch.BasicJob):
     name = "Fill Nummeraanduiding search-index"
 
     def tasks(self):
@@ -1607,7 +1607,7 @@ class BuildIndexBagJob(object):
         ]
 
 
-class DeleteIndexBagJob(object):
+class DeleteIndexBagJob(batch.BasicJob):
 
     name = "Delete BAG related indexes"
 
@@ -1617,7 +1617,7 @@ class DeleteIndexBagJob(object):
         ]
 
 
-class IndexPandJob(object):
+class IndexPandJob(batch.BasicJob):
     name = "Delete and Fill Pand search-index"
 
     def tasks(self):
@@ -1627,7 +1627,7 @@ class IndexPandJob(object):
         ]
 
 
-class BuildIndexPandJob(object):
+class BuildIndexPandJob(batch.BasicJob):
     name = "Fill Pand search-index"
 
     def tasks(self):
@@ -1636,7 +1636,7 @@ class BuildIndexPandJob(object):
         ]
 
 
-class DeleteIndexPandJob(object):
+class DeleteIndexPandJob(batch.BasicJob):
 
     name = "Delete Pand related indexes"
 
@@ -1646,7 +1646,7 @@ class DeleteIndexPandJob(object):
         ]
 
 
-class DeleteIndexGebiedJob(object):
+class DeleteIndexGebiedJob(batch.BasicJob):
 
     name = "Delete BAG_GEBIED index"
 
@@ -1657,7 +1657,7 @@ class DeleteIndexGebiedJob(object):
         ]
 
 
-class IndexNummerAanduidingJob(object):
+class IndexNummerAanduidingJob(batch.BasicJob):
     name = "Create new search index for Nummeraanduiding"
 
     def tasks(self):
@@ -1667,7 +1667,7 @@ class IndexNummerAanduidingJob(object):
         ]
 
 
-class IndexGebiedenJob(object):
+class IndexGebiedenJob(batch.BasicJob):
     """Important! This only adds to the bag index, but does not create it"""
 
     name = "Create add gebieden to BAG index"

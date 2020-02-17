@@ -1,12 +1,12 @@
-from abc import ABCMeta, abstractmethod
-import logging
+from __future__ import annotations
 
 import gc
+import logging
 
 log = logging.getLogger(__name__)
 
 
-def execute(job):
+def execute(job: BasicJob):
     log.info("Starting job: %s", job.name)
 
     for task in job.tasks():
@@ -29,7 +29,7 @@ def _execute_task(task):
     execute_func()
 
 
-class BasicTask(object):
+class BasicTask:
     """
     Abstract task that splits execution into three parts:
 
@@ -40,23 +40,25 @@ class BasicTask(object):
     """
     name = "Basic Task"
 
-    class Meta:
-        __class__ = ABCMeta
-
     def execute(self):
         self.before()
         self.process()
         self.after()
         gc.collect()
 
-    @abstractmethod
     def before(self):
         pass
 
-    @abstractmethod
     def after(self):
         pass
 
-    @abstractmethod
     def process(self):
+        pass
+
+
+class BasicJob:
+    """Interface for jobs"""
+    name = None
+
+    def tasks(self) -> list:
         pass

@@ -1,10 +1,9 @@
-from django.test import TransactionTestCase, SimpleTestCase
-from django.utils import timezone
+from django.test import TransactionTestCase
 
-import batch.batch
+from batch import batch
 
 
-class EmptyJob(object):
+class EmptyJob(batch.BasicJob):
     name = "empty"
 
     def tasks(self):
@@ -18,14 +17,14 @@ class FailingTask(object):
         raise Exception()
 
 
-class FailedJob(object):
+class FailedJob(batch.BasicJob):
     name = "failed"
 
     def tasks(self):
         return [FailingTask()]
 
 
-class SimpleJob(object):
+class SimpleJob(batch.BasicJob):
     def __init__(self, name, *tasks):
         self.name = name
         self._tasks = tasks
@@ -54,5 +53,5 @@ class JobTest(TransactionTestCase):
 
         t = Task()
 
-        batch.batch.execute(SimpleJob("simple", t))
+        batch.execute(SimpleJob("simple", t))
         self.assertEqual(t.executed, True)

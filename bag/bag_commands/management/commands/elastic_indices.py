@@ -100,7 +100,7 @@ class Command(BaseCommand):
 
             if options['build_index']:
                 for job_class in self.indexes[ds]:
-                    batch.execute(job_class(), )
+                    batch.execute(job_class())
 
         self.stdout.write(
             "Total Duration: %.2f seconds" % (time.time() - start))
