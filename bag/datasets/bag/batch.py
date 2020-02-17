@@ -1010,10 +1010,13 @@ class IndexWoonplaatsTask(index.ImportIndexTask):
 class IndexNummerAanduidingTask(index.ImportIndexTask):
     name = "index nummer aanduidingen"
     queryset = models.Nummeraanduiding.objects.\
-        prefetch_related('verblijfsobject').\
-        prefetch_related('standplaats').\
-        prefetch_related('ligplaats').\
-        prefetch_related('openbare_ruimte')
+        prefetch_related(
+            'verblijfsobject',
+            'standplaats',
+            'ligplaats',
+            'openbare_ruimte',
+            'openbare_ruimte__woonplaats',
+        )
 
     def convert(self, obj):
         return documents.from_nummeraanduiding_ruimte(obj)
