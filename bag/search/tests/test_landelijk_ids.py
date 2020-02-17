@@ -16,12 +16,12 @@ class LandelijkIDTest(APITransactionTestCase):
 
     def test_vbo_amsterdams_id(self):
         res = self.client.get(self.bag_root_url+'/verblijfsobject/{}/'.format(self.vbo.id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
     def test_vbo_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/verblijfsobject/{}/'.format(
             self.vbo.landelijk_id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
     def test_vbo_pand_landelijk_id(self):
 
@@ -29,28 +29,28 @@ class LandelijkIDTest(APITransactionTestCase):
             self.bag_root_url+'/verblijfsobject/?panden__landelijk_id={}'.format(
                 self.pand_vbo.pand.landelijk_id))
 
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
-        self.assertEquals(
+        self.assertEqual(
             self.pand_vbo.verblijfsobject.id,
             res.json()['results'][0]['id'])
 
     def test_nummeraanduiding_amsterdams_id(self):
         res = self.client.get(self.bag_root_url+'/nummeraanduiding/{}/'.format(
             self.na.id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
     def test_nummeraanduiding_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/nummeraanduiding/{}/'.format(
             self.na.landelijk_id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
     def test_pand_amsterdams_id(self):
         res = self.client.get(self.bag_root_url+'/pand/{}/'.format(
             self.pand.id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)
 
     def test_pand_landelijk_id(self):
         res = self.client.get(self.bag_root_url+'/pand/{}/'.format(
             self.pand.landelijk_id))
-        self.assertEquals(200, res.status_code)
+        self.assertEqual(200, res.status_code)

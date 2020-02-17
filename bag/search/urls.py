@@ -148,7 +148,7 @@ brk.register(r'object', datasets.brk.views.KadastraalObjectViewSet)
 brk.register(
     r'object-expand',
     datasets.brk.views.KadastraalObjectViewSetExpand,
-    base_name='object-expand',
+    basename='object-expand',
 )
 
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
@@ -165,12 +165,12 @@ wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 typeahead = TypeAheadRouter()
 
 typeahead.register(
-    r'bag', views.TypeAheadBagViewSet, base_name='typeahead/bag')
+    r'bag', views.TypeAheadBagViewSet, basename='typeahead/bag')
 typeahead.register(
-    r'brk', views.TypeAheadBrkViewSet, base_name='typeahead/brk')
+    r'brk', views.TypeAheadBrkViewSet, basename='typeahead/brk')
 typeahead.register(
     r'gebieden', views.TypeAheadGebiedenViewSet,
-    base_name='typeahead/gebieden')
+    basename='typeahead/gebieden')
 
 
 # ##########
@@ -181,31 +181,31 @@ bag_search = BAGSearchRouter()
 # Alias voor nummeraanduiding
 bag_search.register(
     r'adres',
-    views.SearchNummeraanduidingViewSet, base_name='search/adres')
+    views.SearchNummeraanduidingViewSet, basename='search/adres')
 bag_search.register(
     r'bouwblok',
-    views.SearchBouwblokViewSet, base_name='search/bouwblok')
+    views.SearchBouwblokViewSet, basename='search/bouwblok')
 bag_search.register(
     r'gebied',
-    views.SearchGebiedenViewSet, base_name='search/gebied')
+    views.SearchGebiedenViewSet, basename='search/gebied')
 bag_search.register(
     r'kadastraalsubject',
-    views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+    views.SearchSubjectViewSet, basename='search/kadastraalsubject')
 
 bag_search.register(
     r'postcode',
-    views.SearchPostcodeViewSet, base_name='search/postcode')
+    views.SearchPostcodeViewSet, basename='search/postcode')
 
 bag_search.register(
     r'kadastraalsubject',
-    views.SearchSubjectViewSet, base_name='search/kadastraalsubject')
+    views.SearchSubjectViewSet, basename='search/kadastraalsubject')
 bag_search.register(
     r'kadastraalobject',
-    views.SearchObjectViewSet, base_name='search/kadastraalobject')
+    views.SearchObjectViewSet, basename='search/kadastraalobject')
 bag_search.register(
     r'openbareruimte',
-    views.SearchOpenbareRuimteViewSet, base_name='search/openbareruimte')
+    views.SearchOpenbareRuimteViewSet, basename='search/openbareruimte')
 bag_search.register(
     r'pand',
-    views.SearchPandViewSet, base_name='search/pand')
+    views.SearchPandViewSet, basename='search/pand')
 

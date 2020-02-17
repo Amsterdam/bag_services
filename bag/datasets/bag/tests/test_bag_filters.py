@@ -83,10 +83,10 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?kadastraalobject={self.kot.id}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
 
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -94,10 +94,10 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?pand={self.pand.landelijk_id}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
 
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -105,10 +105,10 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?verblijfsobject={self.vbo.landelijk_id}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
 
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -117,10 +117,10 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?{test_param}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
 
-        self.assertEquals(
+        self.assertEqual(
             self.num_standplaats.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -129,10 +129,10 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?{test_param}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
 
-        self.assertEquals(
+        self.assertEqual(
             self.num_ligplaats.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -140,9 +140,9 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?postcode={self.num.postcode}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -150,12 +150,12 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?postcode={self.num.postcode[:4]}'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
-        self.assertEquals(
+        self.assertEqual(
             len(data['results']), 1
         )
 
@@ -163,9 +163,9 @@ class Numfilter(APITransactionTestCase):
         url = f'/bag/v1.1/nummeraanduiding/?openbare_ruimte={self.num.openbare_ruimte.naam[:5]}'   # noqa
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -174,9 +174,9 @@ class Numfilter(APITransactionTestCase):
         url = '/bag/v1.1/nummeraanduiding/?locatie=121849,487303,20'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -184,9 +184,9 @@ class Numfilter(APITransactionTestCase):
         url = '/bag/v1.1/nummeraanduiding/?locatie=52.3726097,4.9004161,10'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.num.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -194,9 +194,9 @@ class Numfilter(APITransactionTestCase):
         url = '/bag/v1.1/openbareruimte/?locatie=121850,487304,10'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.opr.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -204,17 +204,17 @@ class Numfilter(APITransactionTestCase):
         url = '/bag/v1.1/openbareruimte/?locatie=100000,400000,10'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(data['results'], [])
+        self.assertEqual(data['results'], [])
 
     def test_pand_location_filter_in(self):
         url = '/bag/v1.1/pand/?locatie=121850,487304,10'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(
+        self.assertEqual(
             self.pand.landelijk_id,
             data['results'][0]['landelijk_id'])
 
@@ -222,25 +222,25 @@ class Numfilter(APITransactionTestCase):
         url = '/bag/v1.1/pand/?locatie=100000,400000,10'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
-        self.assertEquals(data['results'], [])
+        self.assertEqual(data['results'], [])
 
     def test_pand_location_filter_error(self):
         url = '/bag/v1.1/pand/?locatie=X00000,X00000,10'
         response = self.client.get(url)
 
-        self.assertEquals(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         data = response.json()
-        self.assertEquals(data,
+        self.assertEqual(data,
             ['Locatie must be x: float, y: float, r: int'])
 
     def test_detailed_view(self):
         url = '/bag/v1.1/nummeraanduiding/?detailed=1'
         response = self.client.get(url)
 
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = response.json()
         # Making sure the details in response contains the detailed fields
         detailed = len(data['results'][0].keys()) > 14
-        self.assertEquals(detailed, True)
+        self.assertEqual(detailed, True)

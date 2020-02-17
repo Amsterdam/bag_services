@@ -89,7 +89,7 @@ class LigplaatsViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.LigplaatsDetail
     serializer_class = serializers.Ligplaats
-    filter_fields = ('buurt', 'buurt__vollcode', 'landelijk_id')
+    filterset_fields = ('buurt', 'buurt__vollcode', 'landelijk_id')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -125,7 +125,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.StandplaatsDetail
     serializer_class = serializers.Standplaats
-    filter_fields = (
+    filterset_fields = (
         'buurt',
         'buurt__vollcode',
         'landelijk_id'
@@ -201,7 +201,7 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.VerblijfsobjectDetail
     serializer_class = serializers.Verblijfsobject
 
-    filter_class = VerblijfsobjectFilter
+    filterset_class = VerblijfsobjectFilter
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -377,7 +377,7 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.NummeraanduidingDetail
     serializer_class = serializers.Nummeraanduiding
-    filter_class = NummeraanduidingFilter
+    filterset_class = NummeraanduidingFilter
     detailed_keyword = 'detailed'
 
     def list(self, request, *args, **kwargs):
@@ -496,7 +496,7 @@ class PandViewSet(rest.DatapuntViewSet):
     serializer_class = serializers.Pand
     pagination_class = PandPager
 
-    filter_class = PandenFilter
+    filterset_class = PandenFilter
 
     detailed_keyword = 'detailed'
 
@@ -579,7 +579,7 @@ class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.OpenbareRuimteDetail
     serializer_class = serializers.OpenbareRuimte
 
-    filter_class = OpenbareRuimteFilter
+    filterset_class = OpenbareRuimteFilter
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -609,7 +609,7 @@ class WoonplaatsViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.WoonplaatsDetail
     serializer_class = serializers.Woonplaats
 
-    filter_fields = (
+    filterset_fields = (
         'naam',
         'landelijk_id',
     )
@@ -643,7 +643,7 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.StadsdeelDetail
     serializer_class = serializers.Stadsdeel
 
-    filter_fields = ('code',)
+    filterset_fields = ('code',)
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -676,7 +676,7 @@ class BuurtViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BuurtDetail
     serializer_class = serializers.Buurt
-    filter_fields = (
+    filterset_fields = (
         'stadsdeel', 'buurtcombinatie', 'gebiedsgerichtwerken',
         'code', 'vollcode')
 
@@ -704,7 +704,7 @@ class BouwblokViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BouwblokDetail
     serializer_class = serializers.Bouwblok
-    filter_fields = ('buurt', 'code')
+    filterset_fields = ('buurt', 'code')
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -735,7 +735,7 @@ class BuurtcombinatieViewSet(rest.DatapuntViewSet):
     )
     serializer_detail_class = serializers.BuurtcombinatieDetail
     serializer_class = serializers.Buurtcombinatie
-    filter_fields = (
+    filterset_fields = (
         'stadsdeel', 'vollcode', 'code', 'naam', 'stadsdeel',
         'buurten')
 
@@ -758,7 +758,7 @@ class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     serializer_detail_class = serializers.GebiedsgerichtwerkenDetail
     serializer_class = serializers.Gebiedsgerichtwerken
 
-    filter_fields = ('stadsdeel__id', 'stadsdeel')
+    filterset_fields = ('stadsdeel__id', 'stadsdeel')
 
 
 class GebiedsgerichtwerkenPraktijkgebiedenViewSet(rest.DatapuntViewSet):

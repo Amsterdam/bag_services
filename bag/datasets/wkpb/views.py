@@ -90,7 +90,7 @@ class BeperkingView(DatapuntViewSet):
     )
     template_name = "wkpb/beperking.html"
 
-    filter_class = BeperkingFilter
+    filterset_class = BeperkingFilter
 
 
 class BrondocumentView(DatapuntViewSet):
@@ -105,7 +105,7 @@ class BrondocumentView(DatapuntViewSet):
     serializer_detail_class = serializers.BrondocumentDetail
 
     queryset = models.Brondocument.objects.select_related('beperking__beperkingtype', 'bron').all().order_by('id')
-    filter_fields = ('bron', 'beperking', )
+    filterset_fields = ('bron', 'beperking', )
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action is None:
