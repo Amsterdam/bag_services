@@ -291,7 +291,7 @@ def from_bouwblok(n: models.Bouwblok):
     return doc
 
 
-def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding):
+def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding:
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
     doc.comp_address = "{0} {1}".format(n.openbare_ruimte.naam,

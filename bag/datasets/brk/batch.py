@@ -879,7 +879,7 @@ class IndexObjectTask(index.ImportIndexTask):
         return documents.from_kadastraal_object(obj)
 
 
-class IndexKadasterJob(object):
+class IndexKadasterJob(batch.BasicJob):
     """
     Destroy and recreate elastic BKR index
     """
@@ -894,7 +894,7 @@ class IndexKadasterJob(object):
         ]
 
 
-class BuildIndexKadasterJob(object):
+class BuildIndexKadasterJob(batch.BasicJob):
     """
     Destroy and recreate elastic BKR index
     """
@@ -907,7 +907,7 @@ class BuildIndexKadasterJob(object):
         ]
 
 
-class DeleteIndexKadasterJob(object):
+class DeleteIndexKadasterJob(batch.BasicJob):
 
     name = "Delete search-index BRK"
 

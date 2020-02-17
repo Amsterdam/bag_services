@@ -45,7 +45,11 @@ class ElasticQueryWrapper(object):
         self.size = size
         self.custom_sort_function = custom_sort_function
 
+    def __repr__(self):
+        return f"<ElasticQueryWrapper query={self.query}>"
+
     def to_elasticsearch_object(self, client) -> Search:
+        """Build the DSL Search object."""
         assert self.indexes
 
         search = (

@@ -99,6 +99,9 @@ class KadastraalObjectQuery(object):
 
 class QueryAnalyzer(object):
     """
+    Tell what the "word" likely represents.
+    For example, whether the input is a "postcode", or "kadastraal object".
+
     The QueryAnalyzer takes a plain query string and performs various analyses
     on it.  It contains various is_XXX methods that are used to determine if
     this query could refer to an XXX.
@@ -115,6 +118,9 @@ class QueryAnalyzer(object):
             if token.isdigit():
                 self._huisnummer_index = i + 1
                 break
+
+    def __repr__(self):
+        return f"<QueryAnalyzer: {self.query}>"
 
     def is_kadastraal_object_prefix(self) -> bool:
         """
