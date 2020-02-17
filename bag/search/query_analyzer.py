@@ -122,6 +122,11 @@ class QueryAnalyzer(object):
     def __repr__(self):
         return f"<QueryAnalyzer: {self.query}>"
 
+    def matches_test(self, test_name: str) -> bool:
+        """Tell whether the 'query' matches the test."""
+        test_function = getattr(self, test_name)
+        return test_function()
+
     def is_kadastraal_object_prefix(self) -> bool:
         """
         Returns True if this query could refer to a kadastraal object.

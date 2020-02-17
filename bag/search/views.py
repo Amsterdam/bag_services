@@ -130,10 +130,10 @@ _add_subtype_display = {
 
 
 # A collection of regex and the query they generate
-# IMPORTANT : if items are added to all_query_selectors it can have the negative  side effect
+# IMPORTANT : if items are added to specialized_query_selectors it can have the negative side effect
 # that default_queries are no longer selected.  Only add a new query selectors here if it does
 # not clash with the queries in default queries
-all_query_selectors = [
+specialized_query_selectors = [
     {
         'labels': {'bag'},
         'testfunction': 'is_postcode_prefix',
@@ -189,51 +189,36 @@ default_queries = {
 }
 
 
-def make_new_selection(q_select, query_selectors):
+def get_specialized_query_selectors(q_select: AbstractSet[str]) -> List[dict]:
     """
-    Given selection of wanted datasources (brk, bag..)
-    filter queries
+    Filter the list of 'specialized_query_selectors' with the selected labels.
     """
     if not q_select:
-        return query_selectors
+        return list(specialized_query_selectors)
 
-    new_selection = []
-    for a in all_query_selectors:
-        # check if we selected this query
-        if a['labels'] & q_select:
-            new_selection.append(a)
-
+    new_selection = [a for a in specialized_query_selectors if a['labels'] & q_select]
     if not new_selection:
-        raise ValueError(
-            'q_select %s not in %s',
-            q_select, query_selectors)
+        raise ValueError('q_select %s not in %s', q_select, specialized_query_selectors)
 
     return new_selection
 
 
-def collect_queries(query_selectors, analyzer):
+def find_specialized_queries(
+    q_select: AbstractSet[str],
+    analyzer: QueryAnalyzer
+) -> List[CallableQueryFunction]:
     """
-    Given a selection of possible queries
-    decide by using the analyzer if the
-    typed in content / querystring could possibly be valid
-
-    example stoepje != postcode so we do not need to
-    do a elastic search.
+    Find specialized queries for a search term.
+    For example, if the input looks like a postcode,
+    use a special query for that.
     """
-
+    query_selectors = get_specialized_query_selectors(q_select)
     queries = []
 
+    # query_selectors contains the selected choices from 'specialized_query_selectors'
     for option in query_selectors:
-        # call the test function on analyzer
-
-        test_function = None
         test_name = option.get('testfunction')
-        if not test_name:
-            continue
-
-        test_function = getattr(analyzer, option['testfunction'])
-
-        if test_function and not test_function():
+        if not test_name or not analyzer.matches_test(option['testfunction']):
             continue
 
         log.debug(
@@ -281,18 +266,13 @@ def select_queries(
     if len(query_string) < 2:
         return []
 
-    query_selectors = list(all_query_selectors)
-
-    # check which queries we want to do.
-    query_selectors = make_new_selection(q_select, query_selectors)
-
-    # check which queries make sense to do
-    queries = collect_queries(query_selectors, analyzer)
+    # Filter on selected services, and return those queries.
+    queries = find_specialized_queries(q_select, analyzer)
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
     if not queries:
-        log.debug("No matches for %s, using defaults", query_string)
+        log.debug("No specialized queries for '%s', using defaults", query_string)
         queries = find_default_queries(q_select)
 
     return [q(analyzer) for q in queries]
@@ -542,12 +522,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
               type: string
               paramType: query
         """
-
-        if 'q' not in request.query_params:
-            return Response([])
-
-        query = request.query_params['q']
-
+        query = request.query_params.get('q')
         if not query:
             return Response([])
 
