@@ -11,9 +11,9 @@ import logging
 
 from django.conf import settings
 
-from elasticsearch_dsl import Q
+from elasticsearch_dsl import Q, Search
 
-from search.queries import ElasticQueryWrapper
+from search.queries import create_search_query
 from search.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ BRK_OBJECT = settings.ELASTIC_INDICES['BRK_OBJECT']
 BRK_SUBJECT = settings.ELASTIC_INDICES['BRK_SUBJECT']
 
 
-def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def kadastraal_object_query(analyzer: QueryAnalyzer) -> Search:
     """
     Create query/aggregation for kadaster object search
 
@@ -37,7 +37,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     kot_query = analyzer.get_kadastraal_object_query()
 
     if kot_query.is_empty():
-        return ElasticQueryWrapper(query=None)
+        return Search()
 
     must = [
         Q('term', subtype='kadastraal_object'),
@@ -77,16 +77,16 @@ def kadastraal_object_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
             must.append({
                 'prefix': {'indexnummer.raw': int(kot_query.index_nummer)}})
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q('bool', must=must),
         sort_fields=['aanduiding.raw'],
         indexes=[BRK_OBJECT],
     )
 
 
-def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def kadastraal_subject_query(analyzer: QueryAnalyzer) -> Search:
     """Create query/aggregation for kadaster subject search"""
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             must=[
@@ -108,13 +108,13 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
 
 
 def kadastraal_subject_nietnatuurlijk_query(
-        analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+        analyzer: QueryAnalyzer) -> Search:
     """
     Create query/aggregation for kadaster subject search
 
     EXCLUDING natuurlijkepersonen
     """
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             must=[

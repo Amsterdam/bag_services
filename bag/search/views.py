@@ -32,13 +32,12 @@ from bag import authorization_levels
 from datasets.bag import queries as bag_qs  # noqa
 from datasets.brk import queries as brk_qs  # noqa
 from datasets.generic import rest
-from search.queries import ElasticQueryWrapper
 from search.query_analyzer import QueryAnalyzer
 
 
 log = logging.getLogger(__name__)
 
-CallableQueryFunction = Callable[[QueryAnalyzer], ElasticQueryWrapper]
+CallableQueryFunction = Callable[[QueryAnalyzer], Search]
 
 # Mapping of subtypes with detail views
 _details = {
@@ -230,7 +229,7 @@ def find_specialized_queries(
     return queries
 
 
-def find_default_queries(q_select) -> List[ElasticQueryWrapper]:
+def find_default_queries(q_select) -> List[Search]:
     """
     return the default queries.
     filter by selected queries if set
@@ -253,7 +252,7 @@ def find_default_queries(q_select) -> List[ElasticQueryWrapper]:
 def select_queries(
         query_string: str,
         analyzer: QueryAnalyzer,
-        q_select: AbstractSet[str] = ()) -> List[ElasticQueryWrapper]:
+        q_select: AbstractSet[str] = ()) -> List[Search]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -393,7 +392,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         super().__init__(**kwargs)
         self.client = Elasticsearch(settings.ELASTIC_SEARCH_HOSTS)
 
-    def authorized_queries(self, request: Request, analyzer) -> List[ElasticQueryWrapper]:
+    def authorized_queries(self, request: Request, analyzer) -> List[Search]:
         """
         Overide this method with custom authorization for your
         data
@@ -420,8 +419,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         ignore_cache = settings.DEBUG
 
         # create elk queries
-        for q in query_components:  # type: ElasticQueryWrapper
-            search = q.to_elasticsearch_object(self.client)
+        for search in query_components:  # type: Search
+            search = search.using(self.client)
 
             log.debug(
                 "Running query at %s: %s", search._index,
@@ -546,7 +545,7 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
         return self._abstr_list(request, {'bag', 'nummeraanduiding', 'pand'})
 
 
-def authorized_subject_queries(request, analyzer) -> List[ElasticQueryWrapper]:
+def authorized_subject_queries(request, analyzer) -> List[Search]:
     """
     Decide if which query we can execute
 
@@ -612,7 +611,7 @@ class TypeAheadBrkViewSet(TypeaheadViewSet):
 
     filter_backends = [BrkQ]
 
-    def authorized_queries(self, request, analyzer) -> List[ElasticQueryWrapper]:
+    def authorized_queries(self, request, analyzer) -> List[Search]:
         return authorized_subject_queries(request, analyzer)
 
     def list(self, request):
@@ -827,7 +826,7 @@ class SearchSubjectViewSet(SearchViewSet):
             raise PermissionDenied
 
         # authorized only!
-        search = querylist[0].to_elasticsearch_object(elk_client)
+        search = querylist[0].using(elk_client)
 
         return search
 
@@ -887,7 +886,7 @@ class SearchObjectViewSet(SearchViewSet):
             return []
 
         search_q = brk_qs.kadastraal_object_query(analyzer)
-        search = search_q.to_elasticsearch_object(elk_client)
+        search = search_q.using(elk_client)
         return search
 
 
@@ -907,7 +906,7 @@ class SearchBouwblokViewSet(SearchViewSet):
     filter_backends = [BouwblokQ]
 
     def search_query(self, request, elk_client,
-                     analyzer: QueryAnalyzer) -> List[Search]:
+                     analyzer: QueryAnalyzer) -> Search:
         """
         Execute search in Objects
         """
@@ -915,7 +914,7 @@ class SearchBouwblokViewSet(SearchViewSet):
             return []
 
         search_q = bag_qs.bouwblok_query(analyzer)
-        search = search_q.to_elasticsearch_object(elk_client)
+        search = search_q.using(elk_client)
 
         return search.filter('terms', subtype=['bouwblok'])
 
@@ -943,11 +942,10 @@ class SearchGebiedenViewSet(SearchViewSet):
 
         if analyzer.is_bouwblok_prefix():
             search = bag_qs.bouwblok_query(analyzer)
-            search = search.to_elasticsearch_object(elk_client)
+            search = search.using(elk_client)
             return search
         else:
-            search = bag_qs.gebied_query(
-                analyzer).to_elasticsearch_object(elk_client)
+            search = bag_qs.gebied_query(analyzer).using(elk_client)
 
         return search
 
@@ -1003,7 +1001,7 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         else:
             search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
-        return search_data.to_elasticsearch_object(elk_client)
+        return search_data.using(elk_client)
 
     def list_results(self, old_results: List) -> List:
         new_results = []
@@ -1091,7 +1089,7 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             q = bag_qs.straatnaam_query(analyzer)
 
         # default response search roads
-        return q.to_elasticsearch_object(elk_client)
+        return q.using(elk_client)
 
     def get_hit_data(self, result, hit):
         """
@@ -1138,12 +1136,11 @@ class SearchPostcodeViewSet(SearchViewSet):
         """Creating the actual query to ES"""
 
         if analyzer.is_postcode_huisnummer_prefix():
-            return bag_qs.postcode_huisnummer_query(analyzer) \
-                .to_elasticsearch_object(elk_client)
+            return bag_qs.postcode_huisnummer_query(analyzer).using(elk_client)
 
         elif analyzer.is_postcode_prefix():
             search = bag_qs.postcode_query(analyzer)
-            return search.to_elasticsearch_object(elk_client)
+            return search.using(elk_client)
 
         return []
 
@@ -1160,8 +1157,8 @@ class SearchPandViewSet(SearchViewSet):
     def search_query(self, request,
                      elk_client, analyzer: QueryAnalyzer) -> Search:
         if analyzer.is_landelijk_id_prefix():
-            return bag_qs.landelijk_id_pand_query(analyzer).to_elasticsearch_object(elk_client)
+            return bag_qs.landelijk_id_pand_query(analyzer).using(elk_client)
         else:
-            return bag_qs.pandnaam_query(analyzer).to_elasticsearch_object(elk_client)
+            return bag_qs.pandnaam_query(analyzer).using(elk_client)
 
         return []

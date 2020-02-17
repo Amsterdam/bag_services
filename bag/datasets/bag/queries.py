@@ -12,9 +12,9 @@
 import logging
 
 from django.conf import settings
-from elasticsearch_dsl import Q
+from elasticsearch_dsl import Q, Search
 
-from search.queries import ElasticQueryWrapper
+from search.queries import create_search_query
 from search.query_analyzer import QueryAnalyzer
 
 log = logging.getLogger('bag_Q')
@@ -25,13 +25,13 @@ NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
 
-def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
     """Create query/aggregation for postcode house number search"""
 
     postcode, huisnummer, toevoeging = \
         analyzer.get_postcode_huisnummer_toevoeging()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             'bool': {
                 'must': [
@@ -53,13 +53,13 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer):
+def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer) -> Search:
     """Create query/aggregation for postcode house number search"""
 
     postcode, huisnummer, toevoeging = \
         analyzer.get_postcode_huisnummer_toevoeging()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             must=[
@@ -70,14 +70,13 @@ def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer):
         ),
         sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING],
-
         size=1
     )
 
 
-def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def bouwblok_query(analyzer: QueryAnalyzer) -> Search:
     """ Create query/aggregation for bouwblok search"""
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             "prefix": {
                 "code": analyzer.get_bouwblok()
@@ -88,12 +87,12 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def postcode_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def postcode_query(analyzer: QueryAnalyzer) -> Search:
     """ create query/aggregation for public area"""
 
     postcode = analyzer.get_postcode()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             must=[
@@ -111,7 +110,7 @@ def _basis_openbare_ruimte_query(
         must: [dict] = None,
         must_not: [dict] = None,
         index: str = None,
-        useorder: [bool] = False) -> ElasticQueryWrapper:
+        useorder: [bool] = False) -> Search:
     """
     Basis openbare-ruimte query.
 
@@ -141,7 +140,7 @@ def _basis_openbare_ruimte_query(
         sort_fields = ['order', 'naam.keyword']
 
     straat_naam = analyzer.get_straatnaam()
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             'bool': {
                 'must': _must,
@@ -183,7 +182,7 @@ def _basis_openbare_ruimte_query(
     )
 
 
-def weg_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def weg_query(analyzer: QueryAnalyzer) -> Search:
     """
     Maak een query voor openbare ruimtes van het type 'weg'.
     """
@@ -202,7 +201,8 @@ def _add_subtype(q : dict, subtype: str):
         else:
             q['must'].append({'term': {'subtype': subtype}})
 
-def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
+
+def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
     """
     Maak een query voor openbare ruimte.
     """
@@ -214,7 +214,7 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Elast
     return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
-def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def gebied_query(analyzer: QueryAnalyzer) -> Search:
     """
     Maak een query voor gebieden.
     """
@@ -225,9 +225,9 @@ def gebied_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
     street_part = analyzer.get_straatnaam()
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             'multi_match': {
                 'query': street_part,
@@ -243,13 +243,12 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def straatnaam_huisnummer_query(
-        analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
 
     straat, huisnummer, toevoeging = \
         analyzer.get_straatnaam_huisnummer_toevoeging()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             'bool': {
                 'must': [
@@ -276,12 +275,12 @@ def straatnaam_huisnummer_query(
     )
 
 
-def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             should=[
@@ -294,7 +293,7 @@ def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> ElasticQuery
     )
 
 
-def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> ElasticQueryWrapper:
+def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -312,19 +311,19 @@ def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = N
             **kwargs
         )
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=query,
         sort_fields=['_id'],
         indexes=[BAG_GEBIED]
     )
 
 
-def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query=Q(
             'bool',
             must=[
@@ -336,13 +335,13 @@ def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
     )
 
 
-def pandnaam_query(analyzer: QueryAnalyzer) -> ElasticQueryWrapper:
+def pandnaam_query(analyzer: QueryAnalyzer) -> Search:
     """
     Maak een query voor pand op pandnaam.
     """
     pandnaam = analyzer.get_straatnaam()
 
-    return ElasticQueryWrapper(
+    return create_search_query(
         query={
             'multi_match': {
                 'query': pandnaam,
