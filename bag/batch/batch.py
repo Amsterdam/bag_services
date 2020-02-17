@@ -7,12 +7,12 @@ log = logging.getLogger(__name__)
 
 
 def execute(job: BasicJob):
-    log.info("Starting job: %s", job.name)
+    log.info("Starting job: %s [%s]", job.name, job.__class__.__name__)
 
     for task in job.tasks():
         _execute_task(task)
 
-    log.info("Finished job: %s", job.name)
+    log.info("Finished job: %s: [%s]", job.name, job.__class__.__name__)
 
 
 def _execute_task(task):
