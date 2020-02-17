@@ -178,31 +178,31 @@ class QueryTest(APITransactionTestCase):
     def test_typeahead_landelijk_id_na(self):
         q = self.na.landelijk_id[0:9]
         res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals(f'bag/v1.1/verblijfsobject/{self.na.verblijfsobject.landelijk_id}/', res.data[0]['content'][0]['uri'])
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(f'bag/v1.1/verblijfsobject/{self.na.verblijfsobject.landelijk_id}/', res.data[0]['content'][0]['uri'])
 
     def test_typeahead_adresseerbaar_object_id_na(self):
         adresseerbaar_object_id = self.na.verblijfsobject.landelijk_id
         q = adresseerbaar_object_id.lstrip('0')[0:9]
         res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals(f'bag/v1.1/verblijfsobject/{adresseerbaar_object_id}/', res.data[0]['content'][0]['uri'])
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(f'bag/v1.1/verblijfsobject/{adresseerbaar_object_id}/', res.data[0]['content'][0]['uri'])
 
     def test_typeahead_opr_landelijk_id(self):
         q = self.prinsengracht.landelijk_id[0:6]
         res = self.client.get(f'/atlas/typeahead/gebieden/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals(f'bag/v1.1/openbareruimte/{self.prinsengracht.landelijk_id}/', res.data[0]['content'][0]['uri'])
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(f'bag/v1.1/openbareruimte/{self.prinsengracht.landelijk_id}/', res.data[0]['content'][0]['uri'])
 
     def test_typeahead_pand_landelijk_id(self):
         q = self.pand1.landelijk_id[0:9]
         res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals(f'bag/v1.1/pand/{self.pand1.landelijk_id}/', res.data[0]['content'][0]['uri'])
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(f'bag/v1.1/pand/{self.pand1.landelijk_id}/', res.data[0]['content'][0]['uri'])
 
     def test_typeahead_pand_pandnaam(self):
         q = self.pand1.pandnaam[0:6]
         res = self.client.get(f'/atlas/typeahead/bag/?q={q}')
-        self.assertEquals(200, res.status_code)
-        self.assertEquals(f'bag/v1.1/pand/{self.pand1.landelijk_id}/', res.data[0]['content'][0]['uri'])
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(f'bag/v1.1/pand/{self.pand1.landelijk_id}/', res.data[0]['content'][0]['uri'])
 

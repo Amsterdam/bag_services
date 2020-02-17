@@ -80,7 +80,7 @@ class KadastraleSectieViewSet(DatapuntViewSet):
             'kadastrale_gemeente', 'kadastrale_gemeente__gemeente'))
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
-    filter_fields = ('kadastrale_gemeente',)
+    filterset_fields = ('kadastrale_gemeente',)
 
 
 class SubjectFilter(FilterSet):
@@ -173,7 +173,7 @@ class KadastraalSubjectViewSet(DatapuntViewSet):
     serializer_detail_class = serializers.KadastraalSubjectDetail
     lookup_value_regex = '[^/]+'
 
-    filter_class = SubjectFilter
+    filterset_class = SubjectFilter
 
     # NOTE in serializer there is MORE authorization code!!
 
@@ -349,7 +349,7 @@ class KadastraalObjectViewSet(DatapuntViewSet):
         )
     )
 
-    filter_class = KadastraalObjectFilter
+    filterset_class = KadastraalObjectFilter
 
     lookup_value_regex = '[^/]+'
 
@@ -380,7 +380,7 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
         )
     )
 
-    filter_class = KadastraalObjectFilter
+    filterset_class = KadastraalObjectFilter
 
     pagination_class = rest.LimitedHALPagination
 
@@ -478,7 +478,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
     serializer_class = serializers.ZakelijkRecht
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
-    filter_class = ZakelijkRechtFilter
+    filterset_class = ZakelijkRechtFilter
 
     lookup_value_regex = '[^/]+'
 
@@ -572,7 +572,7 @@ class AantekeningViewSet(DatapuntViewSet):
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
 
-    filter_class = AantekeningenFilter
+    filterset_class = AantekeningenFilter
 
     lookup_value_regex = '[^/]+'
 
