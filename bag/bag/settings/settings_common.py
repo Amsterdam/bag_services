@@ -57,16 +57,15 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += ('debug_toolbar',)
-
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'authorization_django.authorization_middleware',
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE.insert(2, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 TEMPLATES = [
     {
