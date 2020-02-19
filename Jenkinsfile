@@ -36,7 +36,7 @@ if (BRANCH == "gob_only_imports") {
     node {
         stage("Build image") {
             tryStep "build", {
-                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
                     def image = docker.build("datapunt/bag:${env.BUILD_NUMBER}")
                     image.push()
                 }
@@ -45,7 +45,7 @@ if (BRANCH == "gob_only_imports") {
 
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
                     def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
                     image.pull()
                     image.push("acceptance")
@@ -62,7 +62,7 @@ if (BRANCH == "gob_only_imports") {
 //    node {
 //        stage('Push production image') {
 //            tryStep "image tagging", {
-//                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+//                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
 //                def image = docker.image("datapunt/bag:${env.BUILD_NUMBER}")
 //                    image.pull()
 //                    image.push("production")
@@ -77,7 +77,7 @@ if (BRANCH == "master") {
 
     stage("Build image") {
         tryStep "build", {
-            docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
                 def image = docker.build("datapunt/bag_v11:${env.BUILD_NUMBER}")
                 image.push()
             }
@@ -87,7 +87,7 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
                     def image = docker.image("datapunt/bag_v11:${env.BUILD_NUMBER}")
                     image.pull()
                     image.push("acceptance")
@@ -116,7 +116,7 @@ if (BRANCH == "master") {
     node {
         stage('Push production image') {
             tryStep "image tagging", {
-                docker.withRegistry('https://repo.data.amsterdam.nl','docker-registry') {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
                 def image = docker.image("datapunt/bag_v11:${env.BUILD_NUMBER}")
                     image.pull()
                     image.push("production")
