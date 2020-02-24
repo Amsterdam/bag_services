@@ -298,10 +298,6 @@ class GebiedsgerichtwerkenPraktijkgebieden(Hoofdklasse):
     """
 
     naam = models.CharField(max_length=100, unique=True)
-    date_modified = models.DateTimeField(auto_now=True)
-    geometrie = geo.MultiPolygonField(null=True, srid=28992)
-
-    objects = geo.Manager()
 
     class Meta:
         verbose_name = "Gebiedsgerichtwerken praktijkgebieden"
