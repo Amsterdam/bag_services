@@ -46,7 +46,7 @@ huisnummer_expand = analysis.token_filter(
 naam_stripper = analysis.char_filter(
     'naam_stripper',
     type="pattern_replace",
-    pattern=r"[-./']",  # replace these with spaces: "- . / '"
+    pattern=r"[-./'’]",  # replace these with spaces: "- . / '’"
     replace=" ",
 )
 
