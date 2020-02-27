@@ -41,13 +41,18 @@ huisnummer_expand = analysis.token_filter(
 )
 
 
-# Change dash and dot to space
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-pattern-replace-charfilter.html
+# Change dash and dot and slash to space
+# When this is done with pattern_replace this gives problems when searching for
+# zijkanaal h 2
+# It is also not needed to map quotes.
 naam_stripper = analysis.char_filter(
     'naam_stripper',
-    type="pattern_replace",
-    pattern=r"[-./']",  # replace these with spaces: "- . / '"
-    replace=" ",
+    type='mapping',
+    mappings=[
+        "-=>' '",  # change '-' to separator
+        ".=>' '",  # change '.' to separator
+        "/=>' '",  # change '/' to separator
+    ]
 )
 
 # normalizes ., -, / to space from text

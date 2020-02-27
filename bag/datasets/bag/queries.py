@@ -140,6 +140,7 @@ def _basis_openbare_ruimte_query(
     if useorder:
         sort_fields = ['order', 'naam.keyword']
 
+    straat_naam = analyzer.get_straatnaam()
     return ElasticQueryWrapper(
         query={
             'bool': {
@@ -150,7 +151,7 @@ def _basis_openbare_ruimte_query(
                         'constant_score': {
                             'filter': {
                                 'prefix': {
-                                    'naam.keyword': analyzer.get_straatnaam(),
+                                    'naam.keyword': straat_naam,
                                 }
                             },
                             'boost': 10,
@@ -160,7 +161,7 @@ def _basis_openbare_ruimte_query(
                         'constant_score': {
                             'filter': {
                                 'multi_match': {
-                                    'query': analyzer.get_straatnaam(),
+                                    'query': straat_naam,
                                     'type': 'phrase_prefix',
                                     'fields': [
                                         'naam',
