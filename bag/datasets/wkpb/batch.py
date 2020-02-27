@@ -159,6 +159,11 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
         # }.get(r['aard'], r['aard'])
 
         soort_besluit = r['aard']
+        documentnaam = r['documentnummer']
+        if len(documentnaam) > 21:
+            log.error(f"Invalid documentnaam {documentnaam} at {inschrijfnummer}")
+            # Try to fix this for now
+            documentnaam = documentnaam.replace("..", ".").rstrip(".")
 
         return models.Brondocument(
             pk=inschrijfnummer,
