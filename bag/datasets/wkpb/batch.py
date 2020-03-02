@@ -169,7 +169,7 @@ class ImportWkpbBrondocumentTask(batch.BasicTask):
             pk=inschrijfnummer,
             inschrijfnummer=inschrijfnummer,
             bron_id=bron_id,
-            documentnaam=r['documentnummer'],
+            documentnaam=documentnaam,
             persoonsgegevens_afschermen=pers_afsch,
             soort_besluit=soort_besluit,
             beperking_id=inschrijfnummer
