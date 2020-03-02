@@ -92,7 +92,7 @@ class ImportBeperkingTask(batch.BasicTask):
         models.Beperking.objects.bulk_create(objects, batch_size=database.BATCH_SIZE)
 
     def process_row(self, r):
-        code_id = r['typeCode'] if r['typeCode'] in self.codes else None
+        code_id = r['typeCode']
         datum_in_werking = uva2.iso_datum_tijd(r['beginGeldigheid'])
         datum_einde = uva2.iso_datum_tijd(r['eindGeldigheid'])
         vandaag = datetime.date.today()
