@@ -42,8 +42,9 @@ services:
       GOB_OBJECTSTORE_PASSWORD:
       GOB_OBJECTSTORE_ENV:
       DATAPUNT_API_URL:
+      GOB_PARAMETER:
     command: >
-      bash -c "/app/docker-import-db.sh"
+      bash -c "/app/docker-import-db.sh ${GOB_PARAMETER}"
 
 networks:
   network1:
