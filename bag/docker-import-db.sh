@@ -26,4 +26,4 @@ python objectstore/objectstore.py ${GOB_PARAMETER}
 python manage.py migrate
 python manage.py flush --noinput
 python manage.py run_import ${GOB_PARAMETER}
-python manage.py run_import --validate
+python manage.py run_import --validate ${GOB_PARAMETER}

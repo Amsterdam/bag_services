@@ -80,7 +80,7 @@ class Command(BaseCommand):
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
         if options['validate']:
-            validate_tables.check_table_targets()
+            validate_tables.check_table_targets(options['gob'])
             return
 
         for one_ds in sets:
