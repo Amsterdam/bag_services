@@ -3,8 +3,6 @@ import sys
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from bag.settings.settings_common import DEBUG
-from bag.settings.settings_common import BASE_DIR
 from bag.settings.settings_common import *  # noqa F403
 from bag.authorization_levels import all_options
 

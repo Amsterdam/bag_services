@@ -4,7 +4,7 @@ from datasets.brk import batch, models
 
 class ImportGemeenteTaskTest(TaskTestCase):
     def task(self):
-        return batch.ImportGemeenteTask("diva/brk_shp")
+        return batch.ImportGemeenteTask("gob/brk_shp")
 
     def test_import(self):
         self.run_task()

@@ -24,7 +24,7 @@ dc up -d database
 dc up -d elasticsearch
 dc run importer ./docker-wait.sh
 
-echo "import new diva files into database"
+echo "import new gob files into database"
 dc run --rm importer
 
 echo "Starting Elastic importer"

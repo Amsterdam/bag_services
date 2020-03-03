@@ -19,7 +19,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         ]]
 
     def task(self):
-        return batch.ImportKadastraalObjectVerblijfsobjectTask("diva/brk")
+        return batch.ImportKadastraalObjectVerblijfsobjectTask("gob/brk")
 
     def test_import(self):
         self.run_task()

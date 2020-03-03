@@ -1,9 +1,9 @@
 import datetime
 
 from batch.test import TaskTestCase
-from .. import models, batch
+from .. import models, batch_gob as batch
 
-BEPERKINGEN = 'diva/beperkingen'
+BEPERKINGEN = 'gob/beperkingen'
 
 
 class ImportBeperkingcode(TaskTestCase):
@@ -47,7 +47,7 @@ class ImportWkpbBrondocument(TaskTestCase):
         self.assertEqual(a.documentnaam, 'BD00000149_WK00WK.pdf')
         self.assertEqual(a.bron.omschrijving, 'Burgemeester')
         self.assertEqual(a.persoonsgegevens_afschermen, False)
-        self.assertEqual(a.beperking.id, 1006943)
+        self.assertEqual(a.beperking.id, 6641)
 
 
 class ImportBeperking(TaskTestCase):
@@ -62,10 +62,10 @@ class ImportBeperking(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        b = models.Beperking.objects.get(pk=1001730)
+        b = models.Beperking.objects.get(pk=1156)
         self.assertEqual(b.inschrijfnummer, 1156)
         self.assertEqual(b.beperkingtype.omschrijving, 'Melding, bevel, beschikking of vordering Wet bodembescherming')
         self.assertEqual(b.datum_in_werking, datetime.date(2008, 12, 17))
         self.assertEqual(b.datum_einde, None)
 
-        self.assertRaises(models.Beperking.DoesNotExist, models.Beperking.objects.get, pk=1001832)
+        self.assertRaises(models.Beperking.DoesNotExist, models.Beperking.objects.get, pk=1607)

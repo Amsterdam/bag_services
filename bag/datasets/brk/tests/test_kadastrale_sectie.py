@@ -12,8 +12,8 @@ class ImportKadastraleSectieTaskTest(TaskTestCase):
 
     def task(self):
         return [
-            batch.ImportKadastraleSectieTaskLines("diva/brk_shp", self.stash),
-            batch.ImportKadastraleSectieTask("diva/brk_shp", self.stash)
+            batch.ImportKadastraleSectieTaskLines("gob/brk_shp", self.stash),
+            batch.ImportKadastraleSectieTask("gob/brk_shp", self.stash)
         ]
 
     def test_import(self):

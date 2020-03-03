@@ -24,7 +24,7 @@ class ImportAantekeningTaskTest(TaskTestCase):
         )
 
     def task(self):
-        return batch.ImportAantekeningTask("diva/brk")
+        return batch.ImportAantekeningTask("gob/brk")
 
     def test_import(self):
         self.run_task()

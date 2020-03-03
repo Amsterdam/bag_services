@@ -1,5 +1,5 @@
 from batch.test import TaskTestCase
-from datasets.wkpb import batch, models
+from datasets.wkpb import batch_gob as batch, models
 from datasets.wkpb.tests.test_batch import BEPERKINGEN
 from datasets.brk.tests import factories as brk_factories
 
@@ -9,7 +9,7 @@ class ImportWkpbBepKad(TaskTestCase):
     def setUp(self):
         super().setUp()
         brk_factories.KadastraalObjectFactory.create(
-            pk='NL.Blah.KadastraalObject.3423423',
+            pk='NL.KAD.OnroerendeZaak.11280310370000',
             aanduiding='ASD12P03580A0061',
         )
 
@@ -27,7 +27,7 @@ class ImportWkpbBepKad(TaskTestCase):
     def test_import(self):
         self.run_task()
 
-        bk = models.BeperkingKadastraalObject.objects.get(pk='1001730_ASD12P03580A0061')
-        self.assertEqual(bk.beperking.id, 1001730)
+        bk = models.BeperkingKadastraalObject.objects.get(pk='6642_ASD12P03580A0061')
+        self.assertEqual(bk.beperking.id, 6642)
         self.assertIsNotNone(bk.kadastraal_object)
         self.assertEqual(bk.kadastraal_object.aanduiding, 'ASD12P03580A0061')

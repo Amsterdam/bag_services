@@ -29,7 +29,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
             pk='NL.KAD.Persoon.199346638')
 
     def task(self):
-        return batch.ImportKadastraalObjectTask("diva/brk")
+        return batch.ImportKadastraalObjectTask("gob/brk")
 
     def test_import(self):
         self.run_task()

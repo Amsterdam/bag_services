@@ -5,7 +5,7 @@ from datasets.brk import batch, models
 class ImportKadastraalSubjectTaskTest(TaskTestCase):
 
     def task(self):
-        return batch.ImportKadastraalSubjectTask("diva/brk")
+        return batch.ImportKadastraalSubjectTask("gob/brk")
 
     def test_import(self):
         self.run_task()

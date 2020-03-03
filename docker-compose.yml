@@ -46,7 +46,7 @@ services:
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
     volumes:
-      - "$PWD/bag/diva/:/app/data/"
+      - "$PWD/bag/gob/:/app/data/gob"
 
   swaggerui:
     image: amsterdam/oauth2swaggerui
