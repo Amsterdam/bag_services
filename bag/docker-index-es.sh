@@ -11,22 +11,20 @@ source docker-wait.sh
 # clear elasticindices and creates empty ones
 python manage.py elastic_indices --delete
 
-# !!! Temporarily comnmented till this is merged to master
-#
-#python manage.py elastic_indices gebieden wkpb pand --build
-#
-#python manage.py elastic_indices bag brk --partial=1/3 --build &
-#python manage.py elastic_indices bag brk --partial=2/3 --build &
-#python manage.py elastic_indices bag brk --partial=3/3 --build &
+python manage.py elastic_indices gebieden wkpb pand --build
+
+python manage.py elastic_indices bag brk --partial=1/3 --build &
+python manage.py elastic_indices bag brk --partial=2/3 --build &
+python manage.py elastic_indices bag brk --partial=3/3 --build &
 
 
 FAIL=0
 
-#for job in `jobs -p`
-#do
-#	echo $job
-#	wait $job || let "FAIL+=1"
-#done
+for job in `jobs -p`
+do
+	echo $job
+	wait $job || let "FAIL+=1"
+done
 
 echo $FAIL
 

@@ -63,7 +63,7 @@ GOB_TABLE_TARGETS = [
     (99, 0, "bag_buurtcombinatie"),
     (22, 6, "bag_gebiedsgerichtwerken"),
     (1, 0, "bag_gemeente"),
-    (48, 0, "bag_grootstedelijkgebied"),
+    (48, 8, "bag_grootstedelijkgebied"),
     (2910, 0, "bag_ligplaats"),
     (525776, 0, "bag_nummeraanduiding"),
     (6331, 0, "bag_openbareruimte"),
@@ -90,7 +90,7 @@ GOB_TABLE_TARGETS = [
     (534450, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
     (350128, 0, "brk_kadastraalsubject"),
     (66, 0, "brk_kadastralegemeente"),
-    (177, 0, "brk_kadastralesectie"),
+    (177, 20, "brk_kadastralesectie"),
     (261, 0, "brk_land"),
     (22, 10, "brk_rechtsvorm"),
     (9, 20, "brk_soortgrootte"),  # Kadaster gaat nog meer soort soortgroottes opleveren
