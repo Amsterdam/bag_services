@@ -524,4 +524,6 @@ if __name__ == "__main__":
         fetch_gob_files(environment, 'wkpb')
         fetch_gob_files(environment, 'brk')
     else:
+        fetch_gob_files(environment, 'gebieden')
+        fetch_gob_files(environment, 'bag')
         fetch_diva_files()
