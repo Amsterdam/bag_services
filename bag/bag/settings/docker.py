@@ -69,6 +69,7 @@ LOGGING = {
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
 
+DIVA_DIR = '/app/data/'
 GOB_DIR = '/app/data/gob/'
 
 # Generate h ttps links
