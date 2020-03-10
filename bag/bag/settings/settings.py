@@ -247,5 +247,6 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
+        environment='bag_services',
         ignore_errors=['ExpiredSignatureError']
     )
