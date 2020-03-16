@@ -847,7 +847,8 @@ class ImportKadasterJob(object):
             # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
             ImportEigendommenTask(),
-            FixKadastraalObjectAppartementGeometrie()
+            # This should already have been done by GOB
+            # FixKadastraalObjectAppartementGeometrie()
         ]
 
 
