@@ -297,11 +297,13 @@ class KadastraalObject(models.Model):
 
     objects = geo.Manager()
 
-    # BREAKS API ENDPOINTS! / slow queries.
-    # class Meta:
-    #    ordering = (
-    #        'kadastrale_gemeente__id', 'sectie', 'perceelnummer',
-    #        '-indexletter', 'indexnummer')
+    class Meta:
+        # This ordering requires a special index created in a custom migration
+        ordering = (
+           'kadastrale_gemeente', 'sectie', 'perceelnummer', '-indexletter', 'indexnummer')
+        indexes = [
+            models.Index(fields=ordering)
+        ]
 
     def __str__(self):
         return self.get_aanduiding_spaties()
