@@ -113,7 +113,7 @@ class KadastraalObjectFactory(factory.DjangoModelFactory):
     perceelnummer = fuzzy.FuzzyInteger(low=0, high=9999)
     indexletter = fuzzy.FuzzyChoice(choices=('A', 'G'))
     indexnummer = fuzzy.FuzzyInteger(low=0, high=9999)
-    grootte = fuzzy.FuzzyInteger(low=10, high=1000)
+    grootte = fuzzy.FuzzyDecimal(low=10, high=1000)
     register9_tekst = fuzzy.FuzzyText(length=50)
     poly_geom = random_poly()
 

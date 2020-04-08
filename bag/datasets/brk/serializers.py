@@ -564,6 +564,8 @@ class KadastraalObjectDetailPublic(BrkMixin, rest.HALSerializer):
     beperkingen = rest.RelatedSummaryField()
     geometrie = rest.MultipleGeometryField()
 
+    grootte = rest.DecimalSpecial(max_digits=10, decimal_places=2)
+
     class Meta:
         model = models.KadastraalObject
         fields = (

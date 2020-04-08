@@ -1,7 +1,7 @@
 import datetime
 
 from batch.test import TaskTestCase
-from datasets.brk import batch, models
+from datasets.brk import batch_gob, models
 from datasets.brk.tests import factories
 
 
@@ -29,7 +29,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
             pk='NL.KAD.Persoon.199346638')
 
     def task(self):
-        return batch.ImportKadastraalObjectTask("gob/brk")
+        return batch_gob.ImportKadastraalObjectTask("gob/brk")
 
     def test_import(self):
         self.run_task()
@@ -46,7 +46,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
         self.assertEqual(kot.indexnummer, 0)
         self.assertEqual(kot.soort_grootte.code, '1')
         self.assertEqual(kot.soort_grootte.omschrijving, 'Vastgesteld')
-        self.assertEqual(kot.grootte, 99)
+        self.assertEqual(str(kot.grootte), "99.02")
         self.assertEqual(kot.g_percelen.count(), 0)
         self.assertEqual(kot.koopsom, 290419)
         self.assertEqual(kot.koopsom_valuta_code, 'EUR')
