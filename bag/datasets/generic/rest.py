@@ -195,6 +195,14 @@ class ExternalRelationField(serializers.Field):
         }
 
 
+class DecimalSpecial(serializers.DecimalField):
+    def to_representation(self, value):
+        result = str(value)
+        if result[-3:] == '.00':
+            result = result[:-3]
+        return result
+
+
 class AdresFilterField(serializers.Field):
     """
     For obj get link to addresses

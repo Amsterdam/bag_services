@@ -1,5 +1,6 @@
 import csv
 import datetime
+import decimal
 import logging
 import os
 import re
@@ -40,6 +41,17 @@ def uva_nummer(s):
     if s is None or s == '':
         return None
     return int(s)
+
+
+def uva_decimal(s):
+    result = None
+    if not (s is None or s == ''):
+        try:
+            result = decimal.Decimal(s)
+        except decimal.InvalidOperation:
+            log.error(f"Could not parse decimal {s}")
+            result = None
+    return result
 
 
 def uva_indicatie(s):

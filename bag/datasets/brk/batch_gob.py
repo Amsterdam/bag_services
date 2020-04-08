@@ -468,7 +468,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             indexnummer=indexnummer,
             soort_grootte=self.get_soort_grootte(
                 row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
-            grootte=round(float(grootte)) if grootte else None,
+            grootte=uva2.uva_decimal(grootte),
             koopsom=int(koopsom) if koopsom else None,
             koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
             koopjaar=row['KOT_KOOPJAAR'],
