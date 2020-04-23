@@ -1094,14 +1094,6 @@ def validate_geometry(model):
         # print out details of wrong geometry. postgres has function for that.
         log_details_wrong_geometry(model)
 
-    # crash if any errors.
-    # TODO : enable when the following errors are resolved (BH 2019-0812)
-    # 2019-08-08 09:50:58,008 - datasets.bag.batch_gob - ERROR - id: 0363300000002632 : Hole lies outside shell : POINT(114753.424 488283.005)
-    # 2019-08-08 09:50:58,008 - datasets.bag.batch_gob - ERROR - id: 0363300000003244 : Hole lies outside shell : POINT(117741.112 486822.026)
-    # 2019-08-08 09:50:58,009 - datasets.bag.batch_gob - ERROR - id: 0363300000006103 : Hole lies outside shell : POINT(126613.204 486912.153)
-    # 2019-08-08 09:50:58,009 - datasets.bag.batch_gob - ERROR - id: 0363300011952026 : Hole lies outside shell : POINT(121743.574 492816.025)
-    #    assert count == 0
-
 
 def get_code_for_omschrijving(omschrijving, model, dictionary):
     if not omschrijving:

@@ -1,7 +1,7 @@
 import datetime
 
 from batch.test import TaskTestCase
-from datasets.brk import batch_gob, models
+from datasets.brk import batch, models
 from datasets.brk.tests import factories
 
 
@@ -29,7 +29,7 @@ class ImportKadastraalObjectTaskTest(TaskTestCase):
             pk='NL.KAD.Persoon.199346638')
 
     def task(self):
-        return batch_gob.ImportKadastraalObjectTask("gob/brk")
+        return batch.ImportKadastraalObjectTask("gob/brk")
 
     def test_import(self):
         self.run_task()
