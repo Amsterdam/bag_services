@@ -1,5 +1,5 @@
 from batch.test import TaskTestCase
-from datasets.wkpb import batch_gob as batch, models
+from datasets.wkpb import batch, models
 from datasets.wkpb.tests.test_batch import BEPERKINGEN
 from datasets.brk.tests import factories as brk_factories
 

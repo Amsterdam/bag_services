@@ -1,7 +1,7 @@
 import datetime
 
 from batch.test import TaskTestCase
-from .. import models, batch_gob as batch
+from .. import models, batch
 
 BEPERKINGEN = 'gob/beperkingen'
 

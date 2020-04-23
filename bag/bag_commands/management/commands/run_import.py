@@ -8,9 +8,7 @@ from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
-import datasets.brk.batch_gob
 import datasets.wkpb.batch
-import datasets.wkpb.batch_gob
 from datasets import validate_tables
 from batch import batch
 
@@ -33,13 +31,6 @@ class Command(BaseCommand):
         gebieden=[],
     )
 
-    imports_gob = dict(
-        bag=[datasets.bag.batch.ImportBagJob],
-        brk=[datasets.brk.batch_gob.ImportKadasterJob],
-        wkpb=[datasets.wkpb.batch_gob.ImportWkpbJob],
-        gebieden=[],
-    )
-
     def add_arguments(self, parser):
         parser.add_argument(
             'dataset',
@@ -55,20 +46,8 @@ class Command(BaseCommand):
             default=False,
             help='Skip database importing')
 
-        parser.add_argument(
-            '--gob',
-            '-g',
-            action='store_true',
-            dest='gob',
-            default=False,
-            help='Use GOB for import'
-        )
-
     def handle(self, *args, **options):
         dataset = options['dataset']
-
-        if options['gob']:
-            self.imports = self.imports_gob
 
         for one_ds in dataset:
             if one_ds not in self.imports.keys():
@@ -80,7 +59,7 @@ class Command(BaseCommand):
         self.stdout.write("Importing {}".format(", ".join(sets)))
 
         if options['validate']:
-            validate_tables.check_table_targets(options['gob'])
+            validate_tables.check_table_targets()
             return
 
         for one_ds in sets:

@@ -15,6 +15,7 @@ from search import index
 from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
+from datasets.bag.batch import GOB_CSV_ENCODING
 from . import batch_eigendom_sql, batch_fix_kadastraalobject_sql
 
 log = logging.getLogger(__name__)
@@ -215,7 +216,7 @@ class ImportKadastraalSubjectTask(batch.BasicTask):
 
     def process(self):
         subjects = uva2.process_csv(
-            self.path, 'BRK_kadastraal_subject', self.process_subject)
+            self.path, 'BRK_kadastraal_subject', self.process_subject, encoding=GOB_CSV_ENCODING)
 
         models.KadastraalSubject.objects.bulk_create(
             subjects, batch_size=database.BATCH_SIZE)
@@ -402,7 +403,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
 
     def process(self):
         objects = uva2.process_csv(
-            self.path, 'BRK_kadastraal_object', self.process_object)
+            self.path, 'BRK_kadastraal_object', self.process_object, encoding=GOB_CSV_ENCODING)
 
         models.KadastraalObject.objects.bulk_create(
             objects, batch_size=database.BATCH_SIZE)
@@ -467,7 +468,7 @@ class ImportKadastraalObjectTask(batch.BasicTask):
             indexnummer=indexnummer,
             soort_grootte=self.get_soort_grootte(
                 row['KOT_SOORTGROOTTE_CODE'], row['KOT_SOORTGROOTTE_OMS']),
-            grootte=round(float(grootte)) if grootte else None,
+            grootte=uva2.uva_decimal(grootte),
             koopsom=int(koopsom) if koopsom else None,
             koopsom_valuta_code=row['KOT_KOOPSOM_VALUTA'],
             koopjaar=row['KOT_KOOPJAAR'],
@@ -537,7 +538,7 @@ class ImportZakelijkRechtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process(self):
         zrts = dict(
             uva2.process_csv(
-                self.path, 'BRK_zakelijk_recht', self.process_subject))
+                self.path, 'BRK_zakelijk_recht', self.process_subject, encoding=GOB_CSV_ENCODING))
 
         models.ZakelijkRecht.objects.bulk_create(
             zrts.values(), batch_size=database.BATCH_SIZE)
@@ -628,7 +629,7 @@ class ImportAantekeningTask(batch.BasicTask):
         self.warnings.clear()
 
     def process(self):
-        atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row)
+        atks = uva2.process_csv(self.path, 'BRK_aantekening', self.process_row, encoding=GOB_CSV_ENCODING)
         models.Aantekening.objects.bulk_create(atks, batch_size=database.BATCH_SIZE)
 
     def process_row(self, row):
@@ -694,7 +695,7 @@ class ImportKadastraalObjectVerblijfsobjectTask(batch.BasicTask):
         self.vbo.clear()
 
     def process(self):
-        rels = uva2.process_csv(self.path, "BRK_BRK_BAG", self.process_row)
+        rels = uva2.process_csv(self.path, "BRK_BRK_BAG", self.process_row, encoding=GOB_CSV_ENCODING)
         models.KadastraalObjectVerblijfsobjectRelatie.objects.bulk_create(
             rels, batch_size=database.BATCH_SIZE)
 
@@ -812,12 +813,17 @@ class ImportKadasterJob(object):
     name = "Import Kadaster - BRK"
 
     def __init__(self):
-        diva = settings.DIVA_DIR
-        if not os.path.exists(diva):
-            raise ValueError("DIVA_DIR not found: {}".format(diva))
+        gob_dir = settings.GOB_DIR
+        if not os.path.exists(gob_dir):
+            raise ValueError("GOB_DIR not found: {}".format(gob_dir))
 
-        self.brk = os.path.join(diva, 'brk')
-        self.brk_shp = os.path.join(diva, 'brk_shp')
+        self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
+        self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
+        self.gob_bag_path = os.path.join(gob_dir, 'bag/CSV_Actueel')
+
+
+        self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
+        self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
         self.stash = {}
 
     def tasks(self):
@@ -827,6 +833,7 @@ class ImportKadasterJob(object):
             ImportKadastraleGemeenteTask(self.brk_shp, self.stash),
             ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
             ImportKadastraleSectieTask(self.brk_shp, self.stash),
+
             ImportKadastraalSubjectTask(self.brk),
             ImportKadastraalObjectTask(self.brk),
             # needs Subject and Object
@@ -840,7 +847,8 @@ class ImportKadasterJob(object):
             # needs zakelijk recht. kot.vbo bag.vbo
             ImportZakelijkRechtVerblijfsobjectTask(),
             ImportEigendommenTask(),
-            FixKadastraalObjectAppartementGeometrie()
+            # This should already have been done by GOB
+            # FixKadastraalObjectAppartementGeometrie()
         ]
 
 
@@ -879,7 +887,7 @@ class IndexObjectTask(index.ImportIndexTask):
         return documents.from_kadastraal_object(obj)
 
 
-class IndexKadasterJob(batch.BasicJob):
+class IndexKadasterJob(object):
     """
     Destroy and recreate elastic BKR index
     """
@@ -894,7 +902,7 @@ class IndexKadasterJob(batch.BasicJob):
         ]
 
 
-class BuildIndexKadasterJob(batch.BasicJob):
+class BuildIndexKadasterJob(object):
     """
     Destroy and recreate elastic BKR index
     """
@@ -907,7 +915,7 @@ class BuildIndexKadasterJob(batch.BasicJob):
         ]
 
 
-class DeleteIndexKadasterJob(batch.BasicJob):
+class DeleteIndexKadasterJob(object):
 
     name = "Delete search-index BRK"
 
