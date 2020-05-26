@@ -43,7 +43,7 @@ first==2.0.1
 frosted==1.4.1
 futures==3.1.1
 graypy==0.3.1
-httplib2==0.12.0
+httplib2==0.18.0
 idna==2.8
 ipaddress==1.0.22
 iso8601==0.1.12
