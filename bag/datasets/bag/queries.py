@@ -270,8 +270,9 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
                 ],
             },
         },
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
-        indexes=[NUMMERAANDUIDING]
+        sort_fields=['_score', 'straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
+        indexes=[NUMMERAANDUIDING],
+        search_type="dfs_query_then_fetch"
     )
 
 
