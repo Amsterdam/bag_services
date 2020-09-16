@@ -324,7 +324,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
                 log.error(f"Woonplaats {pk} has no valid geometry; skipping")
                 return None
         else:
-            log.warning(f"Ligplaats {pk} has no geometry")
+            log.warning(f"Woonplaats {pk} has no geometry")
             geometrie = None
         values = {
             'pk': pk,
