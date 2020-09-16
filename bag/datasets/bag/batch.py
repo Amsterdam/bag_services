@@ -1236,8 +1236,10 @@ class ImportGrootstedelijkgebiedTask(batch.BasicTask):
     def process_feature(self, feat):
         naam = feat.get('NAAM')
         gsg_type = feat.get('TYPE')
+        # Primary key should be a combination of naam and gsg_type
+        id1 = slugify(naam + "_" + gsg_type)
         models.Grootstedelijkgebied(
-            id=slugify(naam),
+            id=id1,
             naam=naam,
             gsg_type=gsg_type,
             geometrie=geo.get_multipoly(feat.geom.wkt),

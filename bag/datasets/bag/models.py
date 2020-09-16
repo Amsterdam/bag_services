@@ -308,7 +308,6 @@ class GebiedsgerichtwerkenPraktijkgebieden(Hoofdklasse):
         return "{}".format(self.naam)
 
 
-
 class Grootstedelijkgebied(Hoofdklasse):
     """
     model for data from shp files
