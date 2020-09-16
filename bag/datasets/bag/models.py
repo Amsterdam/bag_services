@@ -49,25 +49,6 @@ class Gemeente(mixins.GeldigheidMixin, models.Model):
         return self.naam
 
 
-class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, models.Model):
-
-    id = models.CharField(max_length=14, primary_key=True)
-
-    date_modified = models.DateTimeField(auto_now=True)
-    landelijk_id = models.CharField(max_length=4, unique=True)
-    naam = models.CharField(max_length=80)
-    vervallen = models.NullBooleanField(default=None)
-    gemeente = models.ForeignKey(
-        Gemeente, related_name='woonplaatsen', on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = "Woonplaats"
-        verbose_name_plural = "Woonplaatsen"
-
-    def __str__(self):
-        return self.naam
-
-
 class Hoofdklasse(models.Model):
     """
     De hoofdklasse is een abstracte klasse waar sommige andere
@@ -82,6 +63,24 @@ class Hoofdklasse(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdklasse):
+
+    id = models.CharField(max_length=14, primary_key=True)
+
+    landelijk_id = models.CharField(max_length=4, unique=True)
+    naam = models.CharField(max_length=80)
+    vervallen = models.NullBooleanField(default=None)
+    gemeente = models.ForeignKey(
+        Gemeente, related_name='woonplaatsen', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Woonplaats"
+        verbose_name_plural = "Woonplaatsen"
+
+    def __str__(self):
+        return self.naam
 
 
 class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
