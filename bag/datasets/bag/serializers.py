@@ -447,10 +447,10 @@ class WoonplaatsDetail(BagMixin, rest.HALSerializer):
             'document_nummer',
             'begin_geldigheid',
             'einde_geldigheid',
-
             'naam',
             'gemeente',
-            'openbare_ruimtes'
+            'geometrie',
+            'openbare_ruimtes',
         )
 
 

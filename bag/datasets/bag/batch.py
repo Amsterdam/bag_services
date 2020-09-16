@@ -317,6 +317,15 @@ class ImportWoonplaatsTask(batch.BasicTask):
     def process_row(self, r):
         pk = r['identificatie']
         gemeente_id = self.gemeentes.get(r['ligtIn:BRK.GME.identificatie'])
+        wkt_geometrie = r['geometrie']
+        if wkt_geometrie:
+            geometrie = geo.get_multipoly(wkt_geometrie)
+            if not geometrie:
+                log.error(f"Woonplaats {pk} has no valid geometry; skipping")
+                return None
+        else:
+            log.warning(f"Woonplaats {pk} has no geometry")
+            geometrie = None
         values = {
             'pk': pk,
             'landelijk_id': pk,
@@ -327,6 +336,7 @@ class ImportWoonplaatsTask(batch.BasicTask):
             'gemeente_id': gemeente_id,
             'begin_geldigheid': uva2.iso_datum_tijd(r['beginGeldigheid']),
             'einde_geldigheid': uva2.iso_datum_tijd(r['eindGeldigheid']),
+            'geometrie': geometrie
         }
 
         if not uva2.datum_geldig(values['begin_geldigheid'], values['einde_geldigheid']):
