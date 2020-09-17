@@ -15,7 +15,7 @@ TABLE_TARGETS = [
     (99, 0, "bag_buurtcombinatie"),
     (22, 6, "bag_gebiedsgerichtwerken"),
     (1, 0, "bag_gemeente"),
-    (48, 8, "bag_grootstedelijkgebied"),
+    (72, 8, "bag_grootstedelijkgebied"),
     (2910, 0, "bag_ligplaats"),
     (525776, 0, "bag_nummeraanduiding"),
     (6331, 0, "bag_openbareruimte"),
