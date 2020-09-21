@@ -531,8 +531,8 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         query = request.query_params.get('q')
         if 'features' in request.query_params:
-            self.features = int(request.query_params['features'])
-
+            features = request.query_params['features']
+            self.features = int(features) if features.isdigit() else 0
 
         if not query:
             return Response([])
@@ -719,7 +719,8 @@ class SearchViewSet(viewsets.ViewSet):
             return Response([])
 
         if 'features' in request.query_params:
-            self.features = int(request.query_params['features'])
+            features = request.query_params['features']
+            self.features = int(features) if features.isdigit() else 0
 
         page = 1
         if 'page' in request.query_params:
