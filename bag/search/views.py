@@ -187,8 +187,10 @@ default_queries = {
     'pand': [bag_qs.pandnaam_query]
 }
 
+FEATURE_1 = 1
 
-def get_specialized_query_selectors(q_select: AbstractSet[str]) -> List[dict]:
+
+def get_specialized_query_selectors(q_select: AbstractSet[str], features: int) -> List[dict]:
     """
     Filter the list of 'specialized_query_selectors' with the selected labels.
     """
@@ -204,14 +206,15 @@ def get_specialized_query_selectors(q_select: AbstractSet[str]) -> List[dict]:
 
 def find_specialized_queries(
     q_select: AbstractSet[str],
-    analyzer: QueryAnalyzer
+    analyzer: QueryAnalyzer,
+    features: int
 ) -> List[CallableQueryFunction]:
     """
     Find specialized queries for a search term.
     For example, if the input looks like a postcode,
     use a special query for that.
     """
-    query_selectors = get_specialized_query_selectors(q_select)
+    query_selectors = get_specialized_query_selectors(q_select, features)
     queries = []
 
     # query_selectors contains the selected choices from 'specialized_query_selectors'
@@ -220,11 +223,15 @@ def find_specialized_queries(
         if not test_name or not analyzer.matches_test(option['testfunction']):
             continue
 
+
         log.debug(
             'Matched %s for query <%s>',
             option['testfunction'], analyzer.query)
-
-        queries.append(option['query'])
+        query = option['query']
+        # Check for bitwise AND. There can be multiple features in features
+        if features & FEATURE_1 and query == bag_qs.straatnaam_huisnummer_query:
+            query = bag_qs.straatnaam_huisnummer_query_feature1
+        queries.append(query)
 
     return queries
 
@@ -252,7 +259,8 @@ def find_default_queries(q_select) -> List[Search]:
 def select_queries(
         query_string: str,
         analyzer: QueryAnalyzer,
-        q_select: AbstractSet[str] = ()) -> List[Search]:
+        q_select: AbstractSet[str] = None,
+        features: int = 0) -> List[Search]:
     """
     Looks at the query string being filled and tries
     to make conclusions about what is actually being searched.
@@ -266,7 +274,7 @@ def select_queries(
         return []
 
     # Filter on selected services, and return those queries.
-    queries = find_specialized_queries(q_select, analyzer)
+    queries = find_specialized_queries(q_select, analyzer, features)
 
     # Checking for a case in which no matches are found.
     # In which case, defaulting to address/openbare ruimte
@@ -387,6 +395,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
     """
     metadata_class = QueryMetadata
     renderer_classes = rest.DEFAULT_RENDERERS
+    features = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -405,7 +414,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
 
         # get the relevant queries
         analyzer = QueryAnalyzer(query)
-        query_components = select_queries(query, analyzer, q_select or set())
+        query_components = select_queries(query, analyzer, q_select or set(), self.features)
 
         authorized_queries = self.authorized_queries(request, analyzer)
         # if you are authorized to look for names
@@ -430,7 +439,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
             # get the result from elastic
             try:
                 result = search.execute(ignore_cache=ignore_cache)
-            except TransportError:
+            except TransportError as t:
                 log.exception(
                     'FAILED ELK SEARCH: at %s %s', search._index,
                     json.dumps(search.to_dict(), indent=4))
@@ -522,6 +531,10 @@ class TypeaheadViewSet(viewsets.ViewSet):
               paramType: query
         """
         query = request.query_params.get('q')
+        if 'features' in request.query_params:
+            features = request.query_params['features']
+            self.features = int(features) if features.isdigit() else 0
+
         if not query:
             return Response([])
 
@@ -650,6 +663,7 @@ class SearchViewSet(viewsets.ViewSet):
     page_size = 100
     url_name = 'search-list'
     page_limit = 10
+    features = 0
 
     renderer_classes = rest.DEFAULT_RENDERERS
     filter_backends = [QFilter]
@@ -704,6 +718,10 @@ class SearchViewSet(viewsets.ViewSet):
 
         if 'q' not in request.query_params:
             return Response([])
+
+        if 'features' in request.query_params:
+            features = request.query_params['features']
+            self.features = int(features) if features.isdigit() else 0
 
         page = 1
         if 'page' in request.query_params:
@@ -1080,7 +1098,11 @@ class SearchNummeraanduidingViewSet(SearchViewSet):
             q = bag_qs.postcode_huisnummer_query(analyzer)
 
         elif analyzer.is_straatnaam_huisnummer_prefix():
-            q = bag_qs.straatnaam_huisnummer_query(analyzer)
+            if self.features & FEATURE_1:  # Check for bitwise AND. There can be multiple features in features
+                q = bag_qs.straatnaam_huisnummer_query_feature1(analyzer)
+            else:
+                q = bag_qs.straatnaam_huisnummer_query(analyzer)
+
 
         elif analyzer.is_landelijk_id_prefix():
             q = bag_qs.landelijk_id_nummeraanduiding_query(analyzer)

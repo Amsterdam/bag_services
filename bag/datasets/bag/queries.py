@@ -275,6 +275,46 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
+def straatnaam_huisnummer_query_feature1(analyzer: QueryAnalyzer) -> Search:
+
+    straat, huisnummer, toevoeging = \
+        analyzer.get_straatnaam_huisnummer_toevoeging()
+
+    return create_search_query(
+        query={
+            'bool': {
+                'must':  {
+                        'prefix': {
+                            'toevoeging': toevoeging,
+                        }
+                },
+                'should': [
+                    {
+                        'match': {
+                            'straatnaam': straat
+                        }
+                    },
+                    {
+                        'multi_match': {
+                            'query': straat,
+                            'type': 'phrase_prefix',
+                            'fields': [
+                                'straatnaam',
+                                'straatnaam_nen',
+                            ]
+                        },
+                    },
+
+                ],
+                'minimum_should_match': 1,
+            },
+        },
+        sort_fields=['_score', 'straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
+        indexes=[NUMMERAANDUIDING],
+        search_type="dfs_query_then_fetch"
+    )
+
+
 def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
     """ create query/aggregation for public area"""
 
