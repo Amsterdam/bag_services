@@ -189,6 +189,7 @@ default_queries = {
 
 FEATURE_1 = 1
 
+
 def get_specialized_query_selectors(q_select: AbstractSet[str], features: int) -> List[dict]:
     """
     Filter the list of 'specialized_query_selectors' with the selected labels.
@@ -258,7 +259,7 @@ def find_default_queries(q_select) -> List[Search]:
 def select_queries(
         query_string: str,
         analyzer: QueryAnalyzer,
-        q_select: AbstractSet[str] = (),
+        q_select: AbstractSet[str] = None,
         features: int = 0) -> List[Search]:
     """
     Looks at the query string being filled and tries
