@@ -46,7 +46,8 @@ class Nummeraanduiding(es.DocType):
             'raw': es.Keyword(),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
-            )
+            ),
+            'completion': es.Completion(analyzer=analyzers.adres1)
         }
     )
 
@@ -71,33 +72,34 @@ class Nummeraanduiding(es.DocType):
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
             ),
+            'completion': es.Completion(analyzer=analyzers.adres1)
         }
     )
 
-    comp_address = es.Text(
-        analyzer=analyzers.adres, fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')
-        }
-    )
-    comp_address_nen = es.Text(
-        analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete,
-                search_analyzer='standard')
-        }
-    )
-    comp_address_pcode = es.Text(
-        analyzer=analyzers.adres,
-        fields={
-            'raw': es.Keyword(),
-            'ngram': es.Text(
-                analyzer=analyzers.autocomplete, search_analyzer='standard')
-        }
-    )
+    # comp_address = es.Text(
+    #     analyzer=analyzers.adres, fields={
+    #         'raw': es.Keyword(),
+    #         'ngram': es.Text(
+    #             analyzer=analyzers.autocomplete, search_analyzer='standard')
+    #     }
+    # )
+    # comp_address_nen = es.Text(
+    #     analyzer=analyzers.adres,
+    #     fields={
+    #         'raw': es.Keyword(),
+    #         'ngram': es.Text(
+    #             analyzer=analyzers.autocomplete,
+    #             search_analyzer='standard')
+    #     }
+    # )
+    # comp_address_pcode = es.Text(
+    #     analyzer=analyzers.adres,
+    #     fields={
+    #         'raw': es.Keyword(),
+    #         'ngram': es.Text(
+    #             analyzer=analyzers.autocomplete, search_analyzer='standard')
+    #     }
+    # )
 
     huisnummer = es.Integer(
         fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
@@ -297,9 +299,9 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding
 
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    doc.comp_address = "{0} {1}".format(openbare_ruimte.naam, n.toevoeging)
-    doc.comp_address_nen = "{0} {1}".format(openbare_ruimte.naam_nen, n.toevoeging)
-    doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
+    # doc.comp_address = "{0} {1}".format(openbare_ruimte.naam, n.toevoeging)
+    # doc.comp_address_nen = "{0} {1}".format(openbare_ruimte.naam_nen, n.toevoeging)
+    # doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = openbare_ruimte.naam
     doc.straatnaam_nen = openbare_ruimte.naam_nen
