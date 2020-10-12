@@ -46,8 +46,7 @@ class Nummeraanduiding(es.DocType):
             'raw': es.Keyword(),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'completion': es.Completion(analyzer=analyzers.adres1)
+            )
         }
     )
 
@@ -72,8 +71,7 @@ class Nummeraanduiding(es.DocType):
             'raw': es.Keyword(),
             'ngram_edge': es.Text(
                 analyzer=analyzers.autocomplete, search_analyzer='standard'
-            ),
-            'completion': es.Completion(analyzer=analyzers.adres1)
+            )
         }
     )
 
