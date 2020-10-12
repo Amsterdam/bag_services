@@ -236,7 +236,7 @@ def find_specialized_queries(
     return queries
 
 
-def find_default_queries(q_select) -> List[Search]:
+def find_default_queries(q_select, features:int = 0) -> List[Search]:
     """
     return the default queries.
     filter by selected queries if set
@@ -251,7 +251,10 @@ def find_default_queries(q_select) -> List[Search]:
 
     # return filtered default queries
     for category in q_select:
-        queries += default_queries.get(category, [])
+        query = default_queries.get(category, [])
+        if query and features & FEATURE_1 and query[0] == bag_qs.openbare_ruimte_query:
+                query = [bag_qs.openbare_ruimte_query1]
+        queries += query
 
     return queries
 
@@ -280,7 +283,7 @@ def select_queries(
     # In which case, defaulting to address/openbare ruimte
     if not queries:
         log.debug("No specialized queries for '%s', using defaults", query_string)
-        queries = find_default_queries(q_select)
+        queries = find_default_queries(q_select, features)
 
     return [q(analyzer) for q in queries]
 
@@ -1017,7 +1020,10 @@ class SearchOpenbareRuimteViewSet(SearchViewSet):
         elif analyzer.is_landelijk_id_prefix():
             search_data = bag_qs.landelijk_id_openbare_ruimte_query(analyzer, subtype)
         else:
-            search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
+            if self.features & FEATURE_1:
+                search_data = bag_qs.openbare_ruimte_query1(analyzer, subtype)
+            else:
+                search_data = bag_qs.openbare_ruimte_query(analyzer, subtype)
 
         return search_data.using(elk_client)
 

@@ -130,6 +130,8 @@ adres = es.analyzer(
     char_filter=[naam_stripper],
 )
 
+
+
 straatnaam = es.analyzer(
     'straatnaam',
     tokenizer='standard',
@@ -171,6 +173,18 @@ subtype = es.analyzer(
     filter=['lowercase'],
 )
 
+adres1 = es.analyzer(
+    'adres1',
+    tokenizer='standard',
+    filter=['standard', 'lowercase', 'asciifolding', synonym_filter, 'shingle'],
+    token_separator=''
+)
+
+straat_no_ws = es.analyzer(
+    'straat_no_ws',
+    tokenizer='keyword',
+    filter=['lowercase', 'asciifolding', synonym_filter, whitespace_stripper],
+)
 
 autocomplete = es.analyzer(
     'autocomplete',

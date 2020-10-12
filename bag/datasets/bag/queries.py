@@ -107,9 +107,9 @@ def postcode_query(analyzer: QueryAnalyzer) -> Search:
 
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
+        features: int = 0,
         must: [dict] = None,
         must_not: [dict] = None,
-        index: str = None,
         useorder: [bool] = False) -> Search:
     """
     Basis openbare-ruimte query.
@@ -135,6 +135,11 @@ def _basis_openbare_ruimte_query(
     _must_not = [{'constant_score': {'filter': q}} for q in (must_not or [])]
 
     sort_fields = ['_score', 'naam.keyword']
+
+    _fields = ['naam', 'naam_nen', 'postcode']
+    from search.views import FEATURE_1
+    if features & FEATURE_1:
+        _fields.append('naam_no_ws')
 
     if useorder:
         sort_fields = ['order', 'naam.keyword']
@@ -162,11 +167,7 @@ def _basis_openbare_ruimte_query(
                                 'multi_match': {
                                     'query': straat_naam,
                                     'type': 'phrase_prefix',
-                                    'fields': [
-                                        'naam',
-                                        'naam_nen',
-                                        'postcode',
-                                    ]
+                                    'fields': _fields
                                 }
                             },
                             'boost': 5,
@@ -214,6 +215,18 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Searc
     return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
+def openbare_ruimte_query1(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
+    """
+    Maak een query voor openbare ruimte.
+    """
+    dq = {
+        'must': [{'term': {'type': 'openbare_ruimte'}}]
+    }
+
+    _add_subtype(dq, subtype)
+    return _basis_openbare_ruimte_query(analyzer, features=1, **dq)
+
+
 def gebied_query(analyzer: QueryAnalyzer) -> Search:
     """
     Maak een query voor gebieden.
@@ -235,6 +248,7 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
                 'fields': [
                     'straatnaam',
                     'straatnaam_nen',
+                    'straatnaam_no_ws'
                 ]
             },
         },
@@ -291,7 +305,7 @@ def straatnaam_huisnummer_query_feature1(analyzer: QueryAnalyzer) -> Search:
                 'should': [
                     {
                         'match': {
-                            'straatnaam': straat
+                            'straatnaam_keyword': straat
                         }
                     },
                     {
@@ -301,6 +315,7 @@ def straatnaam_huisnummer_query_feature1(analyzer: QueryAnalyzer) -> Search:
                             'fields': [
                                 'straatnaam',
                                 'straatnaam_nen',
+                                'straatnaam_no_ws'
                             ]
                         },
                     },
