@@ -180,6 +180,12 @@ adres1 = es.analyzer(
     token_separator=''
 )
 
+straat_no_ws = es.analyzer(
+    'straat_no_ws',
+    tokenizer='keyword',
+    filter=['lowercase', 'asciifolding', synonym_filter, whitespace_stripper],
+)
+
 autocomplete = es.analyzer(
     'autocomplete',
     tokenizer='standard',

@@ -51,7 +51,7 @@ class Nummeraanduiding(es.DocType):
         }
     )
 
-    straatnaam_keyword = es.Keyword()
+    straatnaam_keyword = es.Keyword(normalizer=analyzers.lowercase)
 
     straatnaam_nen = es.Text(
         analyzer=analyzers.adres,
@@ -63,7 +63,8 @@ class Nummeraanduiding(es.DocType):
         }
     )
 
-    straatnaam_nen_keyword = es.Keyword()
+    straatnaam_no_ws = es.Text(analyzer=analyzers.straat_no_ws)
+    straatnaam_nen_keyword = es.Keyword(normalizer=analyzers.lowercase)
 
     adres = es.Text(
         analyzer=analyzers.adres,
@@ -75,31 +76,6 @@ class Nummeraanduiding(es.DocType):
             'completion': es.Completion(analyzer=analyzers.adres1)
         }
     )
-
-    # comp_address = es.Text(
-    #     analyzer=analyzers.adres, fields={
-    #         'raw': es.Keyword(),
-    #         'ngram': es.Text(
-    #             analyzer=analyzers.autocomplete, search_analyzer='standard')
-    #     }
-    # )
-    # comp_address_nen = es.Text(
-    #     analyzer=analyzers.adres,
-    #     fields={
-    #         'raw': es.Keyword(),
-    #         'ngram': es.Text(
-    #             analyzer=analyzers.autocomplete,
-    #             search_analyzer='standard')
-    #     }
-    # )
-    # comp_address_pcode = es.Text(
-    #     analyzer=analyzers.adres,
-    #     fields={
-    #         'raw': es.Keyword(),
-    #         'ngram': es.Text(
-    #             analyzer=analyzers.autocomplete, search_analyzer='standard')
-    #     }
-    # )
 
     huisnummer = es.Integer(
         fields={'variation': es.Text(analyzer=analyzers.huisnummer)})
@@ -190,6 +166,11 @@ class Gebied(es.DocType):
 
     naam_nen = es.Text(
         analyzer=analyzers.adres,
+        fields=text_fields
+    )
+
+    naam_no_ws = es.Text(
+        analyzer=analyzers.straat_no_ws,
         fields=text_fields
     )
 
@@ -299,11 +280,9 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding
 
     doc = Nummeraanduiding(_id=n.id)
     doc.adres = n.adres()
-    # doc.comp_address = "{0} {1}".format(openbare_ruimte.naam, n.toevoeging)
-    # doc.comp_address_nen = "{0} {1}".format(openbare_ruimte.naam_nen, n.toevoeging)
-    # doc.comp_address_pcode = "{0} {1}".format(n.postcode, n.toevoeging)
     doc.postcode = n.postcode
     doc.straatnaam = openbare_ruimte.naam
+    doc.straatnaam_no_ws = openbare_ruimte.naam
     doc.straatnaam_nen = openbare_ruimte.naam_nen
     doc.straatnaam_keyword = openbare_ruimte.naam
     doc.straatnaam_nen_keyword = openbare_ruimte.naam_nen
@@ -357,6 +336,7 @@ def from_openbare_ruimte(o: models.OpenbareRuimte):
 
     d.naam = o.naam
     d.naam_nen = o.naam_nen
+    d.naam_no_ws = o.naam
 
     postcodes = set()
 
