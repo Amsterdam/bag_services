@@ -171,11 +171,11 @@ gob_file_age_list = {
     'brk/AmsterdamRegio/SHP_Actueel/BRK_bijpijling.shp': 365,
     'brk/AmsterdamRegio/SHP_Actueel/BRK_perceelnummer.shp': 365,
     # wkpb
-    'wkpb/CSV_Actueel/WKPB_beperking.csv': 5,
-    'wkpb/CSV_Actueel/WKPB_brondocument.csv': 5,
-    'wkpb/CSV_Actueel/WKPB_orgaan.csv': 5,
-    'wkpb/CSV_Actueel/WKPB_type.csv': 5,
-    'wkpb/CSV_Actueel/WKPB_beperking_kadastraalobject.csv': 5,
+    'wkpb/CSV_Actueel/WKPB_beperking.csv': 365,
+    'wkpb/CSV_Actueel/WKPB_brondocument.csv': 365,
+    'wkpb/CSV_Actueel/WKPB_orgaan.csv': 365,
+    'wkpb/CSV_Actueel/WKPB_type.csv': 365,
+    'wkpb/CSV_Actueel/WKPB_beperking_kadastraalobject.csv': 365,
 }
 
 
