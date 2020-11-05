@@ -1,5 +1,5 @@
 """
-collect and validate bag, brk, gebieden and wkpb table counts
+collect and validate bag, brk and gebieden table counts
 Version for GOB import
 """
 import logging
@@ -48,12 +48,6 @@ TABLE_TARGETS = [
     (9, 20, "brk_soortgrootte"),  # Kadaster gaat nog meer soort soortgroottes opleveren
     (962937, 0, "brk_zakelijkrecht"),
     (897443, 0, "brk_zakelijkrechtverblijfsobjectrelatie"),
-    (2854, 0, "wkpb_beperking"),
-    (16, 0, "wkpb_beperkingcode"),
-    (324704, 0, "wkpb_beperkingkadastraalobject"),
-    (343930, 0, "wkpb_beperkingverblijfsobject"),
-    (6, 0, "wkpb_broncode"),
-    (2854, 0, "wkpb_brondocument"),
 ]
 
 

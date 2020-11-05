@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'bag_commands',
     'datasets.bag',
     'datasets.brk',
-    'datasets.wkpb',
     'geo_views',
     'health',
 

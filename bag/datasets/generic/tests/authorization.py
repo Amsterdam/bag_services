@@ -17,8 +17,6 @@ class AuthorizationSetup(object):
     token_scope_brk_rs
     token_scope_brk_rsn
     token_scope_brk_ro
-    token_scope_wkpd_rdbu
-
     """
 
     def setUpAuthorization(self):
@@ -30,7 +28,6 @@ class AuthorizationSetup(object):
         token_scope_brk_rs
         token_scope_brk_rsn
         token_scope_brk_ro
-        token_scope_wkpd_rdbu
 
         to use with:
 
@@ -63,7 +60,6 @@ class AuthorizationSetup(object):
                     authorization_levels.SCOPE_BRK_RSN,
                     authorization_levels.SCOPE_BRK_RS,
                     authorization_levels.SCOPE_BRK_RO,
-                    authorization_levels.SCOPE_WKPB_RBDU
                 ]
             }
         )
@@ -91,13 +87,6 @@ class AuthorizationSetup(object):
                 'scopes': [authorization_levels.SCOPE_BRK_RO]
             }
         )
-        token_scope_wkpd_rdbu = JWT(
-            header=header,
-            claims={
-                'iat': now, 'exp': now + 600,
-                'scopes': [authorization_levels.SCOPE_WKPB_RBDU]
-            }
-        )
 
         token_default.make_signed_token(key)
         self.token_default = token_default.serialize()
@@ -114,5 +103,3 @@ class AuthorizationSetup(object):
         token_scope_brk_ro.make_signed_token(key)
         self.token_scope_brk_ro = token_scope_brk_ro.serialize()
 
-        token_scope_wkpd_rdbu.make_signed_token(key)
-        self.token_scope_wkpd_rdbu = token_scope_wkpd_rdbu.serialize()

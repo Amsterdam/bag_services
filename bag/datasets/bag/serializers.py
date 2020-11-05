@@ -696,7 +696,6 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
     panden = rest.RelatedSummaryField()
     adressen = rest.RelatedSummaryField()
     rechten = rest.RelatedSummaryField()
-    beperkingen = rest.RelatedSummaryField()
 
     bouwblok = Bouwblok()
 
@@ -747,7 +746,6 @@ class VerblijfsobjectDetail(BagMixin, BboxMixin, rest.HALSerializer):
             'panden',
             'kadastrale_objecten',
             'rechten',
-            'beperkingen',
             'bouwblok',
 
             'indicatie_geconstateerd',

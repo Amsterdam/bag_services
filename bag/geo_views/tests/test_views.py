@@ -4,7 +4,6 @@ from django.test import TestCase
 from datasets.bag.tests import factories as bag_factories
 
 from datasets.brk.tests import factories as brk_factories
-from datasets.wkpb.tests import factories as wkpb_factories
 
 from django.conf import settings
 
@@ -230,10 +229,3 @@ class ViewsTest(TestCase):
         self.assertEqual(row['type'], 'kadaster/kadastraal_object')
         self.assertEqual(
             row['uri'], '{}brk/object/{}/'.format(URL, ko.id))
-
-    def test_wkpb(self):
-        b = wkpb_factories.BeperkingKadastraalObjectFactory.create()
-        row = self.get_row('geo_wkpb')
-        self.assertEqual(row["id"], b.id)
-        self.assertIn("geometrie", row)
-        self.assertEqual(row["beperkingtype_id"], b.beperking.beperkingtype.pk)

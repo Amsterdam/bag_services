@@ -2,7 +2,6 @@ from rest_framework import routers
 
 import datasets.bag.views
 import datasets.brk.views
-import datasets.wkpb.views
 
 
 class BagView(routers.APIRootView):
@@ -53,24 +52,9 @@ class BrkRouter(routers.DefaultRouter):
     APIRootView = BrkView
 
 
-class WkpbView(routers.APIRootView):
-    """
-    Wkpd
-
-    De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
-    bevat alle bij wet genoemde beperkingenbesluiten op onroerende
-    zaken, die het gemeentebestuur heeft opgelegd.
-    """  # noqa
-
-
-class WkpbRouter(routers.DefaultRouter):
-    APIRootView = WkpbView
-
-
 bag = BagRouter()
 gebieden = GebiedenRouter()
 brk = BrkRouter()
-wkpb = WkpbRouter()
 
 bag.register(r'ligplaats', datasets.bag.views.LigplaatsViewSet)
 bag.register(r'standplaats', datasets.bag.views.StandplaatsViewSet)
@@ -104,7 +88,3 @@ brk.register(
 
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
-
-wkpb.register(r'beperking', datasets.wkpb.views.BeperkingView)
-wkpb.register(r'brondocument', datasets.wkpb.views.BrondocumentView)
-wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)

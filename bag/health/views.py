@@ -9,7 +9,6 @@ from elasticsearch.exceptions import TransportError, NotFoundError
 from elasticsearch_dsl import Search
 # Project
 from datasets.bag.models import Verblijfsobject
-from datasets.wkpb.models import Beperking
 
 
 log = logging.getLogger(__name__)
@@ -56,15 +55,6 @@ def check_data(request):
         log.exception("No BAG data found")
         return HttpResponse(
             "No BAG data found",
-            content_type="text/plain", status=500)
-
-    # check wkpb
-    try:
-        assert Beperking.objects.count() > 10
-    except:
-        log.exception("No WKPD data found")
-        return HttpResponse(
-            "No WKPD data found",
             content_type="text/plain", status=500)
 
     # check elastic

@@ -3,8 +3,6 @@ from bag import authorization_levels
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from datasets.wkpb import serializers as wkpb_serializers
-
 from datasets.generic import rest
 from . import models
 
@@ -492,7 +490,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
     # g_percelen = rest.RelatedSummaryField(source='g_percelen')
     ontstaan_uit = rest.RelatedSummaryField(source='g_percelen')
 
-    beperkingen = rest.RelatedSummaryField()
     geometrie = rest.MultipleGeometryField()
 
     class Meta:
@@ -531,7 +528,6 @@ class KadastraalObjectDetail(BrkMixin, rest.HALSerializer):
             '_adressen',
             'rechten',
             'aantekeningen',
-            'beperkingen',
         )
 
 
@@ -561,7 +557,6 @@ class KadastraalObjectDetailPublic(BrkMixin, rest.HALSerializer):
     # g_percelen = rest.RelatedSummaryField(source='g_percelen')
     ontstaan_uit = rest.RelatedSummaryField(source='g_percelen')
 
-    beperkingen = rest.RelatedSummaryField()
     geometrie = rest.MultipleGeometryField()
 
     grootte = rest.DecimalSpecial(max_digits=10, decimal_places=2)
@@ -595,7 +590,6 @@ class KadastraalObjectDetailPublic(BrkMixin, rest.HALSerializer):
 
             'verblijfsobjecten',
             '_adressen',
-            'beperkingen',
         )
 
 
@@ -606,15 +600,11 @@ class KadastraalObjectDetailExpand(KadastraalObjectDetail):
     ontstaan_uit = KadastraalObject(source='g_percelen', many=True)
     betrokken_bij = KadastraalObject(source='a_percelen', many=True)
 
-    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
-
 
 class KadastraalObjectDetailExpandPublic(KadastraalObjectDetailPublic):
 
     ontstaan_uit = KadastraalObject(source='g_percelen', many=True)
     betrokken_bij = KadastraalObject(source='a_percelen', many=True)
-
-    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
 
 
 class AantekeningDetail(BrkMixin, rest.HALSerializer):
@@ -644,7 +634,6 @@ class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
     _display = rest.DisplayField()
     aanduiding = serializers.CharField(source='get_aanduiding_spaties')
     rechten = rest.RelatedSummaryField()
-    beperkingen = rest.RelatedSummaryField()
     aantekeningen = rest.RelatedSummaryField()
     a_percelen = KadastraalObject(many=True)
     g_percelen = KadastraalObject(many=True)
@@ -657,7 +646,6 @@ class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
             'id',
             'aanduiding',
             'rechten',
-            'beperkingen',
             'aantekeningen',
             'a_percelen',
             'g_percelen',
@@ -666,7 +654,6 @@ class KadastraalObjectNummeraanduiding(BrkMixin, rest.HALSerializer):
 
 class KadastraalObjectNummeraanduidingExp(KadastraalObjectNummeraanduiding):
     rechten = ZakelijkRechtDetail(many=True)
-    beperkingen = wkpb_serializers.BeperkingDetail(many=True)
     aantekeningen = Aantekening(many=True)
 
     class Meta:
@@ -677,6 +664,5 @@ class KadastraalObjectNummeraanduidingExp(KadastraalObjectNummeraanduiding):
             'id',
             'aanduiding',
             'rechten',
-            'beperkingen',
             'aantekeningen',
         )

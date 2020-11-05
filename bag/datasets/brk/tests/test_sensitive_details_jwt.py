@@ -10,7 +10,7 @@ from . import factories
 
 
 class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
-    
+
     brk_root_url = '/brk'
 
     def setUp(self):
@@ -188,33 +188,6 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
 
     def test_match_kot_object__expandpublic(self):
         response = self.client.get(f'/brk/object-expand/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are *NOT* in response
-        for field in self.not_public_fields:
-            self.assertNotIn(field, data)
-
-    def test_match_kot_object_wkpb_authorized(self):
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer {}'.format(self.token_scope_wkpd_rdbu))
-
-        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("ACD00", str(response.data))
-
-        data = str(response.data)
-
-        # check if authorized fields are in response
-        for field in self.not_public_fields:
-            self.assertIn(field, data)
-
-    def test_match_kot_object__wkpb_public(self):
-        response = self.client.get(f'/brk/object-wkpb/{self.kot.pk}/')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("ACD00", str(response.data))

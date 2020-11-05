@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
                 ('geo_views', '0010_brk_wkpb_views')]
 
     dependencies = [
-        ('wkpb', '0001_initial'),
         ('bag', '0001_initial'),
         ('brk', '0001_initial'),
     ]
@@ -328,24 +327,5 @@ SELECT
     geometrie_lines
 FROM brk_kadastralesectie
 """,
-        ),
-        migrate.ManageView(
-            view_name='geo_wkpb',
-            sql="""
-SELECT
-  bk.id                                                 AS id,
-  bp.beperkingtype_id                                   AS beperkingtype_id,
-  coalesce(ko.point_geom, ko.poly_geom)                 AS geometrie,
-  bp.inschrijfnummer || ' (' ||  bc.omschrijving || ')' AS display,
-  'wkpb/beperking'::TEXT                                AS type,
-  {} || 'wkpb/beperking/' || bp.id || '/'          AS uri
-FROM
-  wkpb_beperkingkadastraalobject bk
-  LEFT JOIN wkpb_beperking bp ON bp.id = bk.beperking_id
-  LEFT JOIN brk_kadastraalobject ko ON ko.id = bk.kadastraal_object_id
-  LEFT JOIN wkpb_beperkingcode bc ON bc.code = bp.beperkingtype_id
-WHERE
-  bp.beperkingtype_id <> 'HS'
-          """.format(QuotedString(URL)),
         ),
     ]

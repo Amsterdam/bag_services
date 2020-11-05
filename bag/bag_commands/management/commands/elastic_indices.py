@@ -5,17 +5,15 @@ from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
-import datasets.wkpb.batch
 from batch import batch
 
 
 class Command(BaseCommand):
-    ordered = ['bag', 'brk', 'wkpb', 'gebieden', 'pand']
+    ordered = ['bag', 'brk', 'gebieden', 'pand']
 
     indexes = {
         'bag': [datasets.bag.batch.BuildIndexBagJob],
         'brk': [datasets.brk.batch.BuildIndexKadasterJob],
-        'wkpb': [],
         'gebieden': [datasets.bag.batch.IndexGebiedenJob],
         'pand': [datasets.bag.batch.IndexPandJob],
     }
@@ -23,7 +21,6 @@ class Command(BaseCommand):
     delete_indexes = {
         'bag': [datasets.bag.batch.DeleteIndexBagJob],
         'brk': [datasets.brk.batch.DeleteIndexKadasterJob],
-        'wkpb': [],  # has no elastic index
         'gebieden': [datasets.bag.batch.DeleteIndexGebiedJob],
         'pand': [datasets.bag.batch.DeleteIndexPandJob],
     }

@@ -117,10 +117,6 @@ def download_file_data(container_name, file_path):
     return get_conn().get_object(container_name, file_path)[1]
 
 
-def download_wkpb_file_data(file_path):
-    return download_file_data('productie', file_path)
-
-
 def file_exists(target):
     target = Path(target)
     return target.is_file()
@@ -170,12 +166,6 @@ gob_file_age_list = {
     'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE_L.shp': 365,
     'brk/AmsterdamRegio/SHP_Actueel/BRK_bijpijling.shp': 365,
     'brk/AmsterdamRegio/SHP_Actueel/BRK_perceelnummer.shp': 365,
-    # wkpb
-    'wkpb/CSV_Actueel/WKPB_beperking.csv': 365,
-    'wkpb/CSV_Actueel/WKPB_brondocument.csv': 365,
-    'wkpb/CSV_Actueel/WKPB_orgaan.csv': 365,
-    'wkpb/CSV_Actueel/WKPB_type.csv': 365,
-    'wkpb/CSV_Actueel/WKPB_beperking_kadastraalobject.csv': 365,
 }
 
 
@@ -238,5 +228,4 @@ if __name__ == "__main__":
     log.info("Start downloading files from objectstore")
     fetch_gob_files(environment, 'gebieden')
     fetch_gob_files(environment, 'bag')
-    fetch_gob_files(environment, 'wkpb')
     fetch_gob_files(environment, 'brk')

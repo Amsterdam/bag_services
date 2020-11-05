@@ -8,7 +8,6 @@ from django.core.management import BaseCommand
 
 import datasets.bag.batch
 import datasets.brk.batch
-import datasets.wkpb.batch
 from datasets import validate_tables
 from batch import batch
 
@@ -21,13 +20,11 @@ class Command(BaseCommand):
         'bag',
         'gebieden',
         'brk',
-        'wkpb',
     ]
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
         brk=[datasets.brk.batch.ImportKadasterJob],
-        wkpb=[datasets.wkpb.batch.ImportWkpbJob],
         gebieden=[],
     )
 
