@@ -6,7 +6,7 @@ from rest_framework.exceptions import NotAuthenticated
 from rest_framework import serializers as drf_serializers
 from rest_framework.status import HTTP_401_UNAUTHORIZED
 
-from datasets.brk import models, serializers, custom_serializers
+from datasets.brk import models, serializers
 from datasets.generic.rest import DatapuntViewSet
 from datasets.generic import rest
 
@@ -205,7 +205,6 @@ class KadastraalObjectFilter(FilterSet):
             'verblijfsobject',
             'verblijfsobjecten__id',
             'verblijfsobjecten__landelijk_id',
-            'beperkingen__id',
             'a_percelen__id',
             'g_percelen__id')
 
@@ -376,7 +375,6 @@ class KadastraalObjectViewSetExpand(KadastraalObjectViewSet):
             'a_percelen',
             'g_percelen',
             'aantekeningen',
-            'beperkingen',
         )
     )
 
@@ -586,26 +584,3 @@ class AantekeningViewSet(DatapuntViewSet):
             # which is not always unique..
             obj = get_object_or_404(models.Aantekening, aantekening_id=pk)
         return obj
-
-
-class KadastraalObjectWkpbView(DatapuntViewSet):
-    """
-    Kadastraal object met extra wkpb informatie
-
-    not publiek
-    employee zonder rechten
-    plus - all
-    """
-    queryset = (
-        models.KadastraalObject.objects.select_related(
-            'sectie',
-            'kadastrale_gemeente',
-            'kadastrale_gemeente__gemeente',
-            'voornaamste_gerechtigde',
-        )
-    )
-
-    def get_serializer_class(self):
-        if self.request.is_authorized_for(authorization_levels.SCOPE_WKPB_RBDU):
-            return custom_serializers.KadastraalObjectDetailWkpb
-        return custom_serializers.KadastraalObjectDetailWkpbPublic

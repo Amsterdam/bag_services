@@ -8,7 +8,6 @@ from rest_framework.reverse import reverse
 # Project
 from datasets.bag.tests import factories as bag_factories
 from datasets.brk.tests import factories as brk_factories
-from datasets.wkpb.tests import factories as wkpb_factories
 
 from datasets.generic.tests.authorization import AuthorizationSetup
 
@@ -46,10 +45,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         'gebieden/buurtcombinatie',
         'gebieden/gebiedsgerichtwerken',
         'gebieden/grootstedelijkgebied',
-
-        'wkpb/beperking',
-        'wkpb/brondocument',
-        'wkpb/broncode',
 
         'brk/gemeente',
         'brk/kadastrale-gemeente',
@@ -147,16 +142,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             g_perceel=kot,
         )
 
-        beperking = wkpb_factories.BeperkingFactory()
-
-        wkpb_factories.BeperkingKadastraalObjectFactory.create(
-            beperking=beperking,
-            kadastraal_object=kot
-        )
-
-        wkpb_factories.BrondocumentFactory.create(
-            beperking=beperking
-        )
 
         brk_factories.GemeenteFactory.create(
             gemeente='Amsterdam'
@@ -188,7 +173,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
         urls = [
             'atlas/search',
             'atlas/typeahead',
-            'wkpb',
             'bag/v1.1',
             'brk',
             'gebieden',
@@ -354,34 +338,6 @@ class BrowseDatasetsTestCase(APITransactionTestCase, AuthorizationSetup):
             self.valid_response(url, detail)
 
             self.assertIn('_display', detail.data)
-
-    def test_brk_object_wkpb(self):
-
-        url = 'brk/object'
-
-        response = self.client.get('/{}/'.format(url))
-
-        test_id = response.data['results'][0]['id']
-
-        test_url = reverse('brk-object-wkpb', args=[test_id])
-
-        detail = self.client.get(test_url)
-
-        self.valid_response(test_url, detail, 'application/json')
-
-    def test_brk_object_wkpb_html(self):
-
-        url = 'brk/object'
-
-        response = self.client.get(f'/{url}/', {'format': 'api'})
-
-        test_id = response.data['results'][0]['id']
-
-        test_url = reverse('brk-object-wkpb', args=[test_id])
-
-        detail = self.client.get(test_url, {'format': 'api'})
-
-        self.valid_response(test_url, detail, 'text/html; charset=utf-8')
 
     def test_kos_filter(self):
 

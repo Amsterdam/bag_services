@@ -2,7 +2,6 @@ from rest_framework import routers
 
 import datasets.bag.views
 import datasets.brk.views
-import datasets.wkpb.views
 
 from search import views
 
@@ -66,20 +65,6 @@ class BrkView(routers.APIRootView):
 
 class BrkRouter(routers.DefaultRouter):
     APIRootView = BrkView
-
-
-class WkpbView(routers.APIRootView):
-    """
-    Wkpd
-
-    De [Gemeentelijke beperkingenregistratie op grond van de Wkpb](https://www.amsterdam.nl/stelselpedia/wkpb-index/)
-    bevat alle bij wet genoemde beperkingenbesluiten op onroerende
-    zaken, die het gemeentebestuur heeft opgelegd.
-    """  # noqa
-
-
-class WkpbRouter(routers.DefaultRouter):
-    APIRootView = WkpbView
 
 
 class TypeAheadView(routers.APIRootView):
@@ -153,11 +138,6 @@ brk.register(
 
 brk.register(r'zakelijk-recht', datasets.brk.views.ZakelijkRechtViewSet)
 brk.register(r'aantekening', datasets.brk.views.AantekeningViewSet)
-
-wkpb = WkpbRouter()
-wkpb.register(r'beperking', datasets.wkpb.views.BeperkingView)
-wkpb.register(r'brondocument', datasets.wkpb.views.BrondocumentView)
-wkpb.register(r'broncode', datasets.wkpb.views.BroncodeView)
 
 # ##########
 # Typeahead

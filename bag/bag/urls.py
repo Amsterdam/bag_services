@@ -24,7 +24,6 @@ from rest_framework_swagger.renderers import SwaggerUIRenderer
 from django.conf.urls.static import static
 
 import search.urls
-import datasets.brk.views
 import bag.urlsets
 
 grouped_url_patterns = {
@@ -42,15 +41,6 @@ grouped_url_patterns = {
 
     'brk_patterns': [
         url(r'^brk/', include(bag.urlsets.brk.urls)),
-
-        url(r'^brk/object-wkpb/(?P<pk>[^/]+)/?$',
-            datasets.brk.views.KadastraalObjectWkpbView.as_view(
-                {'get': 'retrieve'}),
-            name='brk-object-wkpb'),
-    ],
-
-    'beperkingen_patterns': [
-        url(r'^wkpb/', include(bag.urlsets.wkpb.urls)),
     ],
 
     'typeahead_patterns': [
@@ -96,17 +86,6 @@ def brk_schema_view(request):
     generator = schemas.SchemaGenerator(
         title='BRK API',
         patterns=grouped_url_patterns['brk_patterns']
-    )
-    return response.Response(generator.get_schema(request=request))
-
-
-@api_view()
-@renderer_classes(
-    [SwaggerUIRenderer, OpenAPIRenderer, renderers.CoreJSONRenderer])
-def wkpb_schema_view(request):
-    generator = schemas.SchemaGenerator(
-        title='WKPB API',
-        patterns=grouped_url_patterns['beperkingen_patterns']
     )
     return response.Response(generator.get_schema(request=request))
 
@@ -160,7 +139,6 @@ urlpatterns.extend(
         url('^bag/docs/api-docs/bag/$', bag_schema_view),
         url('^bag/docs/api-docs/gebieden/$', gebieden_schema_view),
         url('^bag/docs/api-docs/brk/$', brk_schema_view),
-        url('^bag/docs/api-docs/wkpb/$', wkpb_schema_view),
         url('^bag/docs/api-docs/pcsearch/$', postcode_schema_view),
         url('^bag/docs/api-docs/search/$', search_schema_view),
         url('^bag/docs/api-docs/typeahead/$', typeahead_schema_view),
