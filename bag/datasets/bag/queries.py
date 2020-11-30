@@ -107,7 +107,6 @@ def postcode_query(analyzer: QueryAnalyzer) -> Search:
 
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
-        features: int = 0,
         must: [dict] = None,
         must_not: [dict] = None,
         useorder: [bool] = False) -> Search:
@@ -136,10 +135,7 @@ def _basis_openbare_ruimte_query(
 
     sort_fields = ['_score', 'naam.keyword']
 
-    _fields = ['naam', 'naam_nen', 'postcode']
-    from search.views import FEATURE_1
-    if features & FEATURE_1:
-        _fields.append('naam_no_ws')
+    _fields = ['naam', 'naam_nen', 'postcode', 'naam_no_ws']
 
     if useorder:
         sort_fields = ['order', 'naam.keyword']
@@ -215,18 +211,6 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Searc
     return _basis_openbare_ruimte_query(analyzer, **dq)
 
 
-def openbare_ruimte_query1(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
-    """
-    Maak een query voor openbare ruimte.
-    """
-    dq = {
-        'must': [{'term': {'type': 'openbare_ruimte'}}]
-    }
-
-    _add_subtype(dq, subtype)
-    return _basis_openbare_ruimte_query(analyzer, features=1, **dq)
-
-
 def gebied_query(analyzer: QueryAnalyzer) -> Search:
     """
     Maak een query voor gebieden.
@@ -258,38 +242,6 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
 
 
 def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
-
-    straat, huisnummer, toevoeging = \
-        analyzer.get_straatnaam_huisnummer_toevoeging()
-
-    return create_search_query(
-        query={
-            'bool': {
-                'must': [
-                    {
-                        'multi_match': {
-                            'query': straat,
-                            'type': 'phrase_prefix',
-                            'fields': [
-                                'straatnaam',
-                                'straatnaam_nen',
-                            ]
-                        },
-                    },
-                    {
-                        'prefix': {
-                            'toevoeging': toevoeging,
-                        }
-                    },
-                ],
-            },
-        },
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
-        indexes=[NUMMERAANDUIDING]
-    )
-
-
-def straatnaam_huisnummer_query_feature1(analyzer: QueryAnalyzer) -> Search:
 
     straat, huisnummer, toevoeging = \
         analyzer.get_straatnaam_huisnummer_toevoeging()
