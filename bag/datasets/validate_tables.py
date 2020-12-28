@@ -34,7 +34,7 @@ TABLE_TARGETS = [
     (1006028, 0, "brk_aperceelgperceelrelatie"),
     (7, 2, "brk_appartementsrechtssplitstype"),
     (8, 0, "brk_beschikkingsbevoegdheid"),
-    (61, 10, "brk_cultuurcodebebouwd"),
+    (30, 10, "brk_cultuurcodebebouwd"),
     (28, 5, "brk_cultuurcodeonbebouwd"),
     (355, 1, "brk_gemeente"),
     (3, 0, "brk_geslacht"),
