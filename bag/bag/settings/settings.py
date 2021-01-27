@@ -26,8 +26,8 @@ PARTIAL_IMPORT = dict(
     denominator=1
 )
 
-STATIC_ROOT = 'static/'
-STATIC_URL = '/static/'
+STATIC_ROOT = '/static/'
+STATIC_URL = '/gebieden/static/'
 
 ROOT_URLCONF = 'bag.urls'
 
