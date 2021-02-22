@@ -251,4 +251,6 @@ if SENTRY_DSN:
         ignore_errors=['ExpiredSignatureError']
     )
 
-FEATURE_2 = 2
+# Define feature values for runtime dependent behaviour in parameters
+# 1 was already user earlier and might still be in use by dataportaal
+ENABLE_WEESP_TYPEAHEAD = 2

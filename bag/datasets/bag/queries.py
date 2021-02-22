@@ -24,6 +24,7 @@ BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
+default_features = settings.ENABLE_WEESP_TYPEAHEAD if 'acc' in settings.DATAPUNT_API_URL else 0
 
 def postcode_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """Create query/aggregation for postcode house number search"""
@@ -107,7 +108,7 @@ def postcode_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
 
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
-        features: int = 0,
+        features: int = default_features,
         must: [dict] = None,
         must_not: [dict] = None,
         useorder: [bool] = False) -> Search:
@@ -175,7 +176,7 @@ def _basis_openbare_ruimte_query(
         }
     }
 
-    if not features & settings.FEATURE_2:  # By default only Amsterdam = 0363
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
         query['bool']['filter'] = {
             'prefix': {
                 'landelijk_id.raw': '0363'
@@ -251,7 +252,7 @@ def straatnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
         }
     }
 
-    if not features & settings.FEATURE_2:  # By default only Amsterdam = 0363
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
         query['bool']['filter'] = {
             'prefix': {
                 'landelijk_id.raw': '0363'
@@ -299,7 +300,7 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> S
         },
     }
 
-    if not features & settings.FEATURE_2:  # By default only Amsterdam = 0363
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
         query['bool']['filter'] = {
             'prefix': {
                 'landelijk_id.raw': '0363'
@@ -393,7 +394,7 @@ def pandnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
         }
     }
 
-    if not features & settings.FEATURE_2:  # By default only Amsterdam = 0363
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
         query['bool']['filter'] = {
             'prefix': {
                 'landelijk_id.raw': '0363'

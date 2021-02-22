@@ -717,7 +717,7 @@ class SearchViewSet(viewsets.ViewSet):
 
         if 'features' in request.query_params:
             features = request.query_params['features']
-            self.features = int(features) if features.isdigit() else 0
+            self.features = int(features) if features.isdigit() else bag_qs.default_features
 
         page = 1
         if 'page' in request.query_params:
