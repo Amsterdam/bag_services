@@ -250,3 +250,7 @@ if SENTRY_DSN:
         environment='bag_services',
         ignore_errors=['ExpiredSignatureError']
     )
+
+# Define feature values for runtime dependent behaviour in parameters
+# 1 was already user earlier and might still be in use by dataportaal
+ENABLE_WEESP_TYPEAHEAD = 2

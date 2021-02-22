@@ -24,8 +24,9 @@ BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
+default_features = settings.ENABLE_WEESP_TYPEAHEAD if 'acc' in settings.DATAPUNT_API_URL else 0
 
-def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
+def postcode_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """Create query/aggregation for postcode house number search"""
 
     postcode, huisnummer, toevoeging = \
@@ -74,7 +75,7 @@ def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def bouwblok_query(analyzer: QueryAnalyzer) -> Search:
+def bouwblok_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ Create query/aggregation for bouwblok search"""
     return create_search_query(
         query={
@@ -87,7 +88,7 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def postcode_query(analyzer: QueryAnalyzer) -> Search:
+def postcode_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     postcode = analyzer.get_postcode()
@@ -107,6 +108,7 @@ def postcode_query(analyzer: QueryAnalyzer) -> Search:
 
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
+        features: int = default_features,
         must: [dict] = None,
         must_not: [dict] = None,
         useorder: [bool] = False) -> Search:
@@ -141,38 +143,48 @@ def _basis_openbare_ruimte_query(
         sort_fields = ['order', 'naam.keyword']
 
     straat_naam = analyzer.get_straatnaam()
-    return create_search_query(
-        query={
-            'bool': {
-                'must': _must,
-                'must_not': _must_not,
-                'should': [
-                    {
-                        'constant_score': {
-                            'filter': {
-                                'prefix': {
-                                    'naam.keyword': straat_naam,
-                                }
-                            },
-                            'boost': 10,
+
+    query = {
+        'bool': {
+            'must': _must,
+            'must_not': _must_not,
+            'should': [
+                {
+                    'constant_score': {
+                        'filter': {
+                            'prefix': {
+                                'naam.keyword': straat_naam,
+                            }
                         },
+                        'boost': 10,
                     },
-                    {
-                        'constant_score': {
-                            'filter': {
-                                'multi_match': {
-                                    'query': straat_naam,
-                                    'type': 'phrase_prefix',
-                                    'fields': _fields
-                                }
-                            },
-                            'boost': 5,
-                        }
+                },
+                {
+                    'constant_score': {
+                        'filter': {
+                            'multi_match': {
+                                'query': straat_naam,
+                                'type': 'phrase_prefix',
+                                'fields': _fields
+                            }
+                        },
+                        'boost': 5,
                     }
-                ],
-                'minimum_should_match': 1,
+                }
+            ],
+            'minimum_should_match': 1,
+        }
+    }
+
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
             }
-        },
+        }
+
+    return create_search_query(
+        query=query,
         indexes=[BAG_GEBIED],
         sort_fields=sort_fields,
         size=100,
@@ -199,7 +211,7 @@ def _add_subtype(q : dict, subtype: str):
             q['must'].append({'term': {'subtype': subtype}})
 
 
-def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
+def openbare_ruimte_query(analyzer: QueryAnalyzer, features: int = 0, subtype: str = None) -> Search:
     """
     Maak een query voor openbare ruimte.
     """
@@ -208,10 +220,10 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Searc
     }
 
     _add_subtype(dq, subtype)
-    return _basis_openbare_ruimte_query(analyzer, **dq)
+    return _basis_openbare_ruimte_query(analyzer, features, **dq)
 
 
-def gebied_query(analyzer: QueryAnalyzer) -> Search:
+def gebied_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """
     Maak een query voor gebieden.
     """
@@ -222,67 +234,88 @@ def gebied_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
+def straatnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     street_part = analyzer.get_straatnaam()
+    query = {
+        'bool': {
+            'must': {
+                'multi_match': {
+                    'query': street_part,
+                    'type': 'phrase_prefix',
+                    'fields': [
+                        'straatnaam',
+                        'straatnaam_nen',
+                        'straatnaam_no_ws'
+                    ]
+                }
+            }
+        }
+    }
+
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
+
     return create_search_query(
-        query={
-            'multi_match': {
-                'query': street_part,
-                'type': 'phrase_prefix',
-                'fields': [
-                    'straatnaam',
-                    'straatnaam_nen',
-                    'straatnaam_no_ws'
-                ]
-            },
-        },
+        query=query,
         sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING]
     )
 
 
-def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
+def straatnaam_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
 
     straat, huisnummer, toevoeging = \
         analyzer.get_straatnaam_huisnummer_toevoeging()
+    query = {
+        'bool': {
+            'must': {
+                'prefix': {
+                    'toevoeging': toevoeging,
+                }
+            },
+            'should': [
+                {
+                    'match': {
+                        'straatnaam_keyword': straat
+                    }
+                },
+                {
+                    'multi_match': {
+                        'query': straat,
+                        'type': 'phrase_prefix',
+                        'fields': [
+                            'straatnaam',
+                            'straatnaam_nen',
+                            'straatnaam_no_ws'
+                        ]
+                    },
+                },
+
+            ],
+            'minimum_should_match': 1,
+        },
+    }
+
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
 
     return create_search_query(
-        query={
-            'bool': {
-                'must':  {
-                        'prefix': {
-                            'toevoeging': toevoeging,
-                        }
-                },
-                'should': [
-                    {
-                        'match': {
-                            'straatnaam_keyword': straat
-                        }
-                    },
-                    {
-                        'multi_match': {
-                            'query': straat,
-                            'type': 'phrase_prefix',
-                            'fields': [
-                                'straatnaam',
-                                'straatnaam_nen',
-                                'straatnaam_no_ws'
-                            ]
-                        },
-                    },
-
-                ],
-                'minimum_should_match': 1,
-            },
-        },
+        query=query,
         sort_fields=['_score', 'straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING],
         search_type="dfs_query_then_fetch"
     )
 
 
-def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
+def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -300,7 +333,7 @@ def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
+def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, features: int = 0, subtype: str = None) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -325,7 +358,7 @@ def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = N
     )
 
 
-def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> Search:
+def landelijk_id_pand_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -342,22 +375,34 @@ def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def pandnaam_query(analyzer: QueryAnalyzer) -> Search:
+def pandnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """
     Maak een query voor pand op pandnaam.
     """
     pandnaam = analyzer.get_straatnaam()
+    query = {
+        'bool': {
+            'must': {
+                'multi_match': {
+                    'query': pandnaam,
+                    'type': 'phrase_prefix',
+                    'fields': [
+                        'pandnaam',
+                    ]
+                }
+            }
+        }
+    }
+
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam = 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
 
     return create_search_query(
-        query={
-            'multi_match': {
-                'query': pandnaam,
-                'type': 'phrase_prefix',
-                'fields': [
-                    'pandnaam',
-                ]
-            },
-        },
+        query=query,
         sort_fields=['_display'],
         indexes=[BAG_PAND]
     )

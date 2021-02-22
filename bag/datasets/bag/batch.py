@@ -26,7 +26,8 @@ class ImportGemeenteTask(batch.BasicTask):
     """
     name = "Import gemeente code / naam"
     data = [
-        ('03630000000000','0363','Amsterdam','','J','','GVI','N','19000101','')
+        ('03630000000000','0363','Amsterdam','','J','','GVI','N','19000101',''),
+        ('04570000000000','0457', 'Weesp', '', 'J', '', 'GVI', 'N', '20160101', ''),
     ]
 
     def __init__(self, path):
@@ -748,6 +749,9 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         gebruiksdoel = r['gebruiksdoel'].split('|')
         gebruiksdoel_woonfunctie = r['gebruiksdoelWoonfunctie'] or None
         gebruiksdoel_gezondheidszorgfunctie = r['gebruiksdoelGezondheidszorgfunctie'] or None
+        aantalEenhedenComplex = r['aantalEenhedenComplex'] or None
+        if aantalEenhedenComplex and int(aantalEenhedenComplex) == -1:
+            aantalEenhedenComplex = None
 
         values = {
             'pk': pk,
@@ -757,7 +761,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
             'document_mutatie': uva2.iso_datum(r['documentdatum']),
             'document_nummer': r['documentnummer'][:20],
             'verdieping_toegang': uva2.uva_nummer(r['verdiepingToegang']),
-            'aantal_eenheden_complex': r['aantalEenhedenComplex'] or None,
+            'aantal_eenheden_complex': aantalEenhedenComplex,
             'bouwlagen': uva2.uva_nummer(r['aantalBouwlagen']),
             'hoogste_bouwlaag': uva2.uva_nummer(r['hoogsteBouwlaag']),
             'laagste_bouwlaag': uva2.uva_nummer(r['laagsteBouwlaag']),
