@@ -1303,6 +1303,41 @@ class DenormalizeDataTask(batch.BasicTask):
         pass
 
     def process(self):
+
+        # If type_adres voor Weesp is not set we set it by selecting the lowest
+        # id for the same nummeraanduiding for a verblijfsobject, lisgplaats or standplaats
+        # as hoofdadres, otherwise as nevenadres.
+        # If the type_adres is set this will not change anything.
+        update_type_adres_weesp = """
+UPDATE bag_nummeraanduiding
+SET type_adres =
+    CASE
+	    WHEN row_results.row_num = 1 THEN 'Hoofdadres'
+		ELSE 'Nevenadres'
+	END
+FROM (
+    SELECT id, row_number() OVER(PARTITION BY {type_id} order by id) AS row_num
+    FROM bag_nummeraanduiding
+    WHERE id LIKE '0457%' AND type_adres IS NULL AND {type_id} IS NOT NULL
+) row_results
+WHERE bag_nummeraanduiding.id = row_results.id;
+        """
+
+        update_type_adres_weesp_vbo = update_type_adres_weesp.replace('{type_id}', 'verblijfsobject_id')
+        log.debug(update_type_adres_weesp_vbo)
+        with connection.cursor() as c:
+            c.execute(update_type_adres_weesp_vbo)
+
+        update_type_adres_weesp_lpa = update_type_adres_weesp.replace('{type_id}', 'ligplaats_id')
+        log.debug(update_type_adres_weesp_lpa)
+        with connection.cursor() as c:
+            c.execute(update_type_adres_weesp_lpa)
+
+        update_type_adres_weesp_spa = update_type_adres_weesp.replace('{type_id}', 'standplaats_id')
+        log.debug(update_type_adres_weesp_spa)
+        with connection.cursor() as c:
+            c.execute(update_type_adres_weesp_spa)
+
         update_vbo_sql = """
 UPDATE bag_verblijfsobject vbo
 SET _openbare_ruimte_naam = t.naam,
