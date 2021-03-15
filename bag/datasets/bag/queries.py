@@ -24,7 +24,7 @@ BAG_GEBIED = settings.ELASTIC_INDICES['BAG_GEBIED']
 NUMMERAANDUIDING = settings.ELASTIC_INDICES['NUMMERAANDUIDING']
 BAG_PAND = settings.ELASTIC_INDICES['BAG_PAND']
 
-def postcode_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
+def postcode_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """Create query/aggregation for postcode house number search"""
 
     postcode, huisnummer, toevoeging = \
@@ -73,7 +73,7 @@ def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def bouwblok_query(analyzer: QueryAnalyzer) -> Search:
+def bouwblok_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ Create query/aggregation for bouwblok search"""
     return create_search_query(
         query={
@@ -86,7 +86,7 @@ def bouwblok_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def postcode_query(analyzer: QueryAnalyzer) -> Search:
+def postcode_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     postcode = analyzer.get_postcode()
@@ -106,6 +106,7 @@ def postcode_query(analyzer: QueryAnalyzer) -> Search:
 
 def _basis_openbare_ruimte_query(
         analyzer: QueryAnalyzer,
+        features: int = 0,
         must: [dict] = None,
         must_not: [dict] = None,
         useorder: [bool] = False) -> Search:
@@ -173,6 +174,13 @@ def _basis_openbare_ruimte_query(
         }
     }
 
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default Amsterdam only 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
+
     return create_search_query(
         query=query,
         indexes=[BAG_GEBIED],
@@ -201,7 +209,7 @@ def _add_subtype(q : dict, subtype: str):
             q['must'].append({'term': {'subtype': subtype}})
 
 
-def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
+def openbare_ruimte_query(analyzer: QueryAnalyzer, features: int = 0, subtype: str = None) -> Search:
     """
     Maak een query voor openbare ruimte.
     """
@@ -210,21 +218,23 @@ def openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Searc
     }
 
     _add_subtype(dq, subtype)
-    return _basis_openbare_ruimte_query(analyzer, **dq)
+    return _basis_openbare_ruimte_query(analyzer, features, **dq)
 
 
-def gebied_query(analyzer: QueryAnalyzer) -> Search:
+def gebied_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """
     Maak een query voor gebieden.
     """
     return _basis_openbare_ruimte_query(
-        analyzer, useorder=False, must=[{
+        # For gebied we should enable feature ENABLE_WEESP_TYPEAHEAD. Otherwise it
+        # will not work for gebieden
+        analyzer, useorder=False, features=settings.ENABLE_WEESP_TYPEAHEAD , must=[{
             'term': {'type': 'gebied'},
         }],
     )
 
 
-def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
+def straatnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     street_part = analyzer.get_straatnaam()
     query = {
         'bool': {
@@ -242,6 +252,13 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
         }
     }
 
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
+
     return create_search_query(
         query=query,
         sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
@@ -249,7 +266,7 @@ def straatnaam_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
+def straatnaam_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
 
     straat, huisnummer, toevoeging = \
         analyzer.get_straatnaam_huisnummer_toevoeging()
@@ -283,6 +300,13 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
         },
     }
 
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
+
     return create_search_query(
         query=query,
         sort_fields=['_score', 'straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
@@ -291,7 +315,7 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
+def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -309,7 +333,7 @@ def landelijk_id_nummeraanduiding_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = None) -> Search:
+def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, features: int = 0, subtype: str = None) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -334,7 +358,7 @@ def landelijk_id_openbare_ruimte_query(analyzer: QueryAnalyzer, subtype: str = N
     )
 
 
-def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> Search:
+def landelijk_id_pand_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """ create query/aggregation for public area"""
 
     landelijk_id = analyzer.get_landelijk_id()
@@ -351,7 +375,7 @@ def landelijk_id_pand_query(analyzer: QueryAnalyzer) -> Search:
     )
 
 
-def pandnaam_query(analyzer: QueryAnalyzer) -> Search:
+def pandnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
     """
     Maak een query voor pand op pandnaam.
     """
@@ -369,6 +393,13 @@ def pandnaam_query(analyzer: QueryAnalyzer) -> Search:
             }
         }
     }
+
+    if not features & settings.ENABLE_WEESP_TYPEAHEAD:  # By default only Amsterdam 0363
+        query['bool']['filter'] = {
+            'prefix': {
+                'landelijk_id.raw': '0363'
+            }
+        }
 
     return create_search_query(
         query=query,

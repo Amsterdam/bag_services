@@ -35,22 +35,24 @@ class SubjectSearchTest(APITestCase):
         kon_straat = bag_factories.OpenbareRuimteFactory.create(
             naam="Koningin Wilhelminaplein",
             naam_nen="K Wilhem pl",
-            type='01')
+            type='01',
+            landelijk_id="0363300000004031")
 
         straat = bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat", type='01')
+            naam="Anjeliersstraat", type='01', landelijk_id="0363300000002718")
 
         gracht = bag_factories.OpenbareRuimteFactory.create(
-            naam="Prinsengracht", type='01')
+            naam="Prinsengracht", type='01', landelijk_id="0363300000004580")
 
         straat_1e = bag_factories.OpenbareRuimteFactory.create(
-            naam="1e Boomdwarsstraat", type='01')
+            naam="1e Boomdwarsstraat", type='01', landelijk_id="0363300000002533")
 
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=192,
             huisletter='A',
             type='01',  # Verblijfsobject
-            openbare_ruimte=gracht
+            openbare_ruimte=gracht,
+            landelijk_id="0363300000002534"
         )
 
         cls.anje42F = bag_factories.NummeraanduidingFactory.create(
@@ -58,7 +60,8 @@ class SubjectSearchTest(APITestCase):
             huisletter='F',
             huisnummer_toevoeging='1',
             type='01',  # Verblijfsobject
-            openbare_ruimte=straat
+            openbare_ruimte=straat,
+            landelijk_id="0363200000451203"
         )
 
         bag_factories.NummeraanduidingFactory.create(
@@ -66,14 +69,16 @@ class SubjectSearchTest(APITestCase):
             huisletter='F',
             huisnummer_toevoeging='1',
             type='01',  # Verblijfsobject
-            openbare_ruimte=straat
+            openbare_ruimte=straat,
+            landelijk_id="0363200000451204"
         )
 
         bag_factories.NummeraanduidingFactory.create(
             huisnummer=99,
             huisletter='',
             type='01',  # Verblijfsobject
-            openbare_ruimte=ptt_straat
+            openbare_ruimte=ptt_straat,
+            landelijk_id="0363200000451205"
         )
 
         bag_factories.NummeraanduidingFactory.create(
@@ -81,7 +86,8 @@ class SubjectSearchTest(APITestCase):
             huisletter='',
             postcode='1234AB',
             type='01',  # Verblijfsobject
-            openbare_ruimte=nen_straat
+            openbare_ruimte=nen_straat,
+            landelijk_id="0363200000451206"
         )
 
         cls.na1 = bag_factories.NummeraanduidingFactory.create(
@@ -90,7 +96,8 @@ class SubjectSearchTest(APITestCase):
             huisnummer_toevoeging=17,
             postcode='1234AB',
             type='01',  # Verblijfsobject
-            openbare_ruimte=kon_straat
+            openbare_ruimte=kon_straat,
+            landelijk_id="0363200000451207"
         )
 
         bag_factories.NummeraanduidingFactory.create(
@@ -99,7 +106,8 @@ class SubjectSearchTest(APITestCase):
             huisnummer_toevoeging='1A',
             postcode='1234AB',
             type='01',  # Verblijfsobject
-            openbare_ruimte=kon_straat
+            openbare_ruimte=kon_straat,
+            landelijk_id="0363200000451208"
         )
 
         bag_factories.NummeraanduidingFactory.create(
@@ -107,7 +115,8 @@ class SubjectSearchTest(APITestCase):
             huisnummer_toevoeging='3',
             postcode='1234AB',
             type='01',  # Verblijfsobject
-            openbare_ruimte=straat_1e
+            openbare_ruimte=straat_1e,
+            landelijk_id="0363200000451209"
         )
 
         batch.execute(datasets.bag.batch.IndexBagJob())
@@ -257,7 +266,7 @@ class SubjectSearchTest(APITestCase):
             response.data['results'][0]['adres'], "Koningin Wilhelminaplein 122B-1A")
 
     def test_query_landelijk_id(self):
-        landelijk_id =  self.na1.landelijk_id.lstrip('0')[0:12]
+        landelijk_id =  self.na1.landelijk_id.lstrip('0')
         response = self.client.get(
             "/atlas/search/adres/", {'q': landelijk_id})
         self.assertEqual(response.status_code, 200)
