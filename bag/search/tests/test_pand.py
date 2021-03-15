@@ -19,7 +19,7 @@ class SubjectSearchTest(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.pand = bag_factories.PandFactory.create()
+        cls.pand = bag_factories.PandFactory.create(landelijk_id="0363100012062184")
         batch.execute(datasets.bag.batch.DeleteIndexPandJob())
         batch.execute(datasets.bag.batch.IndexPandJob())
 

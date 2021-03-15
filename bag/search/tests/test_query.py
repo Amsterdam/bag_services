@@ -189,7 +189,7 @@ class QueryTest(APITransactionTestCase):
         self.assertEqual(f'bag/v1.1/verblijfsobject/{adresseerbaar_object_id}/', res.data[0]['content'][0]['uri'])
 
     def test_typeahead_opr_landelijk_id(self):
-        q = self.prinsengracht.landelijk_id[0:6]
+        q = self.prinsengracht.landelijk_id[0:14]
         res = self.client.get(f'/atlas/typeahead/gebieden/?q={q}')
         self.assertEqual(200, res.status_code)
         self.assertEqual(f'bag/v1.1/openbareruimte/{self.prinsengracht.landelijk_id}/', res.data[0]['content'][0]['uri'])

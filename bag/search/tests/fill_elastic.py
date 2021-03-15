@@ -19,7 +19,7 @@ def load_docs(cls):
         naam='Centrum')
 
     cls.prinsengracht = bag_factories.OpenbareRuimteFactory.create(
-        naam="Prinsengracht", type='02', landelijk_id='0123456789012345')
+        naam="Prinsengracht", type='02', landelijk_id='0363300000004580')
 
     # Create brug objects
     bag_factories.OpenbareRuimteFactory.create(
@@ -33,7 +33,7 @@ def load_docs(cls):
 
     # Special chars
     bag_factories.OpenbareRuimteFactory.create(
-        naam="Laing's Nekstraat", type='01')
+        naam="Laing's Nekstraat", type='01', landelijk_id='0363300000004117')
 
     anjeliersstraat = bag_factories.OpenbareRuimteFactory.create(
         naam="Anjeliersstraat", type='01')
@@ -78,7 +78,7 @@ def load_docs(cls):
         type_adres='Hoofdadres', postcode='1015XR')
 
     rozenstraat = bag_factories.OpenbareRuimteFactory.create(
-        naam="Rozenstraat")
+        naam="Rozenstraat", landelijk_id="0363300000004425")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=228, huisletter='a',
@@ -86,23 +86,23 @@ def load_docs(cls):
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=228, huisletter='b',
-        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1', landelijk_id="0363200000425129")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='1', landelijk_id="0363200000425130")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='2')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='2', landelijk_id="0363200000425131")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='3')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='3', landelijk_id="0363200000425132")
 
     bag_factories.NummeraanduidingFactory.create(
         openbare_ruimte=rozenstraat, huisnummer=229,
-        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='4')
+        type_adres='Hoofdadres', postcode='1016SZ', huisnummer_toevoeging='4', landelijk_id="0363200000425133")
 
     bag_factories.BouwblokFactory.create(code='RN35')
     bag_factories.BouwblokFactory.create(code='AB01')
@@ -121,7 +121,7 @@ def load_docs(cls):
         woonadres=adres
     )
 
-    cls.pand1 = bag_factories.PandFactory.create()
+    cls.pand1 = bag_factories.PandFactory.create(landelijk_id="0363100012062184")
 
     batch.execute(datasets.bag.batch.DeleteIndexBagJob())
     batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())

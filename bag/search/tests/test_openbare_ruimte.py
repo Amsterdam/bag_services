@@ -15,13 +15,13 @@ class OPRTest(APITransactionTestCase):
         super().setUpClass()
 
         bag_factories.OpenbareRuimteFactory.create(
-            naam="Anjeliersstraat")
+            naam="Anjeliersstraat", landelijk_id="0363300000002718")
 
         bag_factories.OpenbareRuimteFactory.create(
-            naam="Prinsengracht", type='01')
+            naam="Prinsengracht", type='01', landelijk_id="0363300000004581")
 
         bag_factories.OpenbareRuimteFactory.create(
-            naam="Prinsengracht", type='02')
+            naam="Prinsengracht", type='02', landelijk_id="0363300000004580")
 
         batch.execute(datasets.bag.batch.DeleteIndexGebiedJob())
         batch.execute(datasets.bag.batch.IndexGebiedenJob())
