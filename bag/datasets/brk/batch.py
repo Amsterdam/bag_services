@@ -823,7 +823,9 @@ class ImportKadasterJob(object):
 
 
         self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
+        self.brk_with_subj = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_ActueelMetSubj')
         self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
+        self.brk_shp_with_subj = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_ActueelMetSubj')
         self.stash = {}
 
     def tasks(self):
@@ -834,12 +836,12 @@ class ImportKadasterJob(object):
             ImportKadastraleSectieTaskLines(self.brk_shp, self.stash),
             ImportKadastraleSectieTask(self.brk_shp, self.stash),
 
-            ImportKadastraalSubjectTask(self.brk),
-            ImportKadastraalObjectTask(self.brk),
+            ImportKadastraalSubjectTask(self.brk_with_subj),
+            ImportKadastraalObjectTask(self.brk_with_subj),
             # needs Subject and Object
-            ImportZakelijkRechtTask(self.brk),
+            ImportZakelijkRechtTask(self.brk_with_subj),
             # needs Subject and Object
-            ImportAantekeningTask(self.brk),
+            ImportAantekeningTask(self.brk_with_subj),
             # needs bag.VBO
             ImportKadastraalObjectVerblijfsobjectTask(self.brk),
             # needs zakelijk recht.
