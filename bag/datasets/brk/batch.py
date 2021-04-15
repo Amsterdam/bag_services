@@ -825,7 +825,6 @@ class ImportKadasterJob(object):
         self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
         self.brk_with_subj = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_ActueelMetSubj')
         self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
-        self.brk_shp_with_subj = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_ActueelMetSubj')
         self.stash = {}
 
     def tasks(self):
