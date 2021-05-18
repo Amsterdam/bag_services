@@ -12,7 +12,7 @@ TABLE_TARGETS = [
     # counts override, from 22-08-2019
     (8888, 0, "bag_bouwblok"),
     (481, 0, "bag_buurt"),
-    (110, 0, "bag_buurtcombinatie"),
+    (110, 11, "bag_buurtcombinatie"),  # Temporary allow a bigger margin, until Weesp is added in production
     (22, 6, "bag_gebiedsgerichtwerken"),
     (2, 1, "bag_gemeente"),
     (72, 8, "bag_grootstedelijkgebied"),
@@ -20,7 +20,7 @@ TABLE_TARGETS = [
     (540798, 0, "bag_nummeraanduiding"),
     (6650, 600, "bag_openbareruimte"),
     (196411, 0, "bag_pand"),
-    (9, 0, "bag_stadsdeel"),
+    (9, 1, "bag_stadsdeel"),  # Temporary allow a bigger margin, until Weesp is added in production
     (339, 0, "bag_standplaats"),
     (2, 0, "bag_unesco"),
     (535171, 0, "bag_verblijfsobject"),
