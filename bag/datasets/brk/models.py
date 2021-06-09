@@ -263,7 +263,7 @@ class KadastraalObject(models.Model):
     soort_grootte = models.ForeignKey(
         SoortGrootte, null=True, on_delete=models.CASCADE)
     grootte = models.DecimalField(null=True, max_digits=10, decimal_places=2)
-    koopsom = models.IntegerField(null=True)
+    koopsom = models.BigIntegerField(null=True)
     koopsom_valuta_code = models.CharField(max_length=50, null=True)
     koopjaar = models.CharField(max_length=15, null=True)
     meer_objecten = models.NullBooleanField(default=None)
