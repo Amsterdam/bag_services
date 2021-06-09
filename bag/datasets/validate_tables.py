@@ -11,7 +11,7 @@ LOG = logging.getLogger(__name__)
 TABLE_TARGETS = [
     # counts override, from 22-08-2019
     (9384, 0, "bag_bouwblok"),
-    (481, 0, "bag_buurt"),
+    (500, 0, "bag_buurt"),
     (110, 11, "bag_buurtcombinatie"),  # Temporary allow a bigger margin, until Weesp is added in production
     (22, 6, "bag_gebiedsgerichtwerken"),
     (2, 1, "bag_gemeente"),
