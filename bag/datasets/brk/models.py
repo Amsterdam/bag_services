@@ -107,7 +107,7 @@ class Adres(models.Model):
     openbareruimte_naam = models.CharField(max_length=80, null=True)
     huisnummer = models.IntegerField(null=True)
     huisletter = models.CharField(max_length=1, null=True)
-    toevoeging = models.CharField(max_length=4, null=True)
+    toevoeging = models.CharField(max_length=5, null=True)
     postcode = models.CharField(max_length=6, null=True)
     woonplaats = models.CharField(max_length=80, null=True)
 
