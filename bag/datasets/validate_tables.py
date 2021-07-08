@@ -10,7 +10,7 @@ LOG = logging.getLogger(__name__)
 
 TABLE_TARGETS = [
     # counts override, from 22-08-2019
-    (9384, 0, "bag_bouwblok"),
+    (9384, 520, "bag_bouwblok"), # Temporary allow a bigger margin, until Bouwblokken Weesp are finished
     (500, 0, "bag_buurt"),
     (110, 11, "bag_buurtcombinatie"),  # Temporary allow a bigger margin, until Weesp is added in production
     (22, 6, "bag_gebiedsgerichtwerken"),
@@ -38,16 +38,16 @@ TABLE_TARGETS = [
     (29, 5, "brk_cultuurcodeonbebouwd"),
     (352, 1, "brk_gemeente"),
     (3, 0, "brk_geslacht"),
-    (617766, 0, "brk_kadastraalobject"),
-    (535178, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
-    (353560, 0, "brk_kadastraalsubject"),
-    (66, 0, "brk_kadastralegemeente"),
-    (177, 20, "brk_kadastralesectie"),
-    (261, 0, "brk_land"),
+    (655569, 0, "brk_kadastraalobject"),
+    (618682, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
+    (367837, 0, "brk_kadastraalsubject"),
+    (86, 0, "brk_kadastralegemeente"),
+    (234, 20, "brk_kadastralesectie"),
+    (266, 0, "brk_land"),
     (22, 10, "brk_rechtsvorm"),
-    (9, 20, "brk_soortgrootte"),  # Kadaster gaat nog meer soort soortgroottes opleveren
-    (978241, 0, "brk_zakelijkrecht"),
-    (902657, 0, "brk_zakelijkrechtverblijfsobjectrelatie"),
+    (10, 20, "brk_soortgrootte"),  # Kadaster gaat nog meer soort soortgroottes opleveren
+    (1038235, 0, "brk_zakelijkrecht"),
+    (1028629, 0, "brk_zakelijkrechtverblijfsobjectrelatie"),
 ]
 
 
