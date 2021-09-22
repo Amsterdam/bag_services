@@ -19,7 +19,6 @@ Note that since these datasets contain non-public data, we will not provide
 access to the underlying databases. Using the provided API to access these data
 requires extra credentials which are not publicly available.
 
-
 Requirements
 ------------
 
