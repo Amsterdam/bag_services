@@ -31,7 +31,7 @@ TABLE_TARGETS = [
     (72, 5, "brk_aardaantekening"),
     (12, 0, "brk_aardzakelijkrecht"),
     (241614, 0, "brk_adres"),
-    (1025311, 0, "brk_aperceelgperceelrelatie"),
+    (1070000, 0, "brk_aperceelgperceelrelatie"), # increased value
     (7, 2, "brk_appartementsrechtssplitstype"),
     (8, 0, "brk_beschikkingsbevoegdheid"),
     (30, 10, "brk_cultuurcodebebouwd"),
