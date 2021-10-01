@@ -5,9 +5,9 @@ Version for GOB import
 import logging
 from django.db import connection
 
-
 LOG = logging.getLogger(__name__)
 
+MAX_DEVIATION = 0.05
 TABLE_TARGETS = [
     # counts override, from 22-08-2019
     (9384, 520, "bag_bouwblok"), # Temporary allow a bigger margin, until Bouwblokken Weesp are finished
@@ -31,7 +31,7 @@ TABLE_TARGETS = [
     (72, 5, "brk_aardaantekening"),
     (12, 0, "brk_aardzakelijkrecht"),
     (241614, 0, "brk_adres"),
-    (1025311, 0, "brk_aperceelgperceelrelatie"),
+    (1070000, 0, "brk_aperceelgperceelrelatie"), # increased value
     (7, 2, "brk_appartementsrechtssplitstype"),
     (8, 0, "brk_beschikkingsbevoegdheid"),
     (30, 10, "brk_cultuurcodebebouwd"),
@@ -76,7 +76,7 @@ def check_table_counts(table_data: list):
     for target, override, table in table_data:
         count = sql_count(table)
         delta = abs(count - target)
-        deviation = int(0.05 * target)
+        deviation = int(MAX_DEVIATION * target)
         if override:
             deviation = override
         if delta > deviation or count == 0:
