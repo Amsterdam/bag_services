@@ -10,7 +10,7 @@ LOG = logging.getLogger(__name__)
 MAX_DEVIATION = 0.05
 TABLE_TARGETS = [
     # counts override, from 22-08-2019
-    (9384, 520, "bag_bouwblok"), # Temporary allow a bigger margin, until Bouwblokken Weesp are finished
+    (9920, 520, "bag_bouwblok"),  # Temporary allow a bigger margin, until Bouwblokken Weesp are finished
     (500, 0, "bag_buurt"),
     (110, 11, "bag_buurtcombinatie"),  # Temporary allow a bigger margin, until Weesp is added in production
     (22, 6, "bag_gebiedsgerichtwerken"),
@@ -70,6 +70,7 @@ def check_table_counts(table_data: list):
     check if current table counts are close
     """
     error = False
+    msg = None
     all_msg = ("Table count errors \n"
                "Count ,   Target,  Deviation-Allowed,      Table,           Status \n")
 
