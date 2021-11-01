@@ -27,7 +27,7 @@ TABLE_TARGETS = [
     (536744, 0, "bag_verblijfsobjectpandrelatie"),
     (1, 20, "bag_woonplaats"),  # Er mogen meer woonplaatsen worden geleverd
     (5, 0, "brk_aanduidingnaam"),  # Temporary allow 5 possible values instead of 4
-    (763500, 50000, "brk_aantekening"),
+    (800000, 50000, "brk_aantekening")  # Temporary higher value for PROD, due to new filter on acc
     (72, 5, "brk_aardaantekening"),
     (12, 0, "brk_aardzakelijkrecht"),
     (241614, 0, "brk_adres"),
