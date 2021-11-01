@@ -27,11 +27,11 @@ TABLE_TARGETS = [
     (536744, 0, "bag_verblijfsobjectpandrelatie"),
     (1, 20, "bag_woonplaats"),  # Er mogen meer woonplaatsen worden geleverd
     (5, 0, "brk_aanduidingnaam"),  # Temporary allow 5 possible values instead of 4
-    (763500, 50000, "brk_aantekening"),
-    (72, 5, "brk_aardaantekening"),
+    (763500, 500000, "brk_aantekening"),  # Temporary very high margin, due to changes acc/prod
+    (72, 60, "brk_aardaantekening"),  # Temporary very high margin, due to changes acc/prod
     (12, 0, "brk_aardzakelijkrecht"),
     (241614, 0, "brk_adres"),
-    (1070000, 0, "brk_aperceelgperceelrelatie"), # increased value
+    (1025311, 0, "brk_aperceelgperceelrelatie"),
     (7, 2, "brk_appartementsrechtssplitstype"),
     (8, 0, "brk_beschikkingsbevoegdheid"),
     (30, 10, "brk_cultuurcodebebouwd"),
