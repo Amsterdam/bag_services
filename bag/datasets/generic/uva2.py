@@ -63,10 +63,9 @@ def uva_indicatie(s):
 
 def datum_geldig(start, eind):
     now = datetime.date.today()
-    return (eind is None and start is None) \
-           or (eind is None and start <= now) \
-           or (start is None and now < eind) \
-           or (start <= now < eind)
+
+    # start can be in the future, ie start is not relevant if eind is None
+    return (eind is None) or (start is None and now < eind) or (start <= now < eind)
 
 
 def uva_geldig(start, eind):

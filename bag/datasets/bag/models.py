@@ -116,7 +116,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
     http://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/
     """
     id = models.CharField(max_length=14, primary_key=True)
-    code = models.CharField(max_length=3, unique=True)
+    code = models.CharField(max_length=4, unique=True)
     vollcode = models.CharField(max_length=4)
     naam = models.CharField(max_length=40)
     vervallen = models.NullBooleanField(default=None)
