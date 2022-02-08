@@ -25,3 +25,5 @@ venv
 .project
 .pydevproject
 .settings
+
+data/

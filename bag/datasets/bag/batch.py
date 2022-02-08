@@ -1,6 +1,7 @@
 # Python
 import logging
 import os
+import re
 import time
 # Packages
 from collections import defaultdict
@@ -129,6 +130,8 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     name = "Import BRT - BUURT"
     dataset_id = 'gebieden-buurt'
 
+    rx_code_2022 = re.compile("^[A-Z]{2}[0-9]{2}$")
+
     def __init__(self, uva_path):
         self.uva_path = uva_path
         self.stadsdelen = set()
@@ -162,16 +165,16 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
     def process_row(self, r):
         pk = r['identificatie']
         stadsdeel_id = r['ligtIn:GBD.SDL.identificatie']
-        vollcode = r['code']
-        code = vollcode[1:]
+        vollcode = r['code']  # new: AA00, AB00, AC00 | old: A01a, A02b, SAC1
+        code = vollcode if self.rx_code_2022.match(vollcode) else vollcode[1:]
         naam = r['naam']
         brondocument_naam = r['documentnummer']
         brondocument_datum = uva2.iso_datum(r['documentdatum'])
         ingang_cyclus = uva2.iso_datum(r['beginGeldigheid'])
         begin_geldigheid = uva2.iso_datum(r['beginGeldigheid'])
         einde_geldigheid = uva2.iso_datum(r['eindGeldigheid'])
-        bc_voll_code = r['ligtIn:GBD.WIJK.code']
-        bc_code = bc_voll_code[1:]
+        bc_voll_code = r['ligtIn:GBD.WIJK.code']  # AA, EH | A00, A01
+        bc_code = bc_voll_code if ImportWijkTask.rx_code_2022.match(bc_voll_code) else bc_voll_code[1:]
         vervallen = None
 
         wkt_geometrie = r['geometrie']
@@ -275,23 +278,6 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
             einde_geldigheid=einde_geldigheid,
             geometrie=geometrie,
         )
-
-        # add buurt to bouwblok if missing.
-        # now dependent  objects like panden have
-        # 'gebiedsinformation'
-        if bouwblok.buurt is None:
-
-            buurt = models.Buurt.objects.filter(
-                geometrie__dwithin=(bouwblok.geometrie, 0))
-
-            if buurt.count():
-                buurt = buurt.first()
-                bouwblok.buurt = buurt
-                log.warning(
-                    "Bouwblok %s connected to buurt %s;.",
-                    bouwblok.id, buurt.naam)
-
-        bouwblok.save()
 
 
 class ImportWoonplaatsTask(batch.BasicTask):
@@ -505,11 +491,11 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         if ligplaats_id and ligplaats_id not in self.ligplaatsen:
             log.warning(f'Nummeraanduiding {pk} references non-existing ligplaats {ligplaats_id}; set to None')
             ligplaats_id = None
-        standplaats_id  = r['adresseert:BAG.SPS.identificatie'] or None
+        standplaats_id = r['adresseert:BAG.SPS.identificatie'] or None
         if standplaats_id and standplaats_id not in self.standplaatsen:
             log.warning(f'Nummeraanduiding {pk} references non-existing standplaats {standplaats_id}; set to None')
             standplaats_id = None
-        verblijfsobject_id =  r['adresseert:BAG.VOT.identificatie'] or None
+        verblijfsobject_id = r['adresseert:BAG.VOT.identificatie'] or None
         if verblijfsobject_id and verblijfsobject_id not in self.verblijfsobjecten:
             log.warning(f'Nummeraanduiding {pk} references non-existing verblijfsobject {verblijfsobject_id}; set to None')
             verblijfsobject_id = None
@@ -714,7 +700,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         self.buurten.clear()
         self.panden.clear()
 
-        def gen_pand_vbo_objects(dict1:dict):
+        def gen_pand_vbo_objects(dict1: dict):
             for pand_id, vbo_ids in dict1.items():
                 for vbo_id in vbo_ids:
                     yield models.VerblijfsobjectPandRelatie(verblijfsobject_id=vbo_id, pand_id=pand_id)
@@ -794,7 +780,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
                     self.pandrelatie[pand_id].append(pk)
 
         if values['buurt_id'] and values['buurt_id'] not in self.buurten:
-            log.warning('Ligplaats {} references non-existing buurt {}; ignoring'.format(pk, values['buurt_id']))
+            log.warning('Verblijfsobject {} references non-existing buurt {}; ignoring'.format(pk, values['buurt_id']))
             values['buurt_id'] = None
         self.count += 1
         now_time = time.time()
@@ -1026,6 +1012,7 @@ class ImportWijkTask(batch.BasicTask):
     """
 
     name = "Import GBD Wijk"
+    rx_code_2022 = re.compile("^[A-Z]{2}$")
 
     def __init__(self, shp_path):
         self.shp_path = shp_path
@@ -1045,9 +1032,8 @@ class ImportWijkTask(batch.BasicTask):
             self.shp_path, shp_file, self.process_feature, GOB_SHAPE_ENCODING)
 
     def process_feature(self, feat):
-
         vollcode = feat.get('code')
-        code = vollcode[1:]
+        code = vollcode if self.rx_code_2022.match(vollcode) else vollcode[1:]
         stadsdeel_id = vollcode[:1]
         wijk = models.Buurtcombinatie(
             id=str(int(feat.get('id'))),
@@ -1148,8 +1134,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         """
         self.stadsdelen.clear()
         validate_geometry(models.Gebiedsgerichtwerken)
-        log.debug(
-            '%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
+        log.debug('%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
 
     def process(self):
         shp_file = "GBD_ggw_gebied.shp"
