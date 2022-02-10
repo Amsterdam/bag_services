@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('geo_views', '0010_brk_wkpb_views')]
 
     dependencies = [
-        ('bag', '0001_initial'),
+        ('bag', '0008_woonplaats_geometrie'),
         ('brk', '0001_initial'),
     ]
 
