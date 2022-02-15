@@ -15,7 +15,7 @@ cryptography==3.3.2
 datapunt-authorization-django==1.0.0
 debtcollector==1.20.0
 defusedxml==0.6.0
-Django==2.2.24
+Django==2.2.27
 django-debug-toolbar==1.11.1
 django-elasticsearch-debug-toolbar==2.0.0
 django-extensions==2.1.4
@@ -70,7 +70,7 @@ packaging==18.0
 pbr==5.1.1
 pies==2.6.7
 positional==1.2.1
-psycopg2-binary==2.7.6.1
+psycopg2==2.8.6
 pycodestyle==2.4.0
 pycparser==2.19
 pyflakes==2.0.0
@@ -78,8 +78,8 @@ PyJWT==1.7.1
 pyparsing==2.4.7
 pyslack-real==0.6.0
 python-dateutil==2.7.5
-python-keystoneclient==3.18.0
-python-swiftclient==3.6.0
+python-keystoneclient==4.4.0
+python-swiftclient==3.13.0
 pytz==2018.9
 PyYAML==5.4
 requests==2.25.0
