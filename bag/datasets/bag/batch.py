@@ -959,7 +959,7 @@ class IndexGemeenteTask(index.ImportIndexTask):
 
 
 class IndexWoonplaatsTask(index.ImportIndexTask):
-    name = "index woonplatsen"
+    name = "index woonplaatsen"
     queryset = models.Woonplaats.objects.all()
 
     def convert(self, obj):

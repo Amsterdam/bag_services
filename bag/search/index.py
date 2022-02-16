@@ -176,7 +176,7 @@ class ImportIndexTask(object):
 
         qs_count = qs_s.count()
 
-        log.debug('PART %d/%d Count: %d', modulo_value, modulo, qs_count)
+        log.debug('PART %d/%d Count: %d', modulo_value + 1, modulo, qs_count)
 
         if not qs_count:
             return
@@ -195,11 +195,11 @@ class ImportIndexTask(object):
             else:
                 qs_ss = qs_s.filter(id__gt=self.last_id)[:batch_size]
 
-            percentage = int((loopidx * batch_size - 1) / qs_count * 100)
+            percentage = int(min(qs_count, (loopidx * batch_size - 1)) / qs_count * 100)
             log.debug(
                 'Batch %4d %6d %3d%% %s  %s',
                 loopidx, loopidx * batch_size, percentage, self.name,
-                self.last_id
+                self.last_id if loopidx > 1 else ''
             )
 
             yield qs_ss
