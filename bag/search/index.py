@@ -82,7 +82,7 @@ class ImportIndexTask(object):
         """
         qs = self.get_queryset()
 
-        log.info('ITEMS %d', qs.count())
+        log.info('ITEMS %d', len(qs))
 
         numerator = settings.PARTIAL_IMPORT['numerator']
         denominator = settings.PARTIAL_IMPORT['denominator']
@@ -150,7 +150,7 @@ class ImportIndexTask(object):
 
         if modulo != 1:
             if self.sequential:
-                total = qs.count()
+                total = len(qs)
                 chunk_size = int(total / modulo)
                 start = chunk_size * modulo_value
                 all_ids = qs.all().values('id')
@@ -174,7 +174,7 @@ class ImportIndexTask(object):
         else:
             qs_s = qs
 
-        qs_count = qs_s.count()
+        qs_count = len(qs_s)
 
         log.debug('PART %d/%d Count: %d', modulo_value + 1, modulo, qs_count)
 
@@ -204,7 +204,7 @@ class ImportIndexTask(object):
 
             yield qs_ss
 
-            if qs_ss.count() < batch_size:
+            # QuerySet is materialized, len can be used
+            if len(qs_ss) < batch_size:
                 # no more data
                 break
-

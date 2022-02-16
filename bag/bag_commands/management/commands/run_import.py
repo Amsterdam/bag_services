@@ -5,6 +5,7 @@ Database import commands
 import sys
 
 from django.core.management import BaseCommand
+from django.db import connection
 
 import datasets.bag.batch
 import datasets.brk.batch
@@ -63,3 +64,7 @@ class Command(BaseCommand):
             for job_class in self.imports[one_ds]:
                 batch.execute(job_class())
 
+        # analyze database after job
+        with connection.cursor() as cur:
+            self.stdout.write("Analyzing database...")
+            cur.execute("VACUUM ANALYZE")

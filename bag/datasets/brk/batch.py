@@ -16,7 +16,7 @@ from datasets.bag import models as bag
 from datasets.brk import models, documents
 from datasets.generic import geo, database, uva2, kadaster, metadata
 from datasets.bag.batch import GOB_CSV_ENCODING
-from . import batch_eigendom_sql, batch_fix_kadastraalobject_sql
+from datasets.brk import batch_eigendom_sql, batch_fix_kadastraalobject_sql
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class ImportGemeenteTask(batch.BasicTask):
         pass
 
     def after(self):
-        assert models.Gemeente.objects.count() > 0
+        assert len(models.Gemeente.objects.all()) > 0
 
     def process(self):
         geo.process_shp(self.path, 'BRK_GEMEENTE.shp', self.process_feature)
