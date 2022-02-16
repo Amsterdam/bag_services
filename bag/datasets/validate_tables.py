@@ -51,17 +51,20 @@ TABLE_TARGETS = [
 ]
 
 
-def sql_count(table):
+def sql_count(table: str) -> int:
+    sql_table = connection.ops.quote_name(table)
 
-    count = 0
+    with connection.cursor() as cursor:
+        # Get first column name from table to force count on
+        # workaround query planning issue in postgresql 11.15
+        # https://www.postgresql.org/message-id/2121219.1644607692%40sss.pgh.pa.us
+        cursor.execute(f'SELECT * FROM {sql_table} LIMIT 1')
+        column = cursor.description[0][0]
 
-    with connection.cursor() as c:
-        c.execute('SELECT COUNT(*) FROM {}'.format(connection.ops.quote_name(table)))
-        row = c.fetchone()
-        count += row[0]
-        # LOG.debug('COUNT %-6s %s', count, table)
+        cursor.execute(f'SELECT COUNT({column}) FROM {sql_table}')
+        row = cursor.fetchone()
 
-    return count
+    return int(row[0]) if row else 0
 
 
 def check_table_counts(table_data: list):
