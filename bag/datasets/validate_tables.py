@@ -74,7 +74,7 @@ def check_table_counts(table_data: list):
         else:
             status = '< OK >'
 
-        msg = f"{count:>6} ~= {target:<11} {delta:>6}-{deviation:<6} {table:<42} {status} \n"
+        msg = f"{count:>11} ~= {target:<11} {delta:>8}-{deviation:<8} {table:<50} {status} \n"
         all_msg += msg
 
     if error:

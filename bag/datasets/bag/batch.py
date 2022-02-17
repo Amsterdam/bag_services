@@ -153,7 +153,7 @@ class ImportBuurtTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.update_metadata_csv(self.source)
         validate_geometry(models.Buurt)
 
-        log.info("%d Buurten imported", len(models.Buurt.objects.all()))
+        log.info("%d Buurten imported", models.Buurt.objects.count())
 
     def process(self):
         self.buurten = dict(
@@ -237,7 +237,7 @@ class ImportBouwblokTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.buurten.clear()
         self.update_metadata_csv(self.source)
         validate_geometry(models.Bouwblok)
-        log.info('%s Bouwblokken imported', len(models.Bouwblok.objects.all()))
+        log.info('%s Bouwblokken imported', models.Bouwblok.objects.count())
 
     def process(self):
         # loads the csv
@@ -471,7 +471,7 @@ class ImportNummeraanduidingTask(batch.BasicTask, metadata.UpdateDatasetMixin):
         self.openbare_ruimtes.clear()
         self.update_metadata_csv(self.source)
         self.type_lookup.clear()
-        log.info('%d Nummeraanduiding Imported', len(models.Nummeraanduiding.objects.all()))
+        log.info('%d Nummeraanduiding Imported', models.Nummeraanduiding.objects.count())
 
     def process(self):
         nummeraanduidingen = uva2.process_csv(None, None, self.process_row, source=self.source, encoding=GOB_CSV_ENCODING, max_rows=None)
@@ -626,7 +626,7 @@ class ImportStandplaatsenTask(batch.BasicTask):
 
         assert not models.Standplaats.objects.filter(geometrie__isnull=True).exists(), "Standplaats zonder geometrie!"
 
-        log.info('%s Standplaatsen', len(models.Standplaats.objects.all()))
+        log.info('%s Standplaatsen', models.Standplaats.objects.count())
 
     def process(self):
         source = os.path.join(self.bag_path, 'BAG_standplaats_Actueel.csv')
@@ -709,7 +709,7 @@ class ImportVerblijfsobjectTask(batch.BasicTask):
         models.VerblijfsobjectPandRelatie.objects.bulk_create(pand_vbo_objects, batch_size=database.BATCH_SIZE)
         self.pandrelatie.clear()
 
-        log.info('%d Verblijfsobjecten Imported', len(models.Verblijfsobject.objects.all()))
+        log.info('%d Verblijfsobjecten Imported', models.Verblijfsobject.objects.count())
 
     def process(self):
         source = os.path.join(self.path, 'BAG_verblijfsobject_Actueel.csv')
@@ -1133,7 +1133,7 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         """
         self.stadsdelen.clear()
         validate_geometry(models.Gebiedsgerichtwerken)
-        log.debug('%d Gebiedsgerichtwerken gebieden', len(models.Gebiedsgerichtwerken.objects.all()))
+        log.debug('%d Gebiedsgerichtwerken gebieden', models.Gebiedsgerichtwerken.objects.count())
 
     def process(self):
         shp_file = "GBD_ggw_gebied.shp"
@@ -1186,7 +1186,7 @@ class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
         """
         validate_geometry(models.GebiedsgerichtwerkenPraktijkgebieden)
         log.debug(
-            '%d Gebiedsgerichtwerken praktijkgebieden', len(models.GebiedsgerichtwerkenPraktijkgebieden.objects.all())
+            '%d Gebiedsgerichtwerken praktijkgebieden', models.GebiedsgerichtwerkenPraktijkgebieden.objects.count()
         )
 
     def process(self):
