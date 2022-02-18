@@ -1,17 +1,31 @@
-from typing import Union
-
 from django.db import connection
 from django.db.models import QuerySet
+from django.db.utils import InternalError as DjangoInternalError
+from psycopg2 import InternalError as Psycopg2InternalError
 
-BATCH_SIZE = 50000
+BATCH_SIZE = 50_000
 
 
-def sql_count(table: Union[QuerySet, str]) -> int:
-    if isinstance(table, QuerySet):
-        from_, param = table.query.as_sql('compiler', connection)
-        from_ = f"({from_})"
-    else:
-        from_, param = connection.ops.quote_name(table), None
+def count_qs(qs: QuerySet) -> int:
+    """Workaround count(*) issue in postgresql/django by falling back to count(first_column)."""
+    try:
+        return qs.count()
+    except (DjangoInternalError, Psycopg2InternalError):
+        # Fallback: Try to compile query to sql
+        from_, param = qs.query.as_sql('compiler', connection)
+        return count_sql(table=f"({from_})", param=param, quote=False)
+
+
+def count_sql(table: str, param=None, quote: bool = True) -> int:
+    """
+    Count length table or subquery based on first column.
+
+    :param table: table or subquery (incl ())
+    :param param: Optional parameters to subquery
+    :param quote: quote the table if true
+    :returns: number of rows in table
+    """
+    from_ = connection.ops.quote_name(table) if quote else table
 
     with connection.cursor() as cursor:
         # Get first column name from table to force count on

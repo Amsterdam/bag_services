@@ -4,7 +4,7 @@ Version for GOB import
 """
 import logging
 
-from datasets.generic.database import sql_count
+from datasets.generic.database import count_sql
 
 LOG = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def check_table_counts(table_data: list):
                "Count ,   Target,  Deviation-Allowed,      Table,           Status \n")
 
     for target, override, table in table_data:
-        count = sql_count(table)
+        count = count_sql(table)
         delta = abs(count - target)
         deviation = int(MAX_DEVIATION * target)
         if override:
