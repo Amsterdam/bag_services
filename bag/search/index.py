@@ -10,6 +10,8 @@ from elasticsearch.client import IndicesClient
 from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl.connections import connections
 
+from datasets.generic.database import count_qs
+
 log = logging.getLogger(__name__)
 
 
@@ -81,8 +83,7 @@ class ImportIndexTask(object):
 
         """
         qs = self.get_queryset()
-
-        log.info('ITEMS %d', len(qs))
+        log.info('ITEMS %d', count_qs(qs))
 
         numerator = settings.PARTIAL_IMPORT['numerator']
         denominator = settings.PARTIAL_IMPORT['denominator']
@@ -150,7 +151,7 @@ class ImportIndexTask(object):
 
         if modulo != 1:
             if self.sequential:
-                total = len(qs)
+                total = count_qs(qs)
                 chunk_size = int(total / modulo)
                 start = chunk_size * modulo_value
                 all_ids = qs.all().values('id')
@@ -174,7 +175,7 @@ class ImportIndexTask(object):
         else:
             qs_s = qs
 
-        qs_count = len(qs_s)
+        qs_count = count_qs(qs_s)
 
         log.debug('PART %d/%d Count: %d', modulo_value + 1, modulo, qs_count)
 
@@ -198,7 +199,7 @@ class ImportIndexTask(object):
             percentage = int(min(qs_count, (loopidx * batch_size - 1)) / qs_count * 100)
             log.debug(
                 'Batch %4d %6d %3d%% %s  %s',
-                loopidx, loopidx * batch_size, percentage, self.name,
+                loopidx, min(qs_count, loopidx * batch_size), percentage, self.name,
                 self.last_id if loopidx > 1 else ''
             )
 
