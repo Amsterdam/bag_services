@@ -8,7 +8,7 @@ from datasets.generic.database import count_sql
 
 LOG = logging.getLogger(__name__)
 
-MAX_DEVIATION = 0.05
+MAX_DEVIATION = 0.10
 TABLE_TARGETS = [
     # counts override, from 22-08-2019
     (9920, 520, "bag_bouwblok"),  # Temporary allow a bigger margin, until Bouwblokken Weesp are finished
