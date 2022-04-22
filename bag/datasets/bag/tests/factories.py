@@ -56,7 +56,7 @@ class BuurtFactory(factory.DjangoModelFactory):
         django_get_or_create = ('code',)
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
-    code = fuzzy.FuzzyText(length=3, chars=string.digits)
+    code = fuzzy.FuzzyText(length=4, chars=string.digits)
     vollcode = fuzzy.FuzzyText(length=4)
     stadsdeel = factory.SubFactory(StadsdeelFactory)
     buurtcombinatie = factory.SubFactory(BuurtcombinatieFactory)
@@ -176,7 +176,7 @@ class GrootstedelijkGebiedFactory(factory.DjangoModelFactory):
 
     id = fuzzy.FuzzyText(length=14, chars=string.digits)
     naam = fuzzy.FuzzyText(length=50)
-    gsg_type = fuzzy.FuzzyText(length=5)
+    gsg_type = fuzzy.FuzzyText(length=20)
 
 
 class UnescoFactory(factory.DjangoModelFactory):

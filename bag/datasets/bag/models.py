@@ -318,7 +318,7 @@ class Grootstedelijkgebied(Hoofdklasse):
 
     id = models.SlugField(max_length=100, primary_key=True)
     naam = models.CharField(max_length=100)
-    gsg_type = models.CharField(max_length=5,null=True)
+    gsg_type = models.CharField(max_length=20, null=True)
 
     class Meta:
         verbose_name = "Grootstedelijkgebied"
