@@ -59,8 +59,8 @@ def check_table_counts(table_data: list):
     """
     error = False
     msg = None
-    all_msg = ("Table count errors \n"
-               "Count ,   Target,  Deviation-Allowed,      Table,           Status \n")
+    all_msg = ("Table counts \n"
+               "Count ,   Target,  Deviation-Allowed,          Table,           Status \n")
 
     for target, override, table in table_data:
         count = count_sql(table)
@@ -80,8 +80,8 @@ def check_table_counts(table_data: list):
     if error:
         LOG.error(msg)
         raise ValueError(all_msg)
-    else:
-        LOG.debug(all_msg)
+
+    LOG.info(all_msg)
 
 
 def check_table_targets():
