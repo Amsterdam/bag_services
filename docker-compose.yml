@@ -45,7 +45,11 @@ services:
       - UWSGI_OFFLOAD_THREADS=3
       - UWSGI_HARAKIRI=15
       - UWSGI_DIE_ON_TERM=1
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - ELASTIC_HOST_OVERRIDE=elasticsearch
     volumes:
+      - "$PWD/bag/:/app/"
       - "$PWD/bag/gob/:/app/data/gob"
 
   swaggerui:
