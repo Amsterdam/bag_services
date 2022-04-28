@@ -1162,49 +1162,6 @@ class ImportGebiedsgerichtwerkenTask(batch.BasicTask):
         ggw.save()
 
 
-class ImportGebiedsgerichtwerkenPraktijkgebiedenTask(batch.BasicTask):
-    """
-    layer.fields:
-
-    ['naam', ...]
-    TODO : In GOB import the GBD_ggw_praktijkgebied has also a 14 digit ID . Do we need this ID in the current API ?
-    TODO : Currently no stadsdeel in GBD_ggw_praktijkgebied. It is in the GOB delivery. Do we need it ?
-    """
-
-    name = "Import GBD Gebiedsgerichtwerken praktijkgebieden"
-
-    def __init__(self, shp_path):
-        self.shp_path = shp_path
-
-    def before(self):
-        log.debug('Starting import ggw praktijkgebieden: %s', 'delete old data')
-        models.GebiedsgerichtwerkenPraktijkgebieden.objects.all().delete()
-
-    def after(self):
-        """
-        Validate geometry
-        """
-        validate_geometry(models.GebiedsgerichtwerkenPraktijkgebieden)
-        log.debug(
-            '%d Gebiedsgerichtwerken praktijkgebieden', models.GebiedsgerichtwerkenPraktijkgebieden.objects.count()
-        )
-
-    def process(self):
-        shp_file = "GBD_ggw_praktijkgebied.shp"
-        geo.process_shp(
-            self.shp_path, shp_file,
-            self.process_feature,
-            GOB_SHAPE_ENCODING)
-
-    def process_feature(self, feat):
-        naam = feat.get('naam')
-
-        models.GebiedsgerichtwerkenPraktijkgebieden(
-            naam=naam,
-            geometrie=geo.get_multipoly(feat.geom.wkt),
-        ).save()
-
-
 class ImportGrootstedelijkgebiedTask(batch.BasicTask):
     """
     layer.fields:
@@ -1555,7 +1512,6 @@ class ImportBagJob(batch.BasicJob):
 
             # stadsdelen.
             ImportGebiedsgerichtwerkenTask(self.gob_gebieden_shp_path),
-            ImportGebiedsgerichtwerkenPraktijkgebiedenTask(self.gob_gebieden_shp_path),
             ImportGrootstedelijkgebiedTask(self.gob_gebieden_shp_path),  # TODO : nog niet geleverd door GOB, manually added in GOB Objectstore
             ImportUnescoTask(self.gob_gebieden_shp_path),  # TODO : nog niet geleverd door GOB, manually added in GOB Objectstore
             #
