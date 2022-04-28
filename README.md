@@ -36,6 +36,7 @@ Use `docker-compose` to start a local database and Elasticsearch service. Use
 	cp -i ~/.ssh/id_rsa.key ~/.ssh/datapunt.key
 	docker-compose up -d --build database elasticsearch
 
+### Local environment
 Then, create and activate a new virtual environment in the `.venv` directory:
 
 	python3 -m venv .venv
@@ -63,6 +64,19 @@ To see the various options for partial imports, execute:
 
 	./bag/manage.py run_import --help
 
+### Docker environment
+
+To set up a docker based development environment, run docker-compose for the 
+database and elasticsearch as described above.
+
+The filesystem is mounted, so any change to a file will be visible to the 
+container immediately.
+
+Run the various commands like this:
+
+```bash
+docker-compose run bag python manage.py --help
+```
 
 Importing the latest backup
 ---------------------------
