@@ -718,13 +718,7 @@ class SearchViewSet(viewsets.ViewSet):
         if 'q' not in request.query_params:
             return Response([])
 
-        if 'features' in request.query_params:
-            features = request.query_params['features']
-            self.features = int(features) if features.isdigit() else 0
-        else:
-            referer = request.headers.get('Referer')
-            if referer and referer.endswith('data.amsterdam.nl/'):
-                self.features = settings.ENABLE_WEESP_TYPEAHEAD
+        self.features = settings.ENABLE_WEESP_TYPEAHEAD
 
         page = 1
         if 'page' in request.query_params:
