@@ -527,13 +527,12 @@ class TypeaheadViewSet(viewsets.ViewSet):
               paramType: query
         """
         query = request.query_params.get('q')
-        if 'features' in request.query_params:
-            features = request.query_params['features']
-            self.features = int(features) if features.isdigit() else 0
-        else:
-            referer = request.headers.get('Referer')
-            if referer and referer.endswith('data.amsterdam.nl/'):
-                self.features = settings.ENABLE_WEESP_TYPEAHEAD
+	# Always search for objects in Weesp.
+	# Previously, this flag was depending on a request 
+	# parameters `features` with a value of 2,
+	# however, the Weesp/Amsterdam merger is now final,
+	# so searches should always include Weesp.
+        self.features = settings.ENABLE_WEESP_TYPEAHEAD
 
         if not query:
             return Response([])
