@@ -1,0 +1,67 @@
+version: '3.0'
+services:
+
+  database:
+    image: amsterdam/postgres11
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: bag_v11
+      POSTGRES_USER: bag_v11
+      POSTGRES_PASSWORD: insecure
+    volumes:
+      - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+      - ./web/dataselectie:/app
+
+
+  elasticsearch:
+    # Due to a bug in QEMU, this elastic version and platform is required on
+    # Apple M1 processors.
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.23
+    platform: arm64
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+        - "~/.ssh/datapunt.key:/root/.ssh/datapunt.key"
+
+  bag:
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - database
+      - elasticsearch
+    environment:
+      - DATAPUNT_API_URL=${DATAPUNT_API_URL:-https://api.data.amsterdam.nl/}
+      - SECRET_KEY=insecure
+      - DATABASE_NAME=bag_v11
+      - DATABASE_USER=bag_v11
+      - DATABASE_PASSWORD=insecure
+      - BAG_OBJECTSTORE_PASSWORD=insecure
+      - UWSGI_HTTP=0.0.0.0:8080
+      - UWSGI_MODULE=bag.wsgi
+      - UWSGI_CALLABLE=application
+      - UWSGI_MASTER=1
+      - UWSGI_VACUUM=1
+      - UWSGI_STATIC_MAP=/static=/static
+      - UWSGI_STATIC_SAFE=static/
+      - UWSGI_STATIC_EXPIRES=/* 3600
+      - UWSGI_OFFLOAD_THREADS=3
+      - UWSGI_HARAKIRI=15
+      - UWSGI_DIE_ON_TERM=1
+      - DATABASE_HOST_OVERRIDE=database
+      - DATABASE_PORT_OVERRIDE=5432
+      - ELASTIC_HOST_OVERRIDE=elasticsearch
+
+    volumes:
+      - "$PWD/bag/:/app/"
+      - "$PWD/bag/gob/:/app/data/gob"
+
+  swaggerui:
+    image: amsterdam/oauth2swaggerui
+    ports:
+      - 8686:8686
+    links:
+      - bag

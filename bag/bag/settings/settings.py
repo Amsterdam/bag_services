@@ -79,7 +79,37 @@ ELASTIC_OPTIONS = {
     LocationKey.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
 }
 
-ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
+def in_docker() -> bool:
+    """
+    Checks pid 1 cgroup settings to check with reasonable certainty we're in a
+    docker env.
+    :rtype: bool
+    :return: true when running in a docker container, false otherwise
+    """
+    # noinspection PyBroadException
+    try:
+        cgroup = open('/proc/1/cgroup', 'r').read()
+        return ':/docker/' in cgroup or ':/docker-ce/' in cgroup
+    except Exception:
+        return False
+
+def get_variable(varname, docker_default: str, sa_default: str = None):
+    """
+    Retrieve an arbitrary env. variable and choose defaults based on the env.
+    :rtype: str
+    :param varname: The variable to retrieve
+    :param docker_default: The default value (Running in docker)
+    :param sa_default: The default value (Running standalone)
+    :return: The applicable value of the requested variable
+    """
+    sa_default = docker_default if sa_default is None else sa_default
+    return os.getenv(varname, docker_default if in_docker() else sa_default)
+
+# ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
+ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
+    get_variable('ELASTIC_HOST_OVERRIDE', 'elasticsearch', 'localhost'),
+    get_variable('ELASTIC_PORT_OVERRIDE', '9200'))]
+
 
 ELASTIC_INDICES = {
     'BAG_GEBIED': 'bag_v11_gebied',
