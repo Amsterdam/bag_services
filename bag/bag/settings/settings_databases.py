@@ -49,3 +49,16 @@ def get_database_key():
         return LocationKey.docker
 
     return LocationKey.local
+
+
+def get_variable(varname, docker_default: str, sa_default: str = None):
+    """
+    Retrieve an arbitrary env. variable and choose defaults based on the env.
+    :rtype: str
+    :param varname: The variable to retrieve
+    :param docker_default: The default value (Running in docker)
+    :param sa_default: The default value (Running standalone)
+    :return: The applicable value of the requested variable
+    """
+    sa_default = docker_default if sa_default is None else sa_default
+    return os.getenv(varname, docker_default if in_docker() else sa_default)
