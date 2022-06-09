@@ -167,8 +167,6 @@ class ZakelijkRechtContextMixin:
             instance.kadastraal_subject.SUBJECT_TYPE_NATUURLIJK
 
         authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN)
-        # FIXME: Temporary hack to make auth work
-        authorized = True
 
         if subject_natuurlijk and not authorized:
             return reverse(
@@ -308,6 +306,7 @@ class KadastraalSubjectDetailWithPersonalData(BrkMixin, rest.HALSerializer):
             'volledige_naam',
             'is_natuurlijk_persoon',
 
+            'bsn',
             'voornamen',
             'voorvoegsels',
             'naam',
@@ -421,6 +420,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
             'is_natuurlijk_persoon',
 
+            'bsn',
             'voornamen',
             'voorvoegsels',
             'naam',
