@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='kadastraalsubject',
             name='bsn',
-            field=models.CharField(blank=True, max_length=9),
+            field=models.CharField(null=True, max_length=9),
         ),
     ]
