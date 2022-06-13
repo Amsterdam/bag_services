@@ -237,4 +237,9 @@ class SensitiveDetailsJwtTestCase(APITestCase, AuthorizationSetup):
             self.natuurlijk.pk))
         self.assertEqual(response.status_code, 200)
 
+        # should not be in response
         self.assertNotIn('rechten', str(response.data))
+        self.assertNotIn('bsn', str(response.data))
+
+        # should be in response
+        self.assertIn('naam', str(response.data))

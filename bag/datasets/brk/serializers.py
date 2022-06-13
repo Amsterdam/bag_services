@@ -420,7 +420,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
             'is_natuurlijk_persoon',
 
-            'bsn',
+            'bsn',  # bsn only for BRK/RSN
             'voornamen',
             'voorvoegsels',
             'naam',
@@ -467,6 +467,7 @@ class KadastraalSubjectDetail(KadastraalSubjectDetailWithPersonalData):
 
         # We are employee and should not see 'rechten' / eigendommen
         data.pop('rechten')
+        data.pop('bsn')
 
         return data
 
