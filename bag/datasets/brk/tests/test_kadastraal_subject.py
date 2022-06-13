@@ -40,6 +40,7 @@ class ImportKadastraalSubjectTaskTest(TaskTestCase):
         self.assertEqual(np.woonadres.postcode, "1109AH")
         self.assertEqual(np.woonadres.woonplaats, "AMSTERDAM")
         self.assertIsNone(np.postadres)
+        self.assertEqual(np.bsn, "094520168")
 
         nnp = models.KadastraalSubject.objects.get(pk='NL.KAD.Persoon.398719470')
         self.assertEqual(nnp.type, models.KadastraalSubject.SUBJECT_TYPE_NIET_NATUURLIJK)
@@ -69,4 +70,4 @@ class ImportKadastraalSubjectTaskTest(TaskTestCase):
         self.assertEqual(nnp.woonadres.toevoeging, "A")
         self.assertEqual(nnp.woonadres.postcode, "1382LX")
         self.assertEqual(nnp.woonadres.woonplaats, "WEESP")
-
+        self.assertIsNone(nnp.bsn)

@@ -156,6 +156,7 @@ class KadastraalSubject(models.Model):
     voornamen = models.CharField(max_length=200, null=True)
     voorvoegsels = models.CharField(max_length=10, null=True)
     naam = models.CharField(max_length=200, null=True)
+    bsn = models.CharField(max_length=9, null=True)
     geslacht = models.ForeignKey(Geslacht, null=True, on_delete=models.CASCADE)
     aanduiding_naam = models.ForeignKey(
         AanduidingNaam, null=True, on_delete=models.CASCADE)

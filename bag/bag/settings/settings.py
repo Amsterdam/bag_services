@@ -1,4 +1,3 @@
-import os
 import sys
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -7,11 +6,11 @@ from bag.settings.settings_common import *  # noqa F403
 from bag.authorization_levels import all_options
 
 
-from bag.settings.settings_databases import LocationKey,\
-    get_docker_host,\
-    get_database_key,\
-    OVERRIDE_HOST_ENV_VAR,\
-    OVERRIDE_PORT_ENV_VAR
+from bag.settings.settings_databases import LocationKey, \
+    get_docker_host, \
+    get_database_key, \
+    OVERRIDE_HOST_ENV_VAR, \
+    OVERRIDE_PORT_ENV_VAR, get_variable
 
 from .checks import check_elasticsearch  # noqa
 from .checks import check_database  # noqa
@@ -79,7 +78,11 @@ ELASTIC_OPTIONS = {
     LocationKey.override: [f"http://{EL_HOST_VAR}:{EL_PORT_VAR}"],
 }
 
-ELASTIC_SEARCH_HOSTS = ELASTIC_OPTIONS[get_database_key()]
+
+ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
+    get_variable('ELASTIC_HOST_OVERRIDE', 'elasticsearch', 'localhost'),
+    get_variable('ELASTIC_PORT_OVERRIDE', '9200'))]
+
 
 ELASTIC_INDICES = {
     'BAG_GEBIED': 'bag_v11_gebied',
