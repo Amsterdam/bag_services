@@ -1,4 +1,3 @@
-import os
 import sys
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -15,7 +14,7 @@ from bag.settings.settings_databases import LocationKey, \
 
 from .checks import check_elasticsearch  # noqa
 from .checks import check_database  # noqa
-# from ..utils import get_variable
+
 
 NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
 NO_INTEGATION_TEST = True
