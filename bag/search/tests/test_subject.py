@@ -51,14 +51,14 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'Stephan Preeker'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Stephan Jacob Preeker", str(response.data))
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'stoeptegel'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("stoeptegel", str(response.data))
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("stoeptegel", str(response.data))
 
     def test_match_subject2_not_authorizer(self):
         self.client.credentials(
@@ -85,15 +85,15 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
             '/atlas/search/kadastraalsubject/',
             {'q': 'Stephan Preeker'})
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
         self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 
-        # we should find stoeptegel
+        # we should NOT find stoeptegel
         response = self.client.get(
             '/atlas/search/kadastraalsubject/',
             {'q': 'stoeptegel'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("stoeptegel", str(response.data))
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("stoeptegel", str(response.data))
 
     def test_match_subject_not_authorized(self):
         self.client.credentials(
@@ -130,7 +130,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
             '/atlas/typeahead/brk/',
             {'q': 'Stephan Preeker'})
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Stephan Jacob Preeker", str(response.data))
+        self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 
         response = self.client.get(
             '/atlas/typeahead/brk/',
@@ -138,7 +138,7 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertIn("stoeptegel", str(response.data))
+        self.assertNotIn("stoeptegel", str(response.data))
 
     def test_match_typeahead_subject_not_authorized(self):
         self.client.credentials(
@@ -167,9 +167,9 @@ class SubjectSearchTest(APITestCase, AuthorizationSetup):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Stephan Jacob Preeker", str(response.data))
 
-        # but other subjects yes.
+        # also no other subjects.
         response = self.client.get(
             '/atlas/typeahead/brk/', {'q': 'stoeptegel'})
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("stoeptegel", str(response.data))
+        self.assertNotIn("stoeptegel", str(response.data))

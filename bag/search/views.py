@@ -528,7 +528,7 @@ class TypeaheadViewSet(viewsets.ViewSet):
         """
         query = request.query_params.get('q')
 	# Always search for objects in Weesp.
-	# Previously, this flag was depending on a request 
+	# Previously, this flag was depending on a request
 	# parameters `features` with a value of 2,
 	# however, the Weesp/Amsterdam merger is now final,
 	# so searches should always include Weesp.
@@ -559,27 +559,16 @@ class TypeAheadBagViewSet(TypeaheadViewSet):
 
 def authorized_subject_queries(request, analyzer) -> List[Search]:
     """
-    Decide if which query we can execute
+    Execute subject queries.
 
-    public - no subjects
-    employ - non natural subjects / nietnatuurlijk
-    plus   - all subjects
+    Never return anything from this function, regardless of what
+    the authorization is. Freely searching in personal data
+    (like kadastraal subject) should not be possible at all.
+
+    This functions was returning results for some authorization
+    scope. However, free search should not be possible at all.
     """
 
-    authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RSN)
-
-    # Scope BRK/RSN or EMPLOYEE PLUS
-    if authorized:
-        return [brk_qs.kadastraal_subject_query(analyzer)]
-
-    # Scope BRK/RS or EMPLOYEE
-    niet_natuurlijk = brk_qs.kadastraal_subject_nietnatuurlijk_query
-    authorized = request.is_authorized_for(authorization_levels.SCOPE_BRK_RS)
-
-    if authorized:
-        return [niet_natuurlijk(analyzer)]
-
-    # NOT AUTHORIZED / PUBLIC
     return []
 
 
