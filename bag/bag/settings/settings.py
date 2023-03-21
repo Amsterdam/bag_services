@@ -4,6 +4,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 from bag.settings.settings_common import *  # noqa F403
 from bag.authorization_levels import all_options
+from pathlib import Path
 
 
 from bag.settings.settings_databases import LocationKey, \
@@ -67,6 +68,9 @@ DATABASE_OPTIONS = {
 DATABASES = {
     'default': DATABASE_OPTIONS[get_database_key()]
 }
+
+if os.getenv("AZURE", False):
+    DATABASES["default"]["PASSWORD"] = Path(os.environ["DATABASE_PW_LOCATION"]).open().read()
 
 EL_HOST_VAR = os.getenv('ELASTIC_HOST_OVERRIDE')
 
