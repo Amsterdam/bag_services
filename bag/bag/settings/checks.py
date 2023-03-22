@@ -25,12 +25,6 @@ def check_elasticsearch(app_configs, **kwargs):
 def check_database(app_configs, **kwargs):
     from django.db import connection
 
-    try:
-        cursor = connection.cursor()
-        cursor.execute("select 1")
-        return []
-    except BaseException as e:
-        return [checks.Error(
-            "No database found on {}".format(
-                settings.DATABASES['default'].get('HOST')),
-        )]
+    cursor = connection.cursor()
+    cursor.execute("select 1")
+    return []
