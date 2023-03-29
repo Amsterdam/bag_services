@@ -8,6 +8,7 @@ from datasets.generic import kadaster
 
 
 class Gemeente(models.Model):
+    # ams-schema: brk.gemeentes
     gemeente = models.CharField(max_length=50, primary_key=True)
 
     geometrie = geo.MultiPolygonField(srid=28992)
@@ -25,6 +26,7 @@ class Gemeente(models.Model):
 
 
 class KadastraleGemeente(models.Model):
+    # ams-schema: brk.kadastralegemeentes
     id = models.CharField(max_length=200, primary_key=True)
     naam = models.CharField(max_length=100)
     gemeente = models.ForeignKey(
@@ -47,6 +49,7 @@ class KadastraleGemeente(models.Model):
 
 
 class KadastraleSectie(models.Model):
+    # ams-schema: brk.kadastraleselecties
     id = models.CharField(max_length=200, primary_key=True)
 
     sectie = models.CharField(max_length=2)
@@ -72,6 +75,7 @@ class KadastraleSectie(models.Model):
 
 
 class KadasterCodeOmschrijving(models.Model):
+    # ams-schema: ?
     code = models.CharField(max_length=50, primary_key=True)
     omschrijving = models.TextField()
 
@@ -131,6 +135,7 @@ class KadastraalSubject(models.Model):
 
     https://www.amsterdam.nl/stelselpedia/brk-index/catalog-brk-levering/kadastraal-subject/
     """
+    # ams-schema: brk.kadastralesubjecten
     SUBJECT_TYPE_NATUURLIJK = 0
     SUBJECT_TYPE_NIET_NATUURLIJK = 1
     SUBJECT_TYPE_CHOICES = (
@@ -243,6 +248,7 @@ class APerceelGPerceelRelatie(models.Model):
 
 
 class KadastraalObject(models.Model):
+    # ams-schema: brk.kadastraleobjecten
     id = models.CharField(max_length=60, primary_key=True)
     aanduiding = models.CharField(max_length=17)
 
@@ -327,6 +333,7 @@ class KadastraalObjectVerblijfsobjectRelatie(models.Model):
 
 
 class AardZakelijkRecht(KadasterCodeOmschrijving):
+    # ams-schema: brk.aardzakelijkerechten
     """
     2	Eigendom (recht van)
     3	Erfpacht (recht van)
@@ -349,6 +356,7 @@ class AppartementsrechtsSplitsType(KadasterCodeOmschrijving):
 
 
 class ZakelijkRecht(models.Model):
+    # ams-schema: brk.zakelijkerechten
     id = models.CharField(max_length=183, primary_key=True)
 
     date_modified = models.DateTimeField(auto_now=True)
@@ -435,6 +443,7 @@ class AardAantekening(KadasterCodeOmschrijving):
 
 
 class Aantekening(models.Model):
+    # ams-schema: brk.aantekeningenrechten?
 
     aantekening_id = models.CharField(max_length=60, db_index=True)
     aard_aantekening = models.ForeignKey(

@@ -25,7 +25,7 @@ services:
     ports:
       - "8080:8080"
     links:
-      - database
+      #- database
       - elasticsearch
     environment:
       - DATAPUNT_API_URL=${DATAPUNT_API_URL:-https://api.data.amsterdam.nl/}

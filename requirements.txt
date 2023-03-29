@@ -40,7 +40,6 @@ factory-boy==2.11.1
 Faker==1.0.1
 first==2.0.1
 frosted==1.4.1
-futures==3.1.1
 graypy==0.3.1
 httplib2==0.19.0
 idna==2.8
@@ -70,7 +69,7 @@ packaging==21.3
 pbr==5.1.1
 pies==2.6.7
 positional==1.2.1
-psycopg2-binary==2.7.6.1
+psycopg2-binary==2.8.6
 pycodestyle==2.4.0
 pycparser==2.19
 pyflakes==2.0.0
@@ -92,7 +91,6 @@ sqlparse==0.2.4
 stevedore==1.30.0
 text-unidecode==1.2
 texttable==1.5.0
-typed-ast==1.2.0
 typing==3.6.6
 unicodecsv==0.14.1
 uritemplate==3.0.0

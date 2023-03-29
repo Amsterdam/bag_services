@@ -69,6 +69,13 @@ DATABASES = {
     'default': DATABASE_OPTIONS[get_database_key()]
 }
 
+DATABASE_SCHEMA =  os.getenv("DATABASE_SCHEMA")
+if DATABASE_SCHEMA is not None:
+    # https://www.postgresql.org/docs/11/ddl-schemas.html under 5.8.3
+    # public is required for using the PostGis extension
+    # TODO: move Postgis objects to a separate schema
+    DATABASES["default"]["OPTIONS"] = {"options": f"-c search_path={DATABASE_SCHEMA},public"}
+
 if os.getenv("AZURE", False):
     DATABASES["default"]["PASSWORD"] = Path(os.environ["DATABASE_PW_LOCATION"]).open().read()
 

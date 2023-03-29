@@ -45,6 +45,7 @@ class GemeenteViewSet(DatapuntViewSet):
     serializer_class = serializers.Gemeente
     serializer_detail_class = serializers.GemeenteDetail
     lookup_value_regex = '[^/]+'
+    # queries PG
 
 
 class KadastraleGemeenteViewSet(DatapuntViewSet):
@@ -62,6 +63,7 @@ class KadastraleGemeenteViewSet(DatapuntViewSet):
     serializer_class = serializers.KadastraleGemeente
     serializer_detail_class = serializers.KadastraleGemeenteDetail
     lookup_value_regex = '[^/]+'
+    # queries PG
 
 
 class KadastraleSectieViewSet(DatapuntViewSet):
@@ -81,6 +83,7 @@ class KadastraleSectieViewSet(DatapuntViewSet):
     serializer_class = serializers.KadastraleSectie
     serializer_detail_class = serializers.KadastraleSectieDetail
     filterset_fields = ('kadastrale_gemeente',)
+    # queries PG
 
 
 class SubjectFilter(FilterSet):
@@ -174,6 +177,7 @@ class KadastraalSubjectViewSet(DatapuntViewSet):
     lookup_value_regex = '[^/]+'
 
     filterset_class = SubjectFilter
+    # queries PG
 
     # NOTE in serializer there is MORE authorization code!!
 
@@ -347,6 +351,7 @@ class KadastraalObjectViewSet(DatapuntViewSet):
             'voornaamste_gerechtigde',
         )
     )
+    # queries PG
 
     filterset_class = KadastraalObjectFilter
 
@@ -477,6 +482,7 @@ class ZakelijkRechtViewSet(DatapuntViewSet):
     serializer_detail_class = serializers.ZakelijkRechtDetail
 
     filterset_class = ZakelijkRechtFilter
+    # queries PG
 
     lookup_value_regex = '[^/]+'
 
@@ -566,6 +572,7 @@ class AantekeningViewSet(DatapuntViewSet):
             'kadastraal_object', 'kadastraal_object__sectie',
             'kadastraal_object__kadastrale_gemeente')
     )
+    # queries PG
 
     serializer_class = serializers.Aantekening
     serializer_detail_class = serializers.AantekeningDetail
