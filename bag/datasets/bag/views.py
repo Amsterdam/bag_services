@@ -76,6 +76,7 @@ class LigplaatsViewSet(rest.DatapuntViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-1/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Ligplaats.objects.all().order_by('id')
@@ -113,6 +114,7 @@ class StandplaatsViewSet(rest.DatapuntViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-4/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Standplaats.objects.all()
@@ -187,6 +189,7 @@ class VerblijfsobjectViewSet(rest.DatapuntViewSet):
 
     [Stelselpedia](http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-0/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Verblijfsobject.objects
@@ -354,6 +357,7 @@ class NummeraanduidingViewSet(rest.DatapuntViewSet):
     TIP! detailed=1 if you want all fields in the list view!
 
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = (
@@ -474,6 +478,7 @@ class PandViewSet(rest.DatapuntViewSet):
 
     TIP! detailed=1 if you want all fields in the list view!
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
 
@@ -573,6 +578,7 @@ class OpenbareRuimteViewSet(rest.DatapuntViewSet):
     [Stelselpedia]
     (http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-3/)
     """  # noqa
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.OpenbareRuimte.objects.distinct()
@@ -603,6 +609,7 @@ class WoonplaatsViewSet(rest.DatapuntViewSet):
 
     [Stelselpedia](https://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse/)   # noqa
     """  # noqa
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Woonplaats.objects.all().order_by('id')
@@ -634,6 +641,7 @@ class StadsdeelViewSet(rest.DatapuntViewSet):
     [Stelselpedia]
     (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/stadsdeel/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Stadsdeel.objects.all().order_by('id')
@@ -666,6 +674,7 @@ class BuurtViewSet(rest.DatapuntViewSet):
     [Stelselpedia]
     (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/buurt/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Buurt.objects.all().order_by('naam')
@@ -694,6 +703,7 @@ class BouwblokViewSet(rest.DatapuntViewSet):
     [Stelselpedia]
     (https://www.amsterdam.nl/stelselpedia/gebieden-index/catalogus/bouwblok/)
     """
+    # queries PG
 
     metadata_class = ExpansionMetadata
     queryset = models.Bouwblok.objects.all()
@@ -738,6 +748,7 @@ class BuurtcombinatieViewSet(rest.DatapuntViewSet):
     filterset_fields = (
         'stadsdeel', 'vollcode', 'code', 'naam', 'stadsdeel',
         'buurten')
+    # queries PG
 
 
 class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
@@ -759,6 +770,7 @@ class GebiedsgerichtwerkenViewSet(rest.DatapuntViewSet):
     serializer_class = serializers.Gebiedsgerichtwerken
 
     filterset_fields = ('stadsdeel__id', 'stadsdeel')
+    # queries PG
 
 
 class GebiedsgerichtwerkenPraktijkgebiedenViewSet(rest.DatapuntViewSet):
@@ -778,6 +790,7 @@ class GebiedsgerichtwerkenPraktijkgebiedenViewSet(rest.DatapuntViewSet):
     queryset = models.GebiedsgerichtwerkenPraktijkgebieden.objects.all().order_by('naam')
     serializer_detail_class = serializers.GebiedsgerichtwerkenPraktijkgebiedenDetail
     serializer_class = serializers.GebiedsgerichtwerkenPraktijkgebieden
+    # queries PG
 
 
 class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
@@ -795,6 +808,7 @@ class GrootstedelijkgebiedViewSet(rest.DatapuntViewSet):
     queryset = models.Grootstedelijkgebied.objects.all().order_by('naam')
     serializer_detail_class = serializers.GrootstedelijkgebiedDetail
     serializer_class = serializers.Grootstedelijkgebied
+    # queries PG
 
 
 class UnescoViewSet(rest.DatapuntViewSet):
@@ -814,25 +828,4 @@ class UnescoViewSet(rest.DatapuntViewSet):
     queryset = models.Unesco.objects.all()
     serializer_detail_class = serializers.UnescoDetail
     serializer_class = serializers.Unesco
-
-
-class BouwblokCodeView(RedirectView):
-    """
-    Bouwblokcode
-    """
-
-    permanent = False
-
-    def get_redirect_url(self, *args, **kwargs):
-        bouwblok = get_object_or_404(
-            models.Bouwblok, code__iexact=kwargs['code'])
-        return reverse('bouwblok-detail', kwargs=dict(pk=bouwblok.pk))
-
-
-class StadsdeelCodeView(RedirectView):
-    permanent = False
-
-    def get_redirect_url(self, *args, **kwargs):
-        stadsdeel = get_object_or_404(
-            models.Stadsdeel, code__iexact=kwargs['code'])
-        return reverse('stadsdeel-detail', kwargs=dict(pk=stadsdeel.pk))
+    # queries PG

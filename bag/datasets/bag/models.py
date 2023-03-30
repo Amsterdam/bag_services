@@ -38,6 +38,7 @@ class Gemeente(mixins.GeldigheidMixin, models.Model):
 
     date_modified = models.DateTimeField(auto_now=True)
     naam = models.CharField(max_length=40)
+
     verzorgingsgebied = models.NullBooleanField(default=None)
     vervallen = models.NullBooleanField(default=None)
 
@@ -49,13 +50,7 @@ class Gemeente(mixins.GeldigheidMixin, models.Model):
         return self.naam
 
 
-class Hoofdklasse(models.Model):
-    """
-    De hoofdklasse is een abstracte klasse waar sommige andere
-    gebiedsklassen, zoals stadsdeel en buurt, van afstammen.
-    Deze afstammelingen erven alle kenmerken over van deze hoofdklasse.
-    """
-
+class GeometryMixin(models.Model):
     geometrie = geo.MultiPolygonField(null=True, srid=28992)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -65,7 +60,7 @@ class Hoofdklasse(models.Model):
         abstract = True
 
 
-class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdklasse):
+class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, GeometryMixin):
 
     id = models.CharField(max_length=14, primary_key=True)
 
@@ -83,7 +78,7 @@ class Woonplaats(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdklasse
         return self.naam
 
 
-class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
+class Stadsdeel(mixins.GeldigheidMixin, GeometryMixin):
     """
     Door de Amsterdamse gemeenteraad vastgestelde begrenzing van
     een stadsdeel, ressorterend onder een stadsdeelbestuur.
@@ -108,7 +103,7 @@ class Stadsdeel(mixins.GeldigheidMixin, Hoofdklasse):
         return f"{self.naam} ({self.code})"
 
 
-class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
+class Buurt(mixins.GeldigheidMixin, GeometryMixin):
     """
     Een aaneengesloten gedeelte van een buurt, waarvan de grenzen
     zo veel mogelijk gebaseerd zijn op topografische elementen.
@@ -147,7 +142,7 @@ class Buurt(mixins.GeldigheidMixin, Hoofdklasse):
         return self.stadsdeel.gemeente
 
 
-class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
+class Bouwblok(mixins.GeldigheidMixin, GeometryMixin):
     """
     Een bouwblok is het kleinst mogelijk afgrensbare gebied, in
     zijn geheel tot een buurt behorend, dat geheel of
@@ -186,7 +181,7 @@ class Bouwblok(mixins.GeldigheidMixin, Hoofdklasse):
         return self._stadsdeel.gemeente if self._stadsdeel else None
 
 
-class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdklasse):
+class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, GeometryMixin):
     """
     Een OPENBARE RUIMTE is een door het bevoegde gemeentelijke orgaan als
     zodanig aangewezen en van een naam voorziene
@@ -259,7 +254,7 @@ class OpenbareRuimte(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, Hoofdkl
         return dct
 
 
-class Gebiedsgerichtwerken(Hoofdklasse):
+class Gebiedsgerichtwerken(GeometryMixin):
     """
     model for data from shp files
 
@@ -287,7 +282,7 @@ class Gebiedsgerichtwerken(Hoofdklasse):
         return "{} ({})".format(self.naam, self.code)
 
 
-class GebiedsgerichtwerkenPraktijkgebieden(Hoofdklasse):
+class GebiedsgerichtwerkenPraktijkgebieden(GeometryMixin):
     """
     model for data from shp files
 
@@ -307,7 +302,7 @@ class GebiedsgerichtwerkenPraktijkgebieden(Hoofdklasse):
         return "{}".format(self.naam)
 
 
-class Grootstedelijkgebied(Hoofdklasse):
+class Grootstedelijkgebied(GeometryMixin):
     """
     model for data from shp files
 

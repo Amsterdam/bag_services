@@ -1,7 +1,8 @@
 """
 Typeahead bag, brk
-
 Search    bag, brk
+
+Views that are querying Elasticsearch
 """
 from __future__ import annotations
 
@@ -38,8 +39,8 @@ from search.query_analyzer import QueryAnalyzer
 log = logging.getLogger(__name__)
 
 CallableQueryFunction = Callable[[QueryAnalyzer], Search]
-
 # Mapping of subtypes with detail views
+
 _details = {
     'ligplaats': 'ligplaats-detail',
     'standplaats': 'standplaats-detail',
@@ -631,16 +632,6 @@ class TypeAheadGebiedenViewSet(TypeaheadViewSet):
 
     def list(self, request):
         return self._abstr_list(request, {'gebieden'})
-
-
-class TypeAheadLegacyViewSet(TypeaheadViewSet):
-    """
-    The old typeahead containing all different results at once
-    """
-
-    def list(self, request):
-        return self._abstr_list(request, set())
-
 
 class SearchViewSet(viewsets.ViewSet):
     """
