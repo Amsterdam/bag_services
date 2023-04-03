@@ -9,6 +9,7 @@
     | REF DB                     |  BAG V11                   |
     | brk_gemeentes              |  brk_gemeente              |
     | brk_kadastralegemeentes    |  brk_kadastralegemeente    |
+    | brk_kadastralegemeentecodes|  brk_kadastralegemeente    |
 
     Note that dimensions and primary keys between "corresponding" 
     tables are not always the same, so we need to make a case-by-case
@@ -23,8 +24,6 @@
     * bag_v11 brk_gemeente uses naam as primary key while ref-db brk_gemeentes uses
       a temporal composite key:
       This is also solved by taking the most recent version of the gemeente
-    * bag_v11 brk_kadastralegemeente uses a KADGEMCODE (from GOB objectstore):
-      This code is not present in ref-db so it is dropped.
       
     General mappings:
 
@@ -61,7 +60,7 @@ INSERT INTO
         date_modified
     ) (
         SELECT
-            kg.identificatie AS id,
+            c.identificatie AS id,
             kg.identificatie AS naam,
             gm.naam AS gemeente_id,
             ST_Multi(kg.geometrie) AS geometrie,
@@ -78,6 +77,7 @@ INSERT INTO
                     identificatie
             ) AS g
             INNER JOIN public.brk_kadastralegemeentes kg ON g.identificatie = kg.ligt_in_gemeente_identificatie
+            INNER JOIN public.brk_kadastralegemeentecodes c ON  kg.identificatie = c.is_onderdeel_van_kadastralegemeente_id
             INNER JOIN public.brk_gemeentes gm ON g.identificatie = gm.identificatie
             AND g.max_volgnummer = gm.volgnummer
     );
