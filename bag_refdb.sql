@@ -10,6 +10,7 @@
     | brk_gemeentes              |  brk_gemeente              |
     | brk_kadastralegemeentes    |  brk_kadastralegemeente    |
     | brk_kadastralegemeentecodes|  brk_kadastralegemeente    |
+    | brk_kadastralesecties      |  brk_kadastralesectie      |
 
     Note that dimensions and primary keys between "corresponding" 
     tables are not always the same, so we need to make a case-by-case
@@ -31,6 +32,20 @@
 
 */
 
+/* RELATIONS WITHOUT FOREIGN KEYS */
+INSERT INTO 
+    bag_services.brk_aardzakelijkrecht (code, omschrijving) (
+        SELECT
+            a.code AS code,
+            a.waarde AS omschrijving
+        FROM
+            public.brk_aardzakelijkerechten AS a
+    );
+
+
+/* RELATIONS WITH FOREIGN KEYS */
+
+/* BRK GEMEENTE */
 INSERT INTO
     bag_services.brk_gemeente (gemeente, geometrie, date_modified) (
         SELECT
@@ -50,6 +65,7 @@ INSERT INTO
             AND unik.mxvolgnummer = attr.volgnummer
     );
 
+/* BRK KADASTRALE GEMEENTE */
 INSERT INTO
     bag_services.brk_kadastralegemeente (
         id,
@@ -81,3 +97,25 @@ INSERT INTO
             INNER JOIN public.brk_gemeentes gm ON g.identificatie = gm.identificatie
             AND g.max_volgnummer = gm.volgnummer
     );
+
+/* BRK KADASTRALE SECTIE */
+INSERT INTO bag_services.brk_kadastralesectie (
+        id,
+        sectie,
+        geometrie,
+        geometrie_lines,
+        date_modified,
+        kadastrale_gemeente_id
+    ) (
+        SELECT
+            s.identificatie AS id,
+            s.code AS sectie,
+            ST_Multi(s.geometrie) AS geometrie,
+            ST_Multi(ST_Boundary(s.geometrie)) :: geometry(MULTILINESTRING, 28992) AS geometrie_lines,
+            now() AS date_modified,
+            s.is_onderdeel_van_kadastralegemeentecode_id AS kadastrale_gemeente_id
+        FROM 
+            public.brk_kadastralesecties AS s
+            INNER JOIN public.brk_kadastralegemeentecodes AS c ON  c.identificatie = s.is_onderdeel_van_kadastralegemeentecode_id
+            INNER JOIN public.brk_kadastralegemeentes AS kg ON c.is_onderdeel_van_kadastralegemeente_id = kg.identificatie
+    ); /* These joins are performed to guarantee that the secties are pointing to existing kadastralegemeentecodes (FKs are not enforced in the refdb) */
