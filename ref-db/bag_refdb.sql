@@ -6,11 +6,17 @@
     databases while keeping these systems alive until clients have
     migrated to the DSO-API.
     
-    | REF DB                     |  BAG V11                   |
-    | brk_gemeentes              |  brk_gemeente              |
-    | brk_kadastralegemeentes    |  brk_kadastralegemeente    |
-    | brk_kadastralegemeentecodes|  brk_kadastralegemeente    |
-    | brk_kadastralesecties      |  brk_kadastralesectie      |
+    | REF DB                     |  BAG V11                     |
+    | brk_gemeentes              |  brk_gemeente                |
+    | brk_kadastralegemeentes    |  brk_kadastralegemeente      |
+    | brk_kadastralegemeentecodes|  brk_kadastralegemeente      |
+    | brk_kadastralesecties      |  brk_kadastralesectie        |
+    | brk_aardzakelijkerechten   |  brk_aardzakelijkrecht       |
+    | brk_kadastralesubjecten    |  brk_rechtsvorm              |
+    | brk_kadastralesubjecten    |  brk_geslacht                |
+    | brk_kadastralesubjecten    |  brk_beschikkingsbevoegdheid |
+    | brk_kadastralesubjecten    |  brk_aanduidingnaam          |
+    | brk_kadastralesubjecten    |  brk_land                    |
 
     Note that dimensions and primary keys between "corresponding" 
     tables are not always the same, so we need to make a case-by-case
@@ -42,8 +48,14 @@ INSERT INTO
             public.brk_aardzakelijkerechten AS a
     );
 
-
-/* RELATIONS WITH FOREIGN KEYS */
+INSERT INTO
+    bag_services.brk_geslacht (code, omschrijving) (
+        SELECT DISTINCT
+            a.geslacht_code AS code,
+            a.geslacht_omschrijving AS omschrijving
+        FROM
+            public.brk_kadastralesubjecten
+    );
 
 /* BRK GEMEENTE */
 INSERT INTO
@@ -64,6 +76,8 @@ INSERT INTO
             INNER JOIN public.brk_gemeentes attr ON attr.identificatie = unik.identificatie
             AND unik.mxvolgnummer = attr.volgnummer
     );
+
+/* RELATIONS WITH FOREIGN KEYS */
 
 /* BRK KADASTRALE GEMEENTE */
 INSERT INTO
