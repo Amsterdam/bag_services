@@ -51,6 +51,7 @@ services:
     volumes:
       - "$PWD/bag/:/app/"
       - "$PWD/bag/gob/:/app/data/gob"
+    entrypoint: ["uwsgi", "-i", "--python-autoreload", "/app/bag"]
 
   swaggerui:
     image: amsterdam/oauth2swaggerui
