@@ -408,6 +408,45 @@ table_registry = {
             transfer_pk=sql.Identifier("naam_gebruik_code"),
         ),
     ],
+    "brk_appartementsrechtsplitsingtype": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_appartementsrechtssplitstype"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("appartementsrechtsplitsingtype" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("appartementsrechtsplitsingtype_code"),
+        ),
+    ],
+    "brk_aardaantekening": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardaantekening"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_aantekeningenrechten"),
+            transfer_pk=sql.Identifier("aard_code"),
+        ),
+    ],
+    "brk_aardzakelijkrecht": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardzakelijkrecht"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard_zakelijk_recht" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("aard_zakelijk_recht_code"),
+        ),
+    ],
 }
 
 
