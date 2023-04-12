@@ -16,7 +16,8 @@ from the reference database into the legacy bag_v11 database.
 
  * Ref-db brk_kadastraleobjecten has a temporal dimension which does not exist in bagv11:
  To remove this, we take the most recent version of the kadastraal object.
- Zakelijke rechten and aantekeningen pointing to older versions of kadastrale objecten will implicitly be dropped in the loaded data.
+ Zakelijke rechten and aantekeningen pointing to older versions of kadastrale objecten will
+ implicitly be dropped in the loaded data.
 
  * bag_v11 brk_gemeente uses naam as primary key while ref-db brk_gemeentes uses
  a temporal composite key:
@@ -29,93 +30,12 @@ from the reference database into the legacy bag_v11 database.
 
  * kadastraleobjecten in the ref-db support multiple cultuurcode_bebouwd_ids, bagv11 only one.
  For each row that has more than 1 we take the minimum code. This is an arbitrary decision.
+
+ * the 'opgelegd_door' relation in the brk_aantekening table cannot be derived from the ref-db.
  
  General mappings:
  
  * spatial columns with mixed geometries are cast to their ST_Multi equivalent
- 
-
-                                          Table "public.brk_zakelijkerechten"
-                           Column                           |           Type           | Collation | Nullable | Default 
-------------------------------------------------------------+--------------------------+-----------+----------+---------
- id                                                         | character varying        |           | not null | 
- volgnummer                                                 | bigint                   |           | not null | 
- registratiedatum                                           | timestamp with time zone |           |          | 
- identificatie                                              | character varying        |           | not null | 
- begin_geldigheid                                           | timestamp with time zone |           |          | 
- eind_geldigheid                                            | timestamp with time zone |           |          | 
- ontstaan_uit_apptrechtsplitsing_vve_id                     | character varying        |           |          | 
- ontstaan_uit_apptrechtsplitsing_vve_identificatie          | character varying        |           |          | 
- betrokken_bij_appartementsrechtsplitsing_vve_id            | character varying        |           |          | 
- betrokken_bij_appartementsrechtsplitsing_vve_identificatie | character varying        |           |          | 
- is_beperkt_tot                                             | bigint                   |           |          | 
- rust_op_kadastraalobject_id                                | character varying        |           |          | 
- rust_op_kadastraalobject_identificatie                     | character varying        |           |          | 
- rust_op_kadastraalobject_volgnummer                        | bigint                   |           |          | 
- appartementsrechtsplitsingidentificatie                    | character varying        |           |          | 
- appartementsrechtsplitsingtype_code                        | character varying        |           |          | 
- appartementsrechtsplitsingtype_omschrijving                | character varying        |           |          | 
- einddatum_appartementsrechtsplitsing                       | character varying        |           |          | 
- indicatie_actueel_appartementsrechtsplitsing               | character varying        |           |          | 
- aard_zakelijk_recht_code                                   | character varying        |           |          | 
- aard_zakelijk_recht_omschrijving                           | character varying        |           |          | 
- akr_aard_zakelijk_recht                                    | character varying        |           |          | 
- toestandsdatum                                             | timestamp with time zone |           |          | 
- betrokken_bij_apptrechtsplitsing_vve_id                    | character varying        |           |          | 
-Indexes:
-    "brk_zakelijkerechten_pkey" PRIMARY KEY, btree (id)
-Check constraints:
-    "brk_zakelijkerechten_id_not_contains_slash" CHECK (NOT id::text ~~ '%%/%%'::text)
-
-
-                          Table "{target_schema}.brk_zakelijkrecht"
-            Column             |           Type           | Collation | Nullable | Default 
--------------------------------+--------------------------+-----------+----------+---------
- id                            | character varying(183)   |           | not null | 
- date_modified                 | timestamp with time zone |           | not null | 
- zrt_id                        | character varying(60)    |           | not null | 
- aard_zakelijk_recht_akr       | character varying(3)     |           |          | 
- teller                        | integer                  |           |          | 
- noemer                        | integer                  |           |          | 
- kadastraal_object_status      | character varying(50)    |           | not null | 
- _kadastraal_subject_naam      | character varying(200)   |           | not null | 
- _kadastraal_object_aanduiding | character varying(100)   |           | not null | 
- aard_zakelijk_recht_id        | character varying(50)    |           |          | 
- app_rechtsplitstype_id        | character varying(50)    |           |          | 
- betrokken_bij_id              | character varying(60)    |           |          | 
- kadastraal_object_id          | character varying(60)    |           | not null | 
- kadastraal_subject_id         | character varying(60)    |           | not null | 
- ontstaan_uit_id               | character varying(60)    |           |          | 
-Indexes:
-    "brk_zakelijkrecht_pkey" PRIMARY KEY, btree (id)
-    "brk_zakelijkrecht_aard_zakelijk_recht_id_803b9c04" btree (aard_zakelijk_recht_id)
-    "brk_zakelijkrecht_aard_zakelijk_recht_id_803b9c04_like" btree (aard_zakelijk_recht_id varchar_pattern_ops)
-    "brk_zakelijkrecht_aard_zakelijk_recht_id___dfce2d3b_idx" btree (aard_zakelijk_recht_id, _kadastraal_subject_naam)
-    "brk_zakelijkrecht_app_rechtsplitstype_id_8e101009" btree (app_rechtsplitstype_id)
-    "brk_zakelijkrecht_app_rechtsplitstype_id_8e101009_like" btree (app_rechtsplitstype_id varchar_pattern_ops)
-    "brk_zakelijkrecht_betrokken_bij_id_2b0b0179" btree (betrokken_bij_id)
-    "brk_zakelijkrecht_betrokken_bij_id_2b0b0179_like" btree (betrokken_bij_id varchar_pattern_ops)
-    "brk_zakelijkrecht_id_73d1eab3_like" btree (id varchar_pattern_ops)
-    "brk_zakelijkrecht_kadastraal_object_id_0fbfcea9" btree (kadastraal_object_id)
-    "brk_zakelijkrecht_kadastraal_object_id_0fbfcea9_like" btree (kadastraal_object_id varchar_pattern_ops)
-    "brk_zakelijkrecht_kadastraal_subject_id_3a029799" btree (kadastraal_subject_id)
-    "brk_zakelijkrecht_kadastraal_subject_id_3a029799_like" btree (kadastraal_subject_id varchar_pattern_ops)
-    "brk_zakelijkrecht_ontstaan_uit_id_1d1e612b" btree (ontstaan_uit_id)
-    "brk_zakelijkrecht_ontstaan_uit_id_1d1e612b_like" btree (ontstaan_uit_id varchar_pattern_ops)
-Foreign-key constraints:
-    "brk_zakelijkrecht_aard_zakelijk_recht__803b9c04_fk_brk_aardz" FOREIGN KEY (aard_zakelijk_recht_id) REFERENCES {target_schema}.brk_aardzakelijkrecht(code) DEFERRABLE INITIALLY DEFERRED
-    "brk_zakelijkrecht_app_rechtsplitstype__8e101009_fk_brk_appar" FOREIGN KEY (app_rechtsplitstype_id) REFERENCES {target_schema}.brk_appartementsrechtssplitstype(code) DEFERRABLE INITIALLY DEFERRED
-    "brk_zakelijkrecht_betrokken_bij_id_2b0b0179_fk_brk_kadas" FOREIGN KEY (betrokken_bij_id) REFERENCES {target_schema}.brk_kadastraalsubject(id) DEFERRABLE INITIALLY DEFERRED
-    "brk_zakelijkrecht_kadastraal_object_id_0fbfcea9_fk_brk_kadas" FOREIGN KEY (kadastraal_object_id) REFERENCES {target_schema}.brk_kadastraalobject(id) DEFERRABLE INITIALLY DEFERRED
-    "brk_zakelijkrecht_kadastraal_subject_i_3a029799_fk_brk_kadas" FOREIGN KEY (kadastraal_subject_id) REFERENCES {target_schema}.brk_kadastraalsubject(id) DEFERRABLE INITIALLY DEFERRED
-    "brk_zakelijkrecht_ontstaan_uit_id_1d1e612b_fk_brk_kadas" FOREIGN KEY (ontstaan_uit_id) REFERENCES {target_schema}.brk_kadastraalsubject(id) DEFERRABLE INITIALLY DEFERRED
-Referenced by:
-    TABLE "{target_schema}.brk_zakelijkrechtverblijfsobjectrelatie" CONSTRAINT "brk_zakelijkrechtver_zakelijk_recht_id_32c06602_fk_brk_zakel" FOREIGN KEY (zakelijk_recht_id) REFERENCES {target_schema}.brk_zakelijkrecht(id) DEFERRABLE INITIALLY DEFERRED
-
-
-
-
-
 """
 
 import argparse
@@ -543,7 +463,7 @@ table_registry = {
                 sql.Identifier("aard" + suffix) for suffix in ["_code", "_omschrijving"]
             ),
             source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_aantekeningenrechten"),
+            source_table=sql.Identifier("brk_aantekeningenkadastraleobjecten"),
             transfer_pk=sql.Identifier("aard_code"),
         ),
     ],
@@ -818,6 +738,109 @@ table_registry = {
             target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
+    "brk_aantekening": [
+        sql.SQL(
+            """
+            WITH newest_aantekeningen_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_aantekeningenkadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_aantekeningenkadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            ),
+            newest_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.brk_aantekening (
+                    aantekening_id,
+                    omschrijving,
+                    date_modified,
+                    aard_aantekening_id,
+                    kadastraal_object_id,
+                    opgelegd_door_id
+                ) (
+                    SELECT
+                        /* id is integer sequence */
+                        nak.identificatie AS aantekening_id,
+                        COALESCE(nak.omschrijving, '') AS omschrijving,
+                        now() AS date_modified,
+                        nak.aard_code AS aard_aantekening_id,
+                        nak.hft_btrk_op_kot_identificatie AS kadastraal_object_id,
+                        NULL AS opgelegd_door_id
+                        /* not present in refdb */
+                    FROM
+                        newest_aantekeningen_kadastraleobjecten nak
+                        INNER JOIN newest_kadastraleobjecten nk ON nak.hft_btrk_op_kot_identificatie = nk.identificatie
+                        AND nak.hft_btrk_op_kot_volgnummer = nk.volgnummer
+                );
+    """
+        )
+    ],
+    "brk_aperceelgperceelrelatie": [
+        sql.SQL(
+            """
+            WITH newest_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.brk_aperceelgperceelrelatie (id, g_perceel_id, a_perceel_id) (
+                    SELECT
+                        CONCAT(
+                            thrutable.is_ontstaan_uit_g_perceel_identificatie,
+                            '-',
+                            thrutable.kadastraleobjecten_identificatie
+                        ) AS id,
+                        thrutable.is_ontstaan_uit_g_perceel_identificatie,
+                        thrutable.kadastraleobjecten_identificatie
+                    FROM
+                        newest_kadastraleobjecten AS nk
+                        INNER JOIN brk_kadastraleobjecten_is_ontstaan_uit_g_perceel AS thrutable ON (nk.identificatie = thrutable.is_ontstaan_uit_g_perceel_identificatie
+                        AND nk.volgnummer = thrutable.is_ontstaan_uit_g_perceel_volgnummer)
+                        INNER JOIN newest_kadastraleobjecten nkright ON (nkright.identificatie = thrutable.kadastraleobjecten_identificatie AND nkright.volgnummer = thrutable.kadastraleobjecten_volgnummer)
+                        /* these joins happen in order to filter the m2m-table on the most recent entries */
+                );
+    """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
 }
 
 parser = argparse.ArgumentParser(description=description)
@@ -866,6 +889,7 @@ ordering = [
     "brk_kadastraalobject",
     "brk_zakelijkrecht",
     "brk_aantekening",
+    "brk_aperceelgperceelrelatie",
 ]
 
 
