@@ -3,6 +3,10 @@ description = """
 Utility for outputting SQL used to load data
 from the reference database into the legacy bag_v11 database.
 
+The data transfer happens in a single transaction. Partial transfer
+in separate transactions can only be done by making separate CLI
+invocations with table arguments.
+
  Note that dimensions and primary keys between "corresponding" 
  tables are not always the same, so we need to make a case-by-case
  decision on how to map ref-db entries to the bag_v11 entries.
@@ -32,6 +36,9 @@ from the reference database into the legacy bag_v11 database.
  For each row that has more than 1 we take the minimum code. This is an arbitrary decision.
 
  * the 'opgelegd_door' relation in the brk_aantekening table cannot be derived from the ref-db.
+
+ * some entries in refdb brk_kadastraleobjecten geometrie column contain ST_Point geometries. These
+   cannot logically be cast to polygons so we ignore these entries.
  
  General mappings:
  
@@ -51,6 +58,9 @@ SOURCE_SCHEMA = "public"
 TARGET_SCHEMA = "bag_services"
 
 # Select distinct entries of set of columns into a target table
+# For constraint checking, this is not necessary because it is DEFERRED
+# to the end of the transaction. It is necessary for any INSERTions that
+# require the presence of previously transferred data.
 code_omschrijving_stmt = sql.SQL(
     """
     INSERT INTO
@@ -68,7 +78,182 @@ code_omschrijving_stmt = sql.SQL(
 
 truncate_stmt = sql.SQL("TRUNCATE {target_schema}.{target_table} CASCADE")
 
+# NOTE: entries in this dict literal dictate the correct loading order.
 table_registry = {
+    "brk_rechtsvorm": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_rechtsvorm"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("rechtsvorm" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("rechtsvorm_code"),
+        ),
+    ],
+    "brk_geslacht": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_geslacht"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("geslacht" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("geslacht_code"),
+        ),
+    ],
+    "brk_beschikkingsbevoegdheid": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_beschikkingsbevoegdheid"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("beschikkingsbevoegdheid" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("beschikkingsbevoegdheid_code"),
+        ),
+    ],
+    "brk_land": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("geboorteland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("geboorteland_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("land_waarnaar_vertrokken" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("land_waarnaar_vertrokken_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("postadres_buitenland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("postadres_buitenland_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("woonadres_buitenland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("woonadres_buitenland_code"),
+        ),
+    ],
+    "brk_aanduidingnaam": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aanduidingnaam"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("naam_gebruik" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("naam_gebruik_code"),
+        ),
+    ],
+    "brk_appartementsrechtssplitstype": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_appartementsrechtssplitstype"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("appartementsrechtsplitsingtype" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("appartementsrechtsplitsingtype_code"),
+        ),
+    ],
+    "brk_aardaantekening": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardaantekening"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard" + suffix) for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_aantekeningenkadastraleobjecten"),
+            transfer_pk=sql.Identifier("aard_code"),
+        ),
+    ],
+    "brk_aardzakelijkrecht": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardzakelijkrecht"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard_zakelijk_recht" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("aard_zakelijk_recht_code"),
+        ),
+    ],
+    "brk_cultuurcodebebouwd": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_cultuurcodebebouwd"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier(x) for x in ["code", "omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten_soort_cultuur_bebouwd"),
+            transfer_pk=sql.Identifier("code"),
+        ),
+    ],
+    "brk_cultuurcodeonbebouwd": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_cultuurcodeonbebouwd"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("soort_cultuur_onbebouwd" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten"),
+            transfer_pk=sql.Identifier("soort_cultuur_onbebouwd_code"),
+        ),
+    ],
+    "brk_soortgrootte": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_soortgrootte"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("soort_grootte" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten"),
+            transfer_pk=sql.Identifier("soort_grootte_code"),
+        ),
+    ],
     "brk_gemeente": [
         sql.SQL(
             """
@@ -344,180 +529,6 @@ table_registry = {
             target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
-    "brk_rechtsvorm": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_rechtsvorm"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("rechtsvorm" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("rechtsvorm_code"),
-        ),
-    ],
-    "brk_geslacht": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_geslacht"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("geslacht" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("geslacht_code"),
-        ),
-    ],
-    "brk_beschikkingsbevoegdheid": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_beschikkingsbevoegdheid"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("beschikkingsbevoegdheid" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("beschikkingsbevoegdheid_code"),
-        ),
-    ],
-    "brk_land": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("geboorteland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("geboorteland_code"),
-        ),
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("land_waarnaar_vertrokken" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("land_waarnaar_vertrokken_code"),
-        ),
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("postadres_buitenland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("postadres_buitenland_code"),
-        ),
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("woonadres_buitenland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("woonadres_buitenland_code"),
-        ),
-    ],
-    "brk_aanduidingnaam": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_aanduidingnaam"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("naam_gebruik" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("naam_gebruik_code"),
-        ),
-    ],
-    "brk_appartementsrechtsplitsingtype": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_appartementsrechtssplitstype"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("appartementsrechtsplitsingtype" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_zakelijkerechten"),
-            transfer_pk=sql.Identifier("appartementsrechtsplitsingtype_code"),
-        ),
-    ],
-    "brk_aardaantekening": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_aardaantekening"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("aard" + suffix) for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_aantekeningenkadastraleobjecten"),
-            transfer_pk=sql.Identifier("aard_code"),
-        ),
-    ],
-    "brk_aardzakelijkrecht": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_aardzakelijkrecht"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("aard_zakelijk_recht" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_zakelijkerechten"),
-            transfer_pk=sql.Identifier("aard_zakelijk_recht_code"),
-        ),
-    ],
-    "brk_cultuurcodebebouwd": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_cultuurcodebebouwd"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier(x) for x in ["code", "omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastraleobjecten_soort_cultuur_bebouwd"),
-            transfer_pk=sql.Identifier("code"),
-        ),
-    ],
-    "brk_cultuurcodeonbebouwd": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_cultuurcodeonbebouwd"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("soort_cultuur_onbebouwd" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastraleobjecten"),
-            transfer_pk=sql.Identifier("soort_cultuur_onbebouwd_code"),
-        ),
-    ],
-    "brk_soortgrootte": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_soortgrootte"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("soort_grootte" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastraleobjecten"),
-            transfer_pk=sql.Identifier("soort_grootte_code"),
-        ),
-    ],
     "brk_kadastraalobject": [
         sql.SQL(
             """
@@ -533,11 +544,11 @@ table_registry = {
                             parent_id,
                             MIN(code) AS code
                         FROM
-                            brk_kadastraleobjecten_soort_cultuur_bebouwd
+                            {source_schema}.brk_kadastraleobjecten_soort_cultuur_bebouwd
                         GROUP BY
                             parent_id
                     ) agg
-                    INNER JOIN brk_kadastraleobjecten_soort_cultuur_bebouwd t ON agg.parent_id = t.parent_id
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten_soort_cultuur_bebouwd t ON agg.parent_id = t.parent_id
                     AND agg.code = t.code
             )
             INSERT INTO
@@ -592,7 +603,11 @@ table_registry = {
                             ELSE 0 :: boolean
                         END AS voorlopige_kadastrale_grens,
                         attr.in_onderzoek AS in_onderzoek,
-                        ST_Multi(attr.geometrie) AS poly_geom,
+                        CASE
+                            WHEN ST_GeometryType(attr.geometrie) = 'ST_Polygon' 
+                            THEN ST_Multi(attr.geometrie)
+                            ELSE NULL 
+                        END AS poly_geom,
                         attr.plaatscoordinaten AS point_geom,
                         codes.code AS cultuurcode_bebouwd_id,
                         attr.soort_cultuur_onbebouwd_code AS cultuurcode_onbebouwd_id,
@@ -655,7 +670,7 @@ table_registry = {
                         GROUP BY
                             identificatie
                     ) as n
-                    INNER JOIN brk_zakelijkerechten attr ON n.identificatie = attr.identificatie
+                    INNER JOIN {source_schema}.brk_zakelijkerechten attr ON n.identificatie = attr.identificatie
                     AND n.volgnummer = attr.volgnummer
             ),
             newest_kadastrale_objecten AS (
@@ -671,7 +686,7 @@ table_registry = {
                         GROUP BY
                             identificatie
                     ) as n
-                    INNER JOIN brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
                     AND n.volgnummer = attr.volgnummer
             )
             INSERT INTO
@@ -730,7 +745,7 @@ table_registry = {
                         AND nt.van_zakelijkrecht_volgnummer = nz.volgnummer
                         INNER JOIN newest_kadastrale_objecten nko ON nz.rust_op_kadastraalobject_identificatie = nko.identificatie
                         AND nz.rust_op_kadastraalobject_volgnummer = nko.volgnummer
-                        INNER JOIN brk_kadastralesubjecten ks ON ks.identificatie = nt.van_kadastraalsubject_id
+                        INNER JOIN {source_schema}.brk_kadastralesubjecten ks ON ks.identificatie = nt.van_kadastraalsubject_id
                 );
         """
         ).format(
@@ -797,6 +812,9 @@ table_registry = {
                         AND nak.hft_btrk_op_kot_volgnummer = nk.volgnummer
                 );
     """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
         )
     ],
     "brk_aperceelgperceelrelatie": [
@@ -830,7 +848,7 @@ table_registry = {
                         thrutable.kadastraleobjecten_identificatie
                     FROM
                         newest_kadastraleobjecten AS nk
-                        INNER JOIN brk_kadastraleobjecten_is_ontstaan_uit_g_perceel AS thrutable ON (nk.identificatie = thrutable.is_ontstaan_uit_g_perceel_identificatie
+                        INNER JOIN {source_schema}.brk_kadastraleobjecten_is_ontstaan_uit_g_perceel AS thrutable ON (nk.identificatie = thrutable.is_ontstaan_uit_g_perceel_identificatie
                         AND nk.volgnummer = thrutable.is_ontstaan_uit_g_perceel_volgnummer)
                         INNER JOIN newest_kadastraleobjecten nkright ON (nkright.identificatie = thrutable.kadastraleobjecten_identificatie AND nkright.volgnummer = thrutable.kadastraleobjecten_volgnummer)
                         /* these joins happen in order to filter the m2m-table on the most recent entries */
@@ -859,7 +877,9 @@ parser.add_argument(
         Database names of the tables in bag_v11 to generate SQL for.
         If ommitted, generate SQL for all tables.
     """,
-    default=list(table_registry),
+    default=list(
+        table_registry
+    ),  # rely on dict insertion to guarantee the correct loading order
 )
 parser.add_argument(
     "--delete", help="Truncate the specified tables in bag_v11", action="store_true"
@@ -869,28 +889,6 @@ parser.add_argument(
     help="If ommitted, only emit statements that would be executed to stdout",
     action="store_true",
 )
-
-ordering = [
-    "brk_rechtsvorm",
-    "brk_geslacht",
-    "brk_beschikkingsbevoegdheid",
-    "brk_soortgrootte",
-    "brk_cultuurcodebebouwd",
-    "brk_land",
-    "brk_aanduidingnaam",
-    "brk_appartementsrechtsplitsingtype",
-    "brk_aardaantekening",
-    "brk_cultuurcodebebouwd",
-    "brk_gemeente",
-    "brk_kadastralegemeente",
-    "brk_kadastralesectie",
-    "brk_aardzakelijkrecht",
-    "brk_kadastraalsubject",
-    "brk_kadastraalobject",
-    "brk_zakelijkrecht",
-    "brk_aantekening",
-    "brk_aperceelgperceelrelatie",
-]
 
 
 def main(tables: List[str], connection: Connection, execute: bool, delete: bool):
