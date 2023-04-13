@@ -2,6 +2,47 @@
 description = """
 Utility for outputting SQL used to load data
 from the reference database into the legacy bag_v11 database.
+
+The data transfer happens in a single transaction. Partial transfer
+in separate transactions can only be done by making separate CLI
+invocations with table arguments.
+
+ Note that dimensions and primary keys between "corresponding" 
+ tables are not always the same, so we need to make a case-by-case
+ decision on how to map ref-db entries to the bag_v11 entries.
+ These decisions are clarified below:
+ 
+ Table specific mappings:
+ 
+ * Ref-db brk_gemeentes has a temporal dimension which does not exist in bagv11:
+ To remove this, we take the most recent version of the gemeente.
+ Any kadastralegemeentes pointing to older versions will implicitly be dropped in the loaded data.
+
+ * Ref-db brk_kadastraleobjecten has a temporal dimension which does not exist in bagv11:
+ To remove this, we take the most recent version of the kadastraal object.
+ Zakelijke rechten and aantekeningen pointing to older versions of kadastrale objecten will
+ implicitly be dropped in the loaded data.
+
+ * bag_v11 brk_gemeente uses naam as primary key while ref-db brk_gemeentes uses
+ a temporal composite key:
+ This is also solved by taking the most recent version of the gemeente
+
+ * bag_adres uses a hash of fields as primary key. To avoid primary key conflicts while loading data,
+ this primary key is replaced with a generated uuid4. This may result in "duplicate" entries in the
+ bag_adres table but does not produce incorrect data. Since bag_adres is not exposed as a separate entity
+ in the REST API, but only as a relation via kadastraal_subject, this duplication will not leak to clients.
+
+ * kadastraleobjecten in the ref-db support multiple cultuurcode_bebouwd_ids, bagv11 only one.
+ For each row that has more than 1 we take the minimum code. This is an arbitrary decision.
+
+ * the 'opgelegd_door' relation in the brk_aantekening table cannot be derived from the ref-db.
+
+ * some entries in refdb brk_kadastraleobjecten geometrie column contain ST_Point geometries. These
+   cannot logically be cast to polygons so we ignore these entries.
+ 
+ General mappings:
+ 
+ * spatial columns with mixed geometries are cast to their ST_Multi equivalent
 """
 
 import argparse
@@ -17,6 +58,9 @@ SOURCE_SCHEMA = "public"
 TARGET_SCHEMA = "bag_services"
 
 # Select distinct entries of set of columns into a target table
+# For constraint checking, this is not necessary because it is DEFERRED
+# to the end of the transaction. It is necessary for any INSERTions that
+# require the presence of previously transferred data.
 code_omschrijving_stmt = sql.SQL(
     """
     INSERT INTO
@@ -34,7 +78,182 @@ code_omschrijving_stmt = sql.SQL(
 
 truncate_stmt = sql.SQL("TRUNCATE {target_schema}.{target_table} CASCADE")
 
+# NOTE: entries in this dict literal dictate the correct loading order.
 table_registry = {
+    "brk_rechtsvorm": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_rechtsvorm"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("rechtsvorm" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("rechtsvorm_code"),
+        ),
+    ],
+    "brk_geslacht": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_geslacht"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("geslacht" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("geslacht_code"),
+        ),
+    ],
+    "brk_beschikkingsbevoegdheid": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_beschikkingsbevoegdheid"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("beschikkingsbevoegdheid" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("beschikkingsbevoegdheid_code"),
+        ),
+    ],
+    "brk_land": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("geboorteland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("geboorteland_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("land_waarnaar_vertrokken" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("land_waarnaar_vertrokken_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("postadres_buitenland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("postadres_buitenland_code"),
+        ),
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_land"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("woonadres_buitenland" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("woonadres_buitenland_code"),
+        ),
+    ],
+    "brk_aanduidingnaam": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aanduidingnaam"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("naam_gebruik" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastralesubjecten"),
+            transfer_pk=sql.Identifier("naam_gebruik_code"),
+        ),
+    ],
+    "brk_appartementsrechtssplitstype": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_appartementsrechtssplitstype"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("appartementsrechtsplitsingtype" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("appartementsrechtsplitsingtype_code"),
+        ),
+    ],
+    "brk_aardaantekening": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardaantekening"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard" + suffix) for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_aantekeningenkadastraleobjecten"),
+            transfer_pk=sql.Identifier("aard_code"),
+        ),
+    ],
+    "brk_aardzakelijkrecht": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_aardzakelijkrecht"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("aard_zakelijk_recht" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_zakelijkerechten"),
+            transfer_pk=sql.Identifier("aard_zakelijk_recht_code"),
+        ),
+    ],
+    "brk_cultuurcodebebouwd": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_cultuurcodebebouwd"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier(x) for x in ["code", "omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten_soort_cultuur_bebouwd"),
+            transfer_pk=sql.Identifier("code"),
+        ),
+    ],
+    "brk_cultuurcodeonbebouwd": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_cultuurcodeonbebouwd"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("soort_cultuur_onbebouwd" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten"),
+            transfer_pk=sql.Identifier("soort_cultuur_onbebouwd_code"),
+        ),
+    ],
+    "brk_soortgrootte": [
+        code_omschrijving_stmt.format(
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("brk_soortgrootte"),
+            source_fields=sql.SQL(",").join(
+                sql.Identifier("soort_grootte" + suffix)
+                for suffix in ["_code", "_omschrijving"]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            source_table=sql.Identifier("brk_kadastraleobjecten"),
+            transfer_pk=sql.Identifier("soort_grootte_code"),
+        ),
+    ],
     "brk_gemeente": [
         sql.SQL(
             """
@@ -148,7 +367,7 @@ table_registry = {
             target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
-    "brk_kadastraalsubject": [
+    "brk_kadastraalsubject": [  # also inserts brk_adres
         sql.SQL(
             """
         CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -310,106 +529,337 @@ table_registry = {
             target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
-    "brk_rechtsvorm": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_rechtsvorm"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("rechtsvorm" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
+    "brk_kadastraalobject": [
+        sql.SQL(
+            """
+            WITH codes AS (
+                SELECT
+                    t.id AS id,
+                    agg.parent_id AS parent_id,
+                    agg.code AS code,
+                    t.omschrijving AS omschrijving
+                FROM
+                    (
+                        SELECT
+                            parent_id,
+                            MIN(code) AS code
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten_soort_cultuur_bebouwd
+                        GROUP BY
+                            parent_id
+                    ) agg
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten_soort_cultuur_bebouwd t ON agg.parent_id = t.parent_id
+                    AND agg.code = t.code
+            )
+            INSERT INTO
+                {target_schema}.brk_kadastraalobject (
+                    id,
+                    aanduiding,
+                    date_modified,
+                    perceelnummer,
+                    indexletter,
+                    indexnummer,
+                    grootte,
+                    koopsom,
+                    koopsom_valuta_code,
+                    koopjaar,
+                    meer_objecten,
+                    register9_tekst,
+                    status_code,
+                    toestandsdatum,
+                    voorlopige_kadastrale_grens,
+                    in_onderzoek,
+                    poly_geom,
+                    point_geom,
+                    cultuurcode_bebouwd_id,
+                    cultuurcode_onbebouwd_id,
+                    kadastrale_gemeente_id,
+                    sectie_id,
+                    soort_grootte_id,
+                    voornaamste_gerechtigde_id
+                ) (
+                    SELECT
+                        unik.identificatie AS id,
+                        attr.kadastrale_aanduiding AS aanduiding,
+                        now() AS date_modified,
+                        attr.perceelnummer AS perceelnummer,
+                        attr.indexletter AS indexletter,
+                        attr.indexnummer AS indexnummer,
+                        attr.grootte AS grootte,
+                        attr.koopsom AS koopsom,
+                        attr.koopsom_valutacode AS koopsom_valuta_code,
+                        attr.koopjaar AS koopjaar,
+                        CASE
+                            WHEN attr.indicatie_meer_objecten = 'J' THEN 1 :: boolean
+                            WHEN attr.indicatie_meer_objecten = 'N' THEN 0 :: boolean
+                            ELSE null
+                        END AS meer_objecten,
+                        '' AS register9_tekst,
+                        /* always empty */
+                        attr.status AS status_code,
+                        attr.toestandsdatum AS toestandsdatum,
+                        CASE
+                            WHEN attr.indicatie_voorlopige_geometrie = 'J' THEN 1 :: boolean
+                            ELSE 0 :: boolean
+                        END AS voorlopige_kadastrale_grens,
+                        attr.in_onderzoek AS in_onderzoek,
+                        CASE
+                            WHEN ST_GeometryType(attr.geometrie) = 'ST_Polygon' 
+                            THEN ST_Multi(attr.geometrie)
+                            ELSE NULL 
+                        END AS poly_geom,
+                        attr.plaatscoordinaten AS point_geom,
+                        codes.code AS cultuurcode_bebouwd_id,
+                        attr.soort_cultuur_onbebouwd_code AS cultuurcode_onbebouwd_id,
+                        attr.aangeduid_door_kadastralegemeentecode_id AS kadastrale_gemeente_id,
+                        attr.aangeduid_door_kadastralesectie_id AS sectie_id,
+                        attr.soort_grootte_code AS soort_grootte_id,
+                        NULL AS voornaamste_gerechtigde_id
+                        /* not present in refdb */
+                    FROM
+                        (
+                            SELECT
+                                identificatie,
+                                MAX(volgnummer) AS mxvolgnummer
+                            FROM
+                                {source_schema}.brk_kadastraleobjecten
+                            GROUP BY
+                                identificatie
+                        ) AS unik
+                        INNER JOIN {source_schema}.brk_kadastraleobjecten AS attr ON attr.identificatie = unik.identificatie
+                        AND unik.mxvolgnummer = attr.volgnummer
+                        INNER JOIN {target_schema}.brk_kadastralegemeente kg ON attr.aangeduid_door_kadastralegemeentecode_id = kg.id
+                        /* exclude entries referring to "older" kadastrale_gemeentes */
+                        LEFT OUTER JOIN codes ON codes.parent_id = attr.id
+                );
+            """
+        ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("rechtsvorm_code"),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
-    "brk_geslacht": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_geslacht"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("geslacht" + suffix)
-                for suffix in ["_code", "_omschrijving"]
+    "brk_zakelijkrecht": [
+        sql.SQL(
+            """
+            WITH newest_tenaamstellingen AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_tenaamstellingen
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN brk_tenaamstellingen attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
             ),
+            newest_zakelijkerechten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_zakelijkerechten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_zakelijkerechten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            ),
+            newest_kadastrale_objecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.brk_zakelijkrecht (
+                    id,
+                    date_modified,
+                    zrt_id,
+                    aard_zakelijk_recht_akr,
+                    teller,
+                    noemer,
+                    kadastraal_object_status,
+                    _kadastraal_subject_naam,
+                    _kadastraal_object_aanduiding,
+                    aard_zakelijk_recht_id,
+                    app_rechtsplitstype_id,
+                    betrokken_bij_id,
+                    kadastraal_object_id,
+                    kadastraal_subject_id,
+                    ontstaan_uit_id
+                ) (
+                    SELECT
+                        CONCAT(
+                            nz.identificatie,
+                            '-',
+                            nko.identificatie,
+                            '-',
+                            nt.identificatie
+                        ) AS id,
+                        now() AS date_modified,
+                        nz.identificatie AS zrt_id,
+                        nz.akr_aard_zakelijk_recht AS aard_zakelijk_recht_akr,
+                        nt.aandeel_teller AS teller,
+                        nt.aandeel_noemer AS noemer,
+                        nko.status AS kadastraal_object_status,
+                        CASE
+                            WHEN ks.heeft_rsin_voor IS NULL THEN CONCAT(
+                                ks.geslachtsnaam,
+                                ',',
+                                ks.voornamen,
+                                ', (',
+                                ks.geslacht_code,
+                                ')'
+                            )
+                            ELSE ks.statutaire_naam
+                        END AS _kadastraal_subject_naam,
+                        nko.kadastrale_aanduiding AS _kadastraal_object_aanduiding,
+                        nz.aard_zakelijk_recht_code AS aard_zakelijk_recht_id,
+                        nz.appartementsrechtsplitsingtype_code AS app_rechtsplitstype_id,
+                        nz.betrokken_bij_apptrechtsplitsing_vve_id AS betrokken_bij_id,
+                        nz.rust_op_kadastraalobject_identificatie AS kadastraal_object_id,
+                        nt.van_kadastraalsubject_id AS kadastraal_subject_id,
+                        nz.ontstaan_uit_apptrechtsplitsing_vve_id AS ontstaan_uit_id
+                    FROM
+                        newest_tenaamstellingen nt
+                        INNER JOIN newest_zakelijkerechten nz ON nt.van_zakelijkrecht_identificatie = nz.identificatie
+                        AND nt.van_zakelijkrecht_volgnummer = nz.volgnummer
+                        INNER JOIN newest_kadastrale_objecten nko ON nz.rust_op_kadastraalobject_identificatie = nko.identificatie
+                        AND nz.rust_op_kadastraalobject_volgnummer = nko.volgnummer
+                        INNER JOIN {source_schema}.brk_kadastralesubjecten ks ON ks.identificatie = nt.van_kadastraalsubject_id
+                );
+        """
+        ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("geslacht_code"),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
         ),
     ],
-    "brk_beschikkingsbevoegdheid": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_beschikkingsbevoegdheid"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("beschikkingsbevoegdheid" + suffix)
-                for suffix in ["_code", "_omschrijving"]
+    "brk_aantekening": [
+        sql.SQL(
+            """
+            WITH newest_aantekeningen_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_aantekeningenkadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_aantekeningenkadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
             ),
+            newest_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.brk_aantekening (
+                    aantekening_id,
+                    omschrijving,
+                    date_modified,
+                    aard_aantekening_id,
+                    kadastraal_object_id,
+                    opgelegd_door_id
+                ) (
+                    SELECT
+                        /* id is integer sequence */
+                        nak.identificatie AS aantekening_id,
+                        COALESCE(nak.omschrijving, '') AS omschrijving,
+                        now() AS date_modified,
+                        nak.aard_code AS aard_aantekening_id,
+                        nak.hft_btrk_op_kot_identificatie AS kadastraal_object_id,
+                        NULL AS opgelegd_door_id
+                        /* not present in refdb */
+                    FROM
+                        newest_aantekeningen_kadastraleobjecten nak
+                        INNER JOIN newest_kadastraleobjecten nk ON nak.hft_btrk_op_kot_identificatie = nk.identificatie
+                        AND nak.hft_btrk_op_kot_volgnummer = nk.volgnummer
+                );
+    """
+        ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("beschikkingsbevoegdheid_code"),
-        ),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
     ],
-    "brk_land": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("geboorteland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
+    "brk_aperceelgperceelrelatie": [
+        sql.SQL(
+            """
+            WITH newest_kadastraleobjecten AS (
+                SELECT
+                    attr.*
+                FROM
+                    (
+                        SELECT
+                            identificatie,
+                            MAX(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_kadastraleobjecten
+                        GROUP BY
+                            identificatie
+                    ) as n
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
+                    AND n.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.brk_aperceelgperceelrelatie (id, g_perceel_id, a_perceel_id) (
+                    SELECT
+                        CONCAT(
+                            thrutable.is_ontstaan_uit_g_perceel_identificatie,
+                            '-',
+                            thrutable.kadastraleobjecten_identificatie
+                        ) AS id,
+                        thrutable.is_ontstaan_uit_g_perceel_identificatie,
+                        thrutable.kadastraleobjecten_identificatie
+                    FROM
+                        newest_kadastraleobjecten AS nk
+                        INNER JOIN {source_schema}.brk_kadastraleobjecten_is_ontstaan_uit_g_perceel AS thrutable ON (nk.identificatie = thrutable.is_ontstaan_uit_g_perceel_identificatie
+                        AND nk.volgnummer = thrutable.is_ontstaan_uit_g_perceel_volgnummer)
+                        INNER JOIN newest_kadastraleobjecten nkright ON (nkright.identificatie = thrutable.kadastraleobjecten_identificatie AND nkright.volgnummer = thrutable.kadastraleobjecten_volgnummer)
+                        /* these joins happen in order to filter the m2m-table on the most recent entries */
+                );
+    """
+        ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("geboorteland_code"),
-        ),
-        code_omschrijving_stmt.format(
             target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("land_waarnaar_vertrokken" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("land_waarnaar_vertrokken_code"),
-        ),
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("postadres_buitenland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("postadres_buitenland_code"),
-        ),
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_land"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("woonadres_buitenland" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("woonadres_buitenland_code"),
-        ),
-    ],
-    "brk_aanduidingnaam": [
-        code_omschrijving_stmt.format(
-            target_schema=sql.Identifier(TARGET_SCHEMA),
-            target_table=sql.Identifier("brk_aanduidingnaam"),
-            source_fields=sql.SQL(",").join(
-                sql.Identifier("naam_gebruik" + suffix)
-                for suffix in ["_code", "_omschrijving"]
-            ),
-            source_schema=sql.Identifier(SOURCE_SCHEMA),
-            source_table=sql.Identifier("brk_kadastralesubjecten"),
-            transfer_pk=sql.Identifier("naam_gebruik_code"),
-        ),
+        )
     ],
 }
-
 
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("-v", "--verbose", action="store_true")
@@ -427,7 +877,9 @@ parser.add_argument(
         Database names of the tables in bag_v11 to generate SQL for.
         If ommitted, generate SQL for all tables.
     """,
-    default=list(table_registry),
+    default=list(
+        table_registry
+    ),  # rely on dict insertion to guarantee the correct loading order
 )
 parser.add_argument(
     "--delete", help="Truncate the specified tables in bag_v11", action="store_true"
@@ -456,6 +908,7 @@ def main(tables: List[str], connection: Connection, execute: bool, delete: bool)
                 if execute:
                     cursor.execute(statement)
                     logger.info("Inserted %d rows into %s", cursor.rowcount, table)
+                    logger.info("status: %s", cursor.statusmessage)
                 else:
                     sys.stdout.write(str(statement.as_string(cursor)))
                     sys.stdout.write("\n")

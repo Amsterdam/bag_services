@@ -28,3 +28,6 @@ venv
 .settings
 
 data/
+
+# data loading from refdb
+bag_refdb.sql
