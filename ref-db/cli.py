@@ -13,6 +13,8 @@ invocations with table arguments.
  These decisions are clarified below:
  
  Table specific mappings:
+
+ --- BRK ---
  
  * Ref-db brk_gemeentes has a temporal dimension which does not exist in bagv11:
  To remove this, we take the most recent version of the gemeente.
@@ -39,6 +41,15 @@ invocations with table arguments.
 
  * some entries in refdb brk_kadastraleobjecten geometrie column contain ST_Point geometries. These
    cannot logically be cast to polygons so we ignore these entries.
+
+--- BAG --- 
+
+* bag_bron, bag_gebiedsgerichtwerkenpraktijkgebieden are not loaded nor present 
+  in any of the bagv11 dbs, so are ignored.
+* bag_indicatieadresseerbaarobject are not loaded nor present in the dbs and also not used
+    in the rest of the application
+* bag_gemeente is only loaded for db compatibility with the Django app since the views
+  redirect the HAL links to brk_gemeente and relations in the ref db point to brk_gemeente
  
  General mappings:
  
@@ -48,19 +59,17 @@ invocations with table arguments.
 import argparse
 import logging
 import sys
-from typing import List
+from typing import List, Tuple, Dict
 
 from psycopg2 import connect, sql
 from psycopg2.extensions import connection as Connection
+
 
 logger = logging.getLogger("refdb-loading-script")
 SOURCE_SCHEMA = "public"
 TARGET_SCHEMA = "bag_services"
 
-# Select distinct entries of set of columns into a target table
-# For constraint checking, this is not necessary because it is DEFERRED
-# to the end of the transaction. It is necessary for any INSERTions that
-# require the presence of previously transferred data.
+# Select distinct entries of a set of columns into a target table
 code_omschrijving_stmt = sql.SQL(
     """
     INSERT INTO
@@ -75,6 +84,52 @@ code_omschrijving_stmt = sql.SQL(
     ON CONFLICT DO NOTHING; /* It is possible that we gather duplicates from denormalized refdb tables */
 """
 )
+
+# given a table with temporal dimensions in ref-db, extract the newest entries
+# it is assumed that the temporal pk is (identifier, volgnummer), which covers
+# 99% of the cases
+extract_newest_stmt = sql.SQL(
+    """
+    SELECT
+        attr.*
+    FROM
+        {schema}.{table} attr
+        INNER JOIN (
+            SELECT
+                identificatie,
+                max(volgnummer) AS volgnummer
+            FROM
+                {schema}.{table}
+            GROUP BY
+                identificatie
+        ) AS newest ON newest.identificatie = attr.identificatie
+        AND newest.volgnummer = attr.volgnummer
+"""
+)
+
+
+def with_query_body(
+    ctes: List[Tuple[str, sql.SQL, Dict[str, sql.Composable]]]
+) -> sql.SQL:
+    """Construct a WITH query body composed of the given common table
+    expressions (CTEs) and corresponding aliases.
+
+    The CTEs are supplied through a SQL object which accepts a Dict of Composables
+    as formatting parameters.
+
+    Parameters:
+        * ctes: a list of tuples of (alias, cte SQL, cte SQL args)
+    """
+    return sql.SQL(", ").join(
+        [
+            sql.SQL("{alias} AS ({cte})").format(
+                cte=cte.format(**kwargs),
+                alias=sql.Identifier(alias),
+            )
+            for (alias, cte, kwargs) in ctes
+        ]
+    )
+
 
 truncate_stmt = sql.SQL("TRUNCATE {target_schema}.{target_table} CASCADE")
 
@@ -859,7 +914,263 @@ table_registry = {
             target_schema=sql.Identifier(TARGET_SCHEMA),
         )
     ],
+    "bag_gemeente": [
+        sql.SQL(
+            """
+            WITH newest_gemeentes AS (
+                SELECT
+                    attr.*
+                FROM
+                    {source_schema}.brk_gemeentes attr
+                    INNER JOIN (
+                        SELECT
+                            identificatie,
+                            max(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.brk_gemeentes g
+                        GROUP BY
+                            identificatie
+                    ) AS newest ON newest.identificatie = attr.identificatie
+                    AND newest.volgnummer = attr.volgnummer
+            )
+            INSERT INTO
+                {target_schema}.bag_gemeente (
+                    id,
+                    code,
+                    naam,
+                    date_modified,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    verzorgingsgebied,
+                    vervallen
+                ) (
+                    SELECT
+                        identificatie AS id,
+                        identificatie AS code,
+                        naam AS naam,
+                        NOW() AS date_modified,
+                        begin_geldigheid AS begin_geldigheid,
+                        eind_geldigheid AS einde_geldigheid,
+                        TRUE AS verzorgingsgebied,
+                        /* hardcoded in legacy batch job */
+                        false AS vervallen
+                        /* also hardcoded */
+                    FROM
+                        newest_gemeentes
+                );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
+    "bag_stadsdeel": [
+        sql.SQL(
+            """
+            WITH newest_stadsdelen AS (
+                SELECT
+                    attr.*
+                FROM
+                    {source_schema}.gebieden_stadsdelen attr
+                    INNER JOIN (
+                        SELECT
+                            identificatie,
+                            max(volgnummer) AS volgnummer
+                        FROM
+                            {source_schema}.gebieden_stadsdelen g
+                        GROUP BY
+                            identificatie
+                    ) AS newest ON newest.identificatie = attr.identificatie
+                    AND newest.volgnummer = attr.volgnummer
+                WHERE
+                    attr.eind_geldigheid IS NULL
+                    OR attr.eind_geldigheid >= NOW()
+            )
+            INSERT INTO
+                {target_schema}.bag_stadsdeel (
+                    id,
+                    code,
+                    naam,
+                    gemeente_id,
+                    date_modified,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    geometrie,
+                    vervallen,
+                    ingang_cyclus,
+                    brondocument_naam,
+                    brondocument_datum
+                ) (
+                    SELECT
+                        identificatie AS id,
+                        code AS code,
+                        naam AS naam,
+                        ligt_in_gemeente_id AS gemeente_id,
+                        NOW() AS date_modified,
+                        begin_geldigheid AS begin_geldigheid,
+                        eind_geldigheid AS einde_geldigheid,
+                        st_multi(geometrie) AS geometrie,
+                        NULL AS vervallen,
+                        /* hardcoded to null in legacy ETL */
+                        begin_geldigheid AS ingang_cyclus,
+                        /* set like this in legacy ETL */
+                        documentnummer AS brondocument_naam,
+                        documentdatum AS brondocument_datum
+                    FROM
+                        newest_stadsdelen
+                );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
+    "bag_woonplaats": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs} INSERT INTO
+                {target_schema}.bag_woonplaats (
+                    document_mutatie,
+                    document_nummer,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    id,
+                    date_modified,
+                    landelijk_id,
+                    naam,
+                    vervallen,
+                    gemeente_id,
+                    geometrie
+                ) (
+                    SELECT
+                        nw.documentdatum AS document_mutatie,
+                        nw.documentnummer AS document_nummer,
+                        nw.begin_geldigheid AS begin_geldigheid,
+                        nw.eind_geldigheid AS einde_geldigheid,
+                        nw.identificatie AS id,
+                        NOW() AS date_modified,
+                        nw.identificatie AS landelijk_id,
+                        nw.naam AS naam,
+                        NULL AS vervallen,
+                        /*hardcoded in legacy ETL*/
+                        nw.ligt_in_gemeente_identificatie AS gemeente_id,
+                        st_multi(nw.geometrie) AS geometrie
+                    FROM
+                        nw
+                        INNER JOIN ng ON ng.identificatie = nw.ligt_in_gemeente_identificatie
+                        AND ng.volgnummer = nw.ligt_in_gemeente_volgnummer
+                );
+        """
+        ).format(
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "ng",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_gemeentes"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_woonplaatsen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
+    "bag_openbareruimte": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_openbareruimte (
+                    document_mutatie,
+                    document_nummer,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    id,
+                    landelijk_id,
+                    date_modified,
+                    TYPE,
+                    naam,
+                    naam_nen,
+                    vervallen,
+                    geometrie,
+                    omschrijving,
+                    bron_id,
+                    woonplaats_id,
+                    STATUS
+                ) (
+                    SELECT
+                        nor.documentnummer AS document_nummer,
+                        nor.documentdatum AS document_mutatie,
+                        nor.begin_geldigheid AS begin_geldigheid,
+                        nor.eind_geldigheid AS einde_geldigheid,
+                        nor.identificatie AS id,
+                        nor.identificatie AS landelijk_id,
+                        NOW() AS date_modified,
+                        CONCAT('0', type_code :: text) AS TYPE,
+                        nor.naam AS naam,
+                        nor.naam_nen AS naam_nen,
+                        NULL AS vervallen,
+                        /* always null in ETL */
+                        st_multi(nor.geometrie) AS geometrie,
+                        nor.beschrijving_naam AS omschrijving,
+                        NULL AS bron_id,
+                        /* always null in ETL */
+                        nor.woonplaats_identificatie AS woonplaats_id,
+                        nor.status_omschrijving AS STATUS
+                    FROM
+                        nor
+                        INNER JOIN nw ON nw.identificatie = nor.ligt_in_woonplaats_identificatie
+                        AND nw.volgnummer = nor.ligt_in_woonplaats_volgnummer
+                        INNER JOIN ng ON nw.ligt_in_gemeente_identificatie = ng.identificatie
+                        AND nw.ligt_in_gemeente_volgnummer = ng.volgummer
+                );
+        """
+        ).format(
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "ng",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_gemeentes"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_woonplaatsen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nor",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_openbareruimtes"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
 }
+
 
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("-v", "--verbose", action="store_true")
