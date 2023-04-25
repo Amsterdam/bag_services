@@ -12,8 +12,6 @@ invocations with table arguments.
  decision on how to map ref-db entries to the bag_v11 entries.
  These decisions are clarified below:
  
- Table specific mappings:
-
  --- BRK ---
  
  * Ref-db brk_gemeentes has a temporal dimension which does not exist in bagv11:
@@ -50,6 +48,38 @@ invocations with table arguments.
     in the rest of the application
 * bag_gemeente is only loaded for db compatibility with the Django app since the views
   redirect the HAL links to brk_gemeente and relations in the ref db point to brk_gemeente
+* openbare ruimtes leaves less than half of the original distinct entries after the transfer. it
+  is possible that this is caused by older objects being excluded.
+* 5 entries are not present in refdb gebieden_grootstedelijkeprojecten: 
+{'houthavens-wabo-od_od', 'koffiefabriek_gsp', 'groenehuyzen-blomwijckerpad_gsp', 'h-buurt_gsp', 'the-ox_gsp', 'ode-kavel-5a-b-en-6-wabo-od_od'}
+* bag_buurten in refdb has two transitive relations (1 via wijk and 1 via ggwgebied) to bag_stadsdelen while 
+  the legacy bag_buurt assumes there is 1 stadsdeel for one buurt. In the refdb, therefore, it is theoretically possible
+  that a buurt resides in multiple stadsdelen. We ignore entries like this by including only buurten that reside in
+  wijken en ggwgebieden that are inside the same stadsdeel.
+* bag_buurten has 1 direct and 1 transitive relation to ggw_gebieden, while the legacy data assumes a single ggwgebied.
+  This is solved in the same way as the previous bulletpoint.
+* The following tables contain entries with different primary keys for the same names. 
+  In the legacy data, these pimary keys are not present. 
+  To avoid confusion, a filter on eind_geldigheid has been added to the following tables
+  (the duplicates only occur in obsolete data):
+
+    - gebieden_ggwgebieden (bag_gebiedsgerichtwerken)
+    - gebieden_wijken (bag_buurtcombinatie) (here the filter is a hard requirement since all "old" codes break the <= 2 length varchar constraint)
+    - gebieden_buurten (bag_buurt)
+    - gebieden_bouwblokken (bag_bouwblok)
+
+* the following denormalized fields:
+    - `_gebiedsgerichtwerken_id` 
+    - `_grootstedelijkproject_id`
+  on tables standplaatsen, ligplaatsen and verblijfsobjecten are resolved in the legacy pipeline using an ST_Within() without 
+  consideration for the scenario where the object is inside multiple polygons.
+  The legacy ETL pipeline arbitrarily adds the last entry of the the ggw/ggp gebied.
+  In this logic we populate these as follows:
+    - `_gebiedsgerichtwerken_id` -> ggw gebied defined on the associated ggw entry
+    - `_grootstedelijkproject_id` -> the first entry given by a spatial join on the gebieden_grootstedelijke_projecten table
+* bag_verblijfsobject.gebruik can not be derived from ref db (?). (is:WOZ.WOB.soortObject in source data)
+  
+TODO: other Denormalized fields on lig/standplaats/verblijfsobj
  
  General mappings:
  
@@ -107,6 +137,29 @@ extract_newest_stmt = sql.SQL(
 """
 )
 
+# joins that are re-used in different INSERT queries to guarantee that joins
+# are executed with the tables identical to previously loaded data.
+# e.g.:
+# * we load `X join Y join Z`` which produces the result set for X
+# * A references X
+# then we need to load A join X join Y join Z to guarantee that FK constraints are satisfied when A is loaded.
+standard_joins = sql.SQL(
+    """
+    INNER JOIN nb ON cte.ligt_in_buurt_identificatie = nb.identificatie
+    AND cte.ligt_in_buurt_volgnummer = nb.volgnummer
+    INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+    AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+    INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+    AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+    AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+    AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+    INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+    AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+    AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+    AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+"""
+)
+
 
 def with_query_body(
     ctes: List[Tuple[str, sql.SQL, Dict[str, sql.Composable]]]
@@ -132,6 +185,79 @@ def with_query_body(
 
 
 truncate_stmt = sql.SQL("TRUNCATE {target_schema}.{target_table} CASCADE")
+
+standplaats_ligplaats_query = sql.SQL(
+    """
+            WITH {common_table_exprs} INSERT INTO
+                {target_schema}.{target_table} (
+                    document_mutatie,
+                    document_nummer,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    id,
+                    date_modified,
+                    landelijk_id,
+                    vervallen,
+                    indicatie_geconstateerd,
+                    indicatie_in_onderzoek,
+                    geometrie,
+                    bron_id,
+                    buurt_id,
+                    status,
+                    _openbare_ruimte_naam,
+                    _huisnummer,
+                    _huisletter,
+                    _huisnummer_toevoeging,
+                    _gebiedsgerichtwerken_id,
+                    _grootstedelijkgebied_id
+                ) (
+                    SELECT
+                        nst.documentdatum AS document_mutatie,
+                        nst.documentnummer AS document_nummer,
+                        nst.begin_geldigheid AS begin_geldigheid,
+                        nst.eind_geldigheid AS einde_geldigheid,
+                        nst.identificatie AS id,
+                        NOW() AS date_modified,
+                        nst.identificatie AS landelijk_id,
+                        NULL AS vervallen,
+                        nst.geconstateerd AS indicatie_geconstateerd,
+                        (
+                            CASE
+                                WHEN indicaties_onderzoeken.identificatie IS NOT NULL THEN TRUE
+                                ELSE FALSE
+                            END
+                        ) AS indicatie_in_onderzoek,
+                        nst.geometrie AS geometrie,
+                        /* hardcoded to null in legacy ETL */
+                        NULL AS bron_id,
+                        nst.ligt_in_buurt_identificatie AS buurt_id,
+                        nst.status_omschrijving AS status,
+                        NULL AS _openbare_ruimte_naam,
+                        NULL AS _huisnummer,
+                        NULL AS _huisletter,
+                        NULL AS _huisnummer_toevoeging,
+                        nggw.code AS _gebiedsgerichtwerken_id,
+                        REPLACE(lower(ggp.naam || '_' || ggp.type), ' ', '-') AS _grootstedelijkgebied_id
+                    FROM
+                        nst
+                        INNER JOIN nb ON nst.ligt_in_buurt_identificatie = nb.identificatie
+                        AND nst.ligt_in_buurt_volgnummer = nb.volgnummer
+                        INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+                        AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+                        INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        LEFT JOIN indicaties_onderzoeken ON indicaties_onderzoeken.identificatie = nst.identificatie
+                        AND indicaties_onderzoeken.volgnummer = nst.volgnummer
+                        LEFT JOIN LATERAL (SELECT * FROM ngp WHERE ST_Contains(ngp.geometrie, nst.geometrie) LIMIT 1) ggp ON true
+                );
+    """
+)
 
 # NOTE: entries in this dict literal dictate the correct loading order.
 table_registry = {
@@ -696,55 +822,7 @@ table_registry = {
     "brk_zakelijkrecht": [
         sql.SQL(
             """
-            WITH newest_tenaamstellingen AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_tenaamstellingen
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN brk_tenaamstellingen attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            ),
-            newest_zakelijkerechten AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_zakelijkerechten
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN {source_schema}.brk_zakelijkerechten attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            ),
-            newest_kadastrale_objecten AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_kadastraleobjecten
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            )
-            INSERT INTO
+            WITH {common_table_exprs} INSERT INTO
                 {target_schema}.brk_zakelijkrecht (
                     id,
                     date_modified,
@@ -806,44 +884,40 @@ table_registry = {
         ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_tenaamstellingen",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_tenaamstellingen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "newest_zakelijkerechten",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_zakelijkerechten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "newest_kadastrale_objecten",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_kadastraleobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
         ),
     ],
     "brk_aantekening": [
         sql.SQL(
             """
-            WITH newest_aantekeningen_kadastraleobjecten AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_aantekeningenkadastraleobjecten
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN {source_schema}.brk_aantekeningenkadastraleobjecten attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            ),
-            newest_kadastraleobjecten AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_kadastraleobjecten
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            )
-            INSERT INTO
+            WITH {common_table_exprs} INSERT INTO
                 {target_schema}.brk_aantekening (
                     aantekening_id,
                     omschrijving,
@@ -870,28 +944,34 @@ table_registry = {
         ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_aantekeningen_kadastraleobjecten",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier(
+                                "brk_aantekeningenkadastraleobjecten"
+                            ),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "newest_kadastraleobjecten",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_kadastraleobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
         )
     ],
     "brk_aperceelgperceelrelatie": [
         sql.SQL(
             """
-            WITH newest_kadastraleobjecten AS (
-                SELECT
-                    attr.*
-                FROM
-                    (
-                        SELECT
-                            identificatie,
-                            MAX(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_kadastraleobjecten
-                        GROUP BY
-                            identificatie
-                    ) as n
-                    INNER JOIN {source_schema}.brk_kadastraleobjecten attr ON n.identificatie = attr.identificatie
-                    AND n.volgnummer = attr.volgnummer
-            )
-            INSERT INTO
+            WITH {common_table_exprs} INSERT INTO
                 {target_schema}.brk_aperceelgperceelrelatie (id, g_perceel_id, a_perceel_id) (
                     SELECT
                         CONCAT(
@@ -912,28 +992,24 @@ table_registry = {
         ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_kadastraleobjecten",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_kadastraleobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
         )
     ],
     "bag_gemeente": [
         sql.SQL(
             """
-            WITH newest_gemeentes AS (
-                SELECT
-                    attr.*
-                FROM
-                    {source_schema}.brk_gemeentes attr
-                    INNER JOIN (
-                        SELECT
-                            identificatie,
-                            max(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.brk_gemeentes g
-                        GROUP BY
-                            identificatie
-                    ) AS newest ON newest.identificatie = attr.identificatie
-                    AND newest.volgnummer = attr.volgnummer
-            )
-            INSERT INTO
+            WITH {common_table_exprs} INSERT INTO
                 {target_schema}.bag_gemeente (
                     id,
                     code,
@@ -962,31 +1038,24 @@ table_registry = {
         ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_gemeentes",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_gemeentes"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
         )
     ],
     "bag_stadsdeel": [
         sql.SQL(
             """
-            WITH newest_stadsdelen AS (
-                SELECT
-                    attr.*
-                FROM
-                    {source_schema}.gebieden_stadsdelen attr
-                    INNER JOIN (
-                        SELECT
-                            identificatie,
-                            max(volgnummer) AS volgnummer
-                        FROM
-                            {source_schema}.gebieden_stadsdelen g
-                        GROUP BY
-                            identificatie
-                    ) AS newest ON newest.identificatie = attr.identificatie
-                    AND newest.volgnummer = attr.volgnummer
-                WHERE
-                    attr.eind_geldigheid IS NULL
-                    OR attr.eind_geldigheid >= NOW()
-            )
-            INSERT INTO
+            WITH {common_table_exprs} INSERT INTO
                 {target_schema}.bag_stadsdeel (
                     id,
                     code,
@@ -1010,10 +1079,10 @@ table_registry = {
                         begin_geldigheid AS begin_geldigheid,
                         eind_geldigheid AS einde_geldigheid,
                         st_multi(geometrie) AS geometrie,
-                        NULL AS vervallen,
                         /* hardcoded to null in legacy ETL */
+                        NULL AS vervallen,
+                        /* set equal in legacy ETL */
                         begin_geldigheid AS ingang_cyclus,
-                        /* set like this in legacy ETL */
                         documentnummer AS brondocument_naam,
                         documentdatum AS brondocument_datum
                     FROM
@@ -1023,6 +1092,18 @@ table_registry = {
         ).format(
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_stadsdelen",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
         )
     ],
     "bag_woonplaats": [
@@ -1051,8 +1132,8 @@ table_registry = {
                         NOW() AS date_modified,
                         nw.identificatie AS landelijk_id,
                         nw.naam AS naam,
+                        /* hardcoded to NULL in legacy ETL*/
                         NULL AS vervallen,
-                        /*hardcoded in legacy ETL*/
                         nw.ligt_in_gemeente_identificatie AS gemeente_id,
                         st_multi(nw.geometrie) AS geometrie
                     FROM
@@ -1099,7 +1180,7 @@ table_registry = {
                     id,
                     landelijk_id,
                     date_modified,
-                    TYPE,
+                    type,
                     naam,
                     naam_nen,
                     vervallen,
@@ -1107,11 +1188,11 @@ table_registry = {
                     omschrijving,
                     bron_id,
                     woonplaats_id,
-                    STATUS
+                    status
                 ) (
                     SELECT
-                        nor.documentnummer AS document_nummer,
                         nor.documentdatum AS document_mutatie,
+                        nor.documentnummer AS document_nummer,
                         nor.begin_geldigheid AS begin_geldigheid,
                         nor.eind_geldigheid AS einde_geldigheid,
                         nor.identificatie AS id,
@@ -1120,20 +1201,20 @@ table_registry = {
                         CONCAT('0', type_code :: text) AS TYPE,
                         nor.naam AS naam,
                         nor.naam_nen AS naam_nen,
-                        NULL AS vervallen,
                         /* always null in ETL */
+                        NULL AS vervallen,
                         st_multi(nor.geometrie) AS geometrie,
                         nor.beschrijving_naam AS omschrijving,
-                        NULL AS bron_id,
                         /* always null in ETL */
-                        nor.woonplaats_identificatie AS woonplaats_id,
+                        NULL AS bron_id,
+                        nor.ligt_in_woonplaats_identificatie AS woonplaats_id,
                         nor.status_omschrijving AS STATUS
                     FROM
                         nor
                         INNER JOIN nw ON nw.identificatie = nor.ligt_in_woonplaats_identificatie
                         AND nw.volgnummer = nor.ligt_in_woonplaats_volgnummer
                         INNER JOIN ng ON nw.ligt_in_gemeente_identificatie = ng.identificatie
-                        AND nw.ligt_in_gemeente_volgnummer = ng.volgummer
+                        AND nw.ligt_in_gemeente_volgnummer = ng.volgnummer
                 );
         """
         ).format(
@@ -1159,14 +1240,1347 @@ table_registry = {
                         "nor",
                         extract_newest_stmt,
                         {
-                            "table": sql.Identifier("bag_openbareruimtes"),
                             "schema": sql.Identifier(SOURCE_SCHEMA),
+                            "table": sql.Identifier("bag_openbareruimtes"),
                         },
                     ),
                 ]
             ),
             source_schema=sql.Identifier(SOURCE_SCHEMA),
             target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
+    "bag_grootstedelijkgebied": [
+        sql.SQL(
+            """
+            INSERT INTO
+                {target_schema}.bag_grootstedelijkgebied (
+                    id,
+                    naam,
+                    gsg_type,
+                    geometrie,
+                    date_modified
+                ) (
+                    SELECT
+                        REPLACE(lower(naam || '_' || type), ' ', '-') AS id,
+                        naam AS naam,
+                        type AS gsg_type,
+                        st_multi(geometrie) AS geometrie,
+                        NOW() AS date_modified
+                    FROM
+                        {source_schema}.gebieden_grootstedelijke_projecten
+                );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+        )
+    ],
+    "bag_gebiedsgerichtwerken": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_gebiedsgerichtwerken (
+                    id,
+                    code,
+                    naam,
+                    date_modified,
+                    geometrie,
+                    stadsdeel_id
+                ) (
+                    SELECT
+                        newest_ggw.code AS id,
+                        newest_ggw.code AS code,
+                        newest_ggw.naam AS naam,
+                        NOW() AS date_modified,
+                        ST_Multi(newest_ggw.geometrie) AS geometrie,
+                        newest_stadsdelen.identificatie AS stadsdeel_id
+                    FROM
+                        newest_ggw
+                        INNER JOIN newest_stadsdelen ON newest_ggw.ligt_in_stadsdeel_identificatie = newest_stadsdelen.identificatie
+                        AND newest_stadsdelen.volgnummer = newest_ggw.ligt_in_stadsdeel_volgnummer
+                    WHERE newest_ggw.eind_geldigheid >= now() or newest_ggw.eind_geldigheid IS NULL
+                );
+    """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "newest_ggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "newest_stadsdelen",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_buurtcombinatie": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_buurtcombinatie (
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    id,
+                    naam,
+                    code,
+                    vollcode,
+                    brondocument_naam,
+                    brondocument_datum,
+                    ingang_cyclus,
+                    date_modified,
+                    geometrie,
+                    stadsdeel_id
+                ) (
+                    SELECT
+                        nb.begin_geldigheid AS begin_geldigheid,
+                        nb.eind_geldigheid AS einde_geldigheid,
+                        nb.identificatie AS id,
+                        nb.naam AS naam,
+                        nb.code AS code,
+                        nb.code AS vollcode,
+                        nb.documentnummer AS brondocument_naam,
+                        nb.documentdatum AS brondocument_datum,
+                        nb.begin_geldigheid AS ingang_cyclus,
+                        NOW() AS date_modified,
+                        ST_Multi(nb.geometrie) AS geometrie,
+                        ns.identificatie AS stadsdeel_id
+                    FROM
+                        nb
+                        INNER JOIN ns ON nb.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nb.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                    WHERE nb.eind_geldigheid IS NULL or nb.eind_geldigheid >= now()
+                );
+    """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_buurt": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_buurt (
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    geometrie,
+                    date_modified,
+                    id,
+                    code,
+                    vollcode,
+                    naam,
+                    vervallen,
+                    ingang_cyclus,
+                    brondocument_naam,
+                    brondocument_datum,
+                    buurtcombinatie_id,
+                    gebiedsgerichtwerken_id,
+                    stadsdeel_id
+                ) (
+                    SELECT
+                        nb.begin_geldigheid AS begin_geldigheid,
+                        nb.eind_geldigheid AS einde_geldigheid,
+                        ST_Multi(nb.geometrie) AS geometrie,
+                        NOW() AS date_modified,
+                        nb.identificatie AS id,
+                        nb.code AS code,
+                        nb.code AS vollcode,
+                        nb.naam AS naam,
+                        NULL AS vervallen,
+                        nb.begin_geldigheid AS ingang_cyclus,
+                        nb.documentnummer AS brondocument_naam,
+                        nb.documentdatum AS brondocument_datum,
+                        nb.ligt_in_wijk_identificatie AS buurtcombinatie_id,
+                        nggw.code AS gebiedsgerichtwerken_id,
+                        nggw.ligt_in_stadsdeel_identificatie AS stadsdeel_id
+                    FROM
+                        nb
+                        INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+                        AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+                        INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                    WHERE nb.eind_geldigheid IS NULL or nb.eind_geldigheid >= now()
+                );
+    """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_standplaats": [
+        standplaats_ligplaats_query.format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("bag_standplaats"),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "indicaties_onderzoeken",
+                        sql.SQL(
+                            """
+                            SELECT
+                                standplaatsen_identificatie AS identificatie,
+                                MAX(standplaatsen_volgnummer) AS volgnummer
+                            FROM
+                                {schema}.bag_standplaatsen_heeft_onderzoeken
+                            GROUP BY
+                                standplaatsen_identificatie
+                        """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nst",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_standplaatsen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ngp",
+                        sql.SQL(
+                            """SELECT
+                                    type,
+                                    naam, 
+                                    geometrie
+                                FROM {schema}.gebieden_grootstedelijke_projecten
+                            """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_ligplaats": [
+        standplaats_ligplaats_query.format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            target_table=sql.Identifier("bag_ligplaats"),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "indicaties_onderzoeken",
+                        sql.SQL(
+                            """
+                            SELECT
+                                ligplaatsen_identificatie AS identificatie,
+                                MAX(ligplaatsen_volgnummer) AS volgnummer
+                            FROM
+                                {schema}.bag_ligplaatsen_heeft_onderzoeken
+                            GROUP BY
+                                ligplaatsen_identificatie
+                        """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nst",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_ligplaatsen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ngp",
+                        sql.SQL(
+                            """SELECT
+                                    type,
+                                    naam, 
+                                    geometrie
+                                FROM {schema}.gebieden_grootstedelijke_projecten
+                            """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_verblijfsobject": [
+        sql.SQL(
+            """
+        WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_verblijfsobject (
+                    document_mutatie,
+                    document_nummer,
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    id,
+                    date_modified,
+                    landelijk_id,
+                    vervallen,
+                    indicatie_geconstateerd,
+                    indicatie_in_onderzoek,
+                    geometrie,
+                    bron_id,
+                    buurt_id,
+                    status,
+                    _openbare_ruimte_naam,
+                    _huisnummer,
+                    _huisletter,
+                    _huisnummer_toevoeging,
+                    _gebiedsgerichtwerken_id,
+                    _grootstedelijkgebied_id,
+                    oppervlakte,
+                    verdieping_toegang,
+                    aantal_eenheden_complex,
+                    bouwlagen,
+                    aantal_kamers,
+                    gebruiksdoel_gezondheidszorgfunctie,
+                    gebruiksdoel_woonfunctie,
+                    hoogste_bouwlaag,
+                    laagste_bouwlaag,
+                    reden_afvoer,
+                    reden_opvoer,
+                    eigendomsverhouding,
+                    gebruik,
+                    gebruiksdoel,
+                    toegang
+                ) (
+                    SELECT
+                        nst.documentdatum AS document_mutatie,
+                        nst.documentnummer AS document_nummer,
+                        nst.begin_geldigheid AS begin_geldigheid,
+                        nst.eind_geldigheid AS einde_geldigheid,
+                        nst.identificatie AS id,
+                        NOW() AS date_modified,
+                        nst.identificatie AS landelijk_id,
+                        0 AS vervallen,
+                        nst.geconstateerd AS indicatie_geconstateerd,
+                        (
+                            CASE
+                                WHEN indicaties_onderzoeken.identificatie IS NOT NULL THEN TRUE
+                                ELSE FALSE
+                            END
+                        ) AS indicatie_in_onderzoek,
+                        nst.geometrie AS geometrie,
+                        /* hardcoded to null in legacy ETL */
+                        NULL AS bron_id,
+                        nst.ligt_in_buurt_identificatie AS buurt_id,
+                        nst.status_omschrijving AS STATUS,
+                        NULL AS _openbare_ruimte_naam,
+                        NULL AS _huisnummer,
+                        NULL AS _huisletter,
+                        NULL AS _huisnummer_toevoeging,
+                        nggw.code AS _gebiedsgerichtwerken_id,
+                        REPLACE(lower(ggp.naam || '_' || ggp.type), ' ', '-') AS _grootstedelijkgebied_id,
+                        nst.oppervlakte AS oppervlakte,
+                        nst.verdieping_toegang AS verdieping_toegang,
+                        nst.aantal_eenheden_complex AS aantal_eenheden_complex,
+                        nst.aantal_bouwlagen AS bouwlagen,
+                        nst.aantal_kamers AS aantal_kamers,
+                        nst.gebruiksdoel_gezondheidszorgfunctie_omschrijving AS gebruiksdoel_gezondheidszorgfunctie,
+                        nst.gebruiksdoel_woonfunctie_omschrijving AS gebruiksdoel_woonfunctie,
+                        nst.hoogste_bouwlaag AS hoogste_bouwlaag,
+                        nst.laagste_bouwlaag AS laagste_bouwlaag,
+                        nst.redenafvoer_omschrijving AS reden_afvoer,
+                        nst.redenopvoer_omschrijving AS reden_opvoer,
+                        nst.eigendomsverhouding_omschrijving AS eigendomsverhouding,
+                        /* not derivable from refdb */
+                        NULL AS gebruik,
+                        COALESCE(gd.gebruiksdoelen, '{{}}'),
+                        COALESCE(tg.toegang, '{{}}')
+                    FROM
+                        nst
+                        INNER JOIN nb ON nst.ligt_in_buurt_identificatie = nb.identificatie
+                        AND nst.ligt_in_buurt_volgnummer = nb.volgnummer
+                        INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+                        AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+                        INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        LEFT JOIN indicaties_onderzoeken ON indicaties_onderzoeken.identificatie = nst.identificatie
+                        AND indicaties_onderzoeken.volgnummer = nst.volgnummer
+                        LEFT JOIN LATERAL (
+                            SELECT
+                                *
+                            FROM
+                                ngp
+                            WHERE
+                                ST_Contains(ngp.geometrie, nst.geometrie)
+                            LIMIT
+                                1
+                        ) ggp ON TRUE
+                        LEFT JOIN gd ON gd.parent_id = nst.id
+                        LEFT JOIN tg ON tg.parent_id = nst.id
+                );
+
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "indicaties_onderzoeken",
+                        sql.SQL(
+                            """
+                            SELECT
+                                verblijfsobjecten_identificatie AS identificatie,
+                                MAX(verblijfsobjecten_volgnummer) AS volgnummer
+                            FROM
+                                {schema}.bag_verblijfsobjecten_heeft_onderzoeken
+                            GROUP BY
+                                verblijfsobjecten_identificatie
+                        """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nst",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_verblijfsobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "gd",
+                        sql.SQL(
+                            """
+                            SELECT
+                                parent_id,
+                                array_agg(omschrijving) AS gebruiksdoelen
+                            FROM {schema}.bag_verblijfsobjecten_gebruiksdoel
+                            GROUP BY parent_id
+                        """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "tg",
+                        sql.SQL(
+                            """
+                            SELECT
+                                parent_id,
+                                array_agg(omschrijving) AS toegang
+                            FROM {schema}.bag_verblijfsobjecten_toegang
+                            GROUP BY parent_id
+                        """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ngp",
+                        sql.SQL(
+                            """SELECT
+                                    type,
+                                    naam, 
+                                    geometrie
+                                FROM {schema}.gebieden_grootstedelijke_projecten
+                            """
+                        ),
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_bouwblok": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO
+                {target_schema}.bag_bouwblok (
+                    begin_geldigheid,
+                    einde_geldigheid,
+                    geometrie,
+                    date_modified,
+                    id,
+                    code,
+                    ingang_cyclus,
+                    buurt_id
+                ) (
+                    SELECT
+                        nbb.begin_geldigheid AS begin_geldigheid,
+                        nbb.eind_geldigheid AS einde_geldigheid,
+                        ST_Multi(nbb.geometrie) AS geometrie,
+                        NOW() AS date_modified,
+                        nbb.identificatie AS id,
+                        nbb.code AS code,
+                        nbb.begin_geldigheid AS ingang_cyclus,
+                        nb.identificatie AS buurt_id
+                    FROM
+                        nbb
+                        INNER JOIN nb ON nbb.ligt_in_buurt_identificatie = nb.identificatie
+                        AND nbb.ligt_in_buurt_volgnummer = nb.volgnummer
+                        INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+                        AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+                        INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                        AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                        INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                        AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                        AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                    WHERE nbb.eind_geldigheid IS NULL or nbb.eind_geldigheid >= now()
+                );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nbb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_bouwblokken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_pand": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO {target_schema}.bag_pand (
+                document_mutatie,
+                document_nummer,
+                begin_geldigheid,
+                einde_geldigheid,
+                id,
+                landelijk_id,
+                bouwjaar,
+                laagste_bouwlaag,
+                hoogste_bouwlaag,
+                vervallen,
+                geometrie,
+                date_modified,
+                pandnaam,
+                bouwblok_id,
+                bouwlagen,
+                ligging,
+                type_woonobject,
+                status
+            ) (
+                SELECT
+                    nbp.documentdatum AS document_mutatie,
+                    nbp.documentnummer AS document_nummer,
+                    nbp.begin_geldigheid AS begin_geldigheid,
+                    nbp.eind_geldigheid AS einde_geldigheid,
+                    nbp.identificatie AS id,
+                    nbp.identificatie AS landelijk_id,
+                    nbp.oorspronkelijk_bouwjaar AS bouwjaar,
+                    nbp.laagste_bouwlaag AS laagste_bouwlaag,
+                    nbp.hoogste_bouwlaag AS hoogste_bouwlaag,
+                    NULL AS vervallen,
+                    ST_Multi(nbp.geometrie) AS geometrie,
+                    now() AS date_modified,
+                    nbp.naam AS pandnaam,
+                    nbp.ligt_in_bouwblok_identificatie AS bouwblok_id,
+                    nbp.aantal_bouwlagen AS bouwlagen,
+                    nbp.ligging_omschrijving AS ligging,
+                    nbp.type_woonobject AS type_woonobject,
+                    nbp.status_omschrijving AS status
+                FROM
+                    nbp
+                    INNER JOIN nbb ON nbp.ligt_in_bouwblok_identificatie = nbb.identificatie
+                    AND nbp.ligt_in_bouwblok_volgnummer = nbb.volgnummer
+                    INNER JOIN nb ON nbb.ligt_in_buurt_identificatie = nb.identificatie
+                    AND nbb.ligt_in_buurt_volgnummer = nb.volgnummer
+                    INNER JOIN nw ON nb.ligt_in_wijk_identificatie = nw.identificatie
+                    AND nb.ligt_in_wijk_volgnummer = nw.volgnummer
+                    INNER JOIN nggw ON nb.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                    AND nb.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                    AND nw.ligt_in_ggwgebied_volgnummer = nggw.volgnummer
+                    AND nw.ligt_in_ggwgebied_identificatie = nggw.identificatie
+                    INNER JOIN ns ON nggw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                    AND nggw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                    AND nw.ligt_in_stadsdeel_identificatie = ns.identificatie
+                    AND nw.ligt_in_stadsdeel_volgnummer = ns.volgnummer
+                WHERE nbp.eind_geldigheid IS NULL or nbp.eind_geldigheid >= now()
+            );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nbp",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_panden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nbb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_bouwblokken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_nummeraanduiding": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO {target_schema}.bag_nummeraanduiding (
+                document_mutatie,
+                document_nummer,
+                begin_geldigheid,
+                einde_geldigheid,
+                id,
+                landelijk_id,
+                huisnummer,
+                huisletter,
+                huisnummer_toevoeging,
+                postcode,
+                type,
+                vervallen,
+                date_modified,
+                bron_id,
+                ligplaats_id,
+                openbare_ruimte_id,
+                standplaats_id,
+                verblijfsobject_id,
+                type_adres,
+                status,
+                _openbare_ruimte_naam,
+                _geom
+            ) (
+                SELECT
+                nna.documentdatum AS document_mutatie,
+                nna.documentnummer AS document_nummer,
+                nna.begin_geldigheid AS begin_geldigheid,
+                nna.eind_geldigheid AS einde_geldigheid,
+                nna.identificatie AS id,
+                nna.identificatie AS landelijk_id,
+                nna.huisnummer AS huisnummer,
+                nna.huisletter AS huisletter,
+                nna.huisnummertoevoeging AS huisnummer_toevoeging,
+                nna.postcode AS postcode,
+                LPAD(nna.type_adresseerbaar_object_code::text, 2, '0') AS type,
+                NULL AS vervallen,
+                now() AS date_modified,
+                NULL AS bron_id,
+                nlg.identificatie AS ligplaats_id,
+                nor.identificatie AS openbare_ruimte_id,
+                nst.identificatie AS standplaats_id,
+                nvb.identificatie AS verblijfsobject_id,
+                nna.type_adres AS type_adres,
+                nna.status_omschrijving AS status,
+                NULL AS _openbare_ruimte_naam,
+                NULL AS _geom
+                FROM 
+                    nna
+                    INNER JOIN nor ON nor.identificatie = nna.ligt_aan_openbareruimte_identificatie
+                    AND nor.volgnummer = nna.ligt_aan_openbareruimte_volgnummer
+                    INNER JOIN nwo ON nwo.identificatie = nor.ligt_in_woonplaats_identificatie
+                    AND nwo.volgnummer = nor.ligt_in_woonplaats_volgnummer
+                    INNER JOIN ng ON nwo.ligt_in_gemeente_identificatie = ng.identificatie
+                    AND nwo.ligt_in_gemeente_volgnummer = ng.volgnummer
+                    /* FKs to standplaats, ligplaats or verblijfsobject are mutually exclusive  */
+                    LEFT JOIN nst ON nst.identificatie = nna.adresseert_standplaats_identificatie
+                    AND nst.volgnummer = nna.adresseert_standplaats_volgnummer
+                    LEFT JOIN nlg ON nlg.identificatie = nna.adresseert_ligplaats_identificatie
+                    AND nlg.volgnummer = nna.adresseert_ligplaats_volgnummer
+                    LEFT JOIN nvb ON nvb.identificatie = nna.adresseert_verblijfsobject_identificatie
+                    AND nvb.volgnummer = nna.adresseert_verblijfsobject_volgnummer
+                WHERE nna.eind_geldigheid IS NULL or nna.eind_geldigheid >= now()
+            );
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nna",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_nummeraanduidingen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ng",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_gemeentes"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nwo",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_woonplaatsen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nor",
+                        extract_newest_stmt,
+                        {
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                            "table": sql.Identifier("bag_openbareruimtes"),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nst",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_standplaatsen"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                    (
+                        "nvb",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_verblijfsobjecten"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                    (
+                        "nlg",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_ligplaatsen"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "bag_verblijfsobjectpandrelatie": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO {target_schema}.bag_verblijfsobjectpandrelatie (
+                date_modified,
+                pand_id,
+                verblijfsobject_id
+            ) (
+                SELECT
+                    NOW() AS date_modified,
+                    ligt_in_panden_identificatie AS pand_id,
+                    verblijfsobjecten_identificatie AS verblijfsobject_id
+                FROM 
+                    nbp 
+                    INNER JOIN {source_schema}.bag_verblijfsobjecten_ligt_in_panden m2m
+                    ON m2m.ligt_in_panden_id = nbp.id
+                    INNER JOIN nvb
+                    ON m2m.verblijfsobjecten_id = nvb.id
+            )
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nbb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_bouwblokken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "bp",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("bag_panden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nbp",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                bp AS cte
+                                INNER JOIN nbb ON cte.ligt_in_bouwblok_identificatie = nbb.identificatie
+                                AND cte.ligt_in_bouwblok_volgnummer = nbb.volgnummer
+                                {standard_joins}
+                            WHERE cte.eind_geldigheid IS NULL or cte.eind_geldigheid >= now()
+                        """
+                        ),
+                        {"standard_joins": standard_joins},
+                    ),
+                    (
+                        "nvb",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_verblijfsobjecten"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "brk_kadastraalobjectverblijfsobjectrelatie": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO {target_schema}.brk_kadastraalobjectverblijfsobjectrelatie (
+                date_modified,
+                kadastraal_object_id,
+                verblijfsobject_id
+            ) (
+                SELECT
+                    NOW() AS date_modified,
+                    kadastraleobjecten_identificatie AS kadastraal_object_id,
+                    hft_rel_mt_vot_identificatie AS verblijfsobject_id
+                FROM 
+                    nvb
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten_hft_rel_mt_vot m2m
+                    ON m2m.hft_rel_mt_vot_id = nvb.id
+                    INNER JOIN nko
+                    ON m2m.kadastraleobjecten_id = nko.id
+            )
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nko",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_kadastraleobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nvb",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_verblijfsobjecten"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                ]
+            ),
+        )
+    ],
+    "brk_zakelijkrechtverblijfsobjectrelatie": [
+        sql.SQL(
+            """
+            WITH {common_table_exprs}
+            INSERT INTO {target_schema}.brk_zakelijkrechtverblijfsobjectrelatie (
+                zakelijk_recht_id,
+                verblijfsobject_id
+            ) (
+                SELECT
+                    nz.identificatie AS zakelijk_recht_id,
+                    nvb.identificatie AS verblijfsobject_id
+                FROM 
+                    nvb
+                    INNER JOIN {source_schema}.brk_kadastraleobjecten_hft_rel_mt_vot m2m
+                    ON m2m.hft_rel_mt_vot_id = nvb.id
+                    INNER JOIN nko
+                    ON m2m.kadastraleobjecten_id = nko.id
+                    INNER JOIN nz
+                    ON nz.rust_op_kadastraalobject_id = nko.id
+            )
+        """
+        ).format(
+            source_schema=sql.Identifier(SOURCE_SCHEMA),
+            target_schema=sql.Identifier(TARGET_SCHEMA),
+            common_table_exprs=with_query_body(
+                [
+                    (
+                        "nko",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_kadastraleobjecten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nz",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("brk_zakelijkerechten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nb",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_buurten"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_wijken"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nggw",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_ggwgebieden"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "ns",
+                        extract_newest_stmt,
+                        {
+                            "table": sql.Identifier("gebieden_stadsdelen"),
+                            "schema": sql.Identifier(SOURCE_SCHEMA),
+                        },
+                    ),
+                    (
+                        "nvb",
+                        sql.SQL(
+                            """
+                            SELECT 
+                                cte.* 
+                            FROM 
+                                ({newest}) AS cte
+                                {standard_joins}
+                        """
+                        ),
+                        {
+                            "newest": extract_newest_stmt.format(
+                                schema=sql.Identifier(SOURCE_SCHEMA),
+                                table=sql.Identifier("bag_verblijfsobjecten"),
+                            ),
+                            "standard_joins": standard_joins,
+                        },
+                    ),
+                ]
+            ),
         )
     ],
 }
