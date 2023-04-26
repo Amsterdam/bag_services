@@ -75,21 +75,23 @@ if (BRANCH == "gob_only_imports") {
 
 if (BRANCH == "master") {
 
-    stage("Checkout") {
-        checkout scm
-    }
-
-    stage('Test') {
-        tryStep "test", {
-            sh ".jenkins-test/test.sh"
+    node {
+        stage("Checkout") {
+            checkout scm
         }
-    }
 
-    stage("Build image") {
-        tryStep "build", {
-                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-                def image = docker.build("datapunt/bag_v11:${env.BUILD_NUMBER}")
-                image.push()
+        stage('Test') {
+            tryStep "test", {
+                sh ".jenkins-test/test.sh"
+            }
+        }
+
+        stage("Build image") {
+            tryStep "build", {
+                    docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
+                    def image = docker.build("datapunt/bag_v11:${env.BUILD_NUMBER}")
+                    image.push()
+                }
             }
         }
     }
