@@ -18,24 +18,22 @@ def tryStep(String message, Closure block, Closure tearDown = null) {
     }
 }
 
-
-node {
-    stage("Checkout") {
-        checkout scm
-    }
-
-    stage('Test') {
-        tryStep "test", {
-            sh ".jenkins-test/test.sh"
-        }
-    }
-}
-
 String BRANCH = "${env.BRANCH_NAME}"
 
 if (BRANCH == "gob_only_imports") {
 
     node {
+
+        stage("Checkout") {
+            checkout scm
+        }
+
+        stage('Test') {
+            tryStep "test", {
+                sh ".jenkins-test/test.sh"
+            }
+        }
+
         stage("Build image") {
             tryStep "build", {
                 docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
@@ -77,11 +75,23 @@ if (BRANCH == "gob_only_imports") {
 
 if (BRANCH == "master") {
 
-    stage("Build image") {
-        tryStep "build", {
-                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-                def image = docker.build("datapunt/bag_v11:${env.BUILD_NUMBER}")
-                image.push()
+    node {
+        stage("Checkout") {
+            checkout scm
+        }
+
+        stage('Test') {
+            tryStep "test", {
+                sh ".jenkins-test/test.sh"
+            }
+        }
+
+        stage("Build image") {
+            tryStep "build", {
+                    docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
+                    def image = docker.build("datapunt/bag_v11:${env.BUILD_NUMBER}")
+                    image.push()
+                }
             }
         }
     }
