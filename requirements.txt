@@ -83,7 +83,7 @@ pytz==2018.9
 PyYAML==5.4
 requests==2.25.0
 rfc3986==1.2.0
-sentry-sdk==0.6.6
+sentry-sdk==1.14.0
 simplejson==3.16.0
 six==1.12.0
 sphinx-me==0.3
