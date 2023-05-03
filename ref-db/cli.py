@@ -2614,6 +2614,12 @@ parser.add_argument(
     help="If ommitted, only emit statements that would be executed to stdout",
     action="store_true",
 )
+parser.add_argument(
+    "-S",
+    "--show-tables",
+    help="Show bag_v11 tables and exit.",
+    action="store_true",
+)
 
 
 def main(tables: List[str], connection: Connection, execute: bool, delete: bool):
@@ -2645,6 +2651,10 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+    
+    if args.show_tables:
+        print("\n".join(table_registry))
+        sys.exit()
 
     with connect(
         database=args.database,
