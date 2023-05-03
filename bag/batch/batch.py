@@ -2,15 +2,17 @@ from __future__ import annotations
 
 import gc
 import logging
+from typing import Optional, List
 
 log = logging.getLogger(__name__)
 
 
-def execute(job: BasicJob):
+def execute(job: BasicJob, filter: Optional[List[str]]):
     log.info("Starting job: %s [%s]", job.name, job.__class__.__name__)
 
     for task in job.tasks():
-        _execute_task(task)
+        if not filter or getattr(task, "id_", None) in filter:
+            _execute_task(task)
 
     log.info("Finished job: %s: [%s]", job.name, job.__class__.__name__)
 
