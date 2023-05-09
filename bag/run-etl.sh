@@ -14,10 +14,12 @@
 FILENAME=$(realpath $0) 
 CURDIR=${FILENAME%/*} 
 
+dboptions="--host $DATABASE_HOST_OVERRIDE --user $DATABASE_USER --password $(cat $DATABASE_PW_LOCATION) --database $DATABASE_NAME"
+
 echo 'Truncating legacy schema tables'
-$CURDIR/ref-db/cli.py --delete
+$CURDIR/ref-db/cli.py --delete $dboptions
 echo 'Running data transfer from refdb to legacy schema'
-$CURDIR/ref-db/cli.py --execute
+$CURDIR/ref-db/cli.py --execute $dboptions
 
 echo 'Running denormalization task'
 $CURDIR/manage.py run_import --task-filter denormalize_vbo_standplaats_ligplaats
