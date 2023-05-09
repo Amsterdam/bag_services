@@ -2635,8 +2635,10 @@ def main(tables: List[str], connection: Connection, execute: bool, delete: bool)
             else:
                 statements = table_registry[table]
 
-            for statement in statements:
+            n_statements = len(statements)
+            for i, statement in enumerate(statements):
                 if execute:
+                    logger.info("Running (%d/%d) transfer for table %s", i, n_statements, table)
                     cursor.execute(statement)
                     logger.info("Inserted %d rows into %s", cursor.rowcount, table)
                     logger.info("status: %s", cursor.statusmessage)
