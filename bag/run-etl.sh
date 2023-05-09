@@ -11,6 +11,8 @@
 # TODO: Note that currently this will incur downtime since we are truncating and writing
 # directly to the target databases.
 
+set -e
+
 FILENAME=$(realpath $0) 
 CURDIR=${FILENAME%/*} 
 
