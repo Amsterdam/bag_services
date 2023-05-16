@@ -7,7 +7,7 @@ from typing import Optional, List
 log = logging.getLogger(__name__)
 
 
-def execute(job: BasicJob, filter: Optional[List[str]]):
+def execute(job: BasicJob, filter: Optional[List[str]] = None):
     log.info("Starting job: %s [%s]", job.name, job.__class__.__name__)
 
     for task in job.tasks():
