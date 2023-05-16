@@ -16,7 +16,7 @@ TABLE_TARGETS = [
     (110, 11, "bag_buurtcombinatie"),  # Temporary allow a bigger margin, until Weesp is added in production
     (22, 6, "bag_gebiedsgerichtwerken"),
     (2, 1, "bag_gemeente"),
-    (72, 8, "bag_grootstedelijkgebied"),
+    (84, 8, "bag_grootstedelijkgebied"),
     (3082, 0, "bag_ligplaats"),
     (540798, 0, "bag_nummeraanduiding"),
     (6650, 600, "bag_openbareruimte"),
