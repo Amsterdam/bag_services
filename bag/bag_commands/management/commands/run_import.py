@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     imports = dict(
         bag=[datasets.bag.batch.ImportBagJob],
-        brk=[],
+        brk=[datasets.brk.batch.ImportKadasterJob],
         gebieden=[],
     )
 
