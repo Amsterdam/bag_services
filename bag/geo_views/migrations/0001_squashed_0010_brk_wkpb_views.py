@@ -122,6 +122,7 @@ SELECT
   gg.naam                                                         AS naam,
   gg.geometrie                                                    AS geometrie,
   gg.naam                                                         AS display,
+  gg.gsg_type                                                     AS gsg_type,
   'gebieden/grootstedelijkgebied'::TEXT                           AS type,
   {} || 'gebieden/grootstedelijkgebied/' || gg.id || '/' AS uri
 FROM bag_grootstedelijkgebied gg
