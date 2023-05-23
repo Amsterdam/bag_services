@@ -1,0 +1,46 @@
+# Source: datadiensten/charts/bag/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-bag
+  labels:
+    app: bag-rest-api
+    helm.sh/chart: bag-0.1.0
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bag-rest-api
+      release: workload-bag
+  template:
+    metadata:
+      labels:
+        app: bag-rest-api
+        release: workload-bag
+        app.kubernetes.io/name: bag
+        app.kubernetes.io/instance: workload
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: bag-bag
+          image: "bag_services:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["uwsgi", "-i", "--python-autoreload", "/app/bag"]
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          envFrom:
+            - configMapRef:
+                name: workload-bag
+                optional: false
