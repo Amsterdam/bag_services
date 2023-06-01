@@ -1,4 +1,4 @@
-FROM amsterdam/python
+FROM amsterdam/python:3.9-bullseye
 MAINTAINER datapunt@amsterdam.nl
 
 ENV PYTHONUNBUFFERED 1
