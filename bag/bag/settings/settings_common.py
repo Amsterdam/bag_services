@@ -18,10 +18,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-insecure_key = 'insecure'
-SECRET_KEY = os.getenv('BAG_SECRET_KEY', insecure_key)
+SECRET_KEY = os.environ['BAG_SECRET_KEY']
 
-DEBUG = SECRET_KEY == insecure_key
+DEBUG = os.getenv("DEBUG", False)
 
 ALLOWED_HOSTS = ['*']
 
