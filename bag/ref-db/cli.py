@@ -84,6 +84,23 @@ TODO: other Denormalized fields on lig/standplaats/verblijfsobj
  General mappings:
  
  * spatial columns with mixed geometries are cast to their ST_Multi equivalent
+
+
+to be discusssed/done:
+* openbare ruimtes leaves less than half of the original distinct entries after the transfer. it
+  is possible that this is caused by older objects being excluded.
+* brk_kadastraleobjecten, extra filter on status = 'H'
+* load aantekeningen on zakelijkrechten into brk_aantekening
+* if brk_kadastraleobjecten ref db geometry is of type point then load it into point_geom in bagv11
+* 5 entries are not present in refdb gebieden_grootstedelijkeprojecten: 
+{'houthavens-wabo-od_od', 'koffiefabriek_gsp', 'groenehuyzen-blomwijckerpad_gsp', 'h-buurt_gsp', 'the-ox_gsp', 'ode-kavel-5a-b-en-6-wabo-od_od'}
+possible that they are new or that they have been added recently
+* bag_buurten has 1 direct and 1 transitive relation to ggw_gebieden, while the legacy data assumes a single ggwgebied.
+  This is solved in the same way as the previous bulletpoint: ggw from buurt is autoritative
+* entries in all bag tables with certain statuses must be filtered out. an exhaustive list willbe provided by BenK
+* bag_verblijfsobject.gebruik can not be derived from ref db (?). (is:WOZ.WOB.soortObject in source data)
+  --> Can be derived from woz dataset
+
 """
 
 import argparse

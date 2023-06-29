@@ -42,6 +42,7 @@ services:
       GOB_OBJECTSTORE_PASSWORD:
       GOB_OBJECTSTORE_ENV:
       DATAPUNT_API_URL:
+      BAG_SECRET_KEY: insecure
     command: >
       bash -c "/app/docker-import-db.sh"
 

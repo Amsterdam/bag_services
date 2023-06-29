@@ -1,0 +1,17 @@
+apiVersion: skaffold/v4beta5
+kind: Config
+metadata:
+  name: bag-services
+build:
+  artifacts:
+    - image: bag_services
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'bag/**/*.py'
+            dest: /app
+            strip: 'bag'
+manifests:
+  rawYaml:
+    - k8s/deployment.yaml
