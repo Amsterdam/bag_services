@@ -1486,8 +1486,6 @@ class ImportBagJob(batch.BasicJob):
 
     def __init__(self, **kwargs):
         gob_dir = settings.GOB_DIR
-        if not os.path.exists(gob_dir):
-            raise ValueError("GOB_DIR not found: {}".format(gob_dir))
 
         self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
         self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
