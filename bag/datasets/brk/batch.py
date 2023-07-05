@@ -778,7 +778,11 @@ class ImportZakelijkRechtVerblijfsobjectTask(batch.BasicTask):
 
 
 class ImportEigendommenTask(batch.BasicTask):
+    """this is actually not an import job but an ETL job
+    that combines already loaded tables into a new tables.
+    """
     name = "Create eigendommen informatiemodel"
+    id_ = "create_eigendommen_tables"
 
     def before(self):
         pass
@@ -815,14 +819,6 @@ class ImportKadasterJob(object):
 
     def __init__(self):
         gob_dir = settings.GOB_DIR
-        if not os.path.exists(gob_dir):
-            raise ValueError("GOB_DIR not found: {}".format(gob_dir))
-
-        self.gob_gebieden_path = os.path.join(gob_dir, 'gebieden/CSV_Actueel')
-        self.gob_gebieden_shp_path = os.path.join(gob_dir, 'gebieden/SHP')
-        self.gob_bag_path = os.path.join(gob_dir, 'bag/CSV_Actueel')
-
-
         self.brk = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_Actueel')
         self.brk_with_subj = os.path.join(gob_dir, 'brk/AmsterdamRegio/CSV_ActueelMetSubj')
         self.brk_shp = os.path.join(gob_dir, 'brk/AmsterdamRegio/SHP_Actueel')
