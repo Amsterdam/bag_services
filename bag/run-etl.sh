@@ -18,7 +18,13 @@ set -e
 FILENAME=$(realpath $0) 
 CURDIR=${FILENAME%/*} 
 
-dboptions="--host $DATABASE_HOST_OVERRIDE --user $DATABASE_USER --password $(cat $DATABASE_PW_LOCATION) --database $DATABASE_NAME"
+dboptions="$DATABASE_SCHEMA\
+ --host $DATABASE_HOST_OVERRIDE\
+ --user $DATABASE_USER\
+ --password $(cat $DATABASE_PW_LOCATION)\
+ --database $DATABASE_NAME\
+ --source-schema $1\
+ --target-schema $2"
 
 echo 'Truncating legacy schema tables'
 $CURDIR/ref-db/cli.py --delete $dboptions
