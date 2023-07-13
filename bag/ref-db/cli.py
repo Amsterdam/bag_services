@@ -576,7 +576,6 @@ class TableRegistry:
             "brk_kadastraalsubject": [  # also inserts brk_adres
                 sql.SQL(
                     """
-                CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
                 WITH ks_subquery AS (
                     INSERT INTO
                         {target_schema}.brk_kadastraalsubject (
