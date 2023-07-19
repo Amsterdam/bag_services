@@ -148,25 +148,23 @@ gob_file_age_list = {
     'bag/CSV_Actueel/BAG_verblijfsobject_Actueel.csv': 5,
     'bag/CSV_Actueel/BAG_woonplaats_Actueel.csv': 5,
     # brk
-
-    'brk/AmsterdamRegio/CSV_Actueel/BRK_Gemeente_': 365,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_aantekening_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_stukdeel_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_kadastraal_object_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_kadastraal_subject_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_aantekening_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_zakelijk_recht_': 35,
-    'brk/AmsterdamRegio/CSV_ActueelMetSubj/BRK_c_aard_zakelijkrecht_': 35,
-    'brk/AmsterdamRegio/CSV_Actueel/BRK_BRK_BAG_': 35,
+    'brk2/AmsterdamRegio/CSV_Actueel/BRK_Gemeente_': 365,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_aantekening_': 35,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_stukdeel_': 35,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_kadastraal_object_': 35,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_kadastraal_subject_': 35,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_zakelijk_recht_': 35,
+    'brk2/AmsterdamRegio/CSV_ActueelMetSubj/BRK_c_aard_zakelijkrecht_': 35,
+    'brk2/AmsterdamRegio/CSV_Actueel/BRK_BRK_BAG_': 35,
     # brk SHP
-    'brk/AmsterdamRegio/SHP_ActueelMetSubj/BRK_Adam_totaal_G.shp': 365,  # For now, set all max_age to 365
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_GEMEENTE.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE_L.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE_L.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_bijpijling.shp': 365,
-    'brk/AmsterdamRegio/SHP_Actueel/BRK_perceelnummer.shp': 365,
+    'brk2/AmsterdamRegio/SHP_ActueelMetSubj/BRK_Adam_totaal_G.shp': 365,  # For now, set all max_age to 365
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_GEMEENTE.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_KAD_GEMEENTE_L.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_KAD_SECTIE_L.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_bijpijling.shp': 365,
+    'brk2/AmsterdamRegio/SHP_Actueel/BRK_perceelnummer.shp': 365,
 }
 
 
@@ -229,4 +227,4 @@ if __name__ == "__main__":
     log.info("Start downloading files from objectstore")
     fetch_gob_files(environment, 'gebieden')
     fetch_gob_files(environment, 'bag')
-    fetch_gob_files(environment, 'brk')
+    fetch_gob_files(environment, 'brk2')
