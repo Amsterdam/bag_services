@@ -27,11 +27,11 @@ TABLE_TARGETS = [
     (535171, 0, "bag_verblijfsobject"),
     (536744, 0, "bag_verblijfsobjectpandrelatie"),
     (1, 20, "bag_woonplaats"),  # Er mogen meer woonplaatsen worden geleverd
-    (5, 0, "brk_aanduidingnaam"),  # Temporary allow 5 possible values instead of 4
-    (763500, 500000, "brk_aantekening"),  # Temporary very high margin, due to changes acc/prod
+    (4, 0, "brk_aanduidingnaam"),  # Temporary allow 5 possible values instead of 4
+    (85623, 500000, "brk_aantekening"),  # Temporary very high margin, due to changes acc/prod
     (72, 60, "brk_aardaantekening"),  # Temporary very high margin, due to changes acc/prod
     (12, 0, "brk_aardzakelijkrecht"),
-    (241614, 0, "brk_adres"),
+    (260078, 0, "brk_adres"),
     (1025311, 0, "brk_aperceelgperceelrelatie"),
     (7, 2, "brk_appartementsrechtssplitstype"),
     (8, 0, "brk_beschikkingsbevoegdheid"),
@@ -40,7 +40,7 @@ TABLE_TARGETS = [
     (345, 1, "brk_gemeente"),
     (3, 0, "brk_geslacht"),
     (655569, 0, "brk_kadastraalobject"),
-    (618682, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
+    (585553, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
     (367837, 0, "brk_kadastraalsubject"),
     (86, 0, "brk_kadastralegemeente"),
     (234, 20, "brk_kadastralesectie"),
