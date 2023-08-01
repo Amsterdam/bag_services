@@ -61,20 +61,34 @@ CREATE VIEW brk_eigenaar_overige_gemeente AS
     """,
     """
 CREATE VIEW brk_eigenaar_woningcorporatie AS
-    SELECT 6 as cat_id
-        , 'Woningbouwcorporaties'::varchar AS categorie
-        , ks.* FROM brk_kadastraalsubject ks
-    WHERE id IN ('NL.KAD.Persoon.252140640','NL.KAD.Persoon.503138989','NL.KAD.Persoon.499112361',
-       'NL.KAD.Persoon.172211115','NL.KAD.Persoon.478316430','NL.KAD.Persoon.11734470','NL.KAD.Persoon.519506319',
-       'NL.KAD.Persoon.462322843','NL.KAD.Persoon.422423013','NL.KAD.Persoon.122930769','NL.KAD.Persoon.122912658',
-       'NL.KAD.Persoon.172035933','NL.KAD.Persoon.308371616','NL.KAD.Persoon.202352911','NL.KAD.Persoon.326155554',
-       'NL.KAD.Persoon.11734470','NL.KAD.Persoon.172013595','NL.KAD.Persoon.172013435','NL.KAD.Persoon.172013404',
-       'NL.KAD.Persoon.172214610','NL.KAD.Persoon.11731803','NL.KAD.Persoon.311883303','NL.KAD.Persoon.199400597',
-       'NL.KAD.Persoon.252140640','NL.KAD.Persoon.402718637','NL.KAD.Persoon.198921986','NL.KAD.Persoon.260547779',
-       'NL.KAD.Persoon.172206338','NL.KAD.Persoon.172211115','NL.KAD.Persoon.333687163','NL.KAD.Persoon.197114580',
-       'NL.KAD.Persoon.122620316','NL.KAD.Persoon.172209052','NL.KAD.Persoon.172090014','NL.KAD.Persoon.459362889',
-       'NL.KAD.Persoon.406261333','NL.KAD.Persoon.172013385','NL.KAD.Persoon.331501954','NL.KAD.Persoon.260334994',
-       'NL.KAD.Persoon.184029003','NL.KAD.Persoon.197352789','NL.KAD.Persoon.172219833','NL.KAD.Persoon.172107996')
+SELECT 6                                as cat_id
+     , 'Woningbouwcorporaties'::varchar AS categorie
+     , ks.*
+FROM brk_kadastraalsubject ks
+WHERE id IN (
+             'NL.IMKAD.Persoon.11731803', 'NL.IMKAD.Persoon.11734470', 'NL.IMKAD.Persoon.11747036',
+             'NL.IMKAD.Persoon.122620316', 'NL.IMKAD.Persoon.122912658', 'NL.IMKAD.Persoon.122930769',
+             'NL.IMKAD.Persoon.146107091', 'NL.IMKAD.Persoon.146182900', 'NL.IMKAD.Persoon.172013385',
+             'NL.IMKAD.Persoon.172013404', 'NL.IMKAD.Persoon.172013409', 'NL.IMKAD.Persoon.172013435',
+             'NL.IMKAD.Persoon.172013441', 'NL.IMKAD.Persoon.172013454', 'NL.IMKAD.Persoon.172013482',
+             'NL.IMKAD.Persoon.172013486', 'NL.IMKAD.Persoon.172013595', 'NL.IMKAD.Persoon.172013649',
+             'NL.IMKAD.Persoon.172014792', 'NL.IMKAD.Persoon.172025281', 'NL.IMKAD.Persoon.172026574',
+             'NL.IMKAD.Persoon.172035933', 'NL.IMKAD.Persoon.172037130', 'NL.IMKAD.Persoon.172077902',
+             'NL.IMKAD.Persoon.172104184', 'NL.IMKAD.Persoon.172133521', 'NL.IMKAD.Persoon.172153866',
+             'NL.IMKAD.Persoon.172206338', 'NL.IMKAD.Persoon.172211115', 'NL.IMKAD.Persoon.172219833',
+             'NL.IMKAD.Persoon.184029003', 'NL.IMKAD.Persoon.184033020', 'NL.IMKAD.Persoon.197114580',
+             'NL.IMKAD.Persoon.197352789', 'NL.IMKAD.Persoon.198921986', 'NL.IMKAD.Persoon.199400597',
+             'NL.IMKAD.Persoon.202352911', 'NL.IMKAD.Persoon.260334994', 'NL.IMKAD.Persoon.260547779',
+             'NL.IMKAD.Persoon.326155554', 'NL.IMKAD.Persoon.331501954', 'NL.IMKAD.Persoon.333687163',
+             'NL.IMKAD.Persoon.402718637', 'NL.IMKAD.Persoon.421462790', 'NL.IMKAD.Persoon.462322843',
+             'NL.IMKAD.Persoon.475677303', 'NL.IMKAD.Persoon.478316430', 'NL.IMKAD.Persoon.485152644',
+             'NL.IMKAD.Persoon.486240372', 'NL.IMKAD.Persoon.499112361', 'NL.IMKAD.Persoon.503138989',
+             'NL.IMKAD.Persoon.519506319', 'NL.IMKAD.Persoon.528141723', 'NL.IMKAD.Persoon.541400782',
+             'NL.IMKAD.Persoon.557910973', 'NL.IMKAD.Persoon.571886022', 'NL.IMKAD.Persoon.252140640',
+             'NL.IMKAD.Persoon.422423013', 'NL.IMKAD.Persoon.308371616', 'NL.IMKAD.Persoon.172214610',
+             'NL.IMKAD.Persoon.311883303', 'NL.IMKAD.Persoon.172209052', 'NL.IMKAD.Persoon.172090014',
+             'NL.IMKAD.Persoon.459362889', 'NL.IMKAD.Persoon.406261333', 'NL.IMKAD.Persoon.172107996'
+    )
     """,
     """
 CREATE VIEW brk_eigenaar_vve AS
