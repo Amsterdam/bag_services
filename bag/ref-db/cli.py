@@ -192,7 +192,7 @@ def with_query_body(
     return sql.SQL(", ").join(
         [
             sql.SQL("{alias} AS ({cte})").format(
-                cte=cte.format(**{"limit": sql.Literal("ALL")} | kwargs),
+                cte=cte.format(**{"limit": sql.SQL("ALL")} | kwargs),
                 alias=sql.Identifier(alias),
             )
             for (alias, cte, kwargs) in ctes
@@ -2268,7 +2268,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_standplaatsen"),
-                                        limit=sql.Literal("ALL")
+                                        limit=sql.SQL("ALL")
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2308,7 +2308,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_ligplaatsen"),
-                                        limit=sql.Literal("ALL")
+                                        limit=sql.SQL("ALL")
                                     ),
                                     "standard_joins": standard_joins,
                                 },
