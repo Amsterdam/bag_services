@@ -2070,6 +2070,7 @@ class TableRegistry:
                                 {
                                     "table": sql.Identifier("bag_panden"),
                                     "schema": sql.Identifier(source_schema),
+                                    "limit": sql.Literal(5000)
                                 },
                             ),
                             (
