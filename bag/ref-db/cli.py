@@ -2732,13 +2732,14 @@ if __name__ == "__main__":
         print("\n".join(table_registry))
         sys.exit()
 
-    with LoggingConnection(
+    with connect(
         database=args.database,
         user=args.user,
         password=args.password,
         host=args.host,
         port=args.port,
         options=f"-c search_path={args.search_path}",
+        connection_factory=LoggingConnection
     ) as connection:
         connection.initialize(logger)
         main(
