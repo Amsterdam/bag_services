@@ -2023,7 +2023,7 @@ class TableRegistry:
                     ) (
                         SELECT
                             nbp.documentdatum AS document_mutatie,
-                            nbp.documentnummer AS document_nummer,
+                            left(nbp.documentnummer, 20) AS document_nummer,
                             nbp.begin_geldigheid AS begin_geldigheid,
                             nbp.eind_geldigheid AS einde_geldigheid,
                             nbp.identificatie AS id,
