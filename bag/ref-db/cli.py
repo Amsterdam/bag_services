@@ -149,6 +149,7 @@ extract_newest_stmt = sql.SQL(
                 identificatie
         ) AS newest ON newest.identificatie = attr.identificatie
         AND newest.volgnummer = attr.volgnummer
+    LIMIT {limit}
 """
 )
 
@@ -191,7 +192,7 @@ def with_query_body(
     return sql.SQL(", ").join(
         [
             sql.SQL("{alias} AS ({cte})").format(
-                cte=cte.format(**kwargs),
+                cte=cte.format(**{"limit": sql.Literal("ALL")} | kwargs),
                 alias=sql.Identifier(alias),
             )
             for (alias, cte, kwargs) in ctes
@@ -274,10 +275,11 @@ standplaats_ligplaats_query = sql.SQL(
     """
 )
 
+
 class TableRegistry:
     def __getitem__(self, k: str):
         return self.table_registry[k]
-    
+
     def __iter__(self):
         return iter(self.table_registry)
 
@@ -402,7 +404,8 @@ class TableRegistry:
                     target_schema=sql.Identifier(target_schema),
                     target_table=sql.Identifier("brk_aardaantekening"),
                     source_fields=sql.SQL(",").join(
-                        sql.Identifier("aard" + suffix) for suffix in ["_code", "_omschrijving"]
+                        sql.Identifier("aard" + suffix)
+                        for suffix in ["_code", "_omschrijving"]
                     ),
                     source_schema=sql.Identifier(source_schema),
                     source_table=sql.Identifier("brk_aantekeningenkadastraleobjecten"),
@@ -430,7 +433,9 @@ class TableRegistry:
                         sql.Identifier(x) for x in ["code", "omschrijving"]
                     ),
                     source_schema=sql.Identifier(source_schema),
-                    source_table=sql.Identifier("brk_kadastraleobjecten_soort_cultuur_bebouwd"),
+                    source_table=sql.Identifier(
+                        "brk_kadastraleobjecten_soort_cultuur_bebouwd"
+                    ),
                     transfer_pk=sql.Identifier("code"),
                 ),
             ],
@@ -1818,6 +1823,7 @@ class TableRegistry:
                                 {
                                     "table": sql.Identifier("bag_verblijfsobjecten"),
                                     "schema": sql.Identifier(source_schema),
+                                    "limit": 5000,
                                 },
                             ),
                             (
@@ -2637,7 +2643,7 @@ parser.add_argument(
     help="""
         Database names of the tables in bag_v11 to generate SQL for.
         If ommitted, generate SQL for all tables.
-    """
+    """,
 )
 parser.add_argument(
     "--delete", help="Truncate the specified tables in bag_v11", action="store_true"
@@ -2661,7 +2667,7 @@ def main(
     connection: Connection,
     execute: bool,
     delete: bool,
-    table_registry: TableRegistry
+    table_registry: TableRegistry,
 ):
     with connection.cursor() as cursor:
         for table in tables:
@@ -2708,13 +2714,12 @@ if __name__ == "__main__":
         password=args.password,
         host=args.host,
         port=args.port,
-        options=f'-c search_path={args.search_path}',
-
+        options=f"-c search_path={args.search_path}",
     ) as connection:
         main(
             args.tables or list(table_registry),
             connection,
             args.execute,
             args.delete,
-            table_registry
+            table_registry,
         )
