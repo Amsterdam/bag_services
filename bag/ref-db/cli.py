@@ -2031,7 +2031,7 @@ class TableRegistry:
                             nbp.laagste_bouwlaag AS laagste_bouwlaag,
                             nbp.hoogste_bouwlaag AS hoogste_bouwlaag,
                             NULL AS vervallen,
-                            ST_Multi(nbp.geometrie) AS geometrie,
+                            nbp.geometrie AS geometrie,
                             now() AS date_modified,
                             nbp.naam AS pandnaam,
                             nbp.ligt_in_bouwblok_identificatie AS bouwblok_id,
