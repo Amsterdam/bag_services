@@ -107,11 +107,11 @@ import argparse
 import logging
 import sys
 import time
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 from psycopg2 import connect, sql
+from psycopg2.extensions import connection as Connection
 from psycopg2.extras import LoggingConnection
-
 
 logger = logging.getLogger("refdb-loading-script")
 
@@ -2269,7 +2269,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_standplaatsen"),
-                                        limit=sql.SQL("ALL")
+                                        limit=sql.SQL("ALL"),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2289,7 +2289,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
-                                        limit=sql.Literal(5000)
+                                        limit=sql.Literal(5000),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2309,7 +2309,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_ligplaatsen"),
-                                        limit=sql.SQL("ALL")
+                                        limit=sql.SQL("ALL"),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2423,7 +2423,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
-                                        limit=sql.Literal(5000)
+                                        limit=sql.Literal(5000),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2513,7 +2513,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
-                                        limit=sql.Literal(5000)
+                                        limit=sql.Literal(5000),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2611,7 +2611,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
-                                        limit=sql.Literal(5000)
+                                        limit=sql.Literal(5000),
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2666,6 +2666,18 @@ parser.add_argument(
     help="Show bag_v11 tables and exit.",
     action="store_true",
 )
+parser.add_argument(
+    "-C",
+    "--chunksize",
+    type=int,
+    help="""
+        When given, enabled chunked transfer of the given size for large tables.
+        Large tables (given as names of input tables) are:
+            - bag_panden
+            - bag_verblijfsobjecten
+    """,
+)
+
 parser.add_argument("search_path")
 
 
@@ -2698,7 +2710,9 @@ def main(
                     cursor.execute(statement)
                     logger.info("Inserted %d rows into %s", cursor.rowcount, table)
                     logger.info("status: %s", cursor.statusmessage)
-                    logger.info("Transfer took {0:.2f} seconds", start_time - time.time())
+                    logger.info(
+                        "Transfer took {0:.2f} seconds", start_time - time.time()
+                    )
                 else:
                     sys.stdout.write(str(statement.as_string(cursor)))
                     sys.stdout.write("\n")
@@ -2708,7 +2722,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     table_registry = TableRegistry(args.source_schema, args.target_schema)
 
-    log_format = '%(levelname)s:%(asctime)s:%(name)s:%(message)s'
+    log_format = "%(levelname)s:%(asctime)s:%(name)s:%(message)s"
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
