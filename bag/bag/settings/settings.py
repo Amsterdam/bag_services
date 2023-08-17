@@ -18,7 +18,6 @@ from .checks import check_database  # noqa
 
 
 NO_INTEGRATION_TEST = os.getenv('NO_INTEGRATION_TEST', True)
-NO_INTEGATION_TEST = True
 
 # Application definition
 PARTIAL_IMPORT = dict(
