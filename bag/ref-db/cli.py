@@ -106,10 +106,11 @@ possible that they are new or that they have been added recently
 import argparse
 import logging
 import sys
+import time
 from typing import List, Tuple, Dict
 
 from psycopg2 import connect, sql
-from psycopg2.extensions import connection as Connection
+from psycopg2.extras import LoggingConnection
 
 
 logger = logging.getLogger("refdb-loading-script")
@@ -2690,12 +2691,14 @@ def main(
             n_statements = len(statements)
             for i, statement in enumerate(statements):
                 if execute:
+                    start_time = time.time()
                     logger.info(
                         "Running (%d/%d) transfer for table %s", i, n_statements, table
                     )
                     cursor.execute(statement)
                     logger.info("Inserted %d rows into %s", cursor.rowcount, table)
                     logger.info("status: %s", cursor.statusmessage)
+                    logger.info("Transfer took {0:.2f} seconds", start_time - time.time())
                 else:
                     sys.stdout.write(str(statement.as_string(cursor)))
                     sys.stdout.write("\n")
@@ -2705,6 +2708,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     table_registry = TableRegistry(args.source_schema, args.target_schema)
 
+    log_format = '%(levelname)s:%(asctime)s:%(name)s:%(message)s'
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -2714,7 +2718,7 @@ if __name__ == "__main__":
         print("\n".join(table_registry))
         sys.exit()
 
-    with connect(
+    with LoggingConnection(
         database=args.database,
         user=args.user,
         password=args.password,
@@ -2722,6 +2726,7 @@ if __name__ == "__main__":
         port=args.port,
         options=f"-c search_path={args.search_path}",
     ) as connection:
+        connection.initialize(logger)
         main(
             args.tables or list(table_registry),
             connection,
