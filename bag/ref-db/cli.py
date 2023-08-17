@@ -2268,6 +2268,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_standplaatsen"),
+                                        limit=sql.Literal("ALL")
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2287,6 +2288,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
+                                        limit=sql.Literal(5000)
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2306,6 +2308,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_ligplaatsen"),
+                                        limit=sql.Literal("ALL")
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2419,6 +2422,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
+                                        limit=sql.Literal(5000)
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2508,6 +2512,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
+                                        limit=sql.Literal(5000)
                                     ),
                                     "standard_joins": standard_joins,
                                 },
@@ -2605,6 +2610,7 @@ class TableRegistry:
                                     "newest": extract_newest_stmt.format(
                                         schema=sql.Identifier(source_schema),
                                         table=sql.Identifier("bag_verblijfsobjecten"),
+                                        limit=sql.Literal(5000)
                                     ),
                                     "standard_joins": standard_joins,
                                 },
