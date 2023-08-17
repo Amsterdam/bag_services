@@ -1823,7 +1823,7 @@ class TableRegistry:
                                 {
                                     "table": sql.Identifier("bag_verblijfsobjecten"),
                                     "schema": sql.Identifier(source_schema),
-                                    "limit": 5000,
+                                    "limit": sql.Literal(5000),
                                 },
                             ),
                             (
