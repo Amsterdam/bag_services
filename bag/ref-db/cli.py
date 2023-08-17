@@ -2711,7 +2711,7 @@ def main(
                     logger.info("Inserted %d rows into %s", cursor.rowcount, table)
                     logger.info("status: %s", cursor.statusmessage)
                     logger.info(
-                        "Transfer took {0:.2f} seconds", start_time - time.time()
+                        "Transfer took %d seconds", time.time() - start_time
                     )
                 else:
                     sys.stdout.write(str(statement.as_string(cursor)))
