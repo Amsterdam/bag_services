@@ -97,3 +97,4 @@ uritemplate==3.0.0
 urllib3==1.26.15
 websocket-client==0.54.0
 Werkzeug==2.2.3
+azure-identity==1.14.0
