@@ -44,7 +44,7 @@ TABLE_TARGETS = [
     (367837, 0, "brk_kadastraalsubject"),
     (86, 0, "brk_kadastralegemeente"),
     (234, 20, "brk_kadastralesectie"),
-    (390, 0, "brk_land"),  # Update with higher value due to anonymisation
+    (390, 150, "brk_land"),  # Update with higher value due to anonymisation / high margin diff acc and prod
     (22, 10, "brk_rechtsvorm"),
     (10, 20, "brk_soortgrootte"),  # Kadaster gaat nog meer soort soortgroottes opleveren
     (1038235, 0, "brk_zakelijkrecht"),
