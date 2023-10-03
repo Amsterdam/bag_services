@@ -94,6 +94,6 @@ texttable==1.5.0
 typing==3.6.6
 unicodecsv==0.14.1
 uritemplate==3.0.0
-urllib3==1.26.15
+urllib3==1.26.17
 websocket-client==0.54.0
 Werkzeug==2.2.3
