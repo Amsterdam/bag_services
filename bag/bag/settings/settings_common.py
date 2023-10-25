@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'authorization_django.authorization_middleware',
+    'apikeyclient.ApiKeyMiddleware',
 ]
 
 if DEBUG:

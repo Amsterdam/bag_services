@@ -1,3 +1,4 @@
+import json
 import sys
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -269,3 +270,12 @@ if SENTRY_DSN:
 # Define feature values for runtime dependent behaviour in parameters
 # 1 was already user earlier and might still be in use by dataportaal
 ENABLE_WEESP_TYPEAHEAD = 2
+
+APIKEY_MANDATORY = False
+APIKEY_ENDPOINT = os.getenv("APIKEY_ENDPOINT", "http://localhost:8001/signingkeys/")
+apikey_localkeys_env = os.getenv("APIKEY_LOCALKEYS", None)
+if apikey_localkeys_env is None:
+    APIKEY_LOCALKEYS = None
+else:
+    APIKEY_LOCALKEYS = json.loads(apikey_localkeys_env)
+
