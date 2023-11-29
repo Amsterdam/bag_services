@@ -25,3 +25,4 @@ ENV BAG_SECRET_KEY=insecure
 RUN ./manage.py collectstatic
 
 CMD /app/docker-entrypoint.sh
+#
