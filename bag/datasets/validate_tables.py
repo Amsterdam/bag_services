@@ -40,7 +40,7 @@ TABLE_TARGETS = [
     (345, 1, "brk_gemeente"),
     (3, 0, "brk_geslacht"),
     (655569, 0, "brk_kadastraalobject"),
-    (585553, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
+    (626497, 0, "brk_kadastraalobjectverblijfsobjectrelatie"),
     (367837, 0, "brk_kadastraalsubject"),
     (86, 0, "brk_kadastralegemeente"),
     (234, 20, "brk_kadastralesectie"),
