@@ -6,15 +6,15 @@ services:
       POSTGRES_PASSWORD: insecure
       POSTGRES_USER: bag_v11
 
-elasticsearch:
-  image: amsterdam/elasticsearch6
-  command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
+  elasticsearch:
+    image: amsterdam/elasticsearch6
+    command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
   tests:
     build: ..
-    links:
-      - database:database
-      - elasticsearch:elasticsearch
+    depends_on:
+      - database
+      - elasticsearch
     environment:
       DATABASE_NAME: bag_v11
       DATABASE_USER: bag_v11
