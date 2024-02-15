@@ -18,84 +18,33 @@ def tryStep(String message, Closure block, Closure tearDown = null) {
     }
 }
 
-node {
-    stage("Checkout") {
-        checkout scm
-    }
-
-    stage('Test') {
-        tryStep "test", {
-            sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml pull && " +
-               "docker compose -p bag_services -f .jenkins-test/docker-compose.yml build && " +
-               "docker compose -p bag_services -f .jenkins-test/docker-compose.yml run -u root --rm tests"
-        }, {
-            sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml down"
-        }
-    }
-
-    stage("Build image") {
-        tryStep "build", {
-                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-                def image = docker.build("datapunt/bag_services:${env.BUILD_NUMBER}", ".")
-                image.push()
-            }
-        }
-    }
-}
-
 String BRANCH = "${env.BRANCH_NAME}"
 
-if (BRANCH == "gob_only_imports") {
-
+if (BRANCH != "master") {
     node {
-
         stage("Checkout") {
             checkout scm
         }
 
         stage('Test') {
             tryStep "test", {
-                sh ".jenkins-test/test.sh"
+                sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml pull && " +
+                   "docker compose -p bag_services -f .jenkins-test/docker-compose.yml build && " +
+                   "docker compose -p bag_services -f .jenkins-test/docker-compose.yml run -u root --rm tests"
+            }, {
+                sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml down"
             }
         }
 
         stage("Build image") {
             tryStep "build", {
-                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-                    def image = docker.build("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
+                    docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
+                    def image = docker.build("datapunt/bag_services:${env.BUILD_NUMBER}", ".")
                     image.push()
                 }
             }
         }
-
-        stage('Push acceptance image') {
-            tryStep "image tagging", {
-                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-                    def image = docker.image("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
-                    image.pull()
-                    image.push("acceptance")
-                }
-            }
-        }
     }
-
-//    stage('Waiting for approval') {
-//        slackSend channel: '#ci-channel', color: 'warning', message: 'BAG is waiting for Production Release - please confirm'
-//        input "Deploy to Production?"
-//    }
-//
-//    node {
-//        stage('Push production image') {
-//            tryStep "image tagging", {
-//                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
-//                def image = docker.image("datapunt/bag_gobonly:${env.BUILD_NUMBER}")
-//                    image.pull()
-//                    image.push("production")
-//                    image.push("latest")
-//                }
-//            }
-//        }
-//    }
 }
 
 if (BRANCH == "master") {
