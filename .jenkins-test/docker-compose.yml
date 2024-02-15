@@ -1,23 +1,25 @@
-database:
-  image: amsterdam/postgres11
-  environment:
-    POSTGRES_PASSWORD: insecure
-    POSTGRES_USER: bag_v11
+version: "3.0"
+services:
+  database:
+    image: amsterdam/postgres12
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: bag_v11
 
 elasticsearch:
   image: amsterdam/elasticsearch6
   command: elasticsearch -Ehttp.host=0.0.0.0 -Etransport.host=127.0.0.1
 
-tests:
-  build: ..
-  links:
-    - database:database
-    - elasticsearch:elasticsearch
-  environment:
-    DATABASE_NAME: bag_v11
-    DATABASE_USER: bag_v11
-    DATABASE_PASSWORD: insecure
-    BAG_OBJECTSTORE_PASSWORD:
-    BAG_SECRET_KEY: insecure
-    METADATA_URL: ""
-  command: bash -c "/app/docker-wait.sh && python manage.py test --noinput"
+  tests:
+    build: ..
+    links:
+      - database:database
+      - elasticsearch:elasticsearch
+    environment:
+      DATABASE_NAME: bag_v11
+      DATABASE_USER: bag_v11
+      DATABASE_PASSWORD: insecure
+      BAG_OBJECTSTORE_PASSWORD:
+      BAG_SECRET_KEY: insecure
+      METADATA_URL: ""
+    command: bash -c "/app/docker-wait.sh && python manage.py test --noinput"
