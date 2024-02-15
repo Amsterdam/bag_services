@@ -18,6 +18,31 @@ def tryStep(String message, Closure block, Closure tearDown = null) {
     }
 }
 
+node {
+    stage("Checkout") {
+        checkout scm
+    }
+
+    stage('Test') {
+        tryStep "test", {
+            sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml pull && " +
+               "docker compose -p bag_services -f .jenkins-test/docker-compose.yml build && " +
+               "docker compose -p bag_services -f .jenkins-test/docker-compose.yml run -u root --rm tests"
+        }, {
+            sh "docker compose -p bag_services -f .jenkins-test/docker-compose.yml down"
+        }
+    }
+
+    stage("Build image") {
+        tryStep "build", {
+                docker.withRegistry("${DOCKER_REGISTRY_HOST}",'docker_registry_auth') {
+                def image = docker.build("datapunt/bag_services:${env.BUILD_NUMBER}", ".")
+                image.push()
+            }
+        }
+    }
+}
+
 String BRANCH = "${env.BRANCH_NAME}"
 
 if (BRANCH == "gob_only_imports") {
