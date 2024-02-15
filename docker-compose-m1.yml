@@ -2,7 +2,7 @@ version: '3.0'
 services:
 
   database:
-    image: amsterdam/postgres11
+    image: amsterdam/postgres12
     ports:
       - "5434:5432"
     environment:
