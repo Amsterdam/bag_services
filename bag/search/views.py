@@ -305,6 +305,7 @@ def _get_url(request, hit):
 
     #  if fallback also undefined:
     if detail_type not in _details:
+        log.exception("detail_type: `%s`, hit.meta: `%s`", detail_type, hit.meta)
         raise ValueError('Cannot create self url %s %s', doc_type, hit.subtype)
 
     if detail_type in ('ligplaats', 'standplaats', 'verblijfsobject'):
