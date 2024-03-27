@@ -25,7 +25,7 @@ TABLE_TARGETS = [
     (339, 0, "bag_standplaats"),
     (2, 0, "bag_unesco"),
     (535171, 0, "bag_verblijfsobject"),
-    (536744, 0, "bag_verblijfsobjectpandrelatie"),
+    (563635, 0, "bag_verblijfsobjectpandrelatie"),
     (1, 20, "bag_woonplaats"),  # Er mogen meer woonplaatsen worden geleverd
     (4, 0, "brk_aanduidingnaam"),  # Temporary allow 5 possible values instead of 4
     (85623, 500000, "brk_aantekening"),  # Temporary very high margin, due to changes acc/prod
