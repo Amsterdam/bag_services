@@ -48,7 +48,7 @@ def postcode_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> Sea
             },
         },
         indexes=[NUMMERAANDUIDING],
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword']
+        sort_fields=[{'straatnaam.raw': {'unmapped_type': 'long'}}, 'huisnummer', 'toevoeging.keyword']
     )
 
 
@@ -67,7 +67,7 @@ def postcode_huisnummer_exact_query(analyzer: QueryAnalyzer) -> Search:
                 Q('term', huisnummer=huisnummer)
             ],
         ),
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
+        sort_fields=[{'straatnaam.raw': {'unmapped_type': 'long'}}, 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING],
         size=1
     )
@@ -261,7 +261,8 @@ def straatnaam_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
 
     return create_search_query(
         query=query,
-        sort_fields=['straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
+        sort_fields=[
+            {'straatnaam.raw': {'unmapped_type': 'long'}}, 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING]
     )
 
@@ -280,7 +281,7 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> S
             'should': [
                 {
                     'match': {
-                        'straatnaam_keyword': straat
+                        'straatnaam_keyword': straat,
                     }
                 },
                 {
@@ -309,7 +310,8 @@ def straatnaam_huisnummer_query(analyzer: QueryAnalyzer, features: int = 0) -> S
 
     return create_search_query(
         query=query,
-        sort_fields=['_score', 'straatnaam.raw', 'huisnummer', 'toevoeging.keyword'],
+        sort_fields=['_score', 
+            {'straatnaam.raw': {'unmapped_type': 'long'}}, 'huisnummer', 'toevoeging.keyword'],
         indexes=[NUMMERAANDUIDING],
         search_type="dfs_query_then_fetch"
     )
