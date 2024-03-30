@@ -81,7 +81,7 @@ def bouwblok_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
                 "code": analyzer.get_bouwblok()
             },
         },
-        sort_fields=['code.keyword'],
+        sort_fields=[{'code.keyword': {'unmapped_type': 'long'}}],
         indexes=[BAG_BOUWBLOK],
     )
 
@@ -99,7 +99,7 @@ def postcode_query(analyzer: QueryAnalyzer, features: int = 0) -> Search:
                 Q('term', subtype='weg'),
             ],
         ),
-        sort_fields=['naam.keyword'],
+        sort_fields=[{'naam.keyword': {'unmapped_type': 'long'}}],
         indexes=[BAG_GEBIED]
     )
 

@@ -79,7 +79,7 @@ def kadastraal_object_query(analyzer: QueryAnalyzer, features: int = 0) -> Searc
 
     return create_search_query(
         query=Q('bool', must=must),
-        sort_fields=['aanduiding.raw'],
+        sort_fields=[{'aanduiding.raw': {'unmapped_type': 'long'}}],
         indexes=[BRK_OBJECT],
     )
 
@@ -102,7 +102,7 @@ def kadastraal_subject_query(analyzer: QueryAnalyzer) -> Search:
                 Q('term', subtype='kadastraal_subject'),
             ]
         ),
-        sort_fields=['naam.raw'],
+        sort_fields=[{'naam.raw': {'unmapped_type': 'long'}}],
         indexes=[BRK_SUBJECT],
     )
 
@@ -130,6 +130,6 @@ def kadastraal_subject_nietnatuurlijk_query(
                 Q('term', subtype='kadastraal_subject'),
             ]
         ),
-        sort_fields=['naam.raw'],
+        sort_fields=[{'naam.raw': {'unmapped_type': 'long'}}],
         indexes=[BRK_SUBJECT],
     )
