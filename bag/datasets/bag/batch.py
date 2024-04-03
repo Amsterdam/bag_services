@@ -1536,6 +1536,19 @@ class ImportBagJob(batch.BasicJob):
             UpdateGrootstedelijkAttributenTask(),
         ]
 
+class DenormalizeBagJob(batch.BasicJob):
+    name = "Denormalize BAG data"
+
+
+    def tasks(self):
+
+        return [
+            # some sql copying fields
+            DenormalizeDataTask(),
+            # more denormalizing sql
+            UpdateGebiedenAttributenTask(),
+            UpdateGrootstedelijkAttributenTask(),
+        ]
 
 class IndexBagJob(batch.BasicJob):
     name = "Delete and Fill Nummeraanduiding search-index"
