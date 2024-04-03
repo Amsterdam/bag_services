@@ -122,7 +122,8 @@ class ImportIndexTask(object):
                 client,
                 self.convert_model_to_dict(qs),
                 raise_on_error=True,
-                refresh=True
+                refresh=True,
+                request_timeout=settings.ELASTIC_INDEXING_TIMEOUT_SECONDS
             )
 
         # When testing put all docs in one shard to make sure we have
