@@ -104,6 +104,8 @@ ELASTIC_INDICES = {
     'BAG_PAND': 'bag_v11_pand',
 }
 
+ELASTIC_INDEXING_TIMEOUT_SECONDS = int(os.getenv('ELASTIC_INDEXING_TIMEOUT_SECONDS', 60))
+
 TESTING = 'pytest' in sys.modules or (len(sys.argv) > 1 and sys.argv[1] == 'test')
 if TESTING:
     for k, v in ELASTIC_INDICES.items():
