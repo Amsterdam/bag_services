@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 # import sys
 
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -59,8 +63,10 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'authorization_django.authorization_middleware',
-    'apikeyclient.ApiKeyMiddleware',
 ]
+
+if str2bool(os.getenv("APIKEY_ENABLED", "false")):
+    MIDDLEWARE.append("apikeyclient.ApiKeyMiddleware")
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar', 'elastic_panel']
