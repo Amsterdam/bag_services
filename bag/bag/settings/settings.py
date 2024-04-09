@@ -116,16 +116,8 @@ BATCH_SETTINGS = dict(
 )
 
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    '.localdomain',
-    '.data.amsterdam.nl',
-    'bag-api.service.consul',
-    'bag_v11-api.service.consul',
-    '.amsterdam.nl',
-    '.service.consul',
-]
+# Just allow all, like we do for DSO
+ALLOWED_HOSTS = ["*"]
 
 REST_FRAMEWORK = dict(
     PAGE_SIZE=25,
