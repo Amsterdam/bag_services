@@ -96,12 +96,12 @@ ELASTIC_SEARCH_HOSTS = ["{}:{}".format(
 
 
 ELASTIC_INDICES = {
-    'BAG_GEBIED': 'bag_v11_gebied',
-    'BAG_BOUWBLOK': 'bag_v11_bouwblok',
-    'BRK_OBJECT': 'brk_v11_object',
-    'BRK_SUBJECT': 'brk_v11_subject',
-    'NUMMERAANDUIDING': 'v11_nummeraanduiding',
-    'BAG_PAND': 'bag_v11_pand',
+    'BAG_GEBIED': os.getenv('BAG_GEBIED', 'bag_v11_gebied'),
+    'BAG_BOUWBLOK': os.getenv('BAG_BOUWBLOK', 'bag_v11_bouwblok'),
+    'BRK_OBJECT': os.getenv('BRK_OBJECT', 'brk_v11_object'),
+    'BRK_SUBJECT': os.getenv('BRK_SUBJECT', 'brk_v11_subject'),
+    'NUMMERAANDUIDING': os.getenv('NUMMERAANDUIDING', 'v11_nummeraanduiding'),
+    'BAG_PAND': os.getenv('BAG_PAND', 'bag_v11_pand'),
 }
 
 ELASTIC_INDEXING_TIMEOUT_SECONDS = int(os.getenv('ELASTIC_INDEXING_TIMEOUT_SECONDS', 60))
