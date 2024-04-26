@@ -7,7 +7,7 @@ from django.db.models import BigIntegerField, F
 from django.db.models.functions import Cast
 from elasticsearch import helpers
 from elasticsearch.client import IndicesClient
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch.exceptions import NotFoundError, RequestError
 from elasticsearch_dsl.connections import connections
 
 from datasets.generic.database import count_qs
@@ -49,7 +49,13 @@ class DeleteIndexTask(object):
         for dt in self.doc_types:
             idx.doc_type(dt)
 
-        idx.create()
+        try:
+            idx.create()
+        except RequestError as e:
+            if 'resource_already_exists_exception' in str(e.info['error']):
+                pass
+            else:
+                raise
 
 
 class ImportIndexTask(object):
