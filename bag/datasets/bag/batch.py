@@ -971,6 +971,11 @@ class IndexWoonplaatsTask(index.ImportIndexTask):
 
 class IndexNummerAanduidingTask(index.ImportIndexTask):
     name = "index nummer aanduidingen"
+
+    # @Robbie Als je lokaal de bag gaat indexeren kun je hier
+    # evt. bijv. een `.filter(type='02')` aan toevoegen
+    # dan kun je data overslaan die op dat moment niet relevant is.
+    # en dus sneller debuggen.
     queryset = models.Nummeraanduiding.objects.\
         prefetch_related(
             'verblijfsobject',

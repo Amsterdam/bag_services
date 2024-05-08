@@ -237,6 +237,10 @@ def get_centroid(geom, transform=None):
     if not geom:
         return None
 
+    # @Robbie: Let hier goed op! Het zou best eens kunnen zijn
+    # dat de transform hier ook misgaat op de lat/lon verwisseling
+    # Daar zou dus dezelfde "fix" als in de dataselectie op 
+    # kunnen worden toegepast.
     result = geom.centroid
     if transform:
         result.transform(transform)
@@ -251,6 +255,7 @@ def add_verblijfsobject(doc, vo: models.Verblijfsobject):
 
 
 def add_standplaats(doc, sp: models.Standplaats):
+
     if sp:
         doc.centroid = get_centroid(sp.geometrie, 'wgs84')
         doc.subtype_id = sp.id
@@ -306,6 +311,11 @@ def from_nummeraanduiding_ruimte(n: models.Nummeraanduiding) -> Nummeraanduiding
     # if not doc.subtype:
     #    return doc
 
+    # @Robbie: Hier ging het dus mis. de `get_type_display()`
+    # haalt de display waarde (de string) `type` veld van de nummeraanduiding
+    # op. Maar, omdat die niet klopt, werd er een None waarde meegegeven
+    # aan resp. `add_standplaats` en `add_ligplaats`
+    # Daardoor werd er geen `centroid` waarde berekend.
     doc.subtype = n.get_type_display().lower()
 
     if doc.subtype == 'verblijfsobject':

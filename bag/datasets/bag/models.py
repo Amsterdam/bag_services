@@ -333,9 +333,20 @@ class Nummeraanduiding(mixins.GeldigheidMixin, mixins.DocumentStatusMixin, model
     http://www.amsterdam.nl/stelselpedia/bag-index/catalogus-bag/objectklasse-2/
     """
 
+    # @Robbie De waarden voor standplaats en ligplaats lijken te zijn omgedraaid.
+    # Ik heb dat inmiddels aangepast naar de waarden die volgens Jeroen Riemens kloppen.
+    # nml ligplaats = 02 en standplaats is 03
+    # Zie zit dit ook terug in de tabel bag_nummeraanduidingen en dan de foreign keys
+    # naar standplaats en ligplaats. Die foreig keys starten met 036302 voor ligplaatsen
+    # en 036303 voor standplaatsen
+    # Deze verwisseling zorgde ervoor dat er geen correct centroid werd berekend.
+    # De vraag is waarom dit op cloudvps nooit een probleem is geweest.
+    # Ik vermoed dat dit komt, omdat op cloudvps dit Nummeraanduiding model ook tijdens
+    # het importeren van de data werd gebruikt. Daarmee werd denk ik het effect van de fout weer
+    # opgeheven.
     OBJECT_TYPE_VERBLIJFSOBJECT = '01'
-    OBJECT_TYPE_STANDPLAATS = '02'
-    OBJECT_TYPE_LIGPLAATS = '03'
+    OBJECT_TYPE_STANDPLAATS = '03'
+    OBJECT_TYPE_LIGPLAATS = '02'
     OBJECT_TYPE_OVERIG_GEBOUWD = '04'
     OBJECT_TYPE_OVERIG_TERREIN = '05'
 
