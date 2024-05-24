@@ -19,9 +19,9 @@ function usage() {
 function run_index() {
   for num in $(seq 1 $parts); do
     until [ "$n" -ge "$retries" ]; do
+      echo attempt: $n
       python manage.py elastic_indices $dataset --partial=$num/$parts --build && echo "Succes" && break || echo "failed"
       n=$((n+1))
-      echo attempt: $((n+1))
       sleep 1s
     done
   done
