@@ -6,7 +6,9 @@ set -e
 
 dataset=$1
 parts=$2
+retries=3
 re='^[0-9]+$'
+n=0
 
 function usage() {
     echo "ERROR: Missing or invalid arguments!"
@@ -16,9 +18,15 @@ function usage() {
 
 function run_index() {
   for num in $(seq 1 $parts); do
-    echo -e "python manage.py elastic_indices $dataset --partial=$num/$parts --build"
+    until [ "$n" -ge "$retries" ]; do
+      python manage.py elastic_indices $dataset --partial=$num/$parts --build && echo "Succes" && break || echo "failed"
+      n=$((n+1))
+      echo attempt: $((n+1))
+      sleep 1s
+    done
   done
 }
+
 
 # Check if the right number of arguments were passed
 if [[ "$#" -eq 2 ]]; then
