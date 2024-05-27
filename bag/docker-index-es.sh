@@ -1,19 +1,52 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# Usage:
+# ./es-indexing.sh <dataset> <nr of parts>
+# es-indexing.sh gebieden 1
+set -e
 
-set -u   # crash on missing environment variables
-set -e   # stop on any error
-set -x   # log every command.
+dataset=$1
+parts=$2
+retries=3
+re='^[0-9]+$'
+n=0
 
-# clear elasticindices and creates empty ones
-# It seems that this step is essential to get the correct mapping
-# for the indexes!
-python manage.py elastic_indices --delete
+# loop over netcat to see open psql & eslastic established connection(s)
+#source docker-wait.sh
 
-python manage.py elastic_indices gebieden pand --build
+function usage() {
+    echo "ERROR: Missing or invalid arguments!"
+    echo "Usage: $0 [dataset] [parts]"
+    exit 0
+}
 
-python manage.py elastic_indices bag --partial=1/3 --build 
-python manage.py elastic_indices bag --partial=2/3 --build 
-python manage.py elastic_indices bag --partial=3/3 --build 
-python manage.py elastic_indices brk --partial=1/3 --build 
-python manage.py elastic_indices brk --partial=2/3 --build 
-python manage.py elastic_indices brk --partial=3/3 --build 
+function rm_index() {
+    echo "Deleting elastic indexes!"
+    python manage.py elastic_indices --delete
+    exit 0
+}
+
+
+function run_index() {
+  for num in $(seq 1 $parts); do
+    until [ "$n" -ge "$retries" ] && exit 1; do
+      echo attempt: $((n+1))
+      python manage.py elastic_indices $dataset --partial=$num/$parts --build && echo "Succes" && break || echo "failed"
+      n=$((n+1))
+      sleep 1s
+    done
+  done
+}
+
+
+# Check if the right number of arguments were passed
+if [[ $1 == "delete" ]]; then
+    rm_index
+elif [[ "$#" -eq 2 ]]; then
+  if [[ $2 == ?(-)+([0-9]) ]]; then
+    run_index
+  else
+    usage
+  fi
+else
+  usage
+fi
