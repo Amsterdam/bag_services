@@ -28,9 +28,9 @@ function rm_index() {
 
 function run_index() {
   for num in $(seq 1 $parts); do
-    until [ "$n" -ge "$retries" ]; do
+    until [ "$n" -ge "$retries" ] && exit 1; do
       echo attempt: $((n+1))
-      python manage.py elastic_indices $dataset --partial=$num/$parts --build && echo "Succes" && break || echo "failed" && exit 1
+      python manage.py elastic_indices $dataset --partial=$num/$parts --build && echo "Succes" && break || echo "failed"
       n=$((n+1))
       sleep 1s
     done
