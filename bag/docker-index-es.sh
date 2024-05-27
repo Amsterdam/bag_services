@@ -11,7 +11,7 @@ re='^[0-9]+$'
 n=0
 
 # loop over netcat to see open psql & eslastic established connection(s)
-source docker-wait.sh
+#source docker-wait.sh
 
 function usage() {
     echo "ERROR: Missing or invalid arguments!"
