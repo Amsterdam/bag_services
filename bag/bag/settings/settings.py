@@ -1,6 +1,9 @@
 import json
 import sys
 import sentry_sdk
+import logging 
+from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from bag.settings.settings_common import *  # noqa F403
@@ -273,3 +276,39 @@ if apikey_localkeys_env is None:
 else:
     APIKEY_LOCALKEYS = json.loads(apikey_localkeys_env)
 
+
+APPLICATIONINSIGHTS_CONNECTION_STRING = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+from opentelemetry.instrumentation.django import DjangoInstrumentor
+if APPLICATIONINSIGHTS_CONNECTION_STRING is not None:
+    configure_azure_monitor(
+        logger_name="root",
+        instrumentation_options={
+            "azure_sdk": {"enabled": False},
+            "django": {"enabled": False},
+            "fastapi": {"enabled": False},
+            "flask": {"enabled": False}, 
+            "psycopg2": {"enabled": False},
+            "requests": {"enabled": False},
+            "urllib": {"enabled": False},
+            "urllib3": {"enabled": False},
+        },
+        resource=Resource.create({SERVICE_NAME: "bag_services"}),
+    )
+
+    # Enable the Python logger
+    logger = logging.getLogger("root")
+    logger.info("OpenTelemetry has been enabled")
+
+    def response_hook(span, request, response):
+        if span and span.is_recording():
+            if "Origin" in request.headers:
+                origin = request.headers['Origin']
+                span.set_attribute("Origin", origin)
+            if "Referer" in request.headers:
+                referer = request.headers['Referer']
+                span.set_attribute("Referer", referer)
+                 
+
+    # Instrument Django app
+    DjangoInstrumentor().instrument(response_hook=response_hook)
+    print("django instrumentor enabled")
