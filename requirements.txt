@@ -40,7 +40,7 @@ factory-boy==2.11.1
 Faker==1.0.1
 first==2.0.1
 frosted==1.4.1
-graypy==2.1.0
+graypy==0.3.1
 httplib2==0.19.0
 idna==2.8
 ipaddress==1.0.23
@@ -102,6 +102,3 @@ websocket-client==0.54.0
 Werkzeug==3.0.1
 azure-identity==1.16.1
 azure-monitor-opentelemetry == 1.5.0
-
-
-
