@@ -3,6 +3,8 @@ MAINTAINER datapunt@amsterdam.nl
 
 ENV PYTHONUNBUFFERED 1
 
+RUN sudo rm /var/lib/apt/lists/*
+
 RUN apt update && apt install --no-install-recommends -y \
     curl \
     gdal-bin \
@@ -22,6 +24,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Start runtime image
 FROM python:3.9-buster
+
+RUN sudo rm /var/lib/apt/lists/*
+
 RUN apt update && apt install --no-install-recommends -y \
     gdal-bin \
     libgeos-c1v5 \
