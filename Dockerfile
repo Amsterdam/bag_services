@@ -1,9 +1,7 @@
-FROM python:3.9-buster as builder
+FROM python:3.9.23-bookworm as builder
 MAINTAINER datapunt@amsterdam.nl
 
 ENV PYTHONUNBUFFERED 1
-
-RUN rm /var/lib/apt/lists/*
 
 RUN apt update && apt install --no-install-recommends -y \
     curl \
@@ -23,10 +21,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Start runtime image
-FROM python:3.9-buster
-
-RUN rm /var/lib/apt/lists/*
-
+FROM python:3.9.23-bookworm
 RUN apt update && apt install --no-install-recommends -y \
     gdal-bin \
     libgeos-c1v5 \
