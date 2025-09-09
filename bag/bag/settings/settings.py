@@ -307,6 +307,9 @@ if APPLICATIONINSIGHTS_CONNECTION_STRING is not None:
             if "Referer" in request.headers:
                 referer = request.headers['Referer']
                 span.set_attribute("Referer", referer)
+            if getattr(request, "get_token_claims", None) and "email" in request.get_token_claims:
+                email = request.get_token_claims["email"]
+                span.set_attribute("user.AuthenticatedId", email)
                  
 
     # Instrument Django app
